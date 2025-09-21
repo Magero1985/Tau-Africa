@@ -1,2 +1,1 @@
-# Tau-Africa
-Kabiru App is a new revolutionary mining App for value based token mining. 
+Tau Africa Foundation is a dedicated Pan African Organization with HQ in Nairobi Kenya. Tau Africa is running AUFFI TRUSTS & VALENTA HOLDING COMPANIES. Tau Africa under Valenta company is now creating KABIRU, the new African Fintech digital currency. 
