@@ -1746,64 +1746,149 @@ function createCommunityModal() {
     `;
 }
 
-// Corporate Modal
-function createCorporateModal() {
-    return `
-        <div class="modal-content">
-            <span class="close" onclick="closeAllModals()">&times;</span>
-            <h2>🏢 Corporate Registration</h2>
-            <p>Register your business with Valenta Corporate Holdings</p>
-            
-            <form onsubmit="processCorporateRegistration(event)" id="corporateForm">
-                <div class="form-group">
-                    <label>Company Name *</label>
-                    <input type="text" name="companyName" required>
+// Corporate Registration Modal
+        function createCorporateModal() {
+            return `
+                <div class="modal-content">
+                    <span class="close" onclick="closeAllModals()">&times;</span>
+                    <h2>🏢 Corporate Registration - Valenta Holdings</h2>
+                    
+                    <div class="payment-info">
+                        <h3>Corporate Registration Package</h3>
+                        <p>Comprehensive business registration and setup services</p>
+                    </div>
+                    
+                    <form onsubmit="processCorporateRegistration(event)">
+                        <div class="form-group">
+                            <label>Company Name *</label>
+                            <input type="text" name="companyName" required>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label>Business Type *</label>
+                            <select name="businessType" required>
+                                <option value="">Select business type</option>
+                                <option>Limited Company</option>
+                                <option>Partnership</option>
+                                <option>Sole Proprietorship</option>
+                                <option>NGO/Foundation</option>
+                                <option>Cooperative</option>
+                            </select>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label>Industry Sector *</label>
+                            <select name="sector" required>
+                                <option value="">Select sector</option>
+                                <option>Technology & Innovation</option>
+                                <option>Agriculture & Food</option>
+                                <option>Healthcare & Pharmaceuticals</option>
+                                <option>Education & Training</option>
+                                <option>Finance & Banking</option>
+                                <option>Manufacturing</option>
+                                <option>Retail & Commerce</option>
+                                <option>Energy & Environment</option>
+                                <option>Tourism & Hospitality</option>
+                                <option>Media & Entertainment</option>
+                                <option>Construction & Real Estate</option>
+                                <option>Transportation & Logistics</option>
+                            </select>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label>Training for Trade Program</label>
+                            <select name="trainingTrade">
+                                <option value="">Not applicable</option>
+                                <option>Yes - Include training for employees</option>
+                                <option>Yes - Include skills development</option>
+                                <option>Yes - Include professional certification</option>
+                            </select>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label>Contact Person *</label>
+                            <input type="text" name="contactName" required>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label>Email *</label>
+                            <input type="email" name="email" required>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label>Phone Number *</label>
+                            <input type="tel" name="phone" required>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label>Country *</label>
+                            <input type="text" name="country" required>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label>Business Address *</label>
+                            <textarea name="address" rows="3" required></textarea>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label>Business Description *</label>
+                            <textarea name="businessDescription" rows="4" placeholder="Describe your business activities, products, services" required></textarea>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label>Expected Initial Investment (USD)</label>
+                            <select name="investment">
+                                <option value="">Select range</option>
+                                <option>Under $10,000</option>
+                                <option>$10,000 - $50,000</option>
+                                <option>$50,000 - $100,000</option>
+                                <option>$100,000 - $500,000</option>
+                                <option>$500,000 - $1,000,000</option>
+                                <option>Over $1,000,000</option>
+                            </select>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label>Expected Number of Employees</label>
+                            <select name="employees">
+                                <option value="">Select range</option>
+                                <option>1-5 employees</option>
+                                <option>6-20 employees</option>
+                                <option>21-50 employees</option>
+                                <option>51-100 employees</option>
+                                <option>100+ employees</option>
+                            </select>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label>Pan-African Vision Alignment</label>
+                            <textarea name="alignment" rows="3" placeholder="How does your business align with Pan-African development goals?"></textarea>
+                        </div>
+                        
+                        <button type="submit" class="btn">Submit Corporate Registration</button>
+                    </form>
                 </div>
-                <div class="form-group">
-                    <label>Contact Person *</label>
-                    <input type="text" name="contactName" required>
-                </div>
-                <div class="form-group">
-                    <label>Email *</label>
-                    <input type="email" name="email" required>
-                </div>
-                <div class="form-group">
-                    <label>Industry *</label>
-                    <select name="industry" required>
-                        <option value="">Select industry</option>
-                        <option value="Technology">Technology</option>
-                        <option value="Manufacturing">Manufacturing</option>
-                        <option value="Services">Services</option>
-                        <option value="Agriculture">Agriculture</option>
-                        <option value="Healthcare">Healthcare</option>
-                    </select>
-                </div>
-                <div class="form-group">
-                    <label>Business Description *</label>
-                    <textarea name="description" rows="3" required></textarea>
-                </div>
-                <button type="submit" class="btn">Register Business</button>
-            </form>
-        </div>
-    `;
-}
+            `;
+        }
 
 // Trust Graph Modal
-function createTrustGraphModal() {
-    return `
-        <div class="modal-content">
-            <span class="close" onclick="closeAllModals()">&times;</span>
-            <h2>📊 Trust Graph Ledger</h2>
-            <p>Access the Pan African Trust Graph system for transparent business relationships</p>
-            
-            <div style="background: #f8f9fa; padding: 20px; border-radius: 10px; margin: 20px 0;">
-                <h3>Trust Graph Features:</h3>
-                <ul style="text-align: left;">
-                    <li>Transparent business verification</li>
-                    <li>Community trust scoring</li>
-                    <li>Partnership recommendations</li>
-                    <li>Blockchain-based verification</li>
-                </ul>
+        function createTrustGraphModal() {
+            return `
+                <div class="modal-content">
+                    <span class="close" onclick="closeAllModals()">&times;</span>
+                    <h2>🔗 Trust Graph Ledger</h2>
+                    <div style="padding: 20px; text-align: center;">
+                        <div style="background: linear-gradient(45deg, #667eea, #764ba2); color: white; padding: 30px; border-radius: 15px; margin: 20px 0;">
+                            <h3>Blockchain-Based Trust System</h3>
+                            <p>Building transparent and verifiable trust networks across Africa</p>
+                        </div>
+                        <p style="margin: 20px 0;">The Trust Graph Ledger is currently in development. This system will enable:</p>
+                        <ul style="text-align: left; max-width: 500px; margin: 0 auto;">
+                            <li>Verified identity and reputation tracking</li>
+                            <li>Transparent transaction histories</li>
+                            <li>Community-validated trust scores</li>
+                            <li>Decentralized governance mechanisms</li>
+                        </ul>
             </div>
             
             <form onsubmit="processTrustGraphAccess(event)" id="trustGraphForm">
@@ -1820,8 +1905,8 @@ function createTrustGraphModal() {
                     <select name="accessLevel" required>
                         <option value="">Select level</option>
                         <option value="Basic">Basic Access</option>
-                        <option value="Business">Business Access</option>
-                        <option value="Enterprise">Enterprise Access</option>
+                        <option value="Business">Corporate Access</option>
+                        <option value="Enterprise">Sovereign Access</option>
                     </select>
                 </div>
                 <button type="submit" class="btn">Request Access</button>
@@ -1832,128 +1917,163 @@ function createTrustGraphModal() {
 
 // Foundation Modal
 function createFoundationModal() {
-    return `
-        <div class="modal-content">
-            <span class="close" onclick="closeAllModals()">&times;</span>
-            <h2>🏛️ TAU Africa Foundation</h2>
-            <p>Connect with our foundation for grants, partnerships, and social impact initiatives</p>
-            
-            <form onsubmit="processFoundationInquiry(event)" id="foundationForm">
-                <div class="form-group">
-                    <label>Organization/Individual Name *</label>
-                    <input type="text" name="organization" required>
+            return `
+                <div class="modal-content">
+                    <span class="close" onclick="closeAllModals()">&times;</span>
+                    <h2>🌍 TAU Africa Foundation</h2>
+                    <div style="padding: 20px;">
+                        <div style="background: linear-gradient(45deg, #2ecc71, #27ae60); color: white; padding: 30px; border-radius: 15px; margin: 20px 0; text-align: center;">
+                            <h3>Foundation for Sustainable Development</h3>
+                            <p>Empowering African communities through strategic partnerships</p>
+                        </div>
+                        
+                        <form onsubmit="processFoundationInquiry(event)">
+                            <div class="form-group">
+                                <label>Organization/Individual Name *</label>
+                                <input type="text" name="name" required>
+                            </div>
+                            <div class="form-group">
+                                <label>Email *</label>
+                                <input type="email" name="email" required>
+                            </div>
+                            <div class="form-group">
+                                <label>Inquiry Type *</label>
+                                <select name="inquiryType" required>
+                                    <option value="">Select inquiry type</option>
+                                    <option>Grant Application</option>
+                                    <option>Partnership Opportunity</option>
+                                    <option>Donation/Contribution</option>
+                                    <option>Program Collaboration</option>
+                                    <option>General Information</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label>Message *</label>
+                                <textarea name="message" rows="4" required></textarea>
+                            </div>
+                            <button type="submit" class="btn">Submit Foundation Inquiry</button>
+                        </form>
+                    </div>
                 </div>
-                <div class="form-group">
-                    <label>Contact Email *</label>
-                    <input type="email" name="email" required>
-                </div>
-                <div class="form-group">
-                    <label>Inquiry Type *</label>
-                    <select name="type" required>
-                        <option value="">Select type</option>
-                        <option value="Grant Application">Grant Application</option>
-                        <option value="Partnership">Partnership Opportunity</option>
-                        <option value="Donation">Make a Donation</option>
-                        <option value="Volunteer">Volunteer</option>
-                    </select>
-                </div>
-                <div class="form-group">
-                    <label>Message *</label>
-                    <textarea name="message" rows="4" required></textarea>
-                </div>
-                <button type="submit" class="btn">Send Inquiry</button>
-            </form>
-        </div>
-    `;
-}
+            `;
+        }
 
-// Holdings Modal
 function createHoldingsModal() {
-    return `
-        <div class="modal-content">
-            <span class="close" onclick="closeAllModals()">&times;</span>
-            <h2>💼 Company Holdings</h2>
-            <p>Explore investment opportunities with Valenta Holdings</p>
-            
-            <div style="background: #f8f9fa; padding: 20px; border-radius: 10px; margin: 20px 0;">
-                <h3>Current Holdings:</h3>
-                <ul style="text-align: left;">
-                    <li>Kabiru Digital Currency Platform</li>
-                    <li>TAU Africa Community Network</li>
-                    <li>Pan African Trust Graph System</li>
-                    <li>AUFFI Spiritual Centers</li>
-                </ul>
-            </div>
-            
-            <form onsubmit="processHoldingsInquiry(event)" id="holdingsForm">
-                <div class="form-group">
-                    <label>Your Name/Organization *</label>
-                    <input type="text" name="name" required>
+            return `
+                <div class="modal-content">
+                    <span class="close" onclick="closeAllModals()">&times;</span>
+                    <h2>🏢 Company Holdings</h2>
+                    <div style="padding: 20px;">
+                        <div style="background: linear-gradient(45deg, #9b59b6, #8e44ad); color: white; padding: 30px; border-radius: 15px; margin: 20px 0; text-align: center;">
+                            <h3>Valenta Holdings Portfolio</h3>
+                            <p>Strategic investments in African development</p>
+                        </div>
+                        
+                        <div style="display: grid; gap: 15px; margin: 20px 0;">
+                            <div style="border: 1px solid #ddd; padding: 15px; border-radius: 10px;">
+                                <h4>Kabiru Digital Currency</h4>
+                                <p>Revolutionary blockchain-based currency for African trade</p>
+                            </div>
+                            <div style="border: 1px solid #ddd; padding: 15px; border-radius: 10px;">
+                                <h4>AUFFI Community Network</h4>
+                                <p>Pan-African social and spiritual unity platform</p>
+                            </div>
+                            <div style="border: 1px solid #ddd; padding: 15px; border-radius: 10px;">
+                                <h4>Agricultural Innovation Centers</h4>
+                                <p>Modern farming techniques and food security</p>
+                            </div>
+                        </div>
+                        
+                        <form onsubmit="processHoldingsInquiry(event)">
+                            <div class="form-group">
+                                <label>Name/Organization *</label>
+                                <input type="text" name="name" required>
+                            </div>
+                            <div class="form-group">
+                                <label>Email *</label>
+                                <input type="email" name="email" required>
+                            </div>
+                            <div class="form-group">
+                                <label>Interest *</label>
+                                <select name="interest" required>
+                                    <option value="">Select interest</option>
+                                    <option>Investment Opportunities</option>
+                                    <option>Partnership Proposals</option>
+                                    <option>Acquisition Inquiries</option>
+                                    <option>Joint Ventures</option>
+                                    <option>General Information</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label>Message *</label>
+                                <textarea name="message" rows="3" required></textarea>
+                            </div>
+                            <button type="submit" class="btn">Submit Holdings Inquiry</button>
+                        </form>
+                    </div>
                 </div>
-                <div class="form-group">
-                    <label>Email *</label>
-                    <input type="email" name="email" required>
-                </div>
-                <div class="form-group">
-                    <label>Investment Interest *</label>
-                    <select name="interest" required>
-                        <option value="">Select interest</option>
-                        <option value="Investment Opportunity">Investment Opportunity</option>
-                        <option value="Partnership">Strategic Partnership</option>
-                        <option value="Acquisition">Acquisition Discussion</option>
-                        <option value="Information">General Information</option>
-                    </select>
-                </div>
-                <div class="form-group">
-                    <label>Message *</label>
-                    <textarea name="message" rows="3" required></textarea>
-                </div>
-                <button type="submit" class="btn">Submit Inquiry</button>
-            </form>
-        </div>
-    `;
-}
+            `;
+        }
 
 // Par Sirai Modal
-function createParSiraiModal() {
-    return `
-        <div class="modal-content">
-            <span class="close" onclick="closeAllModals()">&times;</span>
-            <h2>🌟 Par Sirai Center</h2>
-            <p>Join our spiritual and cultural awakening center for African unity</p>
-            
-            <form onsubmit="processParSiraiRegistration(event)" id="parSiraiForm">
-                <div class="form-group">
-                    <label>Full Name *</label>
-                    <input type="text" name="name" required>
+ function createParSiraiModal() {
+            return `
+                <div class="modal-content">
+                    <span class="close" onclick="closeAllModals()">&times;</span>
+                    <h2>🏛️ Par Sirai Center</h2>
+                    <p>Center for Knowledge and Spirituality within AUFFI</p>
+                    
+                    <div style="padding: 20px;">
+                        <div style="background: linear-gradient(45deg, #ff6b6b, #4ecdc4); color: white; padding: 30px; border-radius: 15px; margin: 20px 0; text-align: center;">
+                            <h3>Welcome to Par Sirai Center</h3>
+                            <p>The spiritual and intellectual heart of Pan-African awakening</p>
+                        </div>
+                        
+                        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px;">
+                            <div style="background: #f8f9fa; padding: 20px; border-radius: 15px;">
+                                <h4>📚 Knowledge Repository</h4>
+                                <p>Access to Pan-African history, philosophy, and wisdom traditions</p>
+                            </div>
+                            <div style="background: #f8f9fa; padding: 20px; border-radius: 15px;">
+                                <h4>🧘 Spiritual Practices</h4>
+                                <p>Meditation, prayer, and consciousness development programs</p>
+                            </div>
+                            <div style="background: #f8f9fa; padding: 20px; border-radius: 15px;">
+                                <h4>👥 Community Circles</h4>
+                                <p>Discussion groups and learning circles for spiritual growth</p>
+                            </div>
+                            <div style="background: #f8f9fa; padding: 20px; border-radius: 15px;">
+                                <h4>🌟 Awakening Programs</h4>
+                                <p>Structured programs for social and spiritual consciousness</p>
+                            </div>
+                        </div>
+                        
+                        <form onsubmit="processParSiraiRegistration(event)" style="margin-top: 30px;">
+                            <div class="form-group">
+                                <label>Name *</label>
+                                <input type="text" name="name" required>
+                            </div>
+                            <div class="form-group">
+                                <label>Email *</label>
+                                <input type="email" name="email" required>
+                            </div>
+                            <div class="form-group">
+                                <label>Interest Area *</label>
+                                <select name="interest" required>
+                                    <option value="">Select area</option>
+                                    <option>Pan-African Book of Oloo</option>
+                                    <option>Spiritual Life of Oloo</option>
+                                    <option>Philosophy & Wisdom of Oloo</option>
+                                    <option>African Community Leadership</option>
+                                    <option>African Cultural Heritage</option>
+                                </select>
+                            </div>
+                            <button type="submit" class="btn">Join Par Sirai Center</button>
+                        </form>
+                    </div>
                 </div>
-                <div class="form-group">
-                    <label>Email *</label>
-                    <input type="email" name="email" required>
-                </div>
-                <div class="form-group">
-                    <label>Location *</label>
-                    <input type="text" name="location" required>
-                </div>
-                <div class="form-group">
-                    <label>Spiritual Interest *</label>
-                    <select name="interest" required>
-                        <option value="">Select interest</option>
-                        <option value="Rastafari">Rastafari Roots & Culture</option>
-                        <option value="Legio Maria">Legio Maria African Spirituality</option>
-                        <option value="Yie Kuom Chier">Yie Kuom Chier (Kikongo & Sulwe)</option>
-                        <option value="4th Generation">4th Generation Civilization</option>
-                    </select>
-                </div>
-                <div class="form-group">
-                    <label>How did you find us?</label>
-                    <textarea name="referral" rows="2"></textarea>
-                </div>
-                <button type="submit" class="btn">Join Par Sirai Center</button>
-            </form>
-        </div>
-    `;
-}
+            `;
+        }
 
 // Forum Modal
 function createForumModal() {
@@ -2421,9 +2541,9 @@ SUBMISSION: ${new Date().toLocaleString()}
             console.log('✅ AI Assistant: Active');
             console.log('✅ All buttons working properly');
             
-            showNotification('Welcome to Tau Africa International! Complete system operational and ready test phase I.', 'success');
+            showNotification('Welcome to TAU Africa International! Complete system operational and ready for deployment.', 'success');
         });
 
     </script>
 </body>
-    </html>
+</html>
