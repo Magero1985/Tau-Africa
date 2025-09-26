@@ -963,8 +963,18 @@
                     return '<div class="modal-content"><span class="close" onclick="closeAllModals()">&times;</span><h2>Feature Coming Soon</h2><p>This feature is under development.</p></div>';
             }
         }
-
-        // COMPREHENSIVE TASK Registration Modal
+// Validate M-PESA phone number format
+            const phoneRegex = /^254[0-9]{9}$/;
+            if (!phoneRegex.test(data.phone)) {
+                showNotification('Please enter a valid M-PESA number (254XXXXXXXXX)', 'error');
+                return;
+            }
+            
+            // Process payment
+            initiateMpesaPayment(500, data.phone, data, 'processTaskSuccess');
+        }
+        // COMPREHENSIVE TASK Registration Processing
+        
         function createTaskRegistrationModal() {
             return `
                 <div class="modal-content">
@@ -1129,7 +1139,17 @@
                 </div>
             `;
         }
-
+function processTaskRegistration(event) {
+            event.preventDefault();
+            const form = event.target;
+            const formData = new FormData(form);
+            const data = Object.fromEntries(formData.entries());
+            
+            // Validate required fields
+            if (!selectedCategory) {
+                showNotification('Please select a value category', 'error');
+                return;
+        }
         // COMPREHENSIVE TALK Registration Modal
         function createTalkRegistrationModal() {
             return `
@@ -1287,7 +1307,25 @@
                 </div>
             `;
         }
-
+function processTalkRegistration(event) {
+            event.preventDefault();
+            const form = event.target;
+            const formData = new FormData(form);
+            const data = Object.fromEntries(formData.entries());
+            
+            if (!selectedLevel) {
+                showNotification('Please select a financial support level', 'error');
+                return;
+            }
+            
+            const phoneRegex = /^254[0-9]{9}$/;
+            if (!phoneRegex.test(data.phone)) {
+                showNotification('Please enter a valid M-PESA number (254XXXXXXXXX)', 'error');
+                return;
+            }
+            
+            initiateMpesaPayment(2000, data.phone, data, 'processTalkSuccess');
+}
         // Job Creation Training Modal - COMPREHENSIVE
         function createJobCreationModal() {
             return `
@@ -1438,7 +1476,21 @@
                 </div>
             `;
         }
-        
+        function processJobCreationTraining(event) {
+            event.preventDefault();
+            const form = event.target;
+            const formData = new FormData(form);
+            const data = Object.fromEntries(formData.entries());
+            
+            const phoneRegex = /^254[0-9]{9}$/;
+            if (!phoneRegex.test(data.phone)) {
+                showNotification('Please enter a valid M-PESA number (254XXXXXXXXX)', 'error');
+                return;
+            }
+            
+            initiateMpesaPayment(1500, data.phone, data, 'processJobCreationSuccess');
+        }
+
 // Training Modal
 function createTrainingModal() {
     return `
@@ -2423,6 +2475,216 @@ SUBMISSION: ${new Date().toLocaleString()}
             
             showNotification('Welcome to TAU Africa International! Complete system operational and ready for deployment.', 'success');
         });
+    // SUCCESS CALLBACK FUNCTIONS
+        function processTaskSuccess(formData) {
+            const emailContent = `
+TASK TEAM REGISTRATION - PAYMENT CONFIRMED
+=========================================
+PAYMENT: KSH 500 - CONFIRMED
+TRANSACTION ID: MPX${Date.now()}
+
+MEMBER DETAILS:
+==============
+NAME: ${formData.fullName}
+EMAIL: ${formData.email}
+PHONE: ${formData.phone}
+LOCATION: ${formData.location}
+DATE OF BIRTH: ${formData.dateOfBirth}
+GENDER: ${formData.gender}
+NATIONALITY: ${formData.nationality}
+
+SERVICE DETAILS:
+===============
+CATEGORY: ${formData.category}
+DESCRIPTION: ${formData.valueDescription}
+EXPERIENCE: ${formData.experience}
+CERTIFICATIONS: ${formData.certifications || 'None provided'}
+LANGUAGES: ${formData.languages}
+
+VERIFICATION STATUS:
+==================
+GOOD CONDUCT: ${formData.goodConduct}
+HEALTH STATUS: ${formData.healthStatus}
+TRACK RECORD: ${formData.trackRecord || 'None provided'}
+FAMILY SUPPORT: ${formData.familySupport || 'None provided'}
+EDUCATION: ${formData.education || 'None provided'}
+
+EMERGENCY CONTACT: ${formData.emergencyContact}
+REFERRAL SOURCE: ${formData.referralSource}
+
+REGISTRATION: ${new Date().toLocaleString()}
+STATUS: ACTIVE MEMBER - TASK TEAM
+            `;
+            
+            sendEmailToOrganization(emailContent, "TASK TEAM - NEW MEMBER REGISTRATION", formData)
+                .then(success => {
+                    if (success) {
+                        showMemberWelcome('TASK', formData.fullName);
+                    } else {
+                        showNotification('Registration completed but email notification failed. Please contact support.', 'error');
+                    }
+                });
+        }
+
+        function processTalkSuccess(formData) {
+            const emailContent = `
+TALK TEAM REGISTRATION - PAYMENT CONFIRMED
+=========================================
+PAYMENT: KSH 2,000 - CONFIRMED
+TRANSACTION ID: MPX${Date.now()}
+
+INVESTOR DETAILS:
+================
+NAME/ORG: ${formData.fullName}
+EMAIL: ${formData.email}
+PHONE: ${formData.phone}
+LOCATION: ${formData.location}
+TYPE: ${formData.organizationType}
+WEBSITE: ${formData.website || 'Not provided'}
+
+INVESTMENT PROFILE:
+==================
+SUPPORT LEVEL: ${formData.supportLevel}
+SUPPORT TYPES: ${Array.from(document.querySelectorAll('input[name="supportTypes"]:checked')).map(cb => cb.value).join(', ')}
+FOCUS AREAS: ${formData.focusAreas}
+GEOGRAPHIC FOCUS: ${formData.geographicFocus || 'Not specified'}
+INVESTMENT CRITERIA: ${formData.investmentCriteria || 'Not provided'}
+PREVIOUS INVESTMENTS: ${formData.previousInvestments || 'None provided'}
+
+ENHANCED REQUIREMENTS:
+=====================
+GOOD CONDUCT: ${formData.goodConduct || 'Not applicable'}
+HEALTH STATUS: ${formData.healthStatus || 'Not applicable'}
+FINANCIAL TRACK: ${formData.financialTrack || 'Not provided'}
+NET WORTH: ${formData.netWorth || 'Not disclosed'}
+
+REGISTRATION: ${new Date().toLocaleString()}
+STATUS: ACTIVE INVESTOR - TALK TEAM
+            `;
+            
+            sendEmailToOrganization(emailContent, "TALK TEAM - NEW INVESTOR REGISTRATION", formData)
+                .then(success => {
+                    if (success) {
+                        showMemberWelcome('TALK', formData.fullName);
+                    } else {
+                        showNotification('Registration completed but email notification failed. Please contact support.', 'error');
+                    }
+                });
+        }
+
+        function processJobCreationSuccess(formData) {
+            const emailContent = `
+JOB CREATION TRAINING - PAYMENT CONFIRMED
+========================================
+PAYMENT: KSH 1,500 - CONFIRMED
+TRANSACTION ID: MPX${Date.now()}
+
+TRAINEE DETAILS:
+===============
+NAME: ${formData.fullName}
+EMAIL: ${formData.email}
+PHONE: ${formData.phone}
+LOCATION: ${formData.location}
+AGE RANGE: ${formData.ageRange}
+
+BUSINESS PROFILE:
+================
+EMPLOYMENT STATUS: ${formData.employmentStatus}
+BUSINESS IDEA: ${formData.businessIdea}
+TARGET MARKET: ${formData.targetMarket}
+STARTUP FUNDS: ${formData.startupFunds || 'Not specified'}
+EDUCATION: ${formData.education}
+RELEVANT SKILLS: ${formData.relevantSkills || 'None provided'}
+
+TRAINING PREFERENCES:
+====================
+FOCUS AREAS: ${Array.from(document.querySelectorAll('input[name="focus"]:checked')).map(cb => cb.value).join(', ')}
+LEARNING FORMAT: ${formData.learningFormat}
+BUSINESS TIMELINE: ${formData.businessTimeline}
+
+REGISTRATION: ${new Date().toLocaleString()}
+STATUS: ENROLLED - JOB CREATION TRAINING
+            `;
+            
+            sendEmailToOrganization(emailContent, "JOB CREATION TRAINING - NEW ENROLLMENT", formData)
+                .then(success => {
+                    if (success) {
+                        showTrainingWelcome(formData.fullName);
+                    } else {
+                        showNotification('Registration completed but email notification failed. Please contact support.', 'error');
+                    }
+                });
+        }
+
+        // WELCOME DISPLAY FUNCTIONS
+        function showMemberWelcome(teamType, name) {
+            const modal = document.createElement('div');
+            modal.className = 'modal';
+            modal.style.display = 'block';
+            modal.innerHTML = `
+                <div class="modal-content" style="text-align: center;">
+                    <span class="close" onclick="this.parentElement.parentElement.remove()">&times;</span>
+                    <h2 style="color: #2ecc71;">🎉 Welcome to TAU Africa!</h2>
+                    <h3>Hello ${name}!</h3>
+                    
+                    <div style="background: linear-gradient(45deg, #2ecc71, #27ae60); color: white; padding: 20px; border-radius: 15px; margin: 20px 0;">
+                        <h3>✅ Registration Successful</h3>
+                        <p>You are now a verified ${teamType} Team member!</p>
+                    </div>
+                    
+                    <div style="background: #f8f9fa; padding: 20px; border-radius: 15px; margin: 20px 0; text-align: left;">
+                        <h4>What's Next:</h4>
+                        <ul>
+                            <li>✉️ Check your email for welcome message</li>
+                            <li>🎯 Access member forum and network</li>
+                            <li>⚡ Start mining Kabiru digital currency</li>
+                            <li>🤝 Connect with other community members</li>
+                            <li>📚 Access training materials and workshops</li>
+                        </ul>
+                    </div>
+                    
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin: 20px 0;">
+                        <button class="btn" onclick="showMemberLogin(); this.parentElement.parentElement.parentElement.remove();">Access Dashboard</button>
+                        <button class="btn" onclick="window.open('https://magero1985.github.io/Kabiru-Mining-Portal-/', '_blank')">Start Mining Kabiru</button>
+                    </div>
+                    
+                    <p style="color: #666; font-size: 0.9em;">Member ID will be sent to your email within 24 hours</p>
+                </div>
+            `;
+            document.body.appendChild(modal);
+        }
+
+        function showTrainingWelcome(name) {
+            const modal = document.createElement('div');
+            modal.className = 'modal';
+            modal.style.display = 'block';
+            modal.innerHTML = `
+                <div class="modal-content" style="text-align: center;">
+                    <span class="close" onclick="this.parentElement.parentElement.remove()">&times;</span>
+                    <h2 style="color: #2ecc71;">📚 Training Enrollment Confirmed!</h2>
+                    <h3>Welcome ${name}!</h3>
+                    
+                    <div style="background: linear-gradient(45deg, #3498db, #2980b9); color: white; padding: 20px; border-radius: 15px; margin: 20px 0;">
+                        <h3>✅ Job Creation Training</h3>
+                        <p>6-week intensive entrepreneurship program</p>
+                    </div>
+                    
+                    <div style="background: #f8f9fa; padding: 20px; border-radius: 15px; margin: 20px 0; text-align: left;">
+                        <h4>Program Schedule:</h4>
+                        <ul>
+                            <li>📧 Welcome materials sent to your email</li>
+                            <li>📅 Training starts next Monday</li>
+                            <li>🎓 Digital certificate upon completion</li>
+                            <li>🤝 Ongoing mentorship support</li>
+                            <li>💼 Business launch assistance</li>
+                        </ul>
+                    </div>
+                    
+                    <button class="btn" onclick="this.parentElement.parentElement.remove();">Continue Exploring</button>
+                </div>
+            `;
+            document.body.appendChild(modal);
+                 }
 
     </script>
 </body>
