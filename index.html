@@ -728,12 +728,12 @@
     <!-- AI Chat Window -->
     <div class="ai-chat-window" id="aiChatWindow">
         <div class="ai-chat-header">
-            <span>Tau AI Assistant</span>
+            <span>TAU AI Assistant</span>
             <span onclick="toggleAIChat()" style="cursor: pointer;">✖</span>
         </div>
         <div class="ai-chat-messages" id="aiChatMessages">
             <div class="ai-message">
-                Hello! I'm your Tau Africa AI assistant. I can help you with:
+                Hello! I'm your TAU Africa AI assistant. I can help you with:
                 <br>• Navigating the app
                 <br>• Understanding registration process
                 <br>• Payment procedures
@@ -1437,6 +1437,586 @@
                     </form>
                 </div>
             `;
+        }
+        
+// Training Modal
+function createTrainingModal() {
+    return `
+        <div class="modal-content">
+            <span class="close" onclick="closeAllModals()">&times;</span>
+            <h2>📚 Join Training Program</h2>
+            <p>Professional development and skill enhancement workshops</p>
+            
+            <form onsubmit="processTrainingRegistration(event)" id="trainingForm">
+                <div class="form-group">
+                    <label>Full Name *</label>
+                    <input type="text" name="fullName" required>
+                </div>
+                <div class="form-group">
+                    <label>Email *</label>
+                    <input type="email" name="email" required>
+                </div>
+                <div class="form-group">
+                    <label>Phone Number *</label>
+                    <input type="tel" name="phone" required>
+                </div>
+                <div class="form-group">
+                    <label>Training Interest *</label>
+                    <select name="trainingType" required>
+                        <option value="">Select training</option>
+                        <option value="Digital Skills">Digital Skills</option>
+                        <option value="Business Management">Business Management</option>
+                        <option value="Leadership">Leadership Development</option>
+                        <option value="Financial Literacy">Financial Literacy</option>
+                    </select>
+                </div>
+                <button type="submit" class="btn">Register for Training</button>
+            </form>
+        </div>
+    `;
+}
+
+// Workshop Modal
+function createWorkshopModal() {
+    return `
+        <div class="modal-content">
+            <span class="close" onclick="closeAllModals()">&times;</span>
+            <h2>🎯 Host Workshop</h2>
+            <p>Propose a workshop to share your expertise with the community</p>
+            
+            <form onsubmit="processWorkshopProposal(event)" id="workshopForm">
+                <div class="form-group">
+                    <label>Host Name *</label>
+                    <input type="text" name="hostName" required>
+                </div>
+                <div class="form-group">
+                    <label>Email *</label>
+                    <input type="email" name="email" required>
+                </div>
+                <div class="form-group">
+                    <label>Workshop Title *</label>
+                    <input type="text" name="title" required>
+                </div>
+                <div class="form-group">
+                    <label>Workshop Description *</label>
+                    <textarea name="description" rows="4" required></textarea>
+                </div>
+                <div class="form-group">
+                    <label>Your Expertise *</label>
+                    <textarea name="expertise" rows="2" required></textarea>
+                </div>
+                <button type="submit" class="btn">Submit Workshop Proposal</button>
+            </form>
+        </div>
+    `;
+}
+
+// Research Modal
+function createResearchModal() {
+    return `
+        <div class="modal-content">
+            <span class="close" onclick="closeAllModals()">&times;</span>
+            <h2>🔬 Research Services</h2>
+            <p>Request professional research services for your organization</p>
+            
+            <form onsubmit="processResearchRequest(event)" id="researchForm">
+                <div class="form-group">
+                    <label>Organization Name *</label>
+                    <input type="text" name="organization" required>
+                </div>
+                <div class="form-group">
+                    <label>Contact Email *</label>
+                    <input type="email" name="email" required>
+                </div>
+                <div class="form-group">
+                    <label>Research Type *</label>
+                    <select name="type" required>
+                        <option value="">Select type</option>
+                        <option value="Market Research">Market Research</option>
+                        <option value="Policy Analysis">Policy Analysis</option>
+                        <option value="Social Research">Social Research</option>
+                        <option value="Economic Analysis">Economic Analysis</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Research Requirements *</label>
+                    <textarea name="requirements" rows="4" required></textarea>
+                </div>
+                <button type="submit" class="btn">Submit Research Request</button>
+            </form>
+        </div>
+    `;
+}
+
+// Insert Job Modal
+function createInsertJobModal() {
+    return `
+        <div class="modal-content">
+            <span class="close" onclick="closeAllModals()">&times;</span>
+            <h2>💼 Post a Job</h2>
+            <p>Share job opportunities with the TAU Africa community</p>
+            
+            <form onsubmit="processJobPosting(event)" id="jobPostForm">
+                <div class="form-group">
+                    <label>Company/Organization *</label>
+                    <input type="text" name="company" required>
+                </div>
+                <div class="form-group">
+                    <label>Contact Email *</label>
+                    <input type="email" name="email" required>
+                </div>
+                <div class="form-group">
+                    <label>Job Title *</label>
+                    <input type="text" name="title" required>
+                </div>
+                <div class="form-group">
+                    <label>Job Category *</label>
+                    <select name="category" required>
+                        <option value="">Select category</option>
+                        <option value="Technology">Technology</option>
+                        <option value="Healthcare">Healthcare</option>
+                        <option value="Education">Education</option>
+                        <option value="Business">Business</option>
+                        <option value="Agriculture">Agriculture</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Job Description *</label>
+                    <textarea name="description" rows="4" required></textarea>
+                </div>
+                <div class="form-group">
+                    <label>Requirements *</label>
+                    <textarea name="requirements" rows="3" required></textarea>
+                </div>
+                <button type="submit" class="btn">Post Job</button>
+            </form>
+        </div>
+    `;
+}
+
+// Retrieve Job Modal
+function createRetrieveJobModal() {
+    return `
+        <div class="modal-content">
+            <span class="close" onclick="closeAllModals()">&times;</span>
+            <h2>🔍 Search Jobs</h2>
+            <p>Find job opportunities that match your profile</p>
+            
+            <form onsubmit="processJobSearch(event)" id="jobSearchForm">
+                <div class="form-group">
+                    <label>Your Name *</label>
+                    <input type="text" name="name" required>
+                </div>
+                <div class="form-group">
+                    <label>Email *</label>
+                    <input type="email" name="email" required>
+                </div>
+                <div class="form-group">
+                    <label>Job Category</label>
+                    <select name="category">
+                        <option value="">Any category</option>
+                        <option value="Technology">Technology</option>
+                        <option value="Healthcare">Healthcare</option>
+                        <option value="Education">Education</option>
+                        <option value="Business">Business</option>
+                        <option value="Agriculture">Agriculture</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Preferred Location</label>
+                    <input type="text" name="location" placeholder="City or region">
+                </div>
+                <button type="submit" class="btn">Search Jobs</button>
+            </form>
+        </div>
+    `;
+}
+
+// Available Jobs Modal
+function createAvailableJobsModal() {
+    return `
+        <div class="modal-content">
+            <span class="close" onclick="closeAllModals()">&times;</span>
+            <h2>📋 Available Jobs</h2>
+            <p>Browse current job opportunities</p>
+            
+            <div style="background: #f8f9fa; padding: 20px; border-radius: 10px; margin: 20px 0;">
+                <h3>Sample Job Listings:</h3>
+                <div style="border: 1px solid #ddd; padding: 15px; margin: 10px 0; border-radius: 8px;">
+                    <h4>Software Developer - Tech Startup</h4>
+                    <p><strong>Location:</strong> Nairobi, Kenya</p>
+                    <p><strong>Requirements:</strong> 2+ years experience, JavaScript, React</p>
+                    <button class="btn" onclick="openModal('applyJob')">Apply Now</button>
+                </div>
+                <div style="border: 1px solid #ddd; padding: 15px; margin: 10px 0; border-radius: 8px;">
+                    <h4>Marketing Manager - NGO</h4>
+                    <p><strong>Location:</strong> Lagos, Nigeria</p>
+                    <p><strong>Requirements:</strong> Marketing degree, 3+ years experience</p>
+                    <button class="btn" onclick="openModal('applyJob')">Apply Now</button>
+                </div>
+            </div>
+            
+            <div style="text-align: center;">
+                <p>More jobs available to registered members</p>
+                <button class="btn" onclick="openModal('taskRegistration')">Join TASK Team to Access All Jobs</button>
+            </div>
+        </div>
+    `;
+}
+
+// Apply Job Modal
+function createApplyJobModal() {
+    return `
+        <div class="modal-content">
+            <span class="close" onclick="closeAllModals()">&times;</span>
+            <h2>📝 Apply for Job</h2>
+            <p>Submit your application for available positions</p>
+            
+            <form onsubmit="processJobApplication(event)" id="jobAppForm">
+                <div class="form-group">
+                    <label>Full Name *</label>
+                    <input type="text" name="fullName" required>
+                </div>
+                <div class="form-group">
+                    <label>Email *</label>
+                    <input type="email" name="email" required>
+                </div>
+                <div class="form-group">
+                    <label>Phone *</label>
+                    <input type="tel" name="phone" required>
+                </div>
+                <div class="form-group">
+                    <label>Position Applying For *</label>
+                    <input type="text" name="position" required>
+                </div>
+                <div class="form-group">
+                    <label>Relevant Experience *</label>
+                    <textarea name="experience" rows="3" required></textarea>
+                </div>
+                <div class="form-group">
+                    <label>Why are you interested? *</label>
+                    <textarea name="motivation" rows="2" required></textarea>
+                </div>
+                <button type="submit" class="btn">Submit Application</button>
+            </form>
+        </div>
+    `;
+}
+
+// Community Modal
+function createCommunityModal() {
+    return `
+        <div class="modal-content">
+            <span class="close" onclick="closeAllModals()">&times;</span>
+            <h2>🤝 Join Community Programs</h2>
+            <p>Participate in community support and development programs</p>
+            
+            <form onsubmit="processCommunityRegistration(event)" id="communityForm">
+                <div class="form-group">
+                    <label>Full Name *</label>
+                    <input type="text" name="fullName" required>
+                </div>
+                <div class="form-group">
+                    <label>Email *</label>
+                    <input type="email" name="email" required>
+                </div>
+                <div class="form-group">
+                    <label>Location *</label>
+                    <input type="text" name="location" required>
+                </div>
+                <div class="form-group">
+                    <label>Program Interest *</label>
+                    <select name="program" required>
+                        <option value="">Select program</option>
+                        <option value="Agriculture">Agriculture</option>
+                        <option value="Climate">Climate Action</option>
+                        <option value="Environment">Environment</option>
+                        <option value="Water & Sanitation">Water & Sanitation</option>
+                        <option value="Education">Education</option>
+                        <option value="Child Care">Child Care</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>How can you contribute? *</label>
+                    <textarea name="contribution" rows="3" required></textarea>
+                </div>
+                <button type="submit" class="btn">Join Program</button>
+            </form>
+        </div>
+    `;
+}
+
+// Corporate Modal
+function createCorporateModal() {
+    return `
+        <div class="modal-content">
+            <span class="close" onclick="closeAllModals()">&times;</span>
+            <h2>🏢 Corporate Registration</h2>
+            <p>Register your business with Valenta Corporate Holdings</p>
+            
+            <form onsubmit="processCorporateRegistration(event)" id="corporateForm">
+                <div class="form-group">
+                    <label>Company Name *</label>
+                    <input type="text" name="companyName" required>
+                </div>
+                <div class="form-group">
+                    <label>Contact Person *</label>
+                    <input type="text" name="contactName" required>
+                </div>
+                <div class="form-group">
+                    <label>Email *</label>
+                    <input type="email" name="email" required>
+                </div>
+                <div class="form-group">
+                    <label>Industry *</label>
+                    <select name="industry" required>
+                        <option value="">Select industry</option>
+                        <option value="Technology">Technology</option>
+                        <option value="Manufacturing">Manufacturing</option>
+                        <option value="Services">Services</option>
+                        <option value="Agriculture">Agriculture</option>
+                        <option value="Healthcare">Healthcare</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Business Description *</label>
+                    <textarea name="description" rows="3" required></textarea>
+                </div>
+                <button type="submit" class="btn">Register Business</button>
+            </form>
+        </div>
+    `;
+}
+
+// Trust Graph Modal
+function createTrustGraphModal() {
+    return `
+        <div class="modal-content">
+            <span class="close" onclick="closeAllModals()">&times;</span>
+            <h2>📊 Trust Graph Ledger</h2>
+            <p>Access the Pan African Trust Graph system for transparent business relationships</p>
+            
+            <div style="background: #f8f9fa; padding: 20px; border-radius: 10px; margin: 20px 0;">
+                <h3>Trust Graph Features:</h3>
+                <ul style="text-align: left;">
+                    <li>Transparent business verification</li>
+                    <li>Community trust scoring</li>
+                    <li>Partnership recommendations</li>
+                    <li>Blockchain-based verification</li>
+                </ul>
+            </div>
+            
+            <form onsubmit="processTrustGraphAccess(event)" id="trustGraphForm">
+                <div class="form-group">
+                    <label>Organization Name *</label>
+                    <input type="text" name="organization" required>
+                </div>
+                <div class="form-group">
+                    <label>Contact Email *</label>
+                    <input type="email" name="email" required>
+                </div>
+                <div class="form-group">
+                    <label>Access Level *</label>
+                    <select name="accessLevel" required>
+                        <option value="">Select level</option>
+                        <option value="Basic">Basic Access</option>
+                        <option value="Business">Business Access</option>
+                        <option value="Enterprise">Enterprise Access</option>
+                    </select>
+                </div>
+                <button type="submit" class="btn">Request Access</button>
+            </form>
+        </div>
+    `;
+}
+
+// Foundation Modal
+function createFoundationModal() {
+    return `
+        <div class="modal-content">
+            <span class="close" onclick="closeAllModals()">&times;</span>
+            <h2>🏛️ TAU Africa Foundation</h2>
+            <p>Connect with our foundation for grants, partnerships, and social impact initiatives</p>
+            
+            <form onsubmit="processFoundationInquiry(event)" id="foundationForm">
+                <div class="form-group">
+                    <label>Organization/Individual Name *</label>
+                    <input type="text" name="organization" required>
+                </div>
+                <div class="form-group">
+                    <label>Contact Email *</label>
+                    <input type="email" name="email" required>
+                </div>
+                <div class="form-group">
+                    <label>Inquiry Type *</label>
+                    <select name="type" required>
+                        <option value="">Select type</option>
+                        <option value="Grant Application">Grant Application</option>
+                        <option value="Partnership">Partnership Opportunity</option>
+                        <option value="Donation">Make a Donation</option>
+                        <option value="Volunteer">Volunteer</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Message *</label>
+                    <textarea name="message" rows="4" required></textarea>
+                </div>
+                <button type="submit" class="btn">Send Inquiry</button>
+            </form>
+        </div>
+    `;
+}
+
+// Holdings Modal
+function createHoldingsModal() {
+    return `
+        <div class="modal-content">
+            <span class="close" onclick="closeAllModals()">&times;</span>
+            <h2>💼 Company Holdings</h2>
+            <p>Explore investment opportunities with Valenta Holdings</p>
+            
+            <div style="background: #f8f9fa; padding: 20px; border-radius: 10px; margin: 20px 0;">
+                <h3>Current Holdings:</h3>
+                <ul style="text-align: left;">
+                    <li>Kabiru Digital Currency Platform</li>
+                    <li>TAU Africa Community Network</li>
+                    <li>Pan African Trust Graph System</li>
+                    <li>AUFFI Spiritual Centers</li>
+                </ul>
+            </div>
+            
+            <form onsubmit="processHoldingsInquiry(event)" id="holdingsForm">
+                <div class="form-group">
+                    <label>Your Name/Organization *</label>
+                    <input type="text" name="name" required>
+                </div>
+                <div class="form-group">
+                    <label>Email *</label>
+                    <input type="email" name="email" required>
+                </div>
+                <div class="form-group">
+                    <label>Investment Interest *</label>
+                    <select name="interest" required>
+                        <option value="">Select interest</option>
+                        <option value="Investment Opportunity">Investment Opportunity</option>
+                        <option value="Partnership">Strategic Partnership</option>
+                        <option value="Acquisition">Acquisition Discussion</option>
+                        <option value="Information">General Information</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Message *</label>
+                    <textarea name="message" rows="3" required></textarea>
+                </div>
+                <button type="submit" class="btn">Submit Inquiry</button>
+            </form>
+        </div>
+    `;
+}
+
+// Par Sirai Modal
+function createParSiraiModal() {
+    return `
+        <div class="modal-content">
+            <span class="close" onclick="closeAllModals()">&times;</span>
+            <h2>🌟 Par Sirai Center</h2>
+            <p>Join our spiritual and cultural awakening center for African unity</p>
+            
+            <form onsubmit="processParSiraiRegistration(event)" id="parSiraiForm">
+                <div class="form-group">
+                    <label>Full Name *</label>
+                    <input type="text" name="name" required>
+                </div>
+                <div class="form-group">
+                    <label>Email *</label>
+                    <input type="email" name="email" required>
+                </div>
+                <div class="form-group">
+                    <label>Location *</label>
+                    <input type="text" name="location" required>
+                </div>
+                <div class="form-group">
+                    <label>Spiritual Interest *</label>
+                    <select name="interest" required>
+                        <option value="">Select interest</option>
+                        <option value="Rastafari">Rastafari Roots & Culture</option>
+                        <option value="Legio Maria">Legio Maria African Spirituality</option>
+                        <option value="Yie Kuom Chier">Yie Kuom Chier (Kikongo & Sulwe)</option>
+                        <option value="4th Generation">4th Generation Civilization</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>How did you find us?</label>
+                    <textarea name="referral" rows="2"></textarea>
+                </div>
+                <button type="submit" class="btn">Join Par Sirai Center</button>
+            </form>
+        </div>
+    `;
+}
+
+// Forum Modal
+function createForumModal() {
+    return `
+        <div class="modal-content">
+            <span class="close" onclick="closeAllModals()">&times;</span>
+            <h2>💬 Member Forum</h2>
+            <p>Connect with fellow TAU Africa members</p>
+            
+            <div style="background: #f8f9fa; padding: 20px; border-radius: 10px; margin: 20px 0;">
+                <h3>Forum Features:</h3>
+                <ul style="text-align: left;">
+                    <li>Discussion boards by topic</li>
+                    <li>Job sharing and networking</li>
+                    <li>Training materials access</li>
+                    <li>Voice calls and messaging</li>
+                    <li>Business collaboration</li>
+                </ul>
+                
+                <div style="margin-top: 20px; padding: 15px; background: #fff3cd; border-radius: 8px;">
+                    <strong>Notice:</strong> Forum access requires active TASK or TALK membership
+                </div>
+            </div>
+            
+            <div style="text-align: center;">
+                <button class="btn" onclick="openModal('taskRegistration')">Join TASK Team</button>
+                <button class="btn" onclick="openModal('talkRegistration')">Join TALK Team</button>
+                <button class="btn" onclick="showMemberLogin()">Member Login</button>
+            </div>
+        </div>
+    `;
+}
+function processTrainingRegistration(event) {
+    event.preventDefault();
+    const form = event.target;
+    const formData = new FormData(form);
+    const data = Object.fromEntries(formData.entries());
+    
+    sendEmailToOrganization(`TRAINING REGISTRATION: ${data.fullName} - ${data.trainingType}`, "TRAINING REGISTRATION", data);
+    showNotification('Training registration successful!', 'success');
+    closeAllModals();
+}
+
+function processCorporateRegistration(event) {
+    event.preventDefault();
+    const form = event.target;
+    const formData = new FormData(form);
+    const data = Object.fromEntries(formData.entries());
+    
+    sendEmailToOrganization(`CORPORATE REGISTRATION: ${data.companyName}`, "CORPORATE REGISTRATION", data);
+    showNotification('Corporate registration submitted!', 'success');
+    closeAllModals();
+}
+
+function processTrustGraphAccess(event) {
+    event.preventDefault();
+    const form = event.target;
+    const formData = new FormData(form);
+    const data = Object.fromEntries(formData.entries());
+    
+    sendEmailToOrganization(`TRUST GRAPH ACCESS: ${data.organization}`, "TRUST GRAPH ACCESS", data);
+    showNotification('Trust Graph access request submitted!', 'success');
+    closeAllModals();
         }
 function processWorkshopProposal(event) {
             event.preventDefault();
