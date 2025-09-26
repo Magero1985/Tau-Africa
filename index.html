@@ -1440,198 +1440,390 @@
         }
         
 // Training Modal
-function createTrainingModal() {
-    return `
-        <div class="modal-content">
-            <span class="close" onclick="closeAllModals()">&times;</span>
-            <h2>📚 Join Training Program</h2>
-            <p>Professional development and skill enhancement workshops</p>
-            
-            <form onsubmit="processTrainingRegistration(event)" id="trainingForm">
-                <div class="form-group">
-                    <label>Full Name *</label>
-                    <input type="text" name="fullName" required>
+        function createTrainingModal() {
+            return `
+                <div class="modal-content">
+                    <span class="close" onclick="closeAllModals()">&times;</span>
+                    <h2>📚 Join Training Programs</h2>
+                    
+                    <form onsubmit="processTrainingRegistration(event)">
+                        <div class="form-group">
+                            <label>Full Name *</label>
+                            <input type="text" name="fullName" required>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label>Email *</label>
+                            <input type="email" name="email" required>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label>Phone Number *</label>
+                            <input type="tel" name="phone" required>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label>Training Category *</label>
+                            <select name="trainingCategory" required>
+                                <option value="">Select training area</option>
+                                <option>Digital Skills & Technology</option>
+                                <option>Business & Entrepreneurship</option>
+                                <option>Financial Literacy</option>
+                                <option>Leadership Development</option>
+                                <option>Agricultural Innovation</option>
+                                <option>Pan-African Studies</option>
+                                <option>Health & Wellness</option>
+                                <option>Creative Arts</option>
+                            </select>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label>Experience Level *</label>
+                            <select name="level" required>
+                                <option value="">Select level</option>
+                                <option>Beginner</option>
+                                <option>Intermediate</option>
+                                <option>Advanced</option>
+                            </select>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label>Learning Goals *</label>
+                            <textarea name="goals" rows="3" placeholder="What do you hope to achieve through this training?" required></textarea>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label>Preferred Training Format</label>
+                            <select name="format">
+                                <option>Online</option>
+                                <option>In-person</option>
+                                <option>Hybrid</option>
+                            </select>
+                        </div>
+                        
+                        <button type="submit" class="btn">Register for Training</button>
+                    </form>
                 </div>
-                <div class="form-group">
-                    <label>Email *</label>
-                    <input type="email" name="email" required>
-                </div>
-                <div class="form-group">
-                    <label>Phone Number *</label>
-                    <input type="tel" name="phone" required>
-                </div>
-                <div class="form-group">
-                    <label>Training Interest *</label>
-                    <select name="trainingType" required>
-                        <option value="">Select training</option>
-                        <option value="Digital Skills">Digital Skills</option>
-                        <option value="Business Management">Business Management</option>
-                        <option value="Leadership">Leadership Development</option>
-                        <option value="Financial Literacy">Financial Literacy</option>
-                    </select>
-                </div>
-                <button type="submit" class="btn">Register for Training</button>
-            </form>
-        </div>
-    `;
-}
-
+            `;
+        }
 // Workshop Modal
-function createWorkshopModal() {
-    return `
-        <div class="modal-content">
-            <span class="close" onclick="closeAllModals()">&times;</span>
-            <h2>🎯 Host Workshop</h2>
-            <p>Propose a workshop to share your expertise with the community</p>
-            
-            <form onsubmit="processWorkshopProposal(event)" id="workshopForm">
-                <div class="form-group">
-                    <label>Host Name *</label>
-                    <input type="text" name="hostName" required>
+        function createWorkshopModal() {
+            return `
+                <div class="modal-content">
+                    <span class="close" onclick="closeAllModals()">&times;</span>
+                    <h2>🎯 Host a Workshop</h2>
+                    
+                    <form onsubmit="processWorkshopProposal(event)">
+                        <div class="form-group">
+                            <label>Your Name *</label>
+                            <input type="text" name="hostName" required>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label>Email *</label>
+                            <input type="email" name="email" required>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label>Phone Number *</label>
+                            <input type="tel" name="phone" required>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label>Workshop Title *</label>
+                            <input type="text" name="workshopTitle" required>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label>Workshop Category *</label>
+                            <select name="category" required>
+                                <option value="">Select category</option>
+                                <option>Business & Entrepreneurship</option>
+                                <option>Technology & Innovation</option>
+                                <option>Arts & Culture</option>
+                                <option>Health & Wellness</option>
+                                <option>Education & Skills</option>
+                                <option>Pan-African Studies</option>
+                                <option>Financial Literacy</option>
+                                <option>Agriculture & Food Security</option>
+                            </select>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label>Workshop Description *</label>
+                            <textarea name="description" rows="4" placeholder="Detailed description of workshop content and objectives" required></textarea>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label>Target Audience *</label>
+                            <textarea name="audience" rows="2" placeholder="Who should attend this workshop?" required></textarea>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label>Duration *</label>
+                            <select name="duration" required>
+                                <option value="">Select duration</option>
+                                <option>2 hours</option>
+                                <option>Half day (4 hours)</option>
+                                <option>Full day (8 hours)</option>
+                                <option>2 days</option>
+                                <option>3-5 days</option>
+                                <option>1 week</option>
+                            </select>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label>Your Expertise/Qualifications *</label>
+                            <textarea name="expertise" rows="3" placeholder="Your background and qualifications for hosting this workshop" required></textarea>
+                        </div>
+                        
+                        <button type="submit" class="btn">Submit Workshop Proposal</button>
+                    </form>
                 </div>
-                <div class="form-group">
-                    <label>Email *</label>
-                    <input type="email" name="email" required>
-                </div>
-                <div class="form-group">
-                    <label>Workshop Title *</label>
-                    <input type="text" name="title" required>
-                </div>
-                <div class="form-group">
-                    <label>Workshop Description *</label>
-                    <textarea name="description" rows="4" required></textarea>
-                </div>
-                <div class="form-group">
-                    <label>Your Expertise *</label>
-                    <textarea name="expertise" rows="2" required></textarea>
-                </div>
-                <button type="submit" class="btn">Submit Workshop Proposal</button>
-            </form>
-        </div>
-    `;
-}
+            `;
+        }
 
-// Research Modal
-function createResearchModal() {
-    return `
-        <div class="modal-content">
-            <span class="close" onclick="closeAllModals()">&times;</span>
-            <h2>🔬 Research Services</h2>
-            <p>Request professional research services for your organization</p>
-            
-            <form onsubmit="processResearchRequest(event)" id="researchForm">
-                <div class="form-group">
-                    <label>Organization Name *</label>
-                    <input type="text" name="organization" required>
+// Research Services Modal
+        function createResearchModal() {
+            return `
+                <div class="modal-content">
+                    <span class="close" onclick="closeAllModals()">&times;</span>
+                    <h2>🔬 Research Services</h2>
+                    
+                    <form onsubmit="processResearchRequest(event)">
+                        <div class="form-group">
+                            <label>Organization/Individual Name *</label>
+                            <input type="text" name="clientName" required>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label>Contact Email *</label>
+                            <input type="email" name="email" required>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label>Phone Number *</label>
+                            <input type="tel" name="phone" required>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label>Research Type *</label>
+                            <select name="researchType" required>
+                                <option value="">Select research type</option>
+                                <option>Market Research</option>
+                                <option>Academic Research</option>
+                                <option>Policy Research</option>
+                                <option>Social Impact Assessment</option>
+                                <option>Business Intelligence</option>
+                                <option>Pan-African Studies</option>
+                                <option>Economic Analysis</option>
+                                <option>Cultural Research</option>
+                            </select>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label>Research Topic/Subject *</label>
+                            <input type="text" name="topic" placeholder="Brief description of research topic" required>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label>Detailed Research Requirements *</label>
+                            <textarea name="requirements" rows="4" placeholder="Specific research questions, methodology preferences, deliverables expected" required></textarea>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label>Timeline *</label>
+                            <select name="timeline" required>
+                                <option value="">Select timeline</option>
+                                <option>1-2 weeks</option>
+                                <option>1 month</option>
+                                <option>2-3 months</option>
+                                <option>3-6 months</option>
+                                <option>6+ months</option>
+                            </select>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label>Budget Range (USD)</label>
+                            <select name="budget">
+                                <option value="">Select budget range</option>
+                                <option>Under $1,000</option>
+                                <option>$1,000 - $5,000</option>
+                                <option>$5,000 - $10,000</option>
+                                <option>$10,000 - $25,000</option>
+                                <option>$25,000+</option>
+                                <option>To be discussed</option>
+                            </select>
+                        </div>
+                        
+                        <button type="submit" class="btn">Submit Research Request</button>
+                    </form>
                 </div>
-                <div class="form-group">
-                    <label>Contact Email *</label>
-                    <input type="email" name="email" required>
-                </div>
-                <div class="form-group">
-                    <label>Research Type *</label>
-                    <select name="type" required>
-                        <option value="">Select type</option>
-                        <option value="Market Research">Market Research</option>
-                        <option value="Policy Analysis">Policy Analysis</option>
-                        <option value="Social Research">Social Research</option>
-                        <option value="Economic Analysis">Economic Analysis</option>
-                    </select>
-                </div>
-                <div class="form-group">
-                    <label>Research Requirements *</label>
-                    <textarea name="requirements" rows="4" required></textarea>
-                </div>
-                <button type="submit" class="btn">Submit Research Request</button>
-            </form>
-        </div>
-    `;
-}
-
+            `;
+        }
 // Insert Job Modal
-function createInsertJobModal() {
-    return `
-        <div class="modal-content">
-            <span class="close" onclick="closeAllModals()">&times;</span>
-            <h2>💼 Post a Job</h2>
-            <p>Share job opportunities with the TAU Africa community</p>
-            
-            <form onsubmit="processJobPosting(event)" id="jobPostForm">
-                <div class="form-group">
-                    <label>Company/Organization *</label>
-                    <input type="text" name="company" required>
+        function createInsertJobModal() {
+            return `
+                <div class="modal-content">
+                    <span class="close" onclick="closeAllModals()">&times;</span>
+                    <h2>📝 Post a Job Opening</h2>
+                    
+                    <form onsubmit="processJobPosting(event)">
+                        <div class="form-group">
+                            <label>Company/Organization Name *</label>
+                            <input type="text" name="companyName" required>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label>Contact Email *</label>
+                            <input type="email" name="email" required>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label>Contact Phone *</label>
+                            <input type="tel" name="phone" required>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label>Job Title *</label>
+                            <input type="text" name="jobTitle" required>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label>Job Category *</label>
+                            <select name="jobCategory" required>
+                                <option value="">Select category</option>
+                                <option>IT & Digital Economy</option>
+                                <option>Marketing & Advertisements</option>
+                                <option>Front Desk & Data Handlers</option>
+                                <option>Management</option>
+                                <option>Healthcare</option>
+                                <option>Sales & Customer Service</option>
+                                <option>Education & Training</option>
+                                <option>Engineering</option>
+                                <option>Finance & Accounting</option>
+                                <option>Agriculture & Food</option>
+                                <option>Manufacturing</option>
+                                <option>Transportation & Logistics</option>
+                            </select>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label>Job Type *</label>
+                            <select name="jobType" required>
+                                <option value="">Select type</option>
+                                <option>Full-time</option>
+                                <option>Part-time</option>
+                                <option>Contract</option>
+                                <option>Freelance</option>
+                                <option>Internship</option>
+                                <option>Temporary</option>
+                            </select>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label>Location *</label>
+                            <input type="text" name="location" required>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label>Job Description *</label>
+                            <textarea name="jobDescription" rows="4" placeholder="Detailed job description, responsibilities, requirements" required></textarea>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label>Required Qualifications *</label>
+                            <textarea name="qualifications" rows="3" required></textarea>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label>Experience Level *</label>
+                            <select name="experienceLevel" required>
+                                <option value="">Select level</option>
+                                <option>Entry Level (0-2 years)</option>
+                                <option>Mid Level (2-5 years)</option>
+                                <option>Senior Level (5-10 years)</option>
+                                <option>Executive Level (10+ years)</option>
+                            </select>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label>Salary Range (Optional)</label>
+                            <input type="text" name="salary" placeholder="e.g., KSH 50,000 - 80,000">
+                        </div>
+                        
+                        <button type="submit" class="btn">Post Job Opening</button>
+                    </form>
                 </div>
-                <div class="form-group">
-                    <label>Contact Email *</label>
-                    <input type="email" name="email" required>
+            `;
+                }
+// Job Search Modal
+        function createRetrieveJobModal() {
+            return `
+                <div class="modal-content">
+                    <span class="close" onclick="closeAllModals()">&times;</span>
+                    <h2>🔍 Job Search Portal</h2>
+                    
+                    <form onsubmit="processJobSearch(event)">
+                        <div class="form-group">
+                            <label>Your Name *</label>
+                            <input type="text" name="searcherName" required>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label>Email *</label>
+                            <input type="email" name="email" required>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label>Job Category</label>
+                            <select name="category">
+                                <option value="">All categories</option>
+                                <option>IT & Digital Economy</option>
+                                <option>Marketing & Advertisements</option>
+                                <option>Front Desk & Data Handlers</option>
+                                <option>Management</option>
+                                <option>Healthcare</option>
+                                <option>Sales & Customer Service</option>
+                                <option>Education & Training</option>
+                                <option>Engineering</option>
+                                <option>Finance & Accounting</option>
+                            </select>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label>Preferred Location</label>
+                            <input type="text" name="location" placeholder="City, Country or Remote">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label>Experience Level</label>
+                            <select name="experience">
+                                <option value="">Any level</option>
+                                <option>Entry Level</option>
+                                <option>Mid Level</option>
+                                <option>Senior Level</option>
+                                <option>Executive Level</option>
+                            </select>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label>Job Type</label>
+                            <select name="jobType">
+                                <option value="">Any type</option>
+                                <option>Full-time</option>
+                                <option>Part-time</option>
+                                <option>Contract</option>
+                                <option>Freelance</option>
+                                <option>Internship</option>
+                            </select>
+                        </div>
+                        
+                        <button type="submit" class="btn">Search Jobs</button>
+                    </form>
                 </div>
-                <div class="form-group">
-                    <label>Job Title *</label>
-                    <input type="text" name="title" required>
-                </div>
-                <div class="form-group">
-                    <label>Job Category *</label>
-                    <select name="category" required>
-                        <option value="">Select category</option>
-                        <option value="Technology">Technology</option>
-                        <option value="Healthcare">Healthcare</option>
-                        <option value="Education">Education</option>
-                        <option value="Business">Business</option>
-                        <option value="Agriculture">Agriculture</option>
-                    </select>
-                </div>
-                <div class="form-group">
-                    <label>Job Description *</label>
-                    <textarea name="description" rows="4" required></textarea>
-                </div>
-                <div class="form-group">
-                    <label>Requirements *</label>
-                    <textarea name="requirements" rows="3" required></textarea>
-                </div>
-                <button type="submit" class="btn">Post Job</button>
-            </form>
-        </div>
-    `;
-}
-
-// Retrieve Job Modal
-function createRetrieveJobModal() {
-    return `
-        <div class="modal-content">
-            <span class="close" onclick="closeAllModals()">&times;</span>
-            <h2>🔍 Search Jobs</h2>
-            <p>Find job opportunities that match your profile</p>
-            
-            <form onsubmit="processJobSearch(event)" id="jobSearchForm">
-                <div class="form-group">
-                    <label>Your Name *</label>
-                    <input type="text" name="name" required>
-                </div>
-                <div class="form-group">
-                    <label>Email *</label>
-                    <input type="email" name="email" required>
-                </div>
-                <div class="form-group">
-                    <label>Job Category</label>
-                    <select name="category">
-                        <option value="">Any category</option>
-                        <option value="Technology">Technology</option>
-                        <option value="Healthcare">Healthcare</option>
-                        <option value="Education">Education</option>
-                        <option value="Business">Business</option>
-                        <option value="Agriculture">Agriculture</option>
-                    </select>
-                </div>
-                <div class="form-group">
-                    <label>Preferred Location</label>
-                    <input type="text" name="location" placeholder="City or region">
-                </div>
-                <button type="submit" class="btn">Search Jobs</button>
-            </form>
-        </div>
-    `;
-}
-
+            `;
+        }
 // Available Jobs Modal
 function createAvailableJobsModal() {
     return `
@@ -1664,88 +1856,177 @@ function createAvailableJobsModal() {
     `;
 }
 
-// Apply Job Modal
-function createApplyJobModal() {
-    return `
-        <div class="modal-content">
-            <span class="close" onclick="closeAllModals()">&times;</span>
-            <h2>📝 Apply for Job</h2>
-            <p>Submit your application for available positions</p>
-            
-            <form onsubmit="processJobApplication(event)" id="jobAppForm">
-                <div class="form-group">
-                    <label>Full Name *</label>
-                    <input type="text" name="fullName" required>
+// Apply for Job Modal
+        function createApplyJobModal() {
+            return `
+                <div class="modal-content">
+                    <span class="close" onclick="closeAllModals()">&times;</span>
+                    <h2>📋 Job Application</h2>
+                    
+                    <form onsubmit="processJobApplication(event)">
+                        <div class="form-group">
+                            <label>Full Name *</label>
+                            <input type="text" name="fullName" required>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label>Email *</label>
+                            <input type="email" name="email" required>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label>Phone *</label>
+                            <input type="tel" name="phone" required>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label>Location/Address *</label>
+                            <input type="text" name="location" required>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label>Position Applying For *</label>
+                            <input type="text" name="position" required>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label>Job Category *</label>
+                            <select name="jobCategory" required>
+                                <option value="">Select category</option>
+                                <option>IT & Digital Economy</option>
+                                <option>Marketing & Advertisements</option>
+                                <option>Front Desk & Data Handlers</option>
+                                <option>Management</option>
+                                <option>Healthcare</option>
+                                <option>Sales</option>
+                                <option>Education</option>
+                                <option>Engineering</option>
+                                <option>Finance</option>
+                                <option>Agriculture</option>
+                            </select>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label>Experience Level *</label>
+                            <select name="experience" required>
+                                <option value="">Select level</option>
+                                <option>Entry Level (0-2 years)</option>
+                                <option>Mid Level (2-5 years)</option>
+                                <option>Senior Level (5-10 years)</option>
+                                <option>Executive Level (10+ years)</option>
+                            </select>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label>Key Skills *</label>
+                            <textarea name="skills" rows="3" placeholder="List your relevant skills" required></textarea>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label>Work Experience *</label>
+                            <textarea name="workExperience" rows="4" placeholder="Describe your relevant work experience" required></textarea>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label>Education *</label>
+                            <textarea name="education" rows="3" placeholder="Your educational background" required></textarea>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label>Why are you interested in this position? *</label>
+                            <textarea name="interest" rows="3" required></textarea>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label>Availability *</label>
+                            <select name="availability" required>
+                                <option value="">Select availability</option>
+                                <option>Immediately</option>
+                                <option>Within 2 weeks</option>
+                                <option>Within 1 month</option>
+                                <option>To be discussed</option>
+                            </select>
+                        </div>
+                        
+                        <button type="submit" class="btn">Submit Application</button>
+                    </form>
                 </div>
-                <div class="form-group">
-                    <label>Email *</label>
-                    <input type="email" name="email" required>
-                </div>
-                <div class="form-group">
-                    <label>Phone *</label>
-                    <input type="tel" name="phone" required>
-                </div>
-                <div class="form-group">
-                    <label>Position Applying For *</label>
-                    <input type="text" name="position" required>
-                </div>
-                <div class="form-group">
-                    <label>Relevant Experience *</label>
-                    <textarea name="experience" rows="3" required></textarea>
-                </div>
-                <div class="form-group">
-                    <label>Why are you interested? *</label>
-                    <textarea name="motivation" rows="2" required></textarea>
-                </div>
-                <button type="submit" class="btn">Submit Application</button>
-            </form>
-        </div>
-    `;
-}
+            `;
+        }
 
-// Community Modal
-function createCommunityModal() {
-    return `
-        <div class="modal-content">
-            <span class="close" onclick="closeAllModals()">&times;</span>
-            <h2>🤝 Join Community Programs</h2>
-            <p>Participate in community support and development programs</p>
-            
-            <form onsubmit="processCommunityRegistration(event)" id="communityForm">
-                <div class="form-group">
-                    <label>Full Name *</label>
-                    <input type="text" name="fullName" required>
+// Community Programs Modal
+        function createCommunityModal() {
+            return `
+                <div class="modal-content">
+                    <span class="close" onclick="closeAllModals()">&times;</span>
+                    <h2>🤝 Join Community Programs</h2>
+                    
+                    <form onsubmit="processCommunityRegistration(event)">
+                        <div class="form-group">
+                            <label>Full Name *</label>
+                            <input type="text" name="fullName" required>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label>Email *</label>
+                            <input type="email" name="email" required>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label>Phone *</label>
+                            <input type="tel" name="phone" required>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label>Location/Community *</label>
+                            <input type="text" name="location" required>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label>Program Interest (Select all that apply) *</label>
+                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 10px;">
+                                <label><input type="checkbox" name="programs" value="Agriculture"> Agriculture</label>
+                                <label><input type="checkbox" name="programs" value="Climate"> Climate Action</label>
+                                <label><input type="checkbox" name="programs" value="Environment"> Environment</label>
+                                <label><input type="checkbox" name="programs" value="Water"> Water & Sanitation</label>
+                                <label><input type="checkbox" name="programs" value="Education"> Education</label>
+                                <label><input type="checkbox" name="programs" value="ChildCare"> Child Care</label>
+                            </div>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label>Role Preference *</label>
+                            <select name="role" required>
+                                <option value="">How would you like to contribute?</option>
+                                <option>Volunteer Worker</option>
+                                <option>Community Organizer</option>
+                                <option>Technical Advisor</option>
+                                <option>Funding/Donor</option>
+                                <option>Program Coordinator</option>
+                            </select>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label>Available Time Commitment</label>
+                            <select name="timeCommitment">
+                                <option>2-4 hours per week</option>
+                                <option>5-10 hours per week</option>
+                                <option>10-20 hours per week</option>
+                                <option>Full-time volunteer</option>
+                                <option>Project-based</option>
+                            </select>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label>Your Skills/Experience</label>
+                            <textarea name="skills" rows="3" placeholder="What skills or experience can you contribute?"></textarea>
+                        </div>
+                        
+                        <button type="submit" class="btn">Join Community Programs</button>
+                    </form>
                 </div>
-                <div class="form-group">
-                    <label>Email *</label>
-                    <input type="email" name="email" required>
-                </div>
-                <div class="form-group">
-                    <label>Location *</label>
-                    <input type="text" name="location" required>
-                </div>
-                <div class="form-group">
-                    <label>Program Interest *</label>
-                    <select name="program" required>
-                        <option value="">Select program</option>
-                        <option value="Agriculture">Agriculture</option>
-                        <option value="Climate">Climate Action</option>
-                        <option value="Environment">Environment</option>
-                        <option value="Water & Sanitation">Water & Sanitation</option>
-                        <option value="Education">Education</option>
-                        <option value="Child Care">Child Care</option>
-                    </select>
-                </div>
-                <div class="form-group">
-                    <label>How can you contribute? *</label>
-                    <textarea name="contribution" rows="3" required></textarea>
-                </div>
-                <button type="submit" class="btn">Join Program</button>
-            </form>
-        </div>
-    `;
-}
-
+            `;
+        }
 // Corporate Registration Modal
         function createCorporateModal() {
             return `
@@ -2541,9 +2822,9 @@ SUBMISSION: ${new Date().toLocaleString()}
             console.log('✅ AI Assistant: Active');
             console.log('✅ All buttons working properly');
             
-            showNotification('Welcome to TAU Africa International! Complete system operational and ready for deployment.', 'success');
+            showNotification('Welcome to Tau Africa International! We're building Sovereign Wealth through community values.', 'success');
         });
 
     </script>
 </body>
-</html>
+    </html>
