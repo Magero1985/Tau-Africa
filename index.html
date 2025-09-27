@@ -921,7 +921,77 @@
             const categoryInput = document.getElementById('taskCategory');
             if (categoryInput) categoryInput.value = category;
         }
+function processTaskRegistration(event) {
+    event.preventDefault();
+    const form = event.target;
+    const formData = new FormData(form);
+    const data = Object.fromEntries(formData.entries());
+    
+    // Validate required fields
+    if (!data.phone || !data.fullName || !data.email || !selectedCategory) {
+        showNotification('Please fill all required fields and select a category', 'error');
+        return;
+    }
+    
+    // Validate phone format
+    if (!data.phone.match(/^254[0-9]{9}$/)) {
+        showNotification('Please use correct phone format: 254XXXXXXXXX', 'error');
+        return;
+    }
+    
+    // Add selected category to data
+    data.category = selectedCategory;
+    
+    // Trigger M-PESA payment
+    initiateMpesaPayment(500, data.phone, data, 'processTaskSuccess');
+}
 
+function processTalkRegistration(event) {
+    event.preventDefault();
+    const form = event.target;
+    const formData = new FormData(form);
+    const data = Object.fromEntries(formData.entries());
+    
+    // Validate required fields
+    if (!data.phone || !data.fullName || !data.email || !selectedLevel) {
+        showNotification('Please fill all required fields and select a support level', 'error');
+        return;
+    }
+    
+    // Validate phone format
+    if (!data.phone.match(/^254[0-9]{9}$/)) {
+        showNotification('Please use correct phone format: 254XXXXXXXXX', 'error');
+        return;
+    }
+    
+    // Add selected level to data
+    data.supportLevel = selectedLevel;
+    
+    // Trigger M-PESA payment
+    initiateMpesaPayment(2000, data.phone, data, 'processTalkSuccess');
+}
+
+function processJobCreationTraining(event) {
+    event.preventDefault();
+    const form = event.target;
+    const formData = new FormData(form);
+    const data = Object.fromEntries(formData.entries());
+    
+    // Validate required fields
+    if (!data.phone || !data.fullName || !data.email) {
+        showNotification('Please fill all required fields', 'error');
+        return;
+    }
+    
+    // Validate phone format
+    if (!data.phone.match(/^254[0-9]{9}$/)) {
+        showNotification('Please use correct phone format: 254XXXXXXXXX', 'error');
+        return;
+    }
+    
+    // Trigger M-PESA payment
+    initiateMpesaPayment(1500, data.phone, data, 'processJobCreationSuccess');
+        }
         // Get modal content based on type
         function getModalContent(type) {
             switch(type) {
@@ -1287,7 +1357,85 @@
                 </div>
             `;
         }
+function processTaskSuccess(formData) {
+    const emailContent = `
+TASK TEAM REGISTRATION - PAYMENT CONFIRMED
+==========================================
+Name: ${formData.fullName}
+Email: ${formData.email}
+Phone: ${formData.phone}
+Location: ${formData.location}
+Date of Birth: ${formData.dateOfBirth}
+Gender: ${formData.gender}
+Nationality: ${formData.nationality}
+Category: ${formData.category}
+Value Description: ${formData.valueDescription}
+Experience: ${formData.experience}
+Languages: ${formData.languages}
+Payment: KSH 500 - CONFIRMED
+Registration: ${new Date().toLocaleString()}
+    `;
+    
+    sendEmailToOrganization(emailContent, "NEW TASK TEAM MEMBER - PAYMENT CONFIRMED", formData)
+        .then(success => {
+            if (success) {
+                showNotification('Registration complete! Welcome to TASK team. Check your email for next steps.', 'success');
+            } else {
+                showNotification('Registration saved but email notification failed. Our team will contact you shortly.', 'error');
+            }
+        });
+}
 
+function processTalkSuccess(formData) {
+    const emailContent = `
+TALK TEAM REGISTRATION - PAYMENT CONFIRMED
+==========================================
+Name/Organization: ${formData.fullName}
+Email: ${formData.email}
+Phone: ${formData.phone}
+Location: ${formData.location}
+Organization Type: ${formData.organizationType}
+Support Level: ${formData.supportLevel}
+Support Types: ${formData.supportTypes}
+Focus Areas: ${formData.focusAreas}
+Payment: KSH 2,000 - CONFIRMED
+Registration: ${new Date().toLocaleString()}
+    `;
+    
+    sendEmailToOrganization(emailContent, "NEW TALK TEAM MEMBER - PAYMENT CONFIRMED", formData)
+        .then(success => {
+            if (success) {
+                showNotification('Registration complete! Welcome to TALK team. Check your email for next steps.', 'success');
+            } else {
+                showNotification('Registration saved but email notification failed. Our team will contact you shortly.', 'error');
+            }
+        });
+}
+
+function processJobCreationSuccess(formData) {
+    const emailContent = `
+JOB CREATION TRAINING - PAYMENT CONFIRMED
+=========================================
+Name: ${formData.fullName}
+Email: ${formData.email}
+Phone: ${formData.phone}
+Location: ${formData.location}
+Business Idea: ${formData.businessIdea}
+Target Market: ${formData.targetMarket}
+Education: ${formData.education}
+Payment: KSH 1,500 - CONFIRMED
+Registration: ${new Date().toLocaleString()}
+    `;
+    
+    sendEmailToOrganization(emailContent, "JOB CREATION TRAINING ENROLLMENT - PAYMENT CONFIRMED", formData)
+        .then(success => {
+            if (success) {
+                showNotification('Training enrollment complete! Check your email for course access details.', 'success');
+            } else {
+                showNotification('Enrollment saved but email notification failed. Our team will contact you shortly.', 'error');
+            }
+        });
+                }
         // Job Creation Training Modal - COMPREHENSIVE
         function createJobCreationModal() {
             return `
