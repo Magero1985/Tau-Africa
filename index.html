@@ -759,27 +759,29 @@
         let selectedLevel = '';
         let selectedCategory = '';
 
-        // Email service function
         function sendEmailToOrganization(content, subject = "TAU AFRICA FORM SUBMISSION", formData = {}) {
-            const templateParams = {
-                to_email: 'grouptauafrica@gmail.com',
-                from_name: formData.fullName || formData.name || formData.contactName || 'TAU Africa User',
-                from_email: formData.email || 'noreply@tauafrica.com',
-                subject: subject,
-                message: content,
-                phone: formData.phone || 'Not provided',
-                location: formData.location || formData.country || 'Not provided'
-            };
+    const templateParams = {
+        to_email: 'grouptauafrica@gmail.com',
+        from_name: formData.fullName || formData.name || formData.contactName || 'TAU Africa User',
+        from_email: formData.email || 'noreply@tauafrica.com',
+        subject: subject,
+        message: content,
+        phone: formData.phone || 'Not provided',
+        location: formData.location || formData.country || 'Not provided'
+    };
 
-            return emailjs.send('service_xfira7g', 'template_q2lu285', templateParams)
-                .then(function(response) {
-                    console.log('Email sent successfully:', response.status, response.text);
-                    return true;
-                }, function(error) {
-                    console.log('Email failed:', error);
-                    return false;
-                });
-        }
+    console.log('Sending email with params:', templateParams); // Debug log
+
+    return emailjs.send('service_xfira7g', 'template_q2lu285', templateParams)
+        .then(function(response) {
+            console.log('Email sent successfully:', response.status, response.text);
+            return true;
+        })
+        .catch(function(error) {
+            console.error('Email failed:', error);
+            return false;
+        });
+}
 
         // M-PESA Payment Integration
         function initiateMpesaPayment(amount, phoneNumber, formData, successCallback) {
