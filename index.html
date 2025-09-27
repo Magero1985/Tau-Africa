@@ -760,6 +760,11 @@
         let selectedCategory = '';
 
         function sendEmailToOrganization(content, subject = "TAU AFRICA FORM SUBMISSION", formData = {}) {
+    console.log('=== EMAIL DEBUG START ===');
+    console.log('EmailJS initialized:', typeof emailjs !== 'undefined');
+    console.log('Service ID:', 'service_xfira7g');
+    console.log('Template ID:', 'template_q2lu285');
+    
     const templateParams = {
         to_email: 'grouptauafrica@gmail.com',
         from_name: formData.fullName || formData.name || formData.contactName || 'TAU Africa User',
@@ -770,19 +775,26 @@
         location: formData.location || formData.country || 'Not provided'
     };
 
-    console.log('Sending email with params:', templateParams); // Debug log
+    console.log('Template params:', templateParams);
+    console.log('=== SENDING EMAIL ===');
 
     return emailjs.send('service_xfira7g', 'template_q2lu285', templateParams)
         .then(function(response) {
-            console.log('Email sent successfully:', response.status, response.text);
+            console.log('✅ EMAIL SUCCESS:', response.status, response.text);
+            console.log('Full response:', response);
             return true;
         })
         .catch(function(error) {
-            console.error('Email failed:', error);
+            console.error('❌ EMAIL FAILED:', error);
+            console.error('Error details:', {
+                name: error.name,
+                message: error.text || error.message,
+                status: error.status,
+                full: error
+            });
             return false;
         });
-}
-
+        }
         // M-PESA Payment Integration
         function initiateMpesaPayment(amount, phoneNumber, formData, successCallback) {
             showPaymentModal(amount, phoneNumber, formData, successCallback);
