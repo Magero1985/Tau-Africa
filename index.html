@@ -744,7 +744,7 @@ let selectedLevel = '';
 let selectedCategory = '';
 
 // ===== FIXED EMAIL SENDING FUNCTION =====
-function sendEmailToOrganization(formData, subject) {
+ffunction sendEmailToOrganization(formData, subject) {
     console.log('📧 Attempting to send email...');
     console.log('Subject:', subject);
     console.log('Form Data:', formData);
@@ -759,7 +759,6 @@ function sendEmailToOrganization(formData, subject) {
     messageContent += `\nSubmitted: ${new Date().toLocaleString()}`;
 
     const templateParams = {
-        to_email: 'grouptauafrica@gmail.com',
         from_name: formData.fullName || formData.name || formData.contactName || 'TAU Africa User',
         from_email: formData.email || 'noreply@tauafrica.com',
         subject: subject,
@@ -768,16 +767,20 @@ function sendEmailToOrganization(formData, subject) {
         location: formData.location || formData.country || 'Not provided'
     };
 
-    console.log('📨 Sending with params:', templateParams);
+    console.log('📨 Sending email with template: template_bqxztig');
+    console.log('📨 Template params:', templateParams);
 
     return emailjs.send('service_xfira7g', 'template_bqxztig', templateParams)
         .then(function(response) {
-            console.log('✅ EMAIL SENT SUCCESSFULLY!', response.status, response.text);
+            console.log('✅ SUCCESS! Email sent:', response.status, response.text);
+            console.log('✅ Full response:', response);
             return true;
         })
         .catch(function(error) {
-            console.error('❌ EMAIL SEND FAILED:', error);
-            console.error('Error details:', error.text || error.message);
+            console.error('❌ FAILED! Email error:', error);
+            console.error('❌ Error status:', error.status);
+            console.error('❌ Error text:', error.text);
+            console.error('❌ Full error object:', error);
             return false;
         });
 }
