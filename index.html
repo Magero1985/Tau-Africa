@@ -969,6 +969,15 @@ function selectLevel(level, element) {
     if (target) {
         target.classList.add('selected');
     }
+    selectedLevel = level;
+    const levelInput = document.getElementById('supportLevel');
+    if (levelInput) levelInput.value = level;
+    
+    const enhanced = document.getElementById('enhancedRequirements');
+    if (enhanced && (level === 'middle' || level === 'upper' || level === 'high' || level === 'top')) {
+        enhanced.style.display = 'block';
+    }
+}
 
 function selectCategory(category, element) {
     const buttons = document.querySelectorAll('.level-btn');
@@ -977,6 +986,10 @@ function selectCategory(category, element) {
     if (target) {
         target.classList.add('selected');
     }
+    selectedCategory = category;
+    const categoryInput = document.getElementById('taskCategory');
+    if (categoryInput) categoryInput.value = category;
+}
 
 // ===== FORM SUBMISSION HANDLERS =====
 function processTaskRegistration(event) {
