@@ -2,13 +2,68 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="format-detection" content="telephone=no">
     <title>TAU AFRICA INTERNATIONAL</title>
     
     <!-- EmailJS SDK -->
     <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
     
     <style>
+        /* Safari/iOS Compatibility Fixes */
+* {
+    -webkit-tap-highlight-color: transparent;
+    -webkit-touch-callout: none;
+}
+
+body {
+    -webkit-overflow-scrolling: touch;
+    overflow-scrolling: touch;
+}
+
+/* Fix buttons on iOS */
+button, input[type="submit"], input[type="button"] {
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
+    cursor: pointer;
+}
+
+/* Fix inputs on iOS */
+input, select, textarea {
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
+    border-radius: 10px;
+}
+
+/* Fix modal scrolling on iOS */
+.modal {
+    -webkit-overflow-scrolling: touch;
+    overflow-scrolling: touch;
+}
+
+.modal-content {
+    -webkit-overflow-scrolling: touch;
+    overflow-scrolling: touch;
+}
+
+/* Fix for Safari date input */
+input[type="date"] {
+    -webkit-appearance: none;
+    appearance: none;
+    min-height: 44px;
+}
+
+/* Fix button clicks on iOS */
+.btn, .level-btn, .house-btn, .corporate-btn {
+    cursor: pointer;
+    -webkit-user-select: none;
+    user-select: none;
+    touch-action: manipulation;
+}
         * {
             margin: 0;
             padding: 0;
@@ -732,11 +787,18 @@
     </div>
 
 <script>
-// Initialize EmailJS
-emailjs.init({
-    publicKey: "GhjI14eQVGgOli0j1",
-});
-console.log('✅ EmailJS initialized successfully');
+// Initialize EmailJS with iOS compatibility
+(function() {
+    try {
+        emailjs.init({
+            publicKey: "GhjI14eQVGgOli0j1",
+        });
+        console.log('✅ EmailJS initialized successfully');
+    } catch (error) {
+        console.error('❌ EmailJS initialization failed:', error);
+        alert('Email system initialization failed. Please refresh the page.');
+    }
+})();
 
 // Global variables
 let currentModal = null;
@@ -900,28 +962,21 @@ function closeAllModals() {
 }
 
 // ===== SELECTION FUNCTIONS =====
-function selectLevel(level) {
+function selectLevel(level, element) {
     const buttons = document.querySelectorAll('.level-btn');
     buttons.forEach(btn => btn.classList.remove('selected'));
-    event.target.classList.add('selected');
-    selectedLevel = level;
-    const levelInput = document.getElementById('supportLevel');
-    if (levelInput) levelInput.value = level;
-    
-    const enhanced = document.getElementById('enhancedRequirements');
-    if (enhanced && (level === 'middle' || level === 'upper' || level === 'high' || level === 'top')) {
-        enhanced.style.display = 'block';
+    const target = element || (window.event && window.event.target);
+    if (target) {
+        target.classList.add('selected');
     }
-}
 
-function selectCategory(category) {
+function selectCategory(category, element) {
     const buttons = document.querySelectorAll('.level-btn');
     buttons.forEach(btn => btn.classList.remove('selected'));
-    event.target.classList.add('selected');
-    selectedCategory = category;
-    const categoryInput = document.getElementById('taskCategory');
-    if (categoryInput) categoryInput.value = category;
-}
+    const target = element || (window.event && window.event.target);
+    if (target) {
+        target.classList.add('selected');
+    }
 
 // ===== FORM SUBMISSION HANDLERS =====
 function processTaskRegistration(event) {
@@ -1553,13 +1608,13 @@ function createTaskRegistrationModal() {
                 <div class="form-group">
                     <label>Value Category *</label>
                     <div class="level-selection">
-                        <div class="level-btn" onclick="selectCategory('skills')">Skills & Crafts</div>
-                        <div class="level-btn" onclick="selectCategory('knowledge')">Knowledge & Expertise</div>
-                        <div class="level-btn" onclick="selectCategory('service')">Professional Service</div>
-                        <div class="level-btn" onclick="selectCategory('profession')">Licensed Profession</div>
-                        <div class="level-btn" onclick="selectCategory('creativity')">Creative Arts</div>
-                        <div class="level-btn" onclick="selectCategory('leadership')">Leadership & Management</div>
-                        <div class="level-btn" onclick="selectCategory('business')">Business & Entrepreneurship</div>
+                        <div class="level-btn" onclick="selectCategory('skills', this)">Skills & Crafts</div>
+                        <div class="level-btn" onclick="selectCategory('knowledge', this)">Knowledge & Expertise</div>
+                        <div class="level-btn" onclick="selectCategory('service', this)">Professional Service</div>
+                        <div class="level-btn" onclick="selectCategory('profession', this)">Licensed Profession</div>
+                        <div class="level-btn" onclick="selectCategory('creativity', this)">Creative Arts</div>
+                        <div class="level-btn" onclick="selectCategory('leadership', this)">Leadership & Management</div>
+                        <div class="level-btn" onclick="selectCategory('business', this)">Business & Entrepreneurship</div>
                     </div>
                     <input type="hidden" name="category" id="taskCategory" required>
                 </div>
@@ -1717,11 +1772,11 @@ function createTalkRegistrationModal() {
                 <div class="form-group">
                     <label>Financial Support Level *</label>
                     <div class="level-selection">
-                        <div class="level-btn" onclick="selectLevel('ground')">Ground Level (&lt; $1,000)</div>
-                        <div class="level-btn" onclick="selectLevel('middle')">Middle Level ($1,000-$5,000)</div>
-                        <div class="level-btn" onclick="selectLevel('upper')">Upper Level ($5,000-$10,000)</div>
-                        <div class="level-btn" onclick="selectLevel('high')">High Level ($10,000-$50,000)</div>
-                        <div class="level-btn" onclick="selectLevel('top')">Top Level ($50,000+)</div>
+                        <div class="level-btn" onclick="selectLevel('ground', this)">Ground Level (&lt; $1,000)</div>
+                        <div class="level-btn" onclick="selectLevel('middle', this)">Middle Level ($1,000-$5,000)</div>
+                        <div class="level-btn" onclick="selectLevel('upper', this)">Upper Level ($5,000-$10,000)</div>
+                        <div class="level-btn" onclick="selectLevel('high', this)">High Level ($10,000-$50,000)</div>
+                        <div class="level-btn" onclick="selectLevel('top', this)">Top Level ($50,000+)</div>
                     </div>
                     <input type="hidden" name="supportLevel" id="supportLevel" required>
                 </div>
