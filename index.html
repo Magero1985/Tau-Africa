@@ -1132,7 +1132,7 @@ function syncToDatabase(memberData, team) {
 // ===== SUCCESS HANDLERS WITH FIXED EMAIL =====
 function processTaskSuccess(formData) {
     console.log('Processing TASK success with email...');
-     /api/members/add
+     
 Add a new member to the database
     { "team": "TASK", "fullName": "John Doe", "email": "john@example.com", "phone": "254712345678", "location": "Nairobi, Kenya", "paymentStatus": "Paid" }
     const memberId = syncToDatabase(formData, 'TASK');
@@ -1150,7 +1150,7 @@ Add a new member to the database
 
 function processTalkSuccess(formData) {
     console.log('Processing TALK success with email...');
-     /api/members/add
+
 Add a new member to the database
     { "team": "TALK", "fullName": "John Doe", "email": "john@example.com", "phone": "254712345678", "location": "Nairobi, Kenya", "paymentStatus": "Paid" }
     const memberId = syncToDatabase(formData, 'TALK');
@@ -1168,9 +1168,7 @@ Add a new member to the database
 
 function processJobCreationSuccess(formData) {
     console.log('Processing Job Creation success with email...');
-     /api/members/add
-Add a new member to the database
-    { "team": "JOBCREATION", "fullName": "John Doe", "email": "john@example.com", "phone": "254712345678", "location": "Nairobi, Kenya", "paymentStatus": "Paid" }
+
     const memberId = syncToDatabase(formData, 'JOB_CREATION');
     
     sendEmailToOrganization(formData, 'JOB CREATION TRAINING ENROLLMENT - PAYMENT CONFIRMED')
