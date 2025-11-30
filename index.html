@@ -1131,46 +1131,52 @@ function syncToDatabase(memberData, team) {
     }
 // ===== SUCCESS HANDLERS WITH FIXED EMAIL =====
 function processTaskSuccess(formData) {
-    console.log('Processing TASK success with database sync...');
+    console.log('Processing TASK success with email...');
     
-    // IMPORTANT: Actually call syncToDatabase!
+    // 🔥 ADD DATABASE SYNC HERE
     const memberId = syncToDatabase(formData, 'TASK');
     
-    sendEmailToOrganization(formData, 'NEW TASK TEAM REGISTRATION')
+    sendEmailToOrganization(formData, 'NEW TASK TEAM REGISTRATION - PAYMENT CONFIRMED')
         .then(success => {
             if (success) {
-                showNotification(`✅ Registration complete! Your Member ID: ${memberId}`, 'success');
+                showNotification(`✅ Registration complete! Your Member ID: ${memberId}. Welcome to TASK team!`, 'success');
                 closeAllModals();
+            } else {
+                showNotification('⚠️ Registration saved but email notification failed...', 'error');
             }
         });
 }
 
 function processTalkSuccess(formData) {
-    console.log('Processing TALK success with database sync...');
+    console.log('Processing TALK success with email...');
     
-    // IMPORTANT: Actually call syncToDatabase!
+    // 🔥 ADD DATABASE SYNC HERE
     const memberId = syncToDatabase(formData, 'TALK');
     
-    sendEmailToOrganization(formData, 'NEW TALK TEAM REGISTRATION')
+    sendEmailToOrganization(formData, 'NEW TALK TEAM REGISTRATION - PAYMENT CONFIRMED')
         .then(success => {
             if (success) {
-                showNotification(`✅ Registration complete! Your Member ID: ${memberId}`, 'success');
+                showNotification(`✅ Registration complete! Your Member ID: ${memberId}. Welcome to TALK team!`, 'success');
                 closeAllModals();
+            } else {
+                showNotification('⚠️ Registration saved but email notification failed...', 'error');
             }
         });
 }
 
 function processJobCreationSuccess(formData) {
-    console.log('Processing Job Creation success with database sync...');
+    console.log('Processing Job Creation success with email...');
     
-    // IMPORTANT: Actually call syncToDatabase!
+    // 🔥 ADD DATABASE SYNC HERE
     const memberId = syncToDatabase(formData, 'JOB_CREATION');
     
-    sendEmailToOrganization(formData, 'JOB CREATION TRAINING ENROLLMENT')
+    sendEmailToOrganization(formData, 'JOB CREATION TRAINING ENROLLMENT - PAYMENT CONFIRMED')
         .then(success => {
             if (success) {
                 showNotification(`✅ Training enrollment complete! Your Member ID: ${memberId}`, 'success');
                 closeAllModals();
+            } else {
+                showNotification('⚠️ Enrollment saved but email notification failed...', 'error');
             }
         });
 }
