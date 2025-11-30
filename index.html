@@ -1119,7 +1119,7 @@ function processJobCreationTraining(event) {
 function processTaskSuccess(formData) {
     console.log('Processing TASK success with email...');
     
-    // 🔥 ADD DATABASE SYNC HERE
+    // After successful payment in your TAU Africa app function syncToDatabase(memberData) { // Method 1: Direct localStorage sync (same domain) const dbKey = 'tauAfricaDB'; const existingMembers = JSON.parse( localStorage.getItem(dbKey) || '[]' ); // Add member with unique ID const newMember = { id: generateMemberID(memberData.team), ...memberData, dateJoined: new Date().toISOString().split('T')[0], status: 'Active' }; existingMembers.push(newMember); localStorage.setItem(dbKey, JSON.stringify(existingMembers)); // Trigger notification sendWelcomeEmail(newMember); return newMember.id; } // Generate Member ID function function generateMemberID(team) { const prefix = team === 'TASK' ? 'TSK' : 'TLK'; const timestamp = Date.now().toString().slice(-6); const random = Math.floor(Math.random() * 1000) .toString().padStart(3, '0'); return `${prefix}-${timestamp}-${random}`; }
     const memberId = syncToDatabase(formData, 'TASK');
     
     sendEmailToOrganization(formData, 'NEW TASK TEAM REGISTRATION - PAYMENT CONFIRMED')
@@ -1136,7 +1136,7 @@ function processTaskSuccess(formData) {
 function processTalkSuccess(formData) {
     console.log('Processing TALK success with email...');
     
-    // 🔥 ADD DATABASE SYNC HERE
+    // After successful payment in your TAU Africa app function syncToDatabase(memberData) { // Method 1: Direct localStorage sync (same domain) const dbKey = 'tauAfricaDB'; const existingMembers = JSON.parse( localStorage.getItem(dbKey) || '[]' ); // Add member with unique ID const newMember = { id: generateMemberID(memberData.team), ...memberData, dateJoined: new Date().toISOString().split('T')[0], status: 'Active' }; existingMembers.push(newMember); localStorage.setItem(dbKey, JSON.stringify(existingMembers)); // Trigger notification sendWelcomeEmail(newMember); return newMember.id; } // Generate Member ID function function generateMemberID(team) { const prefix = team === 'TASK' ? 'TSK' : 'TLK'; const timestamp = Date.now().toString().slice(-6); const random = Math.floor(Math.random() * 1000) .toString().padStart(3, '0'); return `${prefix}-${timestamp}-${random}`; }
     const memberId = syncToDatabase(formData, 'TALK');
     
     sendEmailToOrganization(formData, 'NEW TALK TEAM REGISTRATION - PAYMENT CONFIRMED')
@@ -1153,7 +1153,7 @@ function processTalkSuccess(formData) {
 function processJobCreationSuccess(formData) {
     console.log('Processing Job Creation success with email...');
     
-    // 🔥 ADD DATABASE SYNC HERE
+    // After successful payment in your TAU Africa app function syncToDatabase(memberData) { // Method 1: Direct localStorage sync (same domain) const dbKey = 'tauAfricaDB'; const existingMembers = JSON.parse( localStorage.getItem(dbKey) || '[]' ); // Add member with unique ID const newMember = { id: generateMemberID(memberData.team), ...memberData, dateJoined: new Date().toISOString().split('T')[0], status: 'Active' }; existingMembers.push(newMember); localStorage.setItem(dbKey, JSON.stringify(existingMembers)); // Trigger notification sendWelcomeEmail(newMember); return newMember.id; } // Generate Member ID function function generateMemberID(team) { const prefix = team === 'TASK' ? 'TSK' : 'TLK'; const timestamp = Date.now().toString().slice(-6); const random = Math.floor(Math.random() * 1000) .toString().padStart(3, '0'); return `${prefix}-${timestamp}-${random}`; }
     const memberId = syncToDatabase(formData, 'JOB_CREATION');
     
     sendEmailToOrganization(formData, 'JOB CREATION TRAINING ENROLLMENT - PAYMENT CONFIRMED')
