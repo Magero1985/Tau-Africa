@@ -1050,47 +1050,150 @@ function processJobCreationTraining(event) {
     
     initiateMpesaPayment(1500, data.phone, data, 'processJobCreationSuccess');
 }
-
+===== DATABASE INTEGRATION FUNCTION =====
+function syncToDatabase(formData, team) {
+    try {
+        const dbKey = 'tauAfricaDB';
+        const existingMembers = JSON.parse(
+            localStorage.getItem(dbKey) || '[]'
+        );
+        
+        // Generate unique Member ID
+        const prefix = team === 'TASK' ? 'TSK' : team === 'TALK' ? 'TLK' : 'JOB';
+        const timestamp = Date.now().toString().slice(-6);
+        const random = Math.floor(Math.random() * 1000).toString().padStart(3, '0');
+        const memberId = `${prefix}-${timestamp}-${random}`;
+        
+        // Create member object
+        const member = {
+            id: memberId,
+            team: team,
+            fullName: formData.fullName || formData.name,
+            email: formData.email,
+            phone: formData.phone,
+            location: formData.location,
+            paymentStatus: 'Paid',
+            dateJoined: new Date().toISOString().split('T')[0],
+            status: 'Active',
+            fee: team === 'TASK' ? 500 : team === 'TALK' ? 2000 : 1500
+        };
+        
+        // Add team-specific fields
+        if (team === 'TASK') {
+            member.dateOfBirth = formData.dateOfBirth;
+            member.gender = formData.gender;
+            member.nationality = formData.nationality;
+            member.category = formData.category;
+            member.valueDescription = formData.valueDescription;
+            member.experience = formData.experience;
+            member.certifications = formData.certifications;
+            member.languages = formData.languages;
+            member.goodConduct = formData.goodConduct;
+            member.healthStatus = formData.healthStatus;
+            member.trackRecord = formData.trackRecord;
+            member.familySupport = formData.familySupport;
+            member.education = formData.education;
+            member.emergencyContact = formData.emergencyContact;
+            member.referralSource = formData.referralSource;
+        } else if (team === 'TALK') {
+            member.organizationType = formData.organizationType;
+            member.website = formData.website;
+            member.supportLevel = formData.supportLevel;
+            member.supportTypes = formData.supportTypes;
+            member.focusAreas = formData.focusAreas;
+            member.geographicFocus = formData.geographicFocus;
+            member.investmentCriteria = formData.investmentCriteria;
+            member.previousInvestments = formData.previousInvestments;
+            member.goodConduct = formData.goodConduct;
+            member.healthStatus = formData.healthStatus;
+            member.financialTrack = formData.financialTrack;
+            member.netWorth = formData.netWorth;
+            member.familyFinancial = formData.familyFinancial;
+        } else if (team === 'JOB_CREATION') {
+            member.ageRange = formData.ageRange;
+            member.employmentStatus = formData.employmentStatus;
+            member.businessIdea = formData.businessIdea;
+            member.targetMarket = formData.targetMarket;
+            member.startupFunds = formData.startupFunds;
+            member.education = formData.education;
+            member.relevantSkills = formData.relevantSkills;
+            member.focus = formData.focus;
+            member.learningFormat = formData.learningFormat;
+            member.businessTimeline = formData.businessTimeline;
+        }
+        
+        // Add to database
+        existingMembers.push(member);
+        localStorage.setItem(dbKey, JSON.stringify(existingMembers));
+        
+        console.log('✅ Member synced to database:', memberId);
+        return memberId;
+        
+    } catch (error) {
+        console.error('❌ Database sync error:', error);
+        return 'ERROR-' + Date.now();
+    }
 // ===== SUCCESS HANDLERS WITH FIXED EMAIL =====
 function processTaskSuccess(formData) {
     console.log('Processing TASK success with email...');
+    
+    // 🔥 SYNC TO DATABASE FIRST
+    const memberId = syncToDatabase(formData, 'TASK');
+    
     sendEmailToOrganization(formData, 'NEW TASK TEAM REGISTRATION - PAYMENT CONFIRMED')
         .then(success => {
             if (success) {
-                showNotification('✅ Registration complete! Welcome to TASK team. Confirmation email sent to grouptauafrica@gmail.com', 'success');
+                showNotification(`✅ Registration complete! Your Member ID: ${memberId}. Welcome to TASK team!`, 'success');
+                
+                // Show Member ID prominently
+                alert(`🎉 REGISTRATION SUCCESSFUL!\n\nYour Member ID: ${memberId}\n\nSave this ID - you'll need it to access the Member Portal and other TAU Africa services.`);
+                
                 closeAllModals();
             } else {
-                showNotification('⚠️ Registration saved but email notification failed. Our team will contact you.', 'error');
+                showNotification(`⚠️ Registered! Your ID: ${memberId}. Email notification failed but you're in the database.`, 'error');
             }
         });
 }
-
 function processTalkSuccess(formData) {
     console.log('Processing TALK success with email...');
+    
+    // 🔥 SYNC TO DATABASE FIRST
+    const memberId = syncToDatabase(formData, 'TALK');
+    
     sendEmailToOrganization(formData, 'NEW TALK TEAM REGISTRATION - PAYMENT CONFIRMED')
         .then(success => {
             if (success) {
-                showNotification('✅ Registration complete! Welcome to TALK team. Confirmation email sent to grouptauafrica@gmail.com', 'success');
+                showNotification(`✅ Registration complete! Your Member ID: ${memberId}. Welcome to TALK team!`, 'success');
+                
+                // Show Member ID prominently
+                alert(`🎉 REGISTRATION SUCCESSFUL!\n\nYour Member ID: ${memberId}\n\nSave this ID - you'll need it to access the Member Portal and other TAU Africa services.`);
+                
                 closeAllModals();
             } else {
-                showNotification('⚠️ Registration saved but email notification failed. Our team will contact you.', 'error');
+                showNotification(`⚠️ Registered! Your ID: ${memberId}. Email notification failed but you're in the database.`, 'error');
             }
         });
 }
-
 function processJobCreationSuccess(formData) {
     console.log('Processing Job Creation success with email...');
+    
+    // 🔥 SYNC TO DATABASE FIRST
+    const memberId = syncToDatabase(formData, 'JOB_CREATION');
+    
     sendEmailToOrganization(formData, 'JOB CREATION TRAINING ENROLLMENT - PAYMENT CONFIRMED')
         .then(success => {
             if (success) {
-                showNotification('✅ Training enrollment complete! Confirmation email sent to grouptauafrica@gmail.com', 'success');
+                showNotification(`✅ Training enrollment complete! Your Member ID: ${memberId}`, 'success');
+                
+                // Show Member ID prominently
+                alert(`🎉 ENROLLMENT SUCCESSFUL!\n\nYour Member ID: ${memberId}\n\nSave this ID for accessing training materials.`);
+                
                 closeAllModals();
             } else {
-                showNotification('⚠️ Enrollment saved but email notification failed. Our team will contact you.', 'error');
+                showNotification(`⚠️ Enrolled! Your ID: ${memberId}. Email notification failed.`, 'error');
             }
         });
 }
-
 // ===== OTHER FORM SUBMISSIONS WITH FIXED EMAIL =====
 function processTrainingRegistration(event) {
     event.preventDefault();
