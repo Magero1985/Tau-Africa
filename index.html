@@ -1571,7 +1571,6 @@ window.TauDB = {
     generateReferralCode
 };
 
-console.log('✅ TAU Database Sync Module Loaded');
 // ===== UPDATED SUCCESS HANDLERS FOR MAIN APP =====
 
 // Check for referral code in URL
@@ -1857,7 +1856,8 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 
 console.log('✅ Main App Success Handlers Updated - Real Authentication Enabled');
-// ===== OTHER FORM SUBMISSIONS WITH FIXED EMAIL =====
+
+    // ===== OTHER FORM SUBMISSIONS WITH FIXED EMAIL =====
 function processTrainingRegistration(event) {
     event.preventDefault();
     const form = event.target;
@@ -2442,9 +2442,7 @@ function createActivitiesTab(member) {
     `;
 }
 
-// Continue in next artifact due to length...
 console.log('✅ Member Dashboard Part 1 Loaded');
-    // ===== MEMBER DASHBOARD PART 2 - Tasks, Jobs, Referrals, Forum =====
 
 // Create Tasks Tab
 function createTasksTab(member) {
@@ -2776,7 +2774,8 @@ function displayAvailableJobs() {
     `).join('');
 }
 
-console.log('✅ Member Dashboard Part 2 Loaded - Tasks, Jobs, Referrals, Forum');
+
+   
     // ===== DASHBOARD INTERACTIVE FUNCTIONS =====
 
 // Member logout
@@ -3348,7 +3347,8 @@ function addDashboardStyles() {
 }
 
 console.log('✅ Dashboard Interactive Functions Loaded');
-// ===== EVENT LISTENERS =====
+
+    // ===== EVENT LISTENERS =====
 document.addEventListener('click', function(event) {
     if (event.target.classList.contains('modal')) {
         closeAllModals();
