@@ -15,7 +15,7 @@
         /* Safari/iOS Compatibility Fixes */
 * {
     -webkit-tap-highlight-color: transparent;
-    -webkit-touch-callout: none;
+
 }
 
 body {
@@ -23,12 +23,12 @@ body {
     overflow-scrolling: touch;
 }
 
-/* Fix buttons on iOS */
+/* Keep these but make them less restrictive */
 button, input[type="submit"], input[type="button"] {
     -webkit-appearance: none;
-    -moz-appearance: none;
     appearance: none;
     cursor: pointer;
+    pointer-events: auto !important;
 }
 
 /* Fix inputs on iOS */
@@ -62,7 +62,6 @@ input[type="date"] {
     cursor: pointer;
     -webkit-user-select: none;
     user-select: none;
-    touch-action: manipulation;
 }
         * {
             margin: 0;
@@ -960,7 +959,32 @@ function closeAllModals() {
     modals.forEach(modal => modal.remove());
     currentModal = null;
 }
+// Fix button click handling
+document.addEventListener('DOMContentLoaded', function() {
+    // Add event delegation for all buttons
+    document.body.addEventListener('click', function(e) {
+        const button = e.target.closest('button, .btn, .level-btn, .house-btn, .corporate-btn');
+        if (button && button.hasAttribute('onclick')) {
+            // Force onclick to execute
+            e.stopPropagation();
+        }
+    }, true);
+    
+    // Fix for iOS touch events
+    if (/iPad|iPhone|iPod/.test(navigator.userAgent)) {
+        document.body.style.cursor = 'pointer';
+    }
+});
 
+// Add this helper to ensure modals open
+function ensureModalOpens(type) {
+    setTimeout(() => {
+        if (!document.querySelector('.modal')) {
+            console.error('Modal failed to open:', type);
+            openModal(type);
+        }
+    }, 100);
+}
 // ===== SELECTION FUNCTIONS =====
 function selectLevel(level, element) {
     const buttons = document.querySelectorAll('.level-btn');
@@ -1753,12 +1777,6 @@ function copyReferralLink(referralCode) {
     }).catch(() => {
         prompt('Copy your referral link:', link);
     });
-}
-
-// Proceed to login
-function proceedToLogin() {
-    closeAllModals();
-    showRealMemberLogin();
 }
 
 // ===== REAL MEMBER LOGIN (NO DEMO) =====
