@@ -4418,6 +4418,7 @@ TAU Africa Foundation
     };
     
     return emailjs.send('service_xfira7g', 'template_bqxztig', templateParams);
+    
     // ===== DASHBOARD INTERACTIVE FUNCTIONS =====
 
 // Member logout
@@ -5323,6 +5324,577 @@ function displayAvailableJobs() {
 }
 
 console.log('✅ Member Dashboard Part 2 Loaded - Tasks, Jobs, Referrals, Forum');
+   // ===== DASHBOARD INTERACTIVE FUNCTIONS =====
+
+// Member logout
+function memberLogout() {
+    if (confirm('Are you sure you want to logout?')) {
+        window.TauDB.logout();
+        closeAllModals();
+        showNotification('✅ Logged out successfully', 'success');
+    }
+}
+
+// View database account
+function viewDatabaseAccount() {
+    const member = window.TauDB.getCurrentMember();
+    if (!member) {
+        showNotification('❌ Please login first', 'error');
+        return;
+    }
+    
+    // Open database in new window with member session
+    const dbUrl = prompt(
+        'Enter your Database URL:',
+        'YOUR_DATABASE_URL_HERE'
+    );
+    
+    if (dbUrl) {
+        window.open(dbUrl, '_blank');
+        showNotification('Opening your database account...', 'info');
+    }
+}
+
+// Contact support
+function contactSupport() {
+    const member = window.TauDB.getCurrentMember();
+    const subject = `Support Request from ${member.fullName} (${member.id})`;
+    const body = `Member ID: ${member.id}%0D%0AName: ${member.fullName}%0D%0AEmail: ${member.email}%0D%0A%0D%0ARequest:%0D%0A`;
+    window.location.href = `mailto:grouptauafrica@gmail.com?subject=${subject}&body=${body}`;
+}
+
+// Share referral link
+function shareReferralLink(code) {
+    const link = `${window.location.origin}?ref=${code}`;
+    const text = `Join TAU Africa and help build Africa's future! Use my referral code: ${code}`;
+    
+    if (navigator.share) {
+        navigator.share({
+            title: 'Join TAU Africa',
+            text: text,
+            url: link
+        }).catch(err => console.log('Share cancelled'));
+    } else {
+        copyReferralLink(code);
+    }
+}
+
+// ===== ACTIVITIES FUNCTIONS =====
+
+// Add new activity
+function addNewActivity() {
+    const member = window.TauDB.getCurrentMember();
+    if (!member) return;
+    
+    const modal = document.createElement('div');
+    modal.className = 'modal';
+    modal.style.display = 'block';
+    modal.innerHTML = `
+        <div class="modal-content">
+            <span class="close" onclick="this.parentElement.parentElement.remove()">&times;</span>
+            <h2>📚 Add New Activity</h2>
+            <form onsubmit="enrollNewActivity(event)">
+                <div class="form-group">
+                    <label>Activity Type *</label>
+                    <select name="type" required>
+                        <option value="">Select activity</option>
+                        <option value="Training Workshop">Training Workshop</option>
+                        <option value="Job Creation">Job Creation Program</option>
+                        <option value="Research Services">Research Services</option>
+                        <option value="Community Program">Community Program</option>
+                        <option value="Agricultural Initiative">Agricultural Initiative</option>
+                        <option value="Climate Action">Climate Action</option>
+                        <option value="Education Program">Education Program</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Description</label>
+                    <textarea name="description" rows="3" placeholder="Describe your goals for this activity"></textarea>
+                </div>
+                <button type="submit" class="btn">Add Activity</button>
+            </form>
+        </div>
+    `;
+    document.body.appendChild(modal);
+}
+
+// Enroll in activity
+function enrollNewActivity(event) {
+    event.preventDefault();
+    const member = window.TauDB.getCurrentMember();
+    if (!member) return;
+    
+    const formData = new FormData(event.target);
+    const activity = {
+        type: formData.get('type'),
+        description: formData.get('description') || 'Enrolled in program'
+    };
+    
+    const result = window.TauDB.addActivity(member.id, activity);
+    
+    if (result.success) {
+        showNotification('✅ Activity added successfully!', 'success');
+        closeAllModals();
+        // Refresh dashboard
+        showRealMemberDashboard(window.TauDB.getCurrentMember());
+    } else {
+        showNotification('❌ Failed to add activity', 'error');
+    }
+}
+
+// Quick enroll activity
+function enrollActivity(activityType) {
+    const member = window.TauDB.getCurrentMember();
+    if (!member) return;
+    
+    const result = window.TauDB.addActivity(member.id, {
+        type: activityType,
+        description: `Enrolled in ${activityType} program`
+    });
+    
+    if (result.success) {
+        showNotification(`✅ Enrolled in ${activityType}!`, 'success');
+        // Refresh activities tab
+        switchDashboardTab('activities', document.querySelectorAll('.dashboard-tab')[2]);
+    }
+}
+
+// Track activity
+function trackActivity(activityId) {
+    showNotification('Activity tracking feature coming soon!', 'info');
+}
+
+// Remove activity
+function removeActivity(activityId) {
+    if (confirm('Remove this activity from your list?')) {
+        const member = window.TauDB.getCurrentMember();
+        if (!member) return;
+        
+        member.activities = member.activities.filter(a => a.id !== activityId);
+        window.TauDB.updateMember(member.id, { activities: member.activities });
+        
+        showNotification('Activity removed', 'success');
+        showRealMemberDashboard(window.TauDB.getCurrentMember());
+    }
+}
+
+// ===== TASKS FUNCTIONS =====
+
+// Browse available tasks
+function browseAvailableTasks() {
+    const modal = document.createElement('div');
+    modal.className = 'modal';
+    modal.style.display = 'block';
+    modal.innerHTML = `
+        <div class="modal-content" style="max-width: 800px;">
+            <span class="close" onclick="this.parentElement.parentElement.remove()">&times;</span>
+            <h2>🔍 Available Tasks</h2>
+            <p>Select tasks to add to your dashboard</p>
+            
+            <div style="display: grid; gap: 15px; margin-top: 20px;">
+                ${generateAvailableTasks()}
+            </div>
+        </div>
+    `;
+    document.body.appendChild(modal);
+}
+
+// Generate available tasks
+function generateAvailableTasks() {
+    const taskTemplates = [
+        { title: 'Complete Profile Setup', category: 'Onboarding', reward: 100, description: 'Fill out all profile information' },
+        { title: 'Refer 3 Members', category: 'Growth', reward: 500, description: 'Successfully refer 3 new members' },
+        { title: 'Attend Training Workshop', category: 'Training', reward: 200, description: 'Participate in next training session' },
+        { title: 'Submit Community Feedback', category: 'Engagement', reward: 50, description: 'Share your thoughts on TAU Africa' },
+        { title: 'Post 5 Jobs', category: 'Contribution', reward: 250, description: 'Help others by posting job opportunities' },
+        { title: 'Complete Market Research', category: 'Research', reward: 300, description: 'Conduct market research in your area' },
+        { title: 'Join Community Program', category: 'Community', reward: 150, description: 'Actively participate in community initiative' },
+        { title: 'Write Success Story', category: 'Content', reward: 200, description: 'Share your TAU Africa experience' }
+    ];
+    
+    return taskTemplates.map(task => `
+        <div style="padding: 20px; background: white; border-radius: 10px; border: 2px solid #eee;">
+            <div style="display: flex; justify-content: space-between; align-items: start;">
+                <div style="flex: 1;">
+                    <h4 style="color: #2a5298; margin: 0 0 10px 0;">${task.title}</h4>
+                    <p style="margin: 0 0 10px 0; color: #666;">${task.description}</p>
+                    <div style="display: flex; gap: 15px; font-size: 0.9rem;">
+                        <span>📁 ${task.category}</span>
+                        <span style="color: #ffd700; font-weight: bold;">💰 ${task.reward} iKbp</span>
+                    </div>
+                </div>
+                <button class="btn btn-small" onclick="acceptTask('${task.title}', '${task.category}', ${task.reward}, '${task.description}')">
+                    Accept Task
+                </button>
+            </div>
+        </div>
+    `).join('');
+}
+
+// Accept task
+function acceptTask(title, category, reward, description) {
+    const member = window.TauDB.getCurrentMember();
+    if (!member) return;
+    
+    const result = window.TauDB.addTask(member.id, {
+        title,
+        category,
+        reward,
+        description,
+        dueDate: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString() // 7 days from now
+    });
+    
+    if (result.success) {
+        showNotification(`✅ Task "${title}" added! Complete it to earn ${reward} iKbp`, 'success');
+        closeAllModals();
+        showRealMemberDashboard(window.TauDB.getCurrentMember());
+    }
+}
+
+// Mark task complete
+function markTaskComplete(taskId) {
+    if (confirm('Mark this task as complete?')) {
+        const member = window.TauDB.getCurrentMember();
+        if (!member) return;
+        
+        const result = window.TauDB.completeTask(member.id, taskId);
+        
+        if (result.success) {
+            showNotification(
+                `🎉 Task completed! You earned ${result.earned} iKbp!\nNew balance: ${result.newBalance} iKbp (${(result.newBalance/10).toFixed(2)} KSH)`,
+                'success'
+            );
+            showRealMemberDashboard(window.TauDB.getCurrentMember());
+        } else {
+            showNotification('❌ Failed to complete task', 'error');
+        }
+    }
+}
+
+// View task details
+function viewTaskDetails(taskId) {
+    const member = window.TauDB.getCurrentMember();
+    const task = member.tasks.find(t => t.id === taskId);
+    
+    if (!task) return;
+    
+    const modal = document.createElement('div');
+    modal.className = 'modal';
+    modal.style.display = 'block';
+    modal.innerHTML = `
+        <div class="modal-content">
+            <span class="close" onclick="this.parentElement.parentElement.remove()">&times;</span>
+            <h2>${task.title}</h2>
+            <div style="margin: 20px 0;">
+                <p><strong>Category:</strong> ${task.category}</p>
+                <p><strong>Description:</strong> ${task.description}</p>
+                <p><strong>Status:</strong> ${task.status}</p>
+                <p><strong>Date Assigned:</strong> ${new Date(task.dateAssigned).toLocaleDateString()}</p>
+                ${task.dueDate ? `<p><strong>Due Date:</strong> ${new Date(task.dueDate).toLocaleDateString()}</p>` : ''}
+                <p><strong>Reward:</strong> ${task.iKbpReward} iKbp (${(task.iKbpReward/10).toFixed(2)} KSH)</p>
+                ${task.completedDate ? `<p><strong>Completed:</strong> ${new Date(task.completedDate).toLocaleDateString()}</p>` : ''}
+            </div>
+            ${task.status !== 'Completed' ? `
+                <button class="btn" onclick="markTaskComplete('${taskId}'); this.closest('.modal').remove();">
+                    Mark as Complete
+                </button>
+            ` : ''}
+        </div>
+    `;
+    document.body.appendChild(modal);
+}
+
+// Refresh tasks display
+function refreshTasksDisplay() {
+    const member = window.TauDB.getCurrentMember();
+    if (member) {
+        document.getElementById('dashboard-tasks').innerHTML = createTasksTab(member);
+    }
+}
+
+// ===== JOBS FUNCTIONS =====
+
+// Post new job
+function postNewJob() {
+    const modal = document.createElement('div');
+    modal.className = 'modal';
+    modal.style.display = 'block';
+    modal.innerHTML = `
+        <div class="modal-content">
+            <span class="close" onclick="this.parentElement.parentElement.remove()">&times;</span>
+            <h2>📝 Post New Job/Value</h2>
+            <p>Share opportunities with the community and earn 50 iKbp!</p>
+            
+            <form onsubmit="submitNewJob(event)">
+                <div class="form-group">
+                    <label>Job Title *</label>
+                    <input type="text" name="title" required>
+                </div>
+                <div class="form-group">
+                    <label>Category *</label>
+                    <select name="category" required>
+                        <option value="">Select category</option>
+                        <option>IT & Digital Economy</option>
+                        <option>Marketing & Advertisements</option>
+                        <option>Management</option>
+                        <option>Healthcare</option>
+                        <option>Sales & Customer Service</option>
+                        <option>Education & Training</option>
+                        <option>Engineering</option>
+                        <option>Finance & Accounting</option>
+                        <option>Agriculture & Food</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Location *</label>
+                    <input type="text" name="location" required>
+                </div>
+                <div class="form-group">
+                    <label>Description *</label>
+                    <textarea name="description" rows="4" required></textarea>
+                </div>
+                <div class="form-group">
+                    <label>Requirements</label>
+                    <textarea name="requirements" rows="3"></textarea>
+                </div>
+                <div class="form-group">
+                    <label>Salary Range</label>
+                    <input type="text" name="salary" placeholder="e.g., KSH 50,000 - 80,000">
+                </div>
+                <button type="submit" class="btn">Post Job & Earn 50 iKbp</button>
+            </form>
+        </div>
+    `;
+    document.body.appendChild(modal);
+}
+
+// Submit new job
+function submitNewJob(event) {
+    event.preventDefault();
+    const member = window.TauDB.getCurrentMember();
+    if (!member) return;
+    
+    const formData = new FormData(event.target);
+    const jobData = {
+        title: formData.get('title'),
+        category: formData.get('category'),
+        location: formData.get('location'),
+        description: formData.get('description'),
+        requirements: formData.get('requirements'),
+        salary: formData.get('salary')
+    };
+    
+    const result = window.TauDB.postJob(jobData, member.id);
+    
+    if (result.success) {
+        showNotification(`✅ Job posted successfully! You earned ${result.iKbpEarned} iKbp`, 'success');
+        closeAllModals();
+        showRealMemberDashboard(window.TauDB.getCurrentMember());
+    }
+}
+
+// Search jobs
+function searchJobs() {
+    const modal = document.createElement('div');
+    modal.className = 'modal';
+    modal.style.display = 'block';
+    modal.innerHTML = `
+        <div class="modal-content" style="max-width: 800px;">
+            <span class="close" onclick="this.parentElement.parentElement.remove()">&times;</span>
+            <h2>🔍 Search Jobs</h2>
+            
+            <div style="display: grid; gap: 15px; margin: 20px 0;">
+                <input type="text" id="jobSearchQuery" placeholder="Search by title, category, location..." style="padding: 12px; border: 2px solid #ddd; border-radius: 10px;">
+                <button class="btn" onclick="performJobSearch()">Search</button>
+            </div>
+            
+            <div id="searchResults"></div>
+        </div>
+    `;
+    document.body.appendChild(modal);
+}
+
+// Perform job search
+function performJobSearch() {
+    const query = document.getElementById('jobSearchQuery').value.toLowerCase();
+    const allJobs = JSON.parse(localStorage.getItem('tauJobsPortal') || '[]');
+    
+    const results = allJobs.filter(job => 
+        job.title.toLowerCase().includes(query) ||
+        job.category.toLowerCase().includes(query) ||
+        job.location.toLowerCase().includes(query)
+    );
+    
+    const resultsDiv = document.getElementById('searchResults');
+    if (results.length === 0) {
+        resultsDiv.innerHTML = '<p style="text-align: center; color: #999;">No jobs found</p>';
+    } else {
+        resultsDiv.innerHTML = `
+            <h4>Found ${results.length} job(s)</h4>
+            ${results.map(job => `
+                <div style="padding: 15px; background: #f8f9fa; border-radius: 10px; margin: 10px 0;">
+                    <h4>${job.title}</h4>
+                    <p>${job.category} • ${job.location}</p>
+                    <button class="btn btn-small" onclick="viewJobDetails('${job.id}')">View Details</button>
+                </div>
+            `).join('')}
+        `;
+    }
+}
+
+// Browse all jobs
+function browseAllJobs() {
+    const result = window.TauDB.getJobs();
+    
+    const modal = document.createElement('div');
+    modal.className = 'modal';
+    modal.style.display = 'block';
+    modal.innerHTML = `
+        <div class="modal-content" style="max-width: 900px;">
+            <span class="close" onclick="this.parentElement.parentElement.remove()">&times;</span>
+            <h2>📋 All Available Jobs</h2>
+            
+            <div style="margin: 20px 0;">
+                ${result.jobs.length === 0 ? `
+                    <p style="text-align: center; color: #999;">No jobs available at the moment</p>
+                ` : result.jobs.map(job => `
+                    <div style="padding: 20px; background: white; border-radius: 10px; border: 2px solid #eee; margin-bottom: 15px;">
+                        <div style="display: flex; justify-content: space-between; align-items: start;">
+                            <div style="flex: 1;">
+                                <h4 style="margin: 0 0 10px 0;">${job.title}</h4>
+                                <p style="margin: 0; color: #666;">${job.description}</p>
+                                <p style="margin: 10px 0 0 0; font-size: 0.9rem; color: #999;">
+                                    ${job.category} • ${job.location} • Posted ${new Date(job.datePosted).toLocaleDateString()}
+                                </p>
+                            </div>
+                            <button class="btn btn-small" onclick="applyToJob('${job.id}')">Apply</button>
+                        </div>
+                    </div>
+                `).join('')}
+            </div>
+        </div>
+    `;
+    document.body.appendChild(modal);
+}
+
+// View job details
+function viewJobDetails(jobId) {
+    const jobs = JSON.parse(localStorage.getItem('tauJobsPortal') || '[]');
+    const job = jobs.find(j => j.id === jobId);
+    
+    if (!job) return;
+    
+    const modal = document.createElement('div');
+    modal.className = 'modal';
+    modal.style.display = 'block';
+    modal.innerHTML = `
+        <div class="modal-content">
+            <span class="close" onclick="this.parentElement.parentElement.remove()">&times;</span>
+            <h2>${job.title}</h2>
+            <div style="margin: 20px 0;">
+                <p><strong>Category:</strong> ${job.category}</p>
+                <p><strong>Location:</strong> ${job.location}</p>
+                <p><strong>Description:</strong> ${job.description}</p>
+                ${job.requirements ? `<p><strong>Requirements:</strong> ${job.requirements}</p>` : ''}
+                ${job.salary ? `<p><strong>Salary:</strong> ${job.salary}</p>` : ''}
+                <p><strong>Posted:</strong> ${new Date(job.datePosted).toLocaleDateString()}</p>
+                <p><strong>Applications:</strong> ${job.applications.length}</p>
+            </div>
+            <button class="btn" onclick="applyToJob('${jobId}'); this.closest('.modal').remove();">
+                Apply for This Job
+            </button>
+        </div>
+    `;
+    document.body.appendChild(modal);
+}
+
+// Apply to job
+function applyToJob(jobId) {
+    const member = window.TauDB.getCurrentMember();
+    if (!member) {
+        showNotification('Please login to apply', 'error');
+        return;
+    }
+    
+    const applicationData = {
+        applicantName: member.fullName,
+        applicantEmail: member.email,
+        applicantPhone: member.phone,
+        coverLetter: 'Application submitted via TAU Africa portal'
+    };
+    
+    const result = window.TauDB.applyJob(jobId, member.id, applicationData);
+    
+    if (result.success) {
+        showNotification('✅ Application submitted successfully!', 'success');
+    } else {
+        showNotification('❌ Failed to submit application', 'error');
+    }
+}
+
+// View my applications
+function viewMyApplications() {
+    showNotification('My Applications feature coming soon!', 'info');
+}
+
+// Refresh jobs display
+function refreshJobsDisplay() {
+    const member = window.TauDB.getCurrentMember();
+    if (member) {
+        document.getElementById('dashboard-jobs').innerHTML = createJobsTab(member);
+    }
+}
+
+// ===== FORUM FUNCTIONS =====
+
+// Open forum category
+function openForumCategory(category) {
+    showNotification(`${category} forum launching soon!`, 'info');
+}
+
+// Join forum waitlist
+function joinForumWaitlist() {
+    showNotification('✅ You\'ve been added to the forum waitlist!', 'success');
+}
+
+// Add dashboard styles
+function addDashboardStyles() {
+    if (document.getElementById('dashboardStyles')) return;
+    
+    const style = document.createElement('style');
+    style.id = 'dashboardStyles';
+    style.textContent = `
+        .dashboard-tab {
+            padding: 12px 20px;
+            cursor: pointer;
+            border: none;
+            background: transparent;
+            color: #666;
+            font-weight: 600;
+            border-bottom: 3px solid transparent;
+            transition: all 0.3s;
+            font-size: 14px;
+        }
+        .dashboard-tab.active {
+            color: #4169e1;
+            border-bottom-color: #4169e1;
+        }
+        .dashboard-tab:hover {
+            color: #4169e1;
+            background: rgba(65, 105, 225, 0.05);
+        }
+        .dashboard-tab-content {
+            animation: fadeIn 0.3s ease-in;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+    `;
+    document.head.appendChild(style);
+}
+
+console.log('✅ Dashboard Interactive Functions Loaded'); 
 // Export functions for use in Main App
 window.TauDB = {
     sync: syncToDatabase,
