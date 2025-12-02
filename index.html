@@ -1050,23 +1050,105 @@ function processJobCreationTraining(event) {
     
     initiateMpesaPayment(1500, data.phone, data, 'processJobCreationSuccess');
 }
-    // ===== DATABASE INTEGRATION FUNCTION =====
-function syncToDatabase(formData, team) {
+
+// ===== TAU AFRICA DATABASE SYNC MODULE =====
+// Database Configuration
+const DB_CONFIG = {
+    dbKey: 'tauAfricaDB',
+    apiEndpoint: window.location.origin, // Same domain sync
+    autoSync: true,
+    enableEmailNotifications: true
+};
+
+// Generate unique member ID with referral tracking
+function generateMemberID(team, referralCode = null) {
+    const prefix = team === 'TASK' ? 'TSK' : team === 'TALK' ? 'TLK' : 'JOB';
+    const timestamp = Date.now().toString().slice(-6);
+    const random = Math.floor(Math.random() * 1000).toString().padStart(3, '0');
+    const id = `${prefix}-${timestamp}-${random}`;
+    
+    // Track referral if provided
+    if (referralCode) {
+        trackReferral(referralCode, id);
+    }
+    
+    return id;
+}
+
+// Generate referral code for member
+function generateReferralCode(memberId) {
+    return btoa(memberId).substring(0, 8).toUpperCase();
+}
+
+// Track referral and award iKbp points
+function trackReferral(referralCode, newMemberId) {
     try {
-        const dbKey = 'tauAfricaDB';
-        const existingMembers = JSON.parse(
-            localStorage.getItem(dbKey) || '[]'
-        );
+        const referrals = JSON.parse(localStorage.getItem('tauReferrals') || '{}');
+        
+        // Find referrer by code
+        const members = JSON.parse(localStorage.getItem(DB_CONFIG.dbKey) || '[]');
+        const referrer = members.find(m => m.referralCode === referralCode);
+        
+        if (referrer) {
+            if (!referrals[referrer.id]) {
+                referrals[referrer.id] = {
+                    memberId: referrer.id,
+                    referredMembers: [],
+                    totalEarnings: 0
+                };
+            }
+            
+            // Award 500 iKbp (50 KSH) per successful referral
+            const earnings = 500;
+            referrals[referrer.id].referredMembers.push({
+                memberId: newMemberId,
+                date: new Date().toISOString(),
+                earnings: earnings
+            });
+            referrals[referrer.id].totalEarnings += earnings;
+            
+            localStorage.setItem('tauReferrals', JSON.stringify(referrals));
+            
+            // Send notification to referrer
+            sendReferralNotification(referrer, earnings);
+        }
+    } catch (error) {
+        console.error('Referral tracking error:', error);
+    }
+}
+
+// Send referral notification
+function sendReferralNotification(referrer, earnings) {
+    emailjs.send('service_xfira7g', 'template_bqxztig', {
+        to_email: referrer.email,
+        to_name: referrer.fullName,
+        subject: '🎉 Referral Bonus Earned!',
+        message: `Congratulations! You've earned ${earnings} iKbp (${earnings/10} KSH) from your referral. Your total earnings: ${getReferralEarnings(referrer.id)} iKbp.`
+    }).catch(err => console.error('Referral email error:', err));
+}
+
+// Get total referral earnings
+function getReferralEarnings(memberId) {
+    const referrals = JSON.parse(localStorage.getItem('tauReferrals') || '{}');
+    return referrals[memberId]?.totalEarnings || 0;
+}
+
+// Core Database Sync Function
+function syncToDatabase(formData, team, referralCode = null) {
+    try {
+        const dbKey = DB_CONFIG.dbKey;
+        const existingMembers = JSON.parse(localStorage.getItem(dbKey) || '[]');
         
         // Generate unique Member ID
-        const prefix = team === 'TASK' ? 'TSK' : team === 'TALK' ? 'TLK' : 'JOB';
-        const timestamp = Date.now().toString().slice(-6);
-        const random = Math.floor(Math.random() * 1000).toString().padStart(3, '0');
-        const memberId = `${prefix}-${timestamp}-${random}`;
+        const memberId = generateMemberID(team, referralCode);
         
-        // Create member object
+        // Generate referral code for new member
+        const memberReferralCode = generateReferralCode(memberId);
+        
+        // Create comprehensive member object
         const member = {
             id: memberId,
+            referralCode: memberReferralCode,
             team: team,
             fullName: formData.fullName || formData.name,
             email: formData.email,
@@ -1075,7 +1157,14 @@ function syncToDatabase(formData, team) {
             paymentStatus: 'Paid',
             dateJoined: new Date().toISOString().split('T')[0],
             status: 'Active',
-            fee: team === 'TASK' ? 500 : team === 'TALK' ? 2000 : 1500
+            fee: team === 'TASK' ? 500 : team === 'TALK' ? 2000 : 1500,
+            accountCreated: new Date().toISOString(),
+            lastLogin: null,
+            activities: [],
+            tasks: [],
+            jobs: [],
+            iKbpBalance: 0, // Initial Kabiru points
+            referredBy: referralCode || null
         };
         
         // Add team-specific fields
@@ -1126,79 +1215,630 @@ function syncToDatabase(formData, team) {
         existingMembers.push(member);
         localStorage.setItem(dbKey, JSON.stringify(existingMembers));
         
+        // Store member credentials for login
+        storeMemberCredentials(member);
+        
+        // Trigger database event for real-time sync
+        window.dispatchEvent(new CustomEvent('tauMemberAdded', { 
+            detail: member 
+        }));
+        
         console.log('✅ Member synced to database:', memberId);
-        return memberId;
+        return { success: true, memberId, member };
         
     } catch (error) {
         console.error('❌ Database sync error:', error);
-        return 'ERROR-' + Date.now();
+        return { success: false, error: error.message };
     }
 }
 
-// ===== SUCCESS HANDLERS WITH FIXED EMAIL =====
+// Store member credentials for authentication
+function storeMemberCredentials(member) {
+    const credentials = JSON.parse(localStorage.getItem('tauCredentials') || '{}');
+    credentials[member.id] = {
+        email: member.email,
+        phone: member.phone.slice(-4), // Last 4 digits for security
+        fullName: member.fullName
+    };
+    localStorage.setItem('tauCredentials', JSON.stringify(credentials));
+}
+
+// Authenticate member
+function authenticateMember(identifier, phoneLastFour) {
+    try {
+        const members = JSON.parse(localStorage.getItem(DB_CONFIG.dbKey) || '[]');
+        const member = members.find(m => 
+            (m.id === identifier || m.email === identifier) && 
+            m.phone.slice(-4) === phoneLastFour
+        );
+        
+        if (member) {
+            // Update last login
+            member.lastLogin = new Date().toISOString();
+            const memberIndex = members.findIndex(m => m.id === member.id);
+            members[memberIndex] = member;
+            localStorage.setItem(DB_CONFIG.dbKey, JSON.stringify(members));
+            
+            // Store session
+            sessionStorage.setItem('tauCurrentUser', JSON.stringify(member));
+            return { success: true, member };
+        }
+        
+        return { success: false, error: 'Invalid credentials' };
+    } catch (error) {
+        console.error('Authentication error:', error);
+        return { success: false, error: error.message };
+    }
+}
+
+// Get current logged-in member
+function getCurrentMember() {
+    const sessionData = sessionStorage.getItem('tauCurrentUser');
+    return sessionData ? JSON.parse(sessionData) : null;
+}
+
+// Logout member
+function logoutMember() {
+    sessionStorage.removeItem('tauCurrentUser');
+    return true;
+}
+
+// Update member data
+function updateMemberData(memberId, updates) {
+    try {
+        const members = JSON.parse(localStorage.getItem(DB_CONFIG.dbKey) || '[]');
+        const memberIndex = members.findIndex(m => m.id === memberId);
+        
+        if (memberIndex !== -1) {
+            members[memberIndex] = { ...members[memberIndex], ...updates };
+            localStorage.setItem(DB_CONFIG.dbKey, JSON.stringify(members));
+            
+            // Update session if current user
+            const currentUser = getCurrentMember();
+            if (currentUser && currentUser.id === memberId) {
+                sessionStorage.setItem('tauCurrentUser', JSON.stringify(members[memberIndex]));
+            }
+            
+            return { success: true, member: members[memberIndex] };
+        }
+        
+        return { success: false, error: 'Member not found' };
+    } catch (error) {
+        return { success: false, error: error.message };
+    }
+}
+
+// Add activity to member
+function addMemberActivity(memberId, activity) {
+    try {
+        const members = JSON.parse(localStorage.getItem(DB_CONFIG.dbKey) || '[]');
+        const member = members.find(m => m.id === memberId);
+        
+        if (member) {
+            if (!member.activities) member.activities = [];
+            
+            const activityRecord = {
+                id: `ACT-${Date.now()}`,
+                type: activity.type,
+                description: activity.description,
+                dateAdded: new Date().toISOString(),
+                status: 'Active',
+                iKbpEarned: 0
+            };
+            
+            member.activities.push(activityRecord);
+            updateMemberData(memberId, { activities: member.activities });
+            
+            return { success: true, activity: activityRecord };
+        }
+        
+        return { success: false, error: 'Member not found' };
+    } catch (error) {
+        return { success: false, error: error.message };
+    }
+}
+
+// Add task to member
+function addMemberTask(memberId, task) {
+    try {
+        const members = JSON.parse(localStorage.getItem(DB_CONFIG.dbKey) || '[]');
+        const member = members.find(m => m.id === memberId);
+        
+        if (member) {
+            if (!member.tasks) member.tasks = [];
+            
+            const taskRecord = {
+                id: `TSK-${Date.now()}`,
+                title: task.title,
+                description: task.description,
+                category: task.category,
+                dateAssigned: new Date().toISOString(),
+                dueDate: task.dueDate || null,
+                status: 'Assigned',
+                iKbpReward: task.reward || 100,
+                completedDate: null
+            };
+            
+            member.tasks.push(taskRecord);
+            updateMemberData(memberId, { tasks: member.tasks });
+            
+            return { success: true, task: taskRecord };
+        }
+        
+        return { success: false, error: 'Member not found' };
+    } catch (error) {
+        return { success: false, error: error.message };
+    }
+}
+
+// Complete task and award iKbp
+function completeTask(memberId, taskId) {
+    try {
+        const members = JSON.parse(localStorage.getItem(DB_CONFIG.dbKey) || '[]');
+        const member = members.find(m => m.id === memberId);
+        
+        if (member && member.tasks) {
+            const task = member.tasks.find(t => t.id === taskId);
+            
+            if (task && task.status !== 'Completed') {
+                task.status = 'Completed';
+                task.completedDate = new Date().toISOString();
+                
+                // Award iKbp points
+                member.iKbpBalance = (member.iKbpBalance || 0) + task.iKbpReward;
+                
+                updateMemberData(memberId, { 
+                    tasks: member.tasks,
+                    iKbpBalance: member.iKbpBalance
+                });
+                
+                return { 
+                    success: true, 
+                    task, 
+                    newBalance: member.iKbpBalance,
+                    earned: task.iKbpReward
+                };
+            }
+        }
+        
+        return { success: false, error: 'Task not found or already completed' };
+    } catch (error) {
+        return { success: false, error: error.message };
+    }
+}
+
+// Post job/value to public portal
+function postJobToPortal(jobData, posterId) {
+    try {
+        const jobs = JSON.parse(localStorage.getItem('tauJobsPortal') || '[]');
+        
+        const job = {
+            id: `JOB-${Date.now()}`,
+            posterId: posterId,
+            ...jobData,
+            datePosted: new Date().toISOString(),
+            status: 'Active',
+            applications: []
+        };
+        
+        jobs.push(job);
+        localStorage.setItem('tauJobsPortal', JSON.stringify(jobs));
+        
+        // Award poster 50 iKbp for contributing
+        const result = updateMemberData(posterId, {
+            iKbpBalance: (getCurrentMember().iKbpBalance || 0) + 50
+        });
+        
+        return { success: true, job, iKbpEarned: 50 };
+    } catch (error) {
+        return { success: false, error: error.message };
+    }
+}
+
+// Get jobs from portal
+function getJobsFromPortal(filters = {}) {
+    try {
+        let jobs = JSON.parse(localStorage.getItem('tauJobsPortal') || '[]');
+        
+        // Apply filters
+        if (filters.category) {
+            jobs = jobs.filter(j => j.category === filters.category);
+        }
+        if (filters.location) {
+            jobs = jobs.filter(j => j.location.toLowerCase().includes(filters.location.toLowerCase()));
+        }
+        if (filters.status) {
+            jobs = jobs.filter(j => j.status === filters.status);
+        }
+        
+        return { success: true, jobs };
+    } catch (error) {
+        return { success: false, error: error.message };
+    }
+}
+
+// Apply for job
+function applyForJob(jobId, memberId, applicationData) {
+    try {
+        const jobs = JSON.parse(localStorage.getItem('tauJobsPortal') || '[]');
+        const job = jobs.find(j => j.id === jobId);
+        
+        if (job) {
+            const application = {
+                id: `APP-${Date.now()}`,
+                memberId: memberId,
+                ...applicationData,
+                dateApplied: new Date().toISOString(),
+                status: 'Pending'
+            };
+            
+            job.applications.push(application);
+            localStorage.setItem('tauJobsPortal', JSON.stringify(jobs));
+            
+            return { success: true, application };
+        }
+        
+        return { success: false, error: 'Job not found' };
+    } catch (error) {
+        return { success: false, error: error.message };
+    }
+}
+
+// Send welcome email with credentials
+function sendWelcomeEmailWithCredentials(member) {
+    const templateParams = {
+        to_email: member.email,
+        to_name: member.fullName,
+        subject: '🎉 Welcome to TAU Africa - Your Account Details',
+        message: `
+Welcome to TAU Africa Foundation!
+
+Your account has been successfully created:
+━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Member ID: ${member.id}
+Team: ${member.team}
+Referral Code: ${member.referralCode}
+━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+LOGIN INSTRUCTIONS:
+1. Use your Member ID or Email: ${member.email}
+2. Use last 4 digits of your phone: ${member.phone.slice(-4)}
+
+REFERRAL REWARDS:
+Share your referral code and earn 500 iKbp (50 KSH) for each successful referral!
+Your referral link: ${window.location.origin}?ref=${member.referralCode}
+
+ACCESS YOUR ACCOUNT:
+• Main Portal: ${window.location.origin}
+• Database: [Your Database URL]
+• Kabiru Mining: https://magero1985.github.io/Kabiru-Mining-Portal-/
+
+Start earning Kabiru points (iKbp) by:
+• Completing tasks
+• Participating in activities
+• Referring new members
+• Contributing to the community
+
+Current Balance: ${member.iKbpBalance} iKbp (${member.iKbpBalance/10} KSH)
+
+Welcome to the movement!
+TAU Africa Foundation
+        `
+    };
+    
+    return emailjs.send('service_xfira7g', 'template_bqxztig', templateParams);
+}
+
+// Export functions for use in Main App
+window.TauDB = {
+    sync: syncToDatabase,
+    authenticate: authenticateMember,
+    getCurrentMember,
+    logout: logoutMember,
+    updateMember: updateMemberData,
+    addActivity: addMemberActivity,
+    addTask: addMemberTask,
+    completeTask,
+    postJob: postJobToPortal,
+    getJobs: getJobsFromPortal,
+    applyJob: applyForJob,
+    sendWelcomeEmail: sendWelcomeEmailWithCredentials,
+    getReferralEarnings,
+    generateReferralCode
+};
+
+console.log('✅ TAU Database Sync Module Loaded');
+// ===== UPDATED SUCCESS HANDLERS FOR MAIN APP =====
+
+// Check for referral code in URL
+function checkReferralCode() {
+    const urlParams = new URLSearchParams(window.location.search);
+    return urlParams.get('ref');
+}
+
+// ===== TASK TEAM SUCCESS =====
 function processTaskSuccess(formData) {
-    console.log('Processing TASK success with email...');
+    console.log('Processing TASK registration with database sync...');
     
-    // 🔥 SYNC TO DATABASE FIRST
-    const memberId = syncToDatabase(formData, 'TASK');
+    const referralCode = checkReferralCode();
     
-    sendEmailToOrganization(formData, 'NEW TASK TEAM REGISTRATION - PAYMENT CONFIRMED')
-        .then(success => {
-            if (success) {
-                showNotification(`✅ Registration complete! Your Member ID: ${memberId}. Welcome to TASK team!`, 'success');
-                
-                // Show Member ID prominently
-                alert(`🎉 REGISTRATION SUCCESSFUL!\n\nYour Member ID: ${memberId}\n\nSave this ID - you'll need it to access the Member Portal and other TAU Africa services.`);
-                
-                closeAllModals();
-            } else {
-                showNotification(`⚠️ Registered! Your ID: ${memberId}. Email notification failed but you're in the database.`, 'error');
-            }
-        });
+    // 🔥 SYNC TO DATABASE WITH REFERRAL TRACKING
+    const syncResult = window.TauDB.sync(formData, 'TASK', referralCode);
+    
+    if (syncResult.success) {
+        const member = syncResult.member;
+        
+        // Send welcome email with credentials
+        window.TauDB.sendWelcomeEmail(member)
+            .then(() => {
+                console.log('✅ Welcome email sent');
+            })
+            .catch(err => {
+                console.error('Email error:', err);
+            });
+        
+        // Send to organization
+        sendEmailToOrganization(formData, 'NEW TASK TEAM REGISTRATION - PAYMENT CONFIRMED')
+            .then(() => {
+                console.log('✅ Organization notified');
+            });
+        
+        // Show success with member details
+        showNotification(
+            `✅ Registration Complete!\n\n` +
+            `Member ID: ${member.id}\n` +
+            `Referral Code: ${member.referralCode}\n\n` +
+            `Share your referral code and earn 500 iKbp (50 KSH) per referral!`,
+            'success'
+        );
+        
+        // Show detailed modal with credentials
+        showSuccessModal(member);
+        
+        closeAllModals();
+    } else {
+        showNotification(`⚠️ Registration processed but sync failed: ${syncResult.error}`, 'error');
+    }
 }
 
+// ===== TALK TEAM SUCCESS =====
 function processTalkSuccess(formData) {
-    console.log('Processing TALK success with email...');
+    console.log('Processing TALK registration with database sync...');
     
-    // 🔥 SYNC TO DATABASE FIRST
-    const memberId = syncToDatabase(formData, 'TALK');
+    const referralCode = checkReferralCode();
     
-    sendEmailToOrganization(formData, 'NEW TALK TEAM REGISTRATION - PAYMENT CONFIRMED')
-        .then(success => {
-            if (success) {
-                showNotification(`✅ Registration complete! Your Member ID: ${memberId}. Welcome to TALK team!`, 'success');
-                
-                // Show Member ID prominently
-                alert(`🎉 REGISTRATION SUCCESSFUL!\n\nYour Member ID: ${memberId}\n\nSave this ID - you'll need it to access the Member Portal and other TAU Africa services.`);
-                
-                closeAllModals();
-            } else {
-                showNotification(`⚠️ Registered! Your ID: ${memberId}. Email notification failed but you're in the database.`, 'error');
-            }
-        });
+    // 🔥 SYNC TO DATABASE WITH REFERRAL TRACKING
+    const syncResult = window.TauDB.sync(formData, 'TALK', referralCode);
+    
+    if (syncResult.success) {
+        const member = syncResult.member;
+        
+        // Send welcome email with credentials
+        window.TauDB.sendWelcomeEmail(member)
+            .then(() => {
+                console.log('✅ Welcome email sent');
+            })
+            .catch(err => {
+                console.error('Email error:', err);
+            });
+        
+        // Send to organization
+        sendEmailToOrganization(formData, 'NEW TALK TEAM REGISTRATION - PAYMENT CONFIRMED')
+            .then(() => {
+                console.log('✅ Organization notified');
+            });
+        
+        // Show success with member details
+        showNotification(
+            `✅ Registration Complete!\n\n` +
+            `Member ID: ${member.id}\n` +
+            `Referral Code: ${member.referralCode}\n\n` +
+            `Share your referral code and earn 500 iKbp (50 KSH) per referral!`,
+            'success'
+        );
+        
+        // Show detailed modal with credentials
+        showSuccessModal(member);
+        
+        closeAllModals();
+    } else {
+        showNotification(`⚠️ Registration processed but sync failed: ${syncResult.error}`, 'error');
+    }
 }
 
+// ===== JOB CREATION SUCCESS =====
 function processJobCreationSuccess(formData) {
-    console.log('Processing Job Creation success with email...');
+    console.log('Processing Job Creation enrollment with database sync...');
     
-    // 🔥 SYNC TO DATABASE FIRST
-    const memberId = syncToDatabase(formData, 'JOB_CREATION');
+    const referralCode = checkReferralCode();
     
-    sendEmailToOrganization(formData, 'JOB CREATION TRAINING ENROLLMENT - PAYMENT CONFIRMED')
-        .then(success => {
-            if (success) {
-                showNotification(`✅ Training enrollment complete! Your Member ID: ${memberId}`, 'success');
-                
-                // Show Member ID prominently
-                alert(`🎉 ENROLLMENT SUCCESSFUL!\n\nYour Member ID: ${memberId}\n\nSave this ID for accessing training materials.`);
-                
-                closeAllModals();
-            } else {
-                showNotification(`⚠️ Enrolled! Your ID: ${memberId}. Email notification failed.`, 'error');
-            }
-        });
+    // 🔥 SYNC TO DATABASE
+    const syncResult = window.TauDB.sync(formData, 'JOB_CREATION', referralCode);
+    
+    if (syncResult.success) {
+        const member = syncResult.member;
+        
+        // Send welcome email with credentials
+        window.TauDB.sendWelcomeEmail(member)
+            .then(() => {
+                console.log('✅ Welcome email sent');
+            })
+            .catch(err => {
+                console.error('Email error:', err);
+            });
+        
+        // Send to organization
+        sendEmailToOrganization(formData, 'JOB CREATION TRAINING ENROLLMENT - PAYMENT CONFIRMED')
+            .then(() => {
+                console.log('✅ Organization notified');
+            });
+        
+        showNotification(
+            `✅ Training Enrollment Complete!\n\n` +
+            `Member ID: ${member.id}\n` +
+            `Referral Code: ${member.referralCode}`,
+            'success'
+        );
+        
+        showSuccessModal(member);
+        
+        closeAllModals();
+    } else {
+        showNotification(`⚠️ Enrollment processed but sync failed: ${syncResult.error}`, 'error');
+    }
 }
 
+// ===== SUCCESS MODAL WITH CREDENTIALS =====
+function showSuccessModal(member) {
+    const modal = document.createElement('div');
+    modal.className = 'modal';
+    modal.style.display = 'block';
+    modal.innerHTML = `
+        <div class="modal-content">
+            <h2 style="color: #2ecc71; text-align: center;">🎉 Registration Successful!</h2>
+            
+            <div style="background: linear-gradient(45deg, #4169e1, #87ceeb); color: white; padding: 30px; border-radius: 15px; margin: 20px 0; text-align: center;">
+                <h3>Your Member ID</h3>
+                <h1 style="font-size: 2.5rem; margin: 15px 0; letter-spacing: 2px;">${member.id}</h1>
+                <p style="font-size: 1.1rem;">Save this ID - You'll need it to login!</p>
+            </div>
+            
+            <div style="background: #f8f9fa; padding: 20px; border-radius: 10px; margin: 20px 0;">
+                <h4 style="color: #2a5298; margin-bottom: 15px;">📧 Login Credentials</h4>
+                <p><strong>Email:</strong> ${member.email}</p>
+                <p><strong>Phone (last 4 digits):</strong> ${member.phone.slice(-4)}</p>
+                <p style="margin-top: 15px;"><strong>Team:</strong> ${member.team}</p>
+                <p><strong>Membership Fee:</strong> KSH ${member.fee}</p>
+            </div>
+            
+            <div style="background: linear-gradient(45deg, #ffd700, #ffed4e); padding: 20px; border-radius: 10px; margin: 20px 0;">
+                <h4 style="color: #333; margin-bottom: 10px;">💰 Referral Program</h4>
+                <p style="color: #333;"><strong>Your Referral Code:</strong></p>
+                <h2 style="color: #333; margin: 10px 0; letter-spacing: 3px;">${member.referralCode}</h2>
+                <p style="color: #333; font-size: 0.9rem;">Share this code and earn 500 iKbp (50 KSH) for each successful referral!</p>
+                <button class="btn" onclick="copyReferralLink('${member.referralCode}')" style="margin-top: 10px;">
+                    📋 Copy Referral Link
+                </button>
+            </div>
+            
+            <div style="background: #e3f2fd; padding: 20px; border-radius: 10px; margin: 20px 0;">
+                <h4 style="color: #1976d2;">📨 Welcome Email Sent</h4>
+                <p>Check your email (${member.email}) for:</p>
+                <ul style="margin-top: 10px;">
+                    <li>Complete login instructions</li>
+                    <li>Your referral link</li>
+                    <li>Getting started guide</li>
+                    <li>Kabiru Mining access</li>
+                </ul>
+            </div>
+            
+            <div style="margin-top: 30px;">
+                <button class="btn" onclick="proceedToLogin()" style="width: 100%; font-size: 1.1rem;">
+                    🚀 Access Your Account Now
+                </button>
+                <button class="btn btn-secondary" onclick="this.closest('.modal').remove()" style="width: 100%; margin-top: 10px;">
+                    Close
+                </button>
+            </div>
+        </div>
+    `;
+    document.body.appendChild(modal);
+}
+
+// Copy referral link
+function copyReferralLink(referralCode) {
+    const link = `${window.location.origin}?ref=${referralCode}`;
+    navigator.clipboard.writeText(link).then(() => {
+        showNotification('✅ Referral link copied to clipboard!', 'success');
+    }).catch(() => {
+        prompt('Copy your referral link:', link);
+    });
+}
+
+// Proceed to login
+function proceedToLogin() {
+    closeAllModals();
+    showRealMemberLogin();
+}
+
+// ===== REAL MEMBER LOGIN (NO DEMO) =====
+function showRealMemberLogin() {
+    const modal = document.createElement('div');
+    modal.className = 'modal';
+    modal.style.display = 'block';
+    modal.innerHTML = `
+        <div class="modal-content">
+            <span class="close" onclick="this.parentElement.parentElement.remove()">&times;</span>
+            <h2 style="color: #2a5298; text-align: center;">Member Login</h2>
+            <p style="text-align: center; color: #666;">Access your TAU Africa account</p>
+            
+            <form onsubmit="processRealLogin(event)" style="margin-top: 30px;">
+                <div class="form-group">
+                    <label>Member ID or Email *</label>
+                    <input type="text" id="loginIdentifier" required placeholder="Enter your Member ID or Email">
+                </div>
+                
+                <div class="form-group">
+                    <label>Phone Number (Last 4 digits) *</label>
+                    <input type="text" id="loginPhone" required placeholder="Last 4 digits" maxlength="4" pattern="[0-9]{4}">
+                    <small>Use the last 4 digits of your registered phone number</small>
+                </div>
+                
+                <button type="submit" class="btn" style="width: 100%; margin-top: 20px;">
+                    🔐 Login to Dashboard
+                </button>
+            </form>
+            
+            <div style="text-align: center; margin-top: 20px; padding: 15px; background: #f8f9fa; border-radius: 10px;">
+                <p style="font-size: 0.9rem; color: #666;">Don't have an account?</p>
+                <button class="btn btn-small" onclick="closeAllModals(); openModal('taskRegistration')" style="margin: 5px;">
+                    Join TASK Team
+                </button>
+                <button class="btn btn-small" onclick="closeAllModals(); openModal('talkRegistration')" style="margin: 5px;">
+                    Join TALK Team
+                </button>
+            </div>
+        </div>
+    `;
+    document.body.appendChild(modal);
+}
+
+// Process real login
+function processRealLogin(event) {
+    event.preventDefault();
+    
+    const identifier = document.getElementById('loginIdentifier').value.trim();
+    const phoneLastFour = document.getElementById('loginPhone').value.trim();
+    
+    const result = window.TauDB.authenticate(identifier, phoneLastFour);
+    
+    if (result.success) {
+        showNotification('✅ Login successful! Loading your dashboard...', 'success');
+        
+        setTimeout(() => {
+            closeAllModals();
+            showRealMemberDashboard(result.member);
+        }, 1000);
+    } else {
+        showNotification('❌ Invalid credentials. Please check your Member ID/Email and phone number.', 'error');
+    }
+}
+
+// Update the floating member access button
+function showMemberLogin() {
+    showRealMemberLogin();
+}
+
+// Add to window load
+document.addEventListener('DOMContentLoaded', function() {
+    // Check for referral code
+    const ref = checkReferralCode();
+    if (ref) {
+        showNotification(`🎁 You're using referral code: ${ref}. The referrer will earn 500 iKbp when you complete registration!`, 'info');
+    }
+});
+
+console.log('✅ Main App Success Handlers Updated - Real Authentication Enabled');
 // ===== OTHER FORM SUBMISSIONS WITH FIXED EMAIL =====
 function processTrainingRegistration(event) {
     event.preventDefault();
@@ -1548,55 +2188,1192 @@ function simulateLogin(event) {
     setTimeout(() => {
         closeAllModals();
         showMemberDashboard();
-    }, 1500);
+    },
+});
+    // ===== REAL MEMBER DASHBOARD - FULL FEATURED =====
+
+function showRealMemberDashboard(member) {
+    const modal = document.createElement('div');
+    modal.className = 'modal';
+    modal.style.display = 'block';
+    modal.style.overflowY = 'auto';
+    
+    // Refresh member data to get latest
+    const currentMember = window.TauDB.getCurrentMember();
+    const displayMember = currentMember || member;
+    
+    modal.innerHTML = `
+        <div class="modal-content" style="max-width: 1200px; padding: 20px;">
+            <span class="close" onclick="memberLogout(); this.parentElement.parentElement.remove()">&times;</span>
+            
+            <!-- Header -->
+            <div style="background: linear-gradient(45deg, #4169e1, #87ceeb); color: white; padding: 30px; border-radius: 15px; margin-bottom: 30px;">
+                <h1 style="margin: 0 0 10px 0;">Welcome, ${displayMember.fullName}! 👋</h1>
+                <p style="margin: 0; opacity: 0.9;">Member ID: <strong>${displayMember.id}</strong> | Team: <strong>${displayMember.team}</strong></p>
+                <p style="margin: 10px 0 0 0; font-size: 0.9rem;">Last login: ${displayMember.lastLogin ? new Date(displayMember.lastLogin).toLocaleString() : 'First login'}</p>
+            </div>
+            
+            <!-- Dashboard Tabs -->
+            <div style="display: flex; gap: 10px; margin-bottom: 20px; border-bottom: 2px solid #eee; flex-wrap: wrap;">
+                <button class="dashboard-tab active" onclick="switchDashboardTab('overview', this)">📊 Overview</button>
+                <button class="dashboard-tab" onclick="switchDashboardTab('profile', this)">👤 Profile</button>
+                <button class="dashboard-tab" onclick="switchDashboardTab('activities', this)">📚 Activities</button>
+                <button class="dashboard-tab" onclick="switchDashboardTab('tasks', this)">✅ Tasks</button>
+                <button class="dashboard-tab" onclick="switchDashboardTab('jobs', this)">💼 Jobs</button>
+                <button class="dashboard-tab" onclick="switchDashboardTab('referrals', this)">💰 Referrals</button>
+                <button class="dashboard-tab" onclick="switchDashboardTab('forum', this)">💬 Forum</button>
+            </div>
+            
+            <!-- Overview Tab -->
+            <div id="dashboard-overview" class="dashboard-tab-content">
+                ${createOverviewTab(displayMember)}
+            </div>
+            
+            <!-- Profile Tab -->
+            <div id="dashboard-profile" class="dashboard-tab-content" style="display: none;">
+                ${createProfileTab(displayMember)}
+            </div>
+            
+            <!-- Activities Tab -->
+            <div id="dashboard-activities" class="dashboard-tab-content" style="display: none;">
+                ${createActivitiesTab(displayMember)}
+            </div>
+            
+            <!-- Tasks Tab -->
+            <div id="dashboard-tasks" class="dashboard-tab-content" style="display: none;">
+                ${createTasksTab(displayMember)}
+            </div>
+            
+            <!-- Jobs Tab -->
+            <div id="dashboard-jobs" class="dashboard-tab-content" style="display: none;">
+                ${createJobsTab(displayMember)}
+            </div>
+            
+            <!-- Referrals Tab -->
+            <div id="dashboard-referrals" class="dashboard-tab-content" style="display: none;">
+                ${createReferralsTab(displayMember)}
+            </div>
+            
+            <!-- Forum Tab -->
+            <div id="dashboard-forum" class="dashboard-tab-content" style="display: none;">
+                ${createForumTab(displayMember)}
+            </div>
+        </div>
+    `;
+    
+    document.body.appendChild(modal);
+    
+    // Add dashboard styling
+    addDashboardStyles();
 }
 
-function showMemberDashboard() {
+// Switch dashboard tabs
+function switchDashboardTab(tabName, button) {
+    // Update tab buttons
+    document.querySelectorAll('.dashboard-tab').forEach(btn => btn.classList.remove('active'));
+    button.classList.add('active');
+    
+    // Update content
+    document.querySelectorAll('.dashboard-tab-content').forEach(content => {
+        content.style.display = 'none';
+    });
+    document.getElementById('dashboard-' + tabName).style.display = 'block';
+    
+    // Refresh data for specific tabs
+    if (tabName === 'tasks') {
+        refreshTasksDisplay();
+    } else if (tabName === 'jobs') {
+        refreshJobsDisplay();
+    }
+}
+
+// Create Overview Tab
+function createOverviewTab(member) {
+    const totalEarnings = window.TauDB.getReferralEarnings(member.id);
+    const activeTasks = (member.tasks || []).filter(t => t.status !== 'Completed').length;
+    const completedTasks = (member.tasks || []).filter(t => t.status === 'Completed').length;
+    
+    return `
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px; margin-bottom: 30px;">
+            <!-- iKbp Balance Card -->
+            <div style="background: linear-gradient(135deg, #ffd700, #ffed4e); padding: 25px; border-radius: 15px; text-align: center; color: #333;">
+                <h3 style="margin: 0 0 10px 0;">💰 Kabiru Points</h3>
+                <h1 style="margin: 0; font-size: 2.5rem;">${member.iKbpBalance || 0}</h1>
+                <p style="margin: 10px 0 0 0;">iKbp ≈ KSH ${((member.iKbpBalance || 0) / 10).toFixed(2)}</p>
+                <button class="btn" onclick="window.open('https://magero1985.github.io/Kabiru-Mining-Portal-/', '_blank')" style="margin-top: 15px; background: #333; width: 100%;">
+                    ⚡ Mine More Kabiru
+                </button>
+            </div>
+            
+            <!-- Tasks Card -->
+            <div style="background: linear-gradient(135deg, #667eea, #764ba2); padding: 25px; border-radius: 15px; text-align: center; color: white;">
+                <h3 style="margin: 0 0 10px 0;">✅ Tasks</h3>
+                <h1 style="margin: 0; font-size: 2.5rem;">${activeTasks}</h1>
+                <p style="margin: 10px 0 0 0;">Active | ${completedTasks} Completed</p>
+                <button class="btn" onclick="switchDashboardTab('tasks', document.querySelectorAll('.dashboard-tab')[3])" style="margin-top: 15px; width: 100%;">
+                    View Tasks
+                </button>
+            </div>
+            
+            <!-- Activities Card -->
+            <div style="background: linear-gradient(135deg, #ff6b6b, #ee5a24); padding: 25px; border-radius: 15px; text-align: center; color: white;">
+                <h3 style="margin: 0 0 10px 0;">📚 Activities</h3>
+                <h1 style="margin: 0; font-size: 2.5rem;">${(member.activities || []).length}</h1>
+                <p style="margin: 10px 0 0 0;">Enrolled Programs</p>
+                <button class="btn" onclick="switchDashboardTab('activities', document.querySelectorAll('.dashboard-tab')[2])" style="margin-top: 15px; width: 100%;">
+                    Manage Activities
+                </button>
+            </div>
+            
+            <!-- Referrals Card -->
+            <div style="background: linear-gradient(135deg, #2ecc71, #27ae60); padding: 25px; border-radius: 15px; text-align: center; color: white;">
+                <h3 style="margin: 0 0 10px 0;">🎁 Referrals</h3>
+                <h1 style="margin: 0; font-size: 2.5rem;">${totalEarnings}</h1>
+                <p style="margin: 10px 0 0 0;">iKbp Earned</p>
+                <button class="btn" onclick="switchDashboardTab('referrals', document.querySelectorAll('.dashboard-tab')[5])" style="margin-top: 15px; width: 100%;">
+                    View Referrals
+                </button>
+            </div>
+        </div>
+        
+        <!-- Quick Actions -->
+        <div style="background: #f8f9fa; padding: 25px; border-radius: 15px; margin-bottom: 20px;">
+            <h3 style="color: #2a5298; margin-bottom: 20px;">⚡ Quick Actions</h3>
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px;">
+                <button class="btn" onclick="viewDatabaseAccount()">🗄️ View Database Account</button>
+                <button class="btn btn-success" onclick="window.open('https://magero1985.github.io/Kabiru-Mining-Portal-/', '_blank')">⚡ Kabiru Mining</button>
+                <button class="btn" onclick="copyReferralLink('${member.referralCode}')">📋 Copy Referral Link</button>
+                <button class="btn" onclick="contactSupport()">💬 Contact Support</button>
+            </div>
+        </div>
+        
+        <!-- Recent Activity -->
+        <div style="background: white; padding: 25px; border-radius: 15px; border: 2px solid #eee;">
+            <h3 style="color: #2a5298; margin-bottom: 20px;">📊 Recent Activity</h3>
+            ${createRecentActivityList(member)}
+        </div>
+    `;
+}
+
+// Create Profile Tab
+function createProfileTab(member) {
+    return `
+        <div style="background: white; padding: 25px; border-radius: 15px; border: 2px solid #eee;">
+            <h3 style="color: #2a5298; margin-bottom: 20px;">👤 Your Profile</h3>
+            
+            <div style="display: grid; gap: 15px;">
+                <div style="display: grid; grid-template-columns: 150px 1fr; padding: 15px; border-bottom: 1px solid #eee;">
+                    <strong style="color: #2a5298;">Member ID:</strong>
+                    <span>${member.id}</span>
+                </div>
+                <div style="display: grid; grid-template-columns: 150px 1fr; padding: 15px; border-bottom: 1px solid #eee;">
+                    <strong style="color: #2a5298;">Full Name:</strong>
+                    <span>${member.fullName}</span>
+                </div>
+                <div style="display: grid; grid-template-columns: 150px 1fr; padding: 15px; border-bottom: 1px solid #eee;">
+                    <strong style="color: #2a5298;">Email:</strong>
+                    <span>${member.email}</span>
+                </div>
+                <div style="display: grid; grid-template-columns: 150px 1fr; padding: 15px; border-bottom: 1px solid #eee;">
+                    <strong style="color: #2a5298;">Phone:</strong>
+                    <span>${member.phone}</span>
+                </div>
+                <div style="display: grid; grid-template-columns: 150px 1fr; padding: 15px; border-bottom: 1px solid #eee;">
+                    <strong style="color: #2a5298;">Location:</strong>
+                    <span>${member.location}</span>
+                </div>
+                <div style="display: grid; grid-template-columns: 150px 1fr; padding: 15px; border-bottom: 1px solid #eee;">
+                    <strong style="color: #2a5298;">Team:</strong>
+                    <span>${member.team}</span>
+                </div>
+                <div style="display: grid; grid-template-columns: 150px 1fr; padding: 15px; border-bottom: 1px solid #eee;">
+                    <strong style="color: #2a5298;">Date Joined:</strong>
+                    <span>${member.dateJoined}</span>
+                </div>
+                <div style="display: grid; grid-template-columns: 150px 1fr; padding: 15px; border-bottom: 1px solid #eee;">
+                    <strong style="color: #2a5298;">Status:</strong>
+                    <span style="color: #2ecc71; font-weight: bold;">${member.status}</span>
+                </div>
+                <div style="display: grid; grid-template-columns: 150px 1fr; padding: 15px; border-bottom: 1px solid #eee;">
+                    <strong style="color: #2a5298;">Referral Code:</strong>
+                    <span style="font-weight: bold; color: #ffd700;">${member.referralCode}</span>
+                </div>
+            </div>
+            
+            <div style="margin-top: 30px;">
+                <button class="btn" onclick="viewDatabaseAccount()" style="width: 100%;">
+                    🗄️ View Complete Profile in Database
+                </button>
+            </div>
+        </div>
+    `;
+}
+
+// Create Activities Tab
+function createActivitiesTab(member) {
+    const activities = member.activities || [];
+    
+    return `
+        <div>
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                <h3 style="color: #2a5298; margin: 0;">📚 My Activities</h3>
+                <button class="btn btn-small" onclick="addNewActivity()">➕ Add Activity</button>
+            </div>
+            
+            ${activities.length === 0 ? `
+                <div style="background: #f8f9fa; padding: 40px; border-radius: 15px; text-align: center;">
+                    <h3 style="color: #999;">No Activities Yet</h3>
+                    <p>Join programs and activities to start earning iKbp!</p>
+                    <button class="btn" onclick="addNewActivity()">Browse Available Activities</button>
+                </div>
+            ` : `
+                <div style="display: grid; gap: 15px;">
+                    ${activities.map(activity => `
+                        <div style="background: white; padding: 20px; border-radius: 10px; border: 2px solid #eee;">
+                            <div style="display: flex; justify-content: space-between; align-items: start;">
+                                <div style="flex: 1;">
+                                    <h4 style="color: #2a5298; margin: 0 0 10px 0;">${activity.type}</h4>
+                                    <p style="margin: 0 0 10px 0; color: #666;">${activity.description}</p>
+                                    <p style="margin: 0; font-size: 0.9rem; color: #999;">
+                                        Started: ${new Date(activity.dateAdded).toLocaleDateString()} | 
+                                        Status: <span style="color: #2ecc71; font-weight: bold;">${activity.status}</span>
+                                    </p>
+                                    ${activity.iKbpEarned > 0 ? `
+                                        <p style="margin: 10px 0 0 0; color: #ffd700; font-weight: bold;">
+                                            💰 Earned: ${activity.iKbpEarned} iKbp
+                                        </p>
+                                    ` : ''}
+                                </div>
+                                <div>
+                                    <button class="btn btn-small" onclick="trackActivity('${activity.id}')">📊 Track</button>
+                                    <button class="btn btn-small" onclick="removeActivity('${activity.id}')" style="background: #e74c3c; margin-top: 5px;">Remove</button>
+                                </div>
+                            </div>
+                        </div>
+                    `).join('')}
+                </div>
+            `}
+            
+            <!-- Available Activities -->
+            <div style="margin-top: 30px; padding: 25px; background: #e3f2fd; border-radius: 15px;">
+                <h4 style="color: #1976d2; margin-bottom: 15px;">🌟 Available Activities</h4>
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 10px;">
+                    <button class="btn" onclick="enrollActivity('Training Workshop')">📚 Training</button>
+                    <button class="btn" onclick="enrollActivity('Job Creation')">💼 Job Creation</button>
+                    <button class="btn" onclick="enrollActivity('Research Services')">🔬 Research</button>
+                    <button class="btn" onclick="enrollActivity('Community Program')">🤝 Community</button>
+                </div>
+            </div>
+        </div>
+    `;
+}
+
+// Continue in next artifact due to length...
+console.log('✅ Member Dashboard Part 1 Loaded');
+    // ===== MEMBER DASHBOARD PART 2 - Tasks, Jobs, Referrals, Forum =====
+
+// Create Tasks Tab
+function createTasksTab(member) {
+    const tasks = member.tasks || [];
+    const activeTasks = tasks.filter(t => t.status !== 'Completed');
+    const completedTasks = tasks.filter(t => t.status === 'Completed');
+    
+    return `
+        <div>
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                <h3 style="color: #2a5298; margin: 0;">✅ My Tasks</h3>
+                <button class="btn btn-small" onclick="browseAvailableTasks()">🔍 Browse Tasks</button>
+            </div>
+            
+            <!-- Task Stats -->
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 15px; margin-bottom: 25px;">
+                <div style="background: #e3f2fd; padding: 15px; border-radius: 10px; text-align: center;">
+                    <h2 style="color: #1976d2; margin: 0;">${activeTasks.length}</h2>
+                    <p style="margin: 5px 0 0 0; color: #666;">Active Tasks</p>
+                </div>
+                <div style="background: #c8e6c9; padding: 15px; border-radius: 10px; text-align: center;">
+                    <h2 style="color: #2e7d32; margin: 0;">${completedTasks.length}</h2>
+                    <p style="margin: 5px 0 0 0; color: #666;">Completed</p>
+                </div>
+                <div style="background: #fff3e0; padding: 15px; border-radius: 10px; text-align: center;">
+                    <h2 style="color: #e65100; margin: 0;">${completedTasks.reduce((sum, t) => sum + (t.iKbpReward || 0), 0)}</h2>
+                    <p style="margin: 5px 0 0 0; color: #666;">iKbp Earned</p>
+                </div>
+            </div>
+            
+            ${tasks.length === 0 ? `
+                <div style="background: #f8f9fa; padding: 40px; border-radius: 15px; text-align: center;">
+                    <h3 style="color: #999;">No Tasks Assigned Yet</h3>
+                    <p>Browse available tasks to start earning iKbp!</p>
+                    <button class="btn" onclick="browseAvailableTasks()">Browse Available Tasks</button>
+                </div>
+            ` : `
+                <!-- Active Tasks -->
+                ${activeTasks.length > 0 ? `
+                    <h4 style="color: #2a5298; margin: 20px 0 15px 0;">🎯 Active Tasks</h4>
+                    <div style="display: grid; gap: 15px; margin-bottom: 25px;">
+                        ${activeTasks.map(task => `
+                            <div style="background: white; padding: 20px; border-radius: 10px; border: 2px solid #4169e1;">
+                                <div style="display: flex; justify-content: space-between; align-items: start;">
+                                    <div style="flex: 1;">
+                                        <h4 style="color: #2a5298; margin: 0 0 10px 0;">${task.title}</h4>
+                                        <p style="margin: 0 0 10px 0; color: #666;">${task.description}</p>
+                                        <div style="display: flex; gap: 15px; font-size: 0.9rem; color: #999; margin-bottom: 10px;">
+                                            <span>📁 ${task.category}</span>
+                                            <span>📅 Assigned: ${new Date(task.dateAssigned).toLocaleDateString()}</span>
+                                            ${task.dueDate ? `<span>⏰ Due: ${new Date(task.dueDate).toLocaleDateString()}</span>` : ''}
+                                        </div>
+                                        <p style="margin: 0; color: #ffd700; font-weight: bold;">
+                                            💰 Reward: ${task.iKbpReward} iKbp (${(task.iKbpReward/10).toFixed(2)} KSH)
+                                        </p>
+                                    </div>
+                                    <div style="display: flex; flex-direction: column; gap: 5px;">
+                                        <button class="btn btn-small btn-success" onclick="markTaskComplete('${task.id}')">✓ Complete</button>
+                                        <button class="btn btn-small" onclick="viewTaskDetails('${task.id}')">View Details</button>
+                                    </div>
+                                </div>
+                            </div>
+                        `).join('')}
+                    </div>
+                ` : ''}
+                
+                <!-- Completed Tasks -->
+                ${completedTasks.length > 0 ? `
+                    <h4 style="color: #2a5298; margin: 20px 0 15px 0;">✅ Completed Tasks</h4>
+                    <div style="display: grid; gap: 15px;">
+                        ${completedTasks.map(task => `
+                            <div style="background: #f8f9fa; padding: 20px; border-radius: 10px; border: 2px solid #2ecc71;">
+                                <div style="display: flex; justify-content: space-between; align-items: start;">
+                                    <div style="flex: 1;">
+                                        <h4 style="color: #2a5298; margin: 0 0 10px 0;">${task.title}</h4>
+                                        <p style="margin: 0 0 10px 0; color: #666;">${task.description}</p>
+                                        <div style="display: flex; gap: 15px; font-size: 0.9rem; color: #999;">
+                                            <span>✓ Completed: ${new Date(task.completedDate).toLocaleDateString()}</span>
+                                            <span style="color: #2ecc71; font-weight: bold;">💰 Earned: ${task.iKbpReward} iKbp</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        `).join('')}
+                    </div>
+                ` : ''}
+            `}
+        </div>
+    `;
+}
+
+// Create Jobs Tab
+function createJobsTab(member) {
+    return `
+        <div>
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                <h3 style="color: #2a5298; margin: 0;">💼 Jobs & Values Portal</h3>
+            </div>
+            
+            <!-- Job Actions -->
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 15px; margin-bottom: 25px;">
+                <button class="btn" onclick="postNewJob()">📝 Post New Job/Value</button>
+                <button class="btn" onclick="searchJobs()">🔍 Search Jobs</button>
+                <button class="btn" onclick="browseAllJobs()">📋 Browse All Jobs</button>
+                <button class="btn" onclick="viewMyApplications()">📨 My Applications</button>
+            </div>
+            
+            <!-- My Posted Jobs -->
+            <div style="background: white; padding: 25px; border-radius: 15px; border: 2px solid #eee; margin-bottom: 20px;">
+                <h4 style="color: #2a5298; margin-bottom: 15px;">📝 My Posted Jobs/Values</h4>
+                <div id="myPostedJobs">
+                    ${displayMyPostedJobs(member.id)}
+                </div>
+            </div>
+            
+            <!-- Available Jobs -->
+            <div style="background: white; padding: 25px; border-radius: 15px; border: 2px solid #eee;">
+                <h4 style="color: #2a5298; margin-bottom: 15px;">🌟 Available Jobs/Values</h4>
+                <div id="availableJobs">
+                    ${displayAvailableJobs()}
+                </div>
+            </div>
+        </div>
+    `;
+}
+
+// Create Referrals Tab
+function createReferralsTab(member) {
+    const referralData = JSON.parse(localStorage.getItem('tauReferrals') || '{}');
+    const myReferrals = referralData[member.id] || { referredMembers: [], totalEarnings: 0 };
+    const referralLink = `${window.location.origin}?ref=${member.referralCode}`;
+    
+    return `
+        <div>
+            <h3 style="color: #2a5298; margin-bottom: 20px;">💰 Referral Program</h3>
+            
+            <!-- Referral Stats -->
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 15px; margin-bottom: 25px;">
+                <div style="background: linear-gradient(135deg, #ffd700, #ffed4e); padding: 25px; border-radius: 15px; text-align: center;">
+                    <h2 style="color: #333; margin: 0 0 10px 0;">${myReferrals.totalEarnings}</h2>
+                    <p style="color: #333; margin: 0;">Total iKbp Earned</p>
+                    <p style="color: #333; margin: 5px 0 0 0; font-size: 0.9rem;">≈ KSH ${(myReferrals.totalEarnings/10).toFixed(2)}</p>
+                </div>
+                <div style="background: linear-gradient(135deg, #2ecc71, #27ae60); padding: 25px; border-radius: 15px; text-align: center; color: white;">
+                    <h2 style="margin: 0 0 10px 0;">${myReferrals.referredMembers.length}</h2>
+                    <p style="margin: 0;">Successful Referrals</p>
+                    <p style="margin: 5px 0 0 0; font-size: 0.9rem;">500 iKbp per referral</p>
+                </div>
+            </div>
+            
+            <!-- Referral Link -->
+            <div style="background: linear-gradient(45deg, #667eea, #764ba2); color: white; padding: 25px; border-radius: 15px; margin-bottom: 25px;">
+                <h4 style="margin: 0 0 15px 0;">🎁 Your Referral Code</h4>
+                <div style="background: rgba(255,255,255,0.2); padding: 15px; border-radius: 10px; margin-bottom: 15px;">
+                    <h1 style="margin: 0; font-size: 2.5rem; letter-spacing: 3px;">${member.referralCode}</h1>
+                </div>
+                <div style="background: rgba(255,255,255,0.2); padding: 15px; border-radius: 10px; margin-bottom: 15px; word-break: break-all;">
+                    <p style="margin: 0; font-size: 0.9rem;">${referralLink}</p>
+                </div>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+                    <button class="btn" onclick="copyReferralLink('${member.referralCode}')" style="background: white; color: #667eea;">
+                        📋 Copy Link
+                    </button>
+                    <button class="btn" onclick="shareReferralLink('${member.referralCode}')" style="background: white; color: #667eea;">
+                        📤 Share
+                    </button>
+                </div>
+            </div>
+            
+            <!-- How It Works -->
+            <div style="background: #e3f2fd; padding: 25px; border-radius: 15px; margin-bottom: 25px;">
+                <h4 style="color: #1976d2; margin-bottom: 15px;">💡 How Referrals Work</h4>
+                <ul style="margin: 0; padding-left: 20px; color: #333;">
+                    <li style="margin-bottom: 10px;">Share your referral code with friends and family</li>
+                    <li style="margin-bottom: 10px;">They register using your code</li>
+                    <li style="margin-bottom: 10px;">You earn <strong>500 iKbp (50 KSH)</strong> for each successful registration</li>
+                    <li style="margin-bottom: 10px;">Convert your iKbp to cash at Kabiru Mining Portal</li>
+                    <li>No limit on referrals - earn unlimited rewards!</li>
+                </ul>
+            </div>
+            
+            <!-- Referral History -->
+            ${myReferrals.referredMembers.length > 0 ? `
+                <div style="background: white; padding: 25px; border-radius: 15px; border: 2px solid #eee;">
+                    <h4 style="color: #2a5298; margin-bottom: 15px;">📊 Referral History</h4>
+                    <div style="display: grid; gap: 10px;">
+                        ${myReferrals.referredMembers.map(ref => `
+                            <div style="padding: 15px; background: #f8f9fa; border-radius: 10px; display: flex; justify-content: space-between; align-items: center;">
+                                <div>
+                                    <p style="margin: 0; font-weight: bold;">${ref.memberId}</p>
+                                    <p style="margin: 5px 0 0 0; font-size: 0.9rem; color: #666;">
+                                        ${new Date(ref.date).toLocaleDateString()}
+                                    </p>
+                                </div>
+                                <div style="text-align: right;">
+                                    <p style="margin: 0; color: #2ecc71; font-weight: bold;">+${ref.earnings} iKbp</p>
+                                    <p style="margin: 5px 0 0 0; font-size: 0.9rem; color: #666;">≈ KSH ${(ref.earnings/10).toFixed(2)}</p>
+                                </div>
+                            </div>
+                        `).join('')}
+                    </div>
+                </div>
+            ` : `
+                <div style="background: #f8f9fa; padding: 40px; border-radius: 15px; text-align: center;">
+                    <h3 style="color: #999;">No Referrals Yet</h3>
+                    <p>Start sharing your referral code to earn iKbp!</p>
+                </div>
+            `}
+        </div>
+    `;
+}
+
+// Create Forum Tab
+function createForumTab(member) {
+    return `
+        <div>
+            <h3 style="color: #2a5298; margin-bottom: 20px;">💬 Member Forum</h3>
+            
+            <!-- Forum Categories -->
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 15px; margin-bottom: 25px;">
+                <div style="background: linear-gradient(135deg, #667eea, #764ba2); color: white; padding: 25px; border-radius: 15px; cursor: pointer;" onclick="openForumCategory('general')">
+                    <h4 style="margin: 0 0 10px 0;">💬 General Discussions</h4>
+                    <p style="margin: 0; opacity: 0.9;">Connect with other members</p>
+                </div>
+                <div style="background: linear-gradient(135deg, #ff6b6b, #ee5a24); color: white; padding: 25px; border-radius: 15px; cursor: pointer;" onclick="openForumCategory('jobs')">
+                    <h4 style="margin: 0 0 10px 0;">💼 Job Sharing</h4>
+                    <p style="margin: 0; opacity: 0.9;">Share and find opportunities</p>
+                </div>
+                <div style="background: linear-gradient(135deg, #2ecc71, #27ae60); color: white; padding: 25px; border-radius: 15px; cursor: pointer;" onclick="openForumCategory('training')">
+                    <h4 style="margin: 0 0 10px 0;">📚 Training & Resources</h4>
+                    <p style="margin: 0; opacity: 0.9;">Learn and share knowledge</p>
+                </div>
+                <div style="background: linear-gradient(135deg, #3498db, #2980b9); color: white; padding: 25px; border-radius: 15px; cursor: pointer;" onclick="openForumCategory('networking')">
+                    <h4 style="margin: 0 0 10px 0;">🤝 Networking</h4>
+                    <p style="margin: 0; opacity: 0.9;">Build connections</p>
+                </div>
+            </div>
+            
+            <!-- Forum Features -->
+            <div style="background: #f8f9fa; padding: 25px; border-radius: 15px; margin-bottom: 25px;">
+                <h4 style="color: #2a5298; margin-bottom: 15px;">✨ Forum Features</h4>
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px;">
+                    <div style="padding: 15px; background: white; border-radius: 10px;">
+                        <h5 style="margin: 0 0 10px 0; color: #2a5298;">💬 Discussions</h5>
+                        <p style="margin: 0; font-size: 0.9rem; color: #666;">Join conversations with members</p>
+                    </div>
+                    <div style="padding: 15px; background: white; border-radius: 10px;">
+                        <h5 style="margin: 0 0 10px 0; color: #2a5298;">📞 Voice Calls</h5>
+                        <p style="margin: 0; font-size: 0.9rem; color: #666;">Connect via voice chat</p>
+                    </div>
+                    <div style="padding: 15px; background: white; border-radius: 10px;">
+                        <h5 style="margin: 0 0 10px 0; color: #2a5298;">💬 Messaging</h5>
+                        <p style="margin: 0; font-size: 0.9rem; color: #666;">Direct messages to members</p>
+                    </div>
+                    <div style="padding: 15px; background: white; border-radius: 10px;">
+                        <h5 style="margin: 0 0 10px 0; color: #2a5298;">🎯 Groups</h5>
+                        <p style="margin: 0; font-size: 0.9rem; color: #666;">Join interest-based groups</p>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Recent Forum Activity -->
+            <div style="background: white; padding: 25px; border-radius: 15px; border: 2px solid #eee;">
+                <h4 style="color: #2a5298; margin-bottom: 15px;">🔥 Recent Activity</h4>
+                <div style="text-align: center; padding: 40px; color: #999;">
+                    <h3>Forum Launching Soon!</h3>
+                    <p>Real-time discussions, networking, and collaboration</p>
+                    <button class="btn" onclick="joinForumWaitlist()">📢 Join Waitlist</button>
+                </div>
+            </div>
+        </div>
+    `;
+}
+
+// Helper functions
+function createRecentActivityList(member) {
+    const activities = [];
+    
+    if (member.tasks && member.tasks.length > 0) {
+        const recentTask = member.tasks[member.tasks.length - 1];
+        activities.push(`• Task "${recentTask.title}" ${recentTask.status === 'Completed' ? 'completed' : 'assigned'}`);
+    }
+    
+    if (member.activities && member.activities.length > 0) {
+        activities.push(`• ${member.activities.length} active programs`);
+    }
+    
+    activities.push(`• Account created on ${new Date(member.accountCreated).toLocaleDateString()}`);
+    
+    if (activities.length === 0) {
+        return '<p style="color: #999;">No recent activity</p>';
+    }
+    
+    return `<ul style="margin: 0; padding-left: 20px;">${activities.map(a => `<li style="margin-bottom: 10px;">${a}</li>`).join('')}</ul>`;
+}
+
+function displayMyPostedJobs(memberId) {
+    const jobs = JSON.parse(localStorage.getItem('tauJobsPortal') || '[]');
+    const myJobs = jobs.filter(j => j.posterId === memberId);
+    
+    if (myJobs.length === 0) {
+        return '<p style="color: #999; text-align: center;">You haven't posted any jobs yet</p>';
+    }
+    
+    return myJobs.map(job => `
+        <div style="padding: 15px; background: #f8f9fa; border-radius: 10px; margin-bottom: 10px;">
+            <h5 style="margin: 0 0 10px 0;">${job.title}</h5>
+            <p style="margin: 0; font-size: 0.9rem; color: #666;">Posted: ${new Date(job.datePosted).toLocaleDateString()} | ${job.applications.length} applications</p>
+        </div>
+    `).join('');
+}
+
+function displayAvailableJobs() {
+    const jobs = JSON.parse(localStorage.getItem('tauJobsPortal') || '[]');
+    const activeJobs = jobs.filter(j => j.status === 'Active').slice(0, 5);
+    
+    if (activeJobs.length === 0) {
+        return '<p style="color: #999; text-align: center;">No jobs available at the moment</p>';
+    }
+    
+    return activeJobs.map(job => `
+        <div style="padding: 15px; background: #f8f9fa; border-radius: 10px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center;">
+            <div style="flex: 1;">
+                <h5 style="margin: 0 0 5px 0;">${job.title}</h5>
+                <p style="margin: 0; font-size: 0.9rem; color: #666;">${job.category} • ${job.location}</p>
+            </div>
+            <button class="btn btn-small" onclick="viewJobDetails('${job.id}')">View Details</button>
+        </div>
+    `).join('');
+}
+
+console.log('✅ Member Dashboard Part 2 Loaded - Tasks, Jobs, Referrals, Forum');
+    // ===== DASHBOARD INTERACTIVE FUNCTIONS =====
+
+// Member logout
+function memberLogout() {
+    if (confirm('Are you sure you want to logout?')) {
+        window.TauDB.logout();
+        closeAllModals();
+        showNotification('✅ Logged out successfully', 'success');
+    }
+}
+
+// View database account
+function viewDatabaseAccount() {
+    const member = window.TauDB.getCurrentMember();
+    if (!member) {
+        showNotification('❌ Please login first', 'error');
+        return;
+    }
+    
+    // Open database in new window with member session
+    const dbUrl = prompt(
+        'Enter your Database URL:',
+        'YOUR_DATABASE_URL_HERE'
+    );
+    
+    if (dbUrl) {
+        window.open(dbUrl, '_blank');
+        showNotification('Opening your database account...', 'info');
+    }
+}
+
+// Contact support
+function contactSupport() {
+    const member = window.TauDB.getCurrentMember();
+    const subject = `Support Request from ${member.fullName} (${member.id})`;
+    const body = `Member ID: ${member.id}%0D%0AName: ${member.fullName}%0D%0AEmail: ${member.email}%0D%0A%0D%0ARequest:%0D%0A`;
+    window.location.href = `mailto:grouptauafrica@gmail.com?subject=${subject}&body=${body}`;
+}
+
+// Share referral link
+function shareReferralLink(code) {
+    const link = `${window.location.origin}?ref=${code}`;
+    const text = `Join TAU Africa and help build Africa's future! Use my referral code: ${code}`;
+    
+    if (navigator.share) {
+        navigator.share({
+            title: 'Join TAU Africa',
+            text: text,
+            url: link
+        }).catch(err => console.log('Share cancelled'));
+    } else {
+        copyReferralLink(code);
+    }
+}
+
+// ===== ACTIVITIES FUNCTIONS =====
+
+// Add new activity
+function addNewActivity() {
+    const member = window.TauDB.getCurrentMember();
+    if (!member) return;
+    
+    const modal = document.createElement('div');
+    modal.className = 'modal';
+    modal.style.display = 'block';
+    modal.innerHTML = `
+        <div class="modal-content">
+            <span class="close" onclick="this.parentElement.parentElement.remove()">&times;</span>
+            <h2>📚 Add New Activity</h2>
+            <form onsubmit="enrollNewActivity(event)">
+                <div class="form-group">
+                    <label>Activity Type *</label>
+                    <select name="type" required>
+                        <option value="">Select activity</option>
+                        <option value="Training Workshop">Training Workshop</option>
+                        <option value="Job Creation">Job Creation Program</option>
+                        <option value="Research Services">Research Services</option>
+                        <option value="Community Program">Community Program</option>
+                        <option value="Agricultural Initiative">Agricultural Initiative</option>
+                        <option value="Climate Action">Climate Action</option>
+                        <option value="Education Program">Education Program</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Description</label>
+                    <textarea name="description" rows="3" placeholder="Describe your goals for this activity"></textarea>
+                </div>
+                <button type="submit" class="btn">Add Activity</button>
+            </form>
+        </div>
+    `;
+    document.body.appendChild(modal);
+}
+
+// Enroll in activity
+function enrollNewActivity(event) {
+    event.preventDefault();
+    const member = window.TauDB.getCurrentMember();
+    if (!member) return;
+    
+    const formData = new FormData(event.target);
+    const activity = {
+        type: formData.get('type'),
+        description: formData.get('description') || 'Enrolled in program'
+    };
+    
+    const result = window.TauDB.addActivity(member.id, activity);
+    
+    if (result.success) {
+        showNotification('✅ Activity added successfully!', 'success');
+        closeAllModals();
+        // Refresh dashboard
+        showRealMemberDashboard(window.TauDB.getCurrentMember());
+    } else {
+        showNotification('❌ Failed to add activity', 'error');
+    }
+}
+
+// Quick enroll activity
+function enrollActivity(activityType) {
+    const member = window.TauDB.getCurrentMember();
+    if (!member) return;
+    
+    const result = window.TauDB.addActivity(member.id, {
+        type: activityType,
+        description: `Enrolled in ${activityType} program`
+    });
+    
+    if (result.success) {
+        showNotification(`✅ Enrolled in ${activityType}!`, 'success');
+        // Refresh activities tab
+        switchDashboardTab('activities', document.querySelectorAll('.dashboard-tab')[2]);
+    }
+}
+
+// Track activity
+function trackActivity(activityId) {
+    showNotification('Activity tracking feature coming soon!', 'info');
+}
+
+// Remove activity
+function removeActivity(activityId) {
+    if (confirm('Remove this activity from your list?')) {
+        const member = window.TauDB.getCurrentMember();
+        if (!member) return;
+        
+        member.activities = member.activities.filter(a => a.id !== activityId);
+        window.TauDB.updateMember(member.id, { activities: member.activities });
+        
+        showNotification('Activity removed', 'success');
+        showRealMemberDashboard(window.TauDB.getCurrentMember());
+    }
+}
+
+// ===== TASKS FUNCTIONS =====
+
+// Browse available tasks
+function browseAvailableTasks() {
     const modal = document.createElement('div');
     modal.className = 'modal';
     modal.style.display = 'block';
     modal.innerHTML = `
         <div class="modal-content" style="max-width: 800px;">
             <span class="close" onclick="this.parentElement.parentElement.remove()">&times;</span>
-            <h2>TAU Africa Member Dashboard</h2>
-            <p>Welcome, <strong>Demo User</strong></p>
+            <h2>🔍 Available Tasks</h2>
+            <p>Select tasks to add to your dashboard</p>
             
-            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; margin: 30px 0;">
-                <div style="background: linear-gradient(45deg, #4169e1, #87ceeb); color: white; padding: 20px; border-radius: 15px; text-align: center; cursor: pointer;" onclick="showNotification('Profile management launching soon!', 'success')">
-                    <h4>My Profile</h4>
-                    <p>Manage account</p>
-                </div>
-                <div style="background: linear-gradient(45deg, #ff6b6b, #ee5a24); color: white; padding: 20px; border-radius: 15px; text-align: center; cursor: pointer;" onclick="showNotification('Programs dashboard launching soon!', 'success')">
-                    <h4>My Programs</h4>
-                    <p>Active memberships</p>
-                </div>
-                <div style="background: linear-gradient(45deg, #2ecc71, #27ae60); color: white; padding: 20px; border-radius: 15px; text-align: center; cursor: pointer;" onclick="window.open('https://magero1985.github.io/Kabiru-Mining-Portal-/', '_blank')">
-                    <h4>Kabiru Wallet</h4>
-                    <p>0.00 KABIRU<br><small>Click to mine</small></p>
-                </div>
-                <div style="background: linear-gradient(45deg, #9b59b6, #8e44ad); color: white; padding: 20px; border-radius: 15px; text-align: center; cursor: pointer;" onclick="openModal('forum')">
-                    <h4>Community</h4>
-                    <p>Forum & networking</p>
-                </div>
-            </div>
-            
-            <div style="background: #f8f9fa; padding: 20px; border-radius: 15px; margin: 20px 0;">
-                <h3>Recent Activity</h3>
-                <ul style="list-style: none; padding: 0;">
-                    <li style="padding: 10px 0; border-bottom: 1px solid #eee;">Registration completed - Welcome to TAU Africa!</li>
-                    <li style="padding: 10px 0; border-bottom: 1px solid #eee;">Welcome email sent</li>
-                    <li style="padding: 10px 0;">Ready to start your journey!</li>
-                </ul>
-            </div>
-            
-            <div style="text-align: center; margin-top: 20px;">
-                <p><strong>Note:</strong> This is a dashboard preview. Full functionality available after registration.</p>
+            <div style="display: grid; gap: 15px; margin-top: 20px;">
+                ${generateAvailableTasks()}
             </div>
         </div>
     `;
     document.body.appendChild(modal);
 }
 
+// Generate available tasks
+function generateAvailableTasks() {
+    const taskTemplates = [
+        { title: 'Complete Profile Setup', category: 'Onboarding', reward: 100, description: 'Fill out all profile information' },
+        { title: 'Refer 3 Members', category: 'Growth', reward: 500, description: 'Successfully refer 3 new members' },
+        { title: 'Attend Training Workshop', category: 'Training', reward: 200, description: 'Participate in next training session' },
+        { title: 'Submit Community Feedback', category: 'Engagement', reward: 50, description: 'Share your thoughts on TAU Africa' },
+        { title: 'Post 5 Jobs', category: 'Contribution', reward: 250, description: 'Help others by posting job opportunities' },
+        { title: 'Complete Market Research', category: 'Research', reward: 300, description: 'Conduct market research in your area' },
+        { title: 'Join Community Program', category: 'Community', reward: 150, description: 'Actively participate in community initiative' },
+        { title: 'Write Success Story', category: 'Content', reward: 200, description: 'Share your TAU Africa experience' }
+    ];
+    
+    return taskTemplates.map(task => `
+        <div style="padding: 20px; background: white; border-radius: 10px; border: 2px solid #eee;">
+            <div style="display: flex; justify-content: space-between; align-items: start;">
+                <div style="flex: 1;">
+                    <h4 style="color: #2a5298; margin: 0 0 10px 0;">${task.title}</h4>
+                    <p style="margin: 0 0 10px 0; color: #666;">${task.description}</p>
+                    <div style="display: flex; gap: 15px; font-size: 0.9rem;">
+                        <span>📁 ${task.category}</span>
+                        <span style="color: #ffd700; font-weight: bold;">💰 ${task.reward} iKbp</span>
+                    </div>
+                </div>
+                <button class="btn btn-small" onclick="acceptTask('${task.title}', '${task.category}', ${task.reward}, '${task.description}')">
+                    Accept Task
+                </button>
+            </div>
+        </div>
+    `).join('');
+}
+
+// Accept task
+function acceptTask(title, category, reward, description) {
+    const member = window.TauDB.getCurrentMember();
+    if (!member) return;
+    
+    const result = window.TauDB.addTask(member.id, {
+        title,
+        category,
+        reward,
+        description,
+        dueDate: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString() // 7 days from now
+    });
+    
+    if (result.success) {
+        showNotification(`✅ Task "${title}" added! Complete it to earn ${reward} iKbp`, 'success');
+        closeAllModals();
+        showRealMemberDashboard(window.TauDB.getCurrentMember());
+    }
+}
+
+// Mark task complete
+function markTaskComplete(taskId) {
+    if (confirm('Mark this task as complete?')) {
+        const member = window.TauDB.getCurrentMember();
+        if (!member) return;
+        
+        const result = window.TauDB.completeTask(member.id, taskId);
+        
+        if (result.success) {
+            showNotification(
+                `🎉 Task completed! You earned ${result.earned} iKbp!\nNew balance: ${result.newBalance} iKbp (${(result.newBalance/10).toFixed(2)} KSH)`,
+                'success'
+            );
+            showRealMemberDashboard(window.TauDB.getCurrentMember());
+        } else {
+            showNotification('❌ Failed to complete task', 'error');
+        }
+    }
+}
+
+// View task details
+function viewTaskDetails(taskId) {
+    const member = window.TauDB.getCurrentMember();
+    const task = member.tasks.find(t => t.id === taskId);
+    
+    if (!task) return;
+    
+    const modal = document.createElement('div');
+    modal.className = 'modal';
+    modal.style.display = 'block';
+    modal.innerHTML = `
+        <div class="modal-content">
+            <span class="close" onclick="this.parentElement.parentElement.remove()">&times;</span>
+            <h2>${task.title}</h2>
+            <div style="margin: 20px 0;">
+                <p><strong>Category:</strong> ${task.category}</p>
+                <p><strong>Description:</strong> ${task.description}</p>
+                <p><strong>Status:</strong> ${task.status}</p>
+                <p><strong>Date Assigned:</strong> ${new Date(task.dateAssigned).toLocaleDateString()}</p>
+                ${task.dueDate ? `<p><strong>Due Date:</strong> ${new Date(task.dueDate).toLocaleDateString()}</p>` : ''}
+                <p><strong>Reward:</strong> ${task.iKbpReward} iKbp (${(task.iKbpReward/10).toFixed(2)} KSH)</p>
+                ${task.completedDate ? `<p><strong>Completed:</strong> ${new Date(task.completedDate).toLocaleDateString()}</p>` : ''}
+            </div>
+            ${task.status !== 'Completed' ? `
+                <button class="btn" onclick="markTaskComplete('${taskId}'); this.closest('.modal').remove();">
+                    Mark as Complete
+                </button>
+            ` : ''}
+        </div>
+    `;
+    document.body.appendChild(modal);
+}
+
+// Refresh tasks display
+function refreshTasksDisplay() {
+    const member = window.TauDB.getCurrentMember();
+    if (member) {
+        document.getElementById('dashboard-tasks').innerHTML = createTasksTab(member);
+    }
+}
+
+// ===== JOBS FUNCTIONS =====
+
+// Post new job
+function postNewJob() {
+    const modal = document.createElement('div');
+    modal.className = 'modal';
+    modal.style.display = 'block';
+    modal.innerHTML = `
+        <div class="modal-content">
+            <span class="close" onclick="this.parentElement.parentElement.remove()">&times;</span>
+            <h2>📝 Post New Job/Value</h2>
+            <p>Share opportunities with the community and earn 50 iKbp!</p>
+            
+            <form onsubmit="submitNewJob(event)">
+                <div class="form-group">
+                    <label>Job Title *</label>
+                    <input type="text" name="title" required>
+                </div>
+                <div class="form-group">
+                    <label>Category *</label>
+                    <select name="category" required>
+                        <option value="">Select category</option>
+                        <option>IT & Digital Economy</option>
+                        <option>Marketing & Advertisements</option>
+                        <option>Management</option>
+                        <option>Healthcare</option>
+                        <option>Sales & Customer Service</option>
+                        <option>Education & Training</option>
+                        <option>Engineering</option>
+                        <option>Finance & Accounting</option>
+                        <option>Agriculture & Food</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Location *</label>
+                    <input type="text" name="location" required>
+                </div>
+                <div class="form-group">
+                    <label>Description *</label>
+                    <textarea name="description" rows="4" required></textarea>
+                </div>
+                <div class="form-group">
+                    <label>Requirements</label>
+                    <textarea name="requirements" rows="3"></textarea>
+                </div>
+                <div class="form-group">
+                    <label>Salary Range</label>
+                    <input type="text" name="salary" placeholder="e.g., KSH 50,000 - 80,000">
+                </div>
+                <button type="submit" class="btn">Post Job & Earn 50 iKbp</button>
+            </form>
+        </div>
+    `;
+    document.body.appendChild(modal);
+}
+
+// Submit new job
+function submitNewJob(event) {
+    event.preventDefault();
+    const member = window.TauDB.getCurrentMember();
+    if (!member) return;
+    
+    const formData = new FormData(event.target);
+    const jobData = {
+        title: formData.get('title'),
+        category: formData.get('category'),
+        location: formData.get('location'),
+        description: formData.get('description'),
+        requirements: formData.get('requirements'),
+        salary: formData.get('salary')
+    };
+    
+    const result = window.TauDB.postJob(jobData, member.id);
+    
+    if (result.success) {
+        showNotification(`✅ Job posted successfully! You earned ${result.iKbpEarned} iKbp`, 'success');
+        closeAllModals();
+        showRealMemberDashboard(window.TauDB.getCurrentMember());
+    }
+}
+
+// Search jobs
+function searchJobs() {
+    const modal = document.createElement('div');
+    modal.className = 'modal';
+    modal.style.display = 'block';
+    modal.innerHTML = `
+        <div class="modal-content" style="max-width: 800px;">
+            <span class="close" onclick="this.parentElement.parentElement.remove()">&times;</span>
+            <h2>🔍 Search Jobs</h2>
+            
+            <div style="display: grid; gap: 15px; margin: 20px 0;">
+                <input type="text" id="jobSearchQuery" placeholder="Search by title, category, location..." style="padding: 12px; border: 2px solid #ddd; border-radius: 10px;">
+                <button class="btn" onclick="performJobSearch()">Search</button>
+            </div>
+            
+            <div id="searchResults"></div>
+        </div>
+    `;
+    document.body.appendChild(modal);
+}
+
+// Perform job search
+function performJobSearch() {
+    const query = document.getElementById('jobSearchQuery').value.toLowerCase();
+    const allJobs = JSON.parse(localStorage.getItem('tauJobsPortal') || '[]');
+    
+    const results = allJobs.filter(job => 
+        job.title.toLowerCase().includes(query) ||
+        job.category.toLowerCase().includes(query) ||
+        job.location.toLowerCase().includes(query)
+    );
+    
+    const resultsDiv = document.getElementById('searchResults');
+    if (results.length === 0) {
+        resultsDiv.innerHTML = '<p style="text-align: center; color: #999;">No jobs found</p>';
+    } else {
+        resultsDiv.innerHTML = `
+            <h4>Found ${results.length} job(s)</h4>
+            ${results.map(job => `
+                <div style="padding: 15px; background: #f8f9fa; border-radius: 10px; margin: 10px 0;">
+                    <h4>${job.title}</h4>
+                    <p>${job.category} • ${job.location}</p>
+                    <button class="btn btn-small" onclick="viewJobDetails('${job.id}')">View Details</button>
+                </div>
+            `).join('')}
+        `;
+    }
+}
+
+// Browse all jobs
+function browseAllJobs() {
+    const result = window.TauDB.getJobs();
+    
+    const modal = document.createElement('div');
+    modal.className = 'modal';
+    modal.style.display = 'block';
+    modal.innerHTML = `
+        <div class="modal-content" style="max-width: 900px;">
+            <span class="close" onclick="this.parentElement.parentElement.remove()">&times;</span>
+            <h2>📋 All Available Jobs</h2>
+            
+            <div style="margin: 20px 0;">
+                ${result.jobs.length === 0 ? `
+                    <p style="text-align: center; color: #999;">No jobs available at the moment</p>
+                ` : result.jobs.map(job => `
+                    <div style="padding: 20px; background: white; border-radius: 10px; border: 2px solid #eee; margin-bottom: 15px;">
+                        <div style="display: flex; justify-content: space-between; align-items: start;">
+                            <div style="flex: 1;">
+                                <h4 style="margin: 0 0 10px 0;">${job.title}</h4>
+                                <p style="margin: 0; color: #666;">${job.description}</p>
+                                <p style="margin: 10px 0 0 0; font-size: 0.9rem; color: #999;">
+                                    ${job.category} • ${job.location} • Posted ${new Date(job.datePosted).toLocaleDateString()}
+                                </p>
+                            </div>
+                            <button class="btn btn-small" onclick="applyToJob('${job.id}')">Apply</button>
+                        </div>
+                    </div>
+                `).join('')}
+            </div>
+        </div>
+    `;
+    document.body.appendChild(modal);
+}
+
+// View job details
+function viewJobDetails(jobId) {
+    const jobs = JSON.parse(localStorage.getItem('tauJobsPortal') || '[]');
+    const job = jobs.find(j => j.id === jobId);
+    
+    if (!job) return;
+    
+    const modal = document.createElement('div');
+    modal.className = 'modal';
+    modal.style.display = 'block';
+    modal.innerHTML = `
+        <div class="modal-content">
+            <span class="close" onclick="this.parentElement.parentElement.remove()">&times;</span>
+            <h2>${job.title}</h2>
+            <div style="margin: 20px 0;">
+                <p><strong>Category:</strong> ${job.category}</p>
+                <p><strong>Location:</strong> ${job.location}</p>
+                <p><strong>Description:</strong> ${job.description}</p>
+                ${job.requirements ? `<p><strong>Requirements:</strong> ${job.requirements}</p>` : ''}
+                ${job.salary ? `<p><strong>Salary:</strong> ${job.salary}</p>` : ''}
+                <p><strong>Posted:</strong> ${new Date(job.datePosted).toLocaleDateString()}</p>
+                <p><strong>Applications:</strong> ${job.applications.length}</p>
+            </div>
+            <button class="btn" onclick="applyToJob('${jobId}'); this.closest('.modal').remove();">
+                Apply for This Job
+            </button>
+        </div>
+    `;
+    document.body.appendChild(modal);
+}
+
+// Apply to job
+function applyToJob(jobId) {
+    const member = window.TauDB.getCurrentMember();
+    if (!member) {
+        showNotification('Please login to apply', 'error');
+        return;
+    }
+    
+    const applicationData = {
+        applicantName: member.fullName,
+        applicantEmail: member.email,
+        applicantPhone: member.phone,
+        coverLetter: 'Application submitted via TAU Africa portal'
+    };
+    
+    const result = window.TauDB.applyJob(jobId, member.id, applicationData);
+    
+    if (result.success) {
+        showNotification('✅ Application submitted successfully!', 'success');
+    } else {
+        showNotification('❌ Failed to submit application', 'error');
+    }
+}
+
+// View my applications
+function viewMyApplications() {
+    showNotification('My Applications feature coming soon!', 'info');
+}
+
+// Refresh jobs display
+function refreshJobsDisplay() {
+    const member = window.TauDB.getCurrentMember();
+    if (member) {
+        document.getElementById('dashboard-jobs').innerHTML = createJobsTab(member);
+    }
+}
+
+// ===== FORUM FUNCTIONS =====
+
+// Open forum category
+function openForumCategory(category) {
+    showNotification(`${category} forum launching soon!`, 'info');
+}
+
+// Join forum waitlist
+function joinForumWaitlist() {
+    showNotification('✅ You\'ve been added to the forum waitlist!', 'success');
+}
+
+// Add dashboard styles
+function addDashboardStyles() {
+    if (document.getElementById('dashboardStyles')) return;
+    
+    const style = document.createElement('style');
+    style.id = 'dashboardStyles';
+    style.textContent = `
+        .dashboard-tab {
+            padding: 12px 20px;
+            cursor: pointer;
+            border: none;
+            background: transparent;
+            color: #666;
+            font-weight: 600;
+            border-bottom: 3px solid transparent;
+            transition: all 0.3s;
+            font-size: 14px;
+        }
+        .dashboard-tab.active {
+            color: #4169e1;
+            border-bottom-color: #4169e1;
+        }
+        .dashboard-tab:hover {
+            color: #4169e1;
+            background: rgba(65, 105, 225, 0.05);
+        }
+        .dashboard-tab-content {
+            animation: fadeIn 0.3s ease-in;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+    `;
+    document.head.appendChild(style);
+}
+
+console.log('✅ Dashboard Interactive Functions Loaded');
 // ===== EVENT LISTENERS =====
 document.addEventListener('click', function(event) {
     if (event.target.classList.contains('modal')) {
