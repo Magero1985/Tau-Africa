@@ -5914,6 +5914,430 @@ window.TauDB = {
 };
 
 console.log('✅ TAU Database Sync Module Loaded');
+    // ===== ADDITIONAL UTILITIES & HELPER FUNCTIONS =====
+// Add these to BOTH Main App and Database for enhanced functionality
+
+// ===== DATA VALIDATION =====
+
+// Validate phone number
+function validatePhone(phone) {
+    const pattern = /^254[0-9]{9}$/;
+    if (!pattern.test(phone)) {
+        return {
+            valid: false,
+            message: 'Phone must be in format: 254XXXXXXXXX (Kenyan format)'
+        };
+    }
+    return { valid: true };
+}
+
+// Validate email
+function validateEmail(email) {
+    const pattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!pattern.test(email)) {
+        return { valid: false, message: 'Invalid email format' };
+    }
+    return { valid: true };
+}
+
+// Validate Member ID format
+function validateMemberID(id) {
+    const pattern = /^(TSK|TLK|JOB)-[0-9]{6}-[0-9]{3}$/;
+    return pattern.test(id);
+}
+
+// ===== DATA EXPORT UTILITIES =====
+
+// Export member data as PDF-ready format
+function generateMemberPDF(member) {
+    const data = `
+TAU AFRICA INTERNATIONAL
+MEMBER CERTIFICATE
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+MEMBER INFORMATION
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Member ID: ${member.id}
+Name: ${member.fullName}
+Team: ${member.team}
+Email: ${member.email}
+Phone: ${member.phone}
+Location: ${member.location}
+
+Date Joined: ${member.dateJoined}
+Status: ${member.status}
+Payment Status: ${member.paymentStatus}
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+REFERRAL INFORMATION
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Referral Code: ${member.referralCode}
+Referral Link: ${window.location.origin}?ref=${member.referralCode}
+
+Earn 500 iKbp (50 KSH) for each successful referral!
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+ACCOUNT SUMMARY
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+iKbp Balance: ${member.iKbpBalance || 0} iKbp
+Cash Value: KSH ${((member.iKbpBalance || 0) / 10).toFixed(2)}
+
+Active Tasks: ${(member.tasks || []).filter(t => t.status !== 'Completed').length}
+Completed Tasks: ${(member.tasks || []).filter(t => t.status === 'Completed').length}
+
+Activities: ${(member.activities || []).length}
+Jobs Posted: ${JSON.parse(localStorage.getItem('tauJobsPortal') || '[]').filter(j => j.posterId === member.id).length}
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+This certifies that the above named person is a registered
+member of TAU Africa International in good standing.
+
+Issued: ${new Date().toLocaleDateString()}
+
+TAU Africa Foundation
+Building Africa's Future Together
+grouptauafrica@gmail.com
+    `;
+    
+    return data;
+}
+
+// Download member certificate
+function downloadMemberCertificate() {
+    const member = window.TauDB.getCurrentMember();
+    if (!member) {
+        showNotification('Please login first', 'error');
+        return;
+    }
+    
+    const certificate = generateMemberPDF(member);
+    const blob = new Blob([certificate], { type: 'text/plain' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `TAU_Africa_Certificate_${member.id}.txt`;
+    a.click();
+    URL.revokeObjectURL(url);
+    
+    showNotification('✅ Certificate downloaded!', 'success');
+}
+
+// ===== STATISTICS & ANALYTICS =====
+
+// Calculate member statistics
+function getMemberStats(memberId) {
+    const member = window.TauDB.getCurrentMember() || 
+                  JSON.parse(localStorage.getItem('tauAfricaDB') || '[]').find(m => m.id === memberId);
+    
+    if (!member) return null;
+    
+    const tasksCompleted = (member.tasks || []).filter(t => t.status === 'Completed').length;
+    const tasksPending = (member.tasks || []).filter(t => t.status !== 'Completed').length;
+    const totaliKbpEarned = (member.tasks || [])
+        .filter(t => t.status === 'Completed')
+        .reduce((sum, t) => sum + (t.iKbpReward || 0), 0);
+    
+    const referralData = JSON.parse(localStorage.getItem('tauReferrals') || '{}');
+    const myReferrals = referralData[memberId] || { referredMembers: [], totalEarnings: 0 };
+    
+    const jobsPosted = JSON.parse(localStorage.getItem('tauJobsPortal') || '[]')
+        .filter(j => j.posterId === memberId).length;
+    
+    return {
+        member: {
+            id: member.id,
+            name: member.fullName,
+            team: member.team,
+            joinDate: member.dateJoined,
+            daysActive: Math.floor((Date.now() - new Date(member.accountCreated).getTime()) / (1000 * 60 * 60 * 24))
+        },
+        ikbp: {
+            balance: member.iKbpBalance || 0,
+            cashValue: ((member.iKbpBalance || 0) / 10).toFixed(2),
+            earnedFromTasks: totaliKbpEarned,
+            earnedFromReferrals: myReferrals.totalEarnings,
+            earnedFromJobs: jobsPosted * 50
+        },
+        tasks: {
+            total: (member.tasks || []).length,
+            completed: tasksCompleted,
+            pending: tasksPending,
+            completionRate: tasksCompleted > 0 ? ((tasksCompleted / (member.tasks || []).length) * 100).toFixed(1) : 0
+        },
+        activities: {
+            total: (member.activities || []).length,
+            active: (member.activities || []).filter(a => a.status === 'Active').length
+        },
+        referrals: {
+            total: myReferrals.referredMembers.length,
+            earnings: myReferrals.totalEarnings,
+            potential: `${myReferrals.referredMembers.length * 500} iKbp earned`
+        },
+        jobs: {
+            posted: jobsPosted,
+            earningsFromPosting: jobsPosted * 50
+        }
+    };
+}
+
+// Display member stats
+function displayMemberStats() {
+    const member = window.TauDB.getCurrentMember();
+    if (!member) {
+        showNotification('Please login first', 'error');
+        return;
+    }
+    
+    const stats = getMemberStats(member.id);
+    
+    const modal = document.createElement('div');
+    modal.className = 'modal';
+    modal.style.display = 'block';
+    modal.innerHTML = `
+        <div class="modal-content" style="max-width: 800px;">
+            <span class="close" onclick="this.parentElement.parentElement.remove()">&times;</span>
+            <h2>📊 My Statistics</h2>
+            
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px; margin: 20px 0;">
+                <!-- iKbp Stats -->
+                <div style="background: linear-gradient(135deg, #ffd700, #ffed4e); padding: 20px; border-radius: 10px;">
+                    <h3 style="color: #333; margin: 0 0 10px 0;">💰 iKbp Earnings</h3>
+                    <p style="color: #333; margin: 5px 0;"><strong>Balance:</strong> ${stats.ikbp.balance} iKbp</p>
+                    <p style="color: #333; margin: 5px 0;"><strong>Cash Value:</strong> KSH ${stats.ikbp.cashValue}</p>
+                    <p style="color: #333; margin: 5px 0; font-size: 0.9rem;">From Tasks: ${stats.ikbp.earnedFromTasks}</p>
+                    <p style="color: #333; margin: 5px 0; font-size: 0.9rem;">From Referrals: ${stats.ikbp.earnedFromReferrals}</p>
+                    <p style="color: #333; margin: 5px 0; font-size: 0.9rem;">From Jobs: ${stats.ikbp.earnedFromJobs}</p>
+                </div>
+                
+                <!-- Tasks Stats -->
+                <div style="background: linear-gradient(135deg, #667eea, #764ba2); padding: 20px; border-radius: 10px; color: white;">
+                    <h3 style="margin: 0 0 10px 0;">✅ Tasks Performance</h3>
+                    <p style="margin: 5px 0;"><strong>Total:</strong> ${stats.tasks.total}</p>
+                    <p style="margin: 5px 0;"><strong>Completed:</strong> ${stats.tasks.completed}</p>
+                    <p style="margin: 5px 0;"><strong>Pending:</strong> ${stats.tasks.pending}</p>
+                    <p style="margin: 5px 0;"><strong>Success Rate:</strong> ${stats.tasks.completionRate}%</p>
+                </div>
+                
+                <!-- Referrals Stats -->
+                <div style="background: linear-gradient(135deg, #2ecc71, #27ae60); padding: 20px; border-radius: 10px; color: white;">
+                    <h3 style="margin: 0 0 10px 0;">🎁 Referrals</h3>
+                    <p style="margin: 5px 0;"><strong>Total:</strong> ${stats.referrals.total}</p>
+                    <p style="margin: 5px 0;"><strong>Earnings:</strong> ${stats.referrals.earnings} iKbp</p>
+                    <p style="margin: 5px 0; font-size: 0.9rem;">${stats.referrals.potential}</p>
+                    <button class="btn" onclick="copyReferralLink('${member.referralCode}')" style="margin-top: 10px; width: 100%;">
+                        Share Link
+                    </button>
+                </div>
+                
+                <!-- Activity Stats -->
+                <div style="background: linear-gradient(135deg, #ff6b6b, #ee5a24); padding: 20px; border-radius: 10px; color: white;">
+                    <h3 style="margin: 0 0 10px 0;">📚 Activities</h3>
+                    <p style="margin: 5px 0;"><strong>Total:</strong> ${stats.activities.total}</p>
+                    <p style="margin: 5px 0;"><strong>Active:</strong> ${stats.activities.active}</p>
+                    <p style="margin: 5px 0;"><strong>Jobs Posted:</strong> ${stats.jobs.posted}</p>
+                </div>
+            </div>
+            
+            <div style="background: #f8f9fa; padding: 20px; border-radius: 10px;">
+                <h4 style="color: #2a5298; margin-bottom: 10px;">Account Summary</h4>
+                <p><strong>Member Since:</strong> ${stats.member.joinDate} (${stats.member.daysActive} days)</p>
+                <p><strong>Team:</strong> ${stats.member.team}</p>
+                <p><strong>Total iKbp Balance:</strong> ${stats.ikbp.balance} iKbp (KSH ${stats.ikbp.cashValue})</p>
+            </div>
+            
+            <div style="margin-top: 20px; text-align: center;">
+                <button class="btn" onclick="downloadMemberCertificate()">📥 Download Certificate</button>
+                <button class="btn btn-success" onclick="window.open('https://magero1985.github.io/Kabiru-Mining-Portal-/', '_blank')">
+                    ⚡ Convert to Kabiru
+                </button>
+            </div>
+        </div>
+    `;
+    document.body.appendChild(modal);
+}
+
+// ===== NOTIFICATION SYSTEM =====
+
+// Queue for notifications
+let notificationQueue = [];
+let isShowingNotification = false;
+
+// Enhanced notification with queue
+function showNotificationQueued(message, type = 'success', duration = 5000) {
+    notificationQueue.push({ message, type, duration });
+    processNotificationQueue();
+}
+
+function processNotificationQueue() {
+    if (isShowingNotification || notificationQueue.length === 0) return;
+    
+    isShowingNotification = true;
+    const { message, type, duration } = notificationQueue.shift();
+    
+    const notif = document.getElementById('notification');
+    notif.innerHTML = message;
+    notif.className = `notification ${type}`;
+    notif.style.display = 'block';
+    
+    setTimeout(() => {
+        notif.style.display = 'none';
+        isShowingNotification = false;
+        processNotificationQueue();
+    }, duration);
+}
+
+// ===== LOCAL STORAGE MANAGEMENT =====
+
+// Backup all data
+function backupAllData() {
+    const backup = {
+        timestamp: new Date().toISOString(),
+        members: localStorage.getItem('tauAfricaDB'),
+        credentials: localStorage.getItem('tauCredentials'),
+        referrals: localStorage.getItem('tauReferrals'),
+        jobs: localStorage.getItem('tauJobsPortal'),
+        settings: {
+            emailServiceId: localStorage.getItem('emailServiceId'),
+            emailTemplateId: localStorage.getItem('emailTemplateId'),
+            orgEmail: localStorage.getItem('orgEmail'),
+            webhookUrl: localStorage.getItem('webhookUrl')
+        }
+    };
+    
+    const blob = new Blob([JSON.stringify(backup, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `TAU_Africa_Backup_${new Date().toISOString().split('T')[0]}.json`;
+    a.click();
+    URL.revokeObjectURL(url);
+    
+    showNotification('✅ Complete backup created!', 'success');
+}
+
+// Restore from backup
+function restoreFromBackup(file) {
+    const reader = new FileReader();
+    reader.onload = function(e) {
+        try {
+            const backup = JSON.parse(e.target.result);
+            
+            if (confirm('⚠️ This will replace all current data. Continue?')) {
+                localStorage.setItem('tauAfricaDB', backup.members);
+                localStorage.setItem('tauCredentials', backup.credentials);
+                localStorage.setItem('tauReferrals', backup.referrals);
+                localStorage.setItem('tauJobsPortal', backup.jobs);
+                
+                if (backup.settings) {
+                    Object.keys(backup.settings).forEach(key => {
+                        if (backup.settings[key]) {
+                            localStorage.setItem(key, backup.settings[key]);
+                        }
+                    });
+                }
+                
+                showNotification('✅ Backup restored! Refreshing...', 'success');
+                setTimeout(() => window.location.reload(), 2000);
+            }
+        } catch (error) {
+            showNotification('❌ Invalid backup file', 'error');
+        }
+    };
+    reader.readAsText(file);
+}
+
+// ===== DATA CLEANUP =====
+
+// Remove inactive members (optional utility)
+function cleanupInactiveMembers(daysInactive = 90) {
+    const cutoffDate = Date.now() - (daysInactive * 24 * 60 * 60 * 1000);
+    const members = JSON.parse(localStorage.getItem('tauAfricaDB') || '[]');
+    
+    const active = members.filter(m => {
+        const lastActive = m.lastLogin ? new Date(m.lastLogin).getTime() : new Date(m.accountCreated).getTime();
+        return lastActive > cutoffDate;
+    });
+    
+    if (confirm(`This will remove ${members.length - active.length} inactive members. Continue?`)) {
+        localStorage.setItem('tauAfricaDB', JSON.stringify(active));
+        showNotification(`✅ Removed ${members.length - active.length} inactive members`, 'success');
+        return members.length - active.length;
+    }
+    
+    return 0;
+}
+
+// ===== QUICK ACTIONS =====
+
+// Add quick action buttons to dashboard
+function addQuickActionsBar() {
+    const member = window.TauDB.getCurrentMember();
+    if (!member) return;
+    
+    const quickBar = document.createElement('div');
+    quickBar.id = 'quickActionsBar';
+    quickBar.style.cssText = `
+        position: fixed;
+        bottom: 20px;
+        right: 20px;
+        display: flex;
+        gap: 10px;
+        z-index: 999;
+    `;
+    
+    quickBar.innerHTML = `
+        <button onclick="displayMemberStats()" style="padding: 12px 20px; background: linear-gradient(45deg, #4169e1, #87ceeb); color: white; border: none; border-radius: 25px; cursor: pointer; font-weight: bold; box-shadow: 0 4px 12px rgba(0,0,0,0.3);">
+            📊 Stats
+        </button>
+        <button onclick="downloadMemberCertificate()" style="padding: 12px 20px; background: linear-gradient(45deg, #2ecc71, #27ae60); color: white; border: none; border-radius: 25px; cursor: pointer; font-weight: bold; box-shadow: 0 4px 12px rgba(0,0,0,0.3);">
+            📥 Certificate
+        </button>
+    `;
+    
+    document.body.appendChild(quickBar);
+}
+
+// ===== INITIALIZATION =====
+
+// Initialize utilities when page loads
+document.addEventListener('DOMContentLoaded', function() {
+    console.log('✅ Utilities Loaded');
+    
+    // Add quick actions if member is logged in
+    setTimeout(() => {
+        const member = window.TauDB?.getCurrentMember();
+        if (member) {
+            addQuickActionsBar();
+        }
+    }, 1000);
+});
+
+// Export utilities for use
+window.TauUtilities = {
+    validate: {
+        phone: validatePhone,
+        email: validateEmail,
+        memberID: validateMemberID
+    },
+    stats: {
+        getMember: getMemberStats,
+        display: displayMemberStats
+    },
+    export: {
+        certificate: downloadMemberCertificate,
+        backup: backupAllData,
+        restore: restoreFromBackup
+    },
+    cleanup: {
+        inactive: cleanupInactiveMembers
+    }
+};
+
+console.log('✅ TAU Utilities Ready');
 </script>
 </body>
     </html>
