@@ -2,69 +2,20 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes">
-<meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="default">
-<meta name="format-detection" content="telephone=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="format-detection" content="telephone=no">
     <title>TAU AFRICA INTERNATIONAL</title>
     
     <!-- EmailJS SDK -->
     <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
     
     <style>
-        /* Safari/iOS Compatibility Fixes */
-* {
-    -webkit-tap-highlight-color: transparent;
-    -webkit-touch-callout: none;
-}
-
-body {
-    -webkit-overflow-scrolling: touch;
-    overflow-scrolling: touch;
-}
-
-/* Fix buttons on iOS */
-button, input[type="submit"], input[type="button"] {
-    -webkit-appearance: none;
-    -moz-appearance: none;
-    appearance: none;
-    cursor: pointer;
-}
-
-/* Fix inputs on iOS */
-input, select, textarea {
-    -webkit-appearance: none;
-    -moz-appearance: none;
-    appearance: none;
-    border-radius: 10px;
-}
-
-/* Fix modal scrolling on iOS */
-.modal {
-    -webkit-overflow-scrolling: touch;
-    overflow-scrolling: touch;
-}
-
-.modal-content {
-    -webkit-overflow-scrolling: touch;
-    overflow-scrolling: touch;
-}
-
-/* Fix for Safari date input */
-input[type="date"] {
-    -webkit-appearance: none;
-    appearance: none;
-    min-height: 44px;
-}
-
-/* Fix button clicks on iOS */
-.btn, .level-btn, .house-btn, .corporate-btn {
-    cursor: pointer;
-    -webkit-user-select: none;
-    user-select: none;
-    touch-action: manipulation;
-}
+        /* iOS/Android Compatibility */
         * {
+            -webkit-tap-highlight-color: transparent;
+            -webkit-touch-callout: none;
             margin: 0;
             padding: 0;
             box-sizing: border-box;
@@ -75,6 +26,23 @@ input[type="date"] {
             background: linear-gradient(135deg, #1e3c72, #2a5298, #87ceeb);
             min-height: 100vh;
             color: #333;
+            -webkit-overflow-scrolling: touch;
+        }
+
+        button, input[type="submit"], input[type="button"] {
+            -webkit-appearance: none;
+            appearance: none;
+            cursor: pointer;
+        }
+
+        input, select, textarea {
+            -webkit-appearance: none;
+            appearance: none;
+            border-radius: 10px;
+        }
+
+        input[type="date"] {
+            min-height: 44px;
         }
 
         .container {
@@ -83,6 +51,7 @@ input[type="date"] {
             padding: 20px;
         }
 
+        /* Header Styles */
         .header {
             text-align: center;
             margin-bottom: 30px;
@@ -93,33 +62,6 @@ input[type="date"] {
             box-shadow: 0 10px 30px rgba(0,0,0,0.3);
             position: relative;
             overflow: hidden;
-        }
-
-        .emancipation-scroll {
-            position: absolute;
-            bottom: 5px;
-            left: 0;
-            width: 100%;
-            height: 20px;
-            overflow: hidden;
-            background: rgba(255, 215, 0, 0.2);
-            border-radius: 10px;
-        }
-
-        .emancipation-text {
-            display: inline-block;
-            white-space: nowrap;
-            font-size: 12px;
-            font-weight: bold;
-            color: #ffd700;
-            animation: scrollText 15s linear infinite;
-            line-height: 20px;
-            text-shadow: 1px 1px 2px rgba(0,0,0,0.5);
-        }
-
-        @keyframes scrollText {
-            0% { transform: translateX(100%); }
-            100% { transform: translateX(-100%); }
         }
 
         .logo {
@@ -175,6 +117,34 @@ input[type="date"] {
             transform: scale(1.05);
         }
 
+        .emancipation-scroll {
+            position: absolute;
+            bottom: 5px;
+            left: 0;
+            width: 100%;
+            height: 20px;
+            overflow: hidden;
+            background: rgba(255, 215, 0, 0.2);
+            border-radius: 10px;
+        }
+
+        .emancipation-text {
+            display: inline-block;
+            white-space: nowrap;
+            font-size: 12px;
+            font-weight: bold;
+            color: #ffd700;
+            animation: scrollText 15s linear infinite;
+            line-height: 20px;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.5);
+        }
+
+        @keyframes scrollText {
+            0% { transform: translateX(100%); }
+            100% { transform: translateX(-100%); }
+        }
+
+        /* Wings Container */
         .wings-container {
             display: grid;
             grid-template-columns: 1fr 1fr;
@@ -234,6 +204,7 @@ input[type="date"] {
             transition: all 0.3s ease;
             text-align: center;
             font-weight: bold;
+            touch-action: manipulation;
         }
 
         .house-btn:hover, .corporate-btn:hover {
@@ -251,6 +222,7 @@ input[type="date"] {
             margin-top: 15px;
         }
 
+        /* Main Sections */
         .main-sections {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
@@ -279,6 +251,7 @@ input[type="date"] {
             text-align: center;
         }
 
+        /* Buttons */
         .btn {
             background: linear-gradient(45deg, #4169e1, #87ceeb);
             color: white;
@@ -291,6 +264,7 @@ input[type="date"] {
             margin: 5px;
             display: inline-block;
             text-decoration: none;
+            touch-action: manipulation;
         }
 
         .btn:hover {
@@ -313,6 +287,16 @@ input[type="date"] {
             margin-top: 20px;
         }
 
+        .btn-small {
+            padding: 8px 16px;
+            font-size: 0.9rem;
+        }
+
+        .btn-success {
+            background: linear-gradient(45deg, #2ecc71, #27ae60);
+        }
+
+        /* Modal Styles */
         .modal {
             display: none;
             position: fixed;
@@ -323,6 +307,7 @@ input[type="date"] {
             height: 100%;
             background-color: rgba(0,0,0,0.7);
             overflow-y: auto;
+            -webkit-overflow-scrolling: touch;
         }
 
         .modal-content {
@@ -335,6 +320,7 @@ input[type="date"] {
             max-height: 95vh;
             overflow-y: auto;
             position: relative;
+            -webkit-overflow-scrolling: touch;
         }
 
         .close {
@@ -352,6 +338,7 @@ input[type="date"] {
             color: #000;
         }
 
+        /* Form Styles */
         .form-group {
             margin-bottom: 20px;
         }
@@ -363,7 +350,9 @@ input[type="date"] {
             color: #2a5298;
         }
 
-        .form-group input, .form-group select, .form-group textarea {
+        .form-group input, 
+        .form-group select, 
+        .form-group textarea {
             width: 100%;
             padding: 12px;
             border: 2px solid #ddd;
@@ -371,7 +360,9 @@ input[type="date"] {
             font-size: 16px;
         }
 
-        .form-group input:focus, .form-group select:focus, .form-group textarea:focus {
+        .form-group input:focus, 
+        .form-group select:focus, 
+        .form-group textarea:focus {
             border-color: #4169e1;
             outline: none;
         }
@@ -399,6 +390,7 @@ input[type="date"] {
             cursor: pointer;
             transition: all 0.3s ease;
             text-align: center;
+            touch-action: manipulation;
         }
 
         .level-btn.selected {
@@ -406,6 +398,7 @@ input[type="date"] {
             color: white;
         }
 
+        /* Kabiru Section */
         .kabiru-section {
             background: linear-gradient(135deg, #ffd700, #ffed4e);
             color: #333;
@@ -415,6 +408,7 @@ input[type="date"] {
             margin-top: 30px;
         }
 
+        /* Payment Modal */
         .payment-modal {
             position: fixed;
             top: 0;
@@ -462,6 +456,7 @@ input[type="date"] {
             100% { transform: rotate(360deg); }
         }
 
+        /* Notification */
         .notification {
             position: fixed;
             top: 20px;
@@ -470,14 +465,17 @@ input[type="date"] {
             border-radius: 10px;
             color: white;
             font-weight: bold;
-            z-index: 1001;
+            z-index: 3000;
             display: none;
             max-width: 350px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
         }
 
         .success { background: #2ecc71; }
         .error { background: #e74c3c; }
+        .info { background: #3498db; }
 
+        /* Floating Buttons */
         .floating-btn {
             position: fixed;
             bottom: 30px;
@@ -528,6 +526,7 @@ input[type="date"] {
             100% { box-shadow: 0 0 0 0 rgba(255, 107, 107, 0); }
         }
 
+        /* AI Chat Window */
         .ai-chat-window {
             position: fixed;
             bottom: 170px;
@@ -598,6 +597,7 @@ input[type="date"] {
             cursor: pointer;
         }
 
+        /* Responsive Design */
         @media (max-width: 768px) {
             .wings-container {
                 grid-template-columns: 1fr;
@@ -787,7 +787,7 @@ input[type="date"] {
     </div>
 
 <script>
-// Initialize EmailJS with iOS compatibility
+// Initialize EmailJS
 (function() {
     try {
         emailjs.init({
@@ -796,7 +796,6 @@ input[type="date"] {
         console.log('✅ EmailJS initialized successfully');
     } catch (error) {
         console.error('❌ EmailJS initialization failed:', error);
-        alert('Email system initialization failed. Please refresh the page.');
     }
 })();
     
@@ -804,14 +803,11 @@ input[type="date"] {
 let currentModal = null;
 let selectedLevel = '';
 let selectedCategory = '';
-
-// ===== FIXED EMAIL SENDING FUNCTION =====
 function sendEmailToOrganization(formData, subject) {
     console.log('📧 Attempting to send email...');
     console.log('Subject:', subject);
     console.log('Form Data:', formData);
 
-    // Create detailed message content
     let messageContent = `${subject}\n\n`;
     for (let key in formData) {
         if (formData.hasOwnProperty(key)) {
@@ -829,20 +825,15 @@ function sendEmailToOrganization(formData, subject) {
         location: formData.location || formData.country || 'Not provided'
     };
 
-    console.log('📨 Sending email with template: template_bqxztig');
-    console.log('📨 Template params:', templateParams);
+    console.log('📨 Sending email with params:', templateParams);
 
     return emailjs.send('service_xfira7g', 'template_bqxztig', templateParams)
         .then(function(response) {
-            console.log('✅ SUCCESS! Email sent:', response.status, response.text);
-            console.log('✅ Full response:', response);
+            console.log('✅ Email sent successfully:', response);
             return true;
         })
         .catch(function(error) {
-            console.error('❌ FAILED! Email error:', error);
-            console.error('❌ Error status:', error.status);
-            console.error('❌ Error text:', error.text);
-            console.error('❌ Full error object:', error);
+            console.error('❌ Email error:', error);
             return false;
         });
 }
@@ -931,7 +922,7 @@ function cancelPayment() {
 }
 
 // ===== NOTIFICATION SYSTEM =====
-function showNotification(message, type = 'success') {
+function showNotification(message, type = 'success', duration = 6000) {
     const notification = document.getElementById('notification');
     notification.innerHTML = message;
     notification.className = `notification ${type}`;
@@ -939,7 +930,7 @@ function showNotification(message, type = 'success') {
     
     setTimeout(() => {
         notification.style.display = 'none';
-    }, 6000);
+    }, duration);
 }
 
 // ===== MODAL MANAGEMENT =====
@@ -991,7 +982,13 @@ function selectCategory(category, element) {
     if (categoryInput) categoryInput.value = category;
 }
 
-// ===== FORM SUBMISSION HANDLERS =====
+// ===== CHECK REFERRAL CODE =====
+function checkReferralCode() {
+    const urlParams = new URLSearchParams(window.location.search);
+    return urlParams.get('ref');
+}
+
+// ===== TASK REGISTRATION =====
 function processTaskRegistration(event) {
     event.preventDefault();
     const form = event.target;
@@ -1012,6 +1009,42 @@ function processTaskRegistration(event) {
     initiateMpesaPayment(500, data.phone, data, 'processTaskSuccess');
 }
 
+function processTaskSuccess(formData) {
+    console.log('Processing TASK registration with database sync...');
+    
+    const referralCode = checkReferralCode();
+    
+    const syncResult = window.TauDB.sync(formData, 'TASK', referralCode);
+    
+    if (syncResult.success) {
+        const member = syncResult.member;
+        
+        window.TauDB.sendWelcomeEmail(member)
+            .then(() => {
+                console.log('✅ Welcome email sent');
+            })
+            .catch(err => {
+                console.error('Email error:', err);
+            });
+        
+        sendEmailToOrganization(formData, 'NEW TASK TEAM REGISTRATION - PAYMENT CONFIRMED')
+            .then(() => {
+                console.log('✅ Organization notified');
+            });
+        
+        showNotification(
+            `✅ Registration Complete!\n\nMember ID: ${member.id}\nReferral Code: ${member.referralCode}\n\nShare your referral code and earn 500 iKbp (50 KSH) per referral!`,
+            'success'
+        );
+        
+        showSuccessModal(member);
+        closeAllModals();
+    } else {
+        showNotification(`⚠️ Registration processed but sync failed: ${syncResult.error}`, 'error');
+    }
+}
+
+// ===== TALK REGISTRATION =====
 function processTalkRegistration(event) {
     event.preventDefault();
     const form = event.target;
@@ -1032,6 +1065,42 @@ function processTalkRegistration(event) {
     initiateMpesaPayment(2000, data.phone, data, 'processTalkSuccess');
 }
 
+function processTalkSuccess(formData) {
+    console.log('Processing TALK registration with database sync...');
+    
+    const referralCode = checkReferralCode();
+    
+    const syncResult = window.TauDB.sync(formData, 'TALK', referralCode);
+    
+    if (syncResult.success) {
+        const member = syncResult.member;
+        
+        window.TauDB.sendWelcomeEmail(member)
+            .then(() => {
+                console.log('✅ Welcome email sent');
+            })
+            .catch(err => {
+                console.error('Email error:', err);
+            });
+        
+        sendEmailToOrganization(formData, 'NEW TALK TEAM REGISTRATION - PAYMENT CONFIRMED')
+            .then(() => {
+                console.log('✅ Organization notified');
+            });
+        
+        showNotification(
+            `✅ Registration Complete!\n\nMember ID: ${member.id}\nReferral Code: ${member.referralCode}\n\nShare your referral code and earn 500 iKbp (50 KSH) per referral!`,
+            'success'
+        );
+        
+        showSuccessModal(member);
+        closeAllModals();
+    } else {
+        showNotification(`⚠️ Registration processed but sync failed: ${syncResult.error}`, 'error');
+    }
+}
+
+// ===== JOB CREATION TRAINING =====
 function processJobCreationTraining(event) {
     event.preventDefault();
     const form = event.target;
@@ -1050,167 +1119,125 @@ function processJobCreationTraining(event) {
     
     initiateMpesaPayment(1500, data.phone, data, 'processJobCreationSuccess');
 }
-    // ===== DATABASE INTEGRATION FUNCTION =====
-function syncToDatabase(formData, team) {
-    try {
-        const dbKey = 'tauAfricaDB';
-        const existingMembers = JSON.parse(
-            localStorage.getItem(dbKey) || '[]'
+
+function processJobCreationSuccess(formData) {
+    console.log('Processing Job Creation enrollment with database sync...');
+    
+    const referralCode = checkReferralCode();
+    
+    const syncResult = window.TauDB.sync(formData, 'JOB_CREATION', referralCode);
+    
+    if (syncResult.success) {
+        const member = syncResult.member;
+        
+        window.TauDB.sendWelcomeEmail(member)
+            .then(() => {
+                console.log('✅ Welcome email sent');
+            })
+            .catch(err => {
+                console.error('Email error:', err);
+            });
+        
+        sendEmailToOrganization(formData, 'JOB CREATION TRAINING ENROLLMENT - PAYMENT CONFIRMED')
+            .then(() => {
+                console.log('✅ Organization notified');
+            });
+        
+        showNotification(
+            `✅ Training Enrollment Complete!\n\nMember ID: ${member.id}\nReferral Code: ${member.referralCode}`,
+            'success'
         );
         
-        // Generate unique Member ID
-        const prefix = team === 'TASK' ? 'TSK' : team === 'TALK' ? 'TLK' : 'JOB';
-        const timestamp = Date.now().toString().slice(-6);
-        const random = Math.floor(Math.random() * 1000).toString().padStart(3, '0');
-        const memberId = `${prefix}-${timestamp}-${random}`;
-        
-        // Create member object
-        const member = {
-            id: memberId,
-            team: team,
-            fullName: formData.fullName || formData.name,
-            email: formData.email,
-            phone: formData.phone,
-            location: formData.location,
-            paymentStatus: 'Paid',
-            dateJoined: new Date().toISOString().split('T')[0],
-            status: 'Active',
-            fee: team === 'TASK' ? 500 : team === 'TALK' ? 2000 : 1500
-        };
-        
-        // Add team-specific fields
-        if (team === 'TASK') {
-            member.dateOfBirth = formData.dateOfBirth;
-            member.gender = formData.gender;
-            member.nationality = formData.nationality;
-            member.category = formData.category;
-            member.valueDescription = formData.valueDescription;
-            member.experience = formData.experience;
-            member.certifications = formData.certifications;
-            member.languages = formData.languages;
-            member.goodConduct = formData.goodConduct;
-            member.healthStatus = formData.healthStatus;
-            member.trackRecord = formData.trackRecord;
-            member.familySupport = formData.familySupport;
-            member.education = formData.education;
-            member.emergencyContact = formData.emergencyContact;
-            member.referralSource = formData.referralSource;
-        } else if (team === 'TALK') {
-            member.organizationType = formData.organizationType;
-            member.website = formData.website;
-            member.supportLevel = formData.supportLevel;
-            member.supportTypes = formData.supportTypes;
-            member.focusAreas = formData.focusAreas;
-            member.geographicFocus = formData.geographicFocus;
-            member.investmentCriteria = formData.investmentCriteria;
-            member.previousInvestments = formData.previousInvestments;
-            member.goodConduct = formData.goodConduct;
-            member.healthStatus = formData.healthStatus;
-            member.financialTrack = formData.financialTrack;
-            member.netWorth = formData.netWorth;
-            member.familyFinancial = formData.familyFinancial;
-        } else if (team === 'JOB_CREATION') {
-            member.ageRange = formData.ageRange;
-            member.employmentStatus = formData.employmentStatus;
-            member.businessIdea = formData.businessIdea;
-            member.targetMarket = formData.targetMarket;
-            member.startupFunds = formData.startupFunds;
-            member.education = formData.education;
-            member.relevantSkills = formData.relevantSkills;
-            member.focus = formData.focus;
-            member.learningFormat = formData.learningFormat;
-            member.businessTimeline = formData.businessTimeline;
-        }
-        
-        // Add to database
-        existingMembers.push(member);
-        localStorage.setItem(dbKey, JSON.stringify(existingMembers));
-        
-        console.log('✅ Member synced to database:', memberId);
-        return memberId;
-        
-    } catch (error) {
-        console.error('❌ Database sync error:', error);
-        return 'ERROR-' + Date.now();
+        showSuccessModal(member);
+        closeAllModals();
+    } else {
+        showNotification(`⚠️ Enrollment processed but sync failed: ${syncResult.error}`, 'error');
     }
 }
 
-// ===== SUCCESS HANDLERS WITH FIXED EMAIL =====
-function processTaskSuccess(formData) {
-    console.log('Processing TASK success with email...');
-    
-    // 🔥 SYNC TO DATABASE FIRST
-    const memberId = syncToDatabase(formData, 'TASK');
-    
-    sendEmailToOrganization(formData, 'NEW TASK TEAM REGISTRATION - PAYMENT CONFIRMED')
-        .then(success => {
-            if (success) {
-                showNotification(`✅ Registration complete! Your Member ID: ${memberId}. Welcome to TASK team!`, 'success');
-                
-                // Show Member ID prominently
-                alert(`🎉 REGISTRATION SUCCESSFUL!\n\nYour Member ID: ${memberId}\n\nSave this ID - you'll need it to access the Member Portal and other TAU Africa services.`);
-                
-                closeAllModals();
-            } else {
-                showNotification(`⚠️ Registered! Your ID: ${memberId}. Email notification failed but you're in the database.`, 'error');
-            }
-        });
+// ===== SUCCESS MODAL =====
+function showSuccessModal(member) {
+    const modal = document.createElement('div');
+    modal.className = 'modal';
+    modal.style.display = 'block';
+    modal.innerHTML = `
+        <div class="modal-content">
+            <h2 style="color: #2ecc71; text-align: center;">🎉 Registration Successful!</h2>
+            
+            <div style="background: linear-gradient(45deg, #4169e1, #87ceeb); color: white; padding: 30px; border-radius: 15px; margin: 20px 0; text-align: center;">
+                <h3>Your Member ID</h3>
+                <h1 style="font-size: 2.5rem; margin: 15px 0; letter-spacing: 2px;">${member.id}</h1>
+                <p style="font-size: 1.1rem;">Save this ID - You'll need it to login!</p>
+            </div>
+            
+            <div style="background: #f8f9fa; padding: 20px; border-radius: 10px; margin: 20px 0;">
+                <h4 style="color: #2a5298; margin-bottom: 15px;">📧 Login Credentials</h4>
+                <p><strong>Email:</strong> ${member.email}</p>
+                <p><strong>Phone (last 4 digits):</strong> ${member.phone.slice(-4)}</p>
+                <p style="margin-top: 15px;"><strong>Team:</strong> ${member.team}</p>
+                <p><strong>Membership Fee:</strong> KSH ${member.fee}</p>
+            </div>
+            
+            <div style="background: linear-gradient(45deg, #ffd700, #ffed4e); padding: 20px; border-radius: 10px; margin: 20px 0;">
+                <h4 style="color: #333; margin-bottom: 10px;">💰 Referral Program</h4>
+                <p style="color: #333;"><strong>Your Referral Code:</strong></p>
+                <h2 style="color: #333; margin: 10px 0; letter-spacing: 3px;">${member.referralCode}</h2>
+                <p style="color: #333; font-size: 0.9rem;">Share this code and earn 500 iKbp (50 KSH) for each successful referral!</p>
+                <button class="btn" onclick="copyReferralLink('${member.referralCode}')" style="margin-top: 10px;">
+                    📋 Copy Referral Link
+                </button>
+            </div>
+            
+            <div style="background: #e3f2fd; padding: 20px; border-radius: 10px; margin: 20px 0;">
+                <h4 style="color: #1976d2;">📨 Welcome Email Sent</h4>
+                <p>Check your email (${member.email}) for:</p>
+                <ul style="margin-top: 10px;">
+                    <li>Complete login instructions</li>
+                    <li>Your referral link</li>
+                    <li>Getting started guide</li>
+                    <li>Kabiru Mining access</li>
+                </ul>
+            </div>
+            
+            <div style="margin-top: 30px;">
+                <button class="btn" onclick="proceedToLogin()" style="width: 100%; font-size: 1.1rem;">
+                    🚀 Access Your Account Now
+                </button>
+                <button class="btn" onclick="closeAllModals()" style="width: 100%; margin-top: 10px; background: #95a5a6;">
+                    Close
+                </button>
+            </div>
+        </div>
+    `;
+    document.body.appendChild(modal);
 }
 
-function processTalkSuccess(formData) {
-    console.log('Processing TALK success with email...');
-    
-    // 🔥 SYNC TO DATABASE FIRST
-    const memberId = syncToDatabase(formData, 'TALK');
-    
-    sendEmailToOrganization(formData, 'NEW TALK TEAM REGISTRATION - PAYMENT CONFIRMED')
-        .then(success => {
-            if (success) {
-                showNotification(`✅ Registration complete! Your Member ID: ${memberId}. Welcome to TALK team!`, 'success');
-                
-                // Show Member ID prominently
-                alert(`🎉 REGISTRATION SUCCESSFUL!\n\nYour Member ID: ${memberId}\n\nSave this ID - you'll need it to access the Member Portal and other TAU Africa services.`);
-                
-                closeAllModals();
-            } else {
-                showNotification(`⚠️ Registered! Your ID: ${memberId}. Email notification failed but you're in the database.`, 'error');
-            }
-        });
+// ===== REFERRAL FUNCTIONS =====
+function copyReferralLink(referralCode) {
+    const link = `${window.location.origin}?ref=${referralCode}`;
+    navigator.clipboard.writeText(link).then(() => {
+        showNotification('✅ Referral link copied to clipboard!', 'success');
+    }).catch(() => {
+        prompt('Copy your referral link:', link);
+    });
 }
 
-function processJobCreationSuccess(formData) {
-    console.log('Processing Job Creation success with email...');
-    
-    // 🔥 SYNC TO DATABASE FIRST
-    const memberId = syncToDatabase(formData, 'JOB_CREATION');
-    
-    sendEmailToOrganization(formData, 'JOB CREATION TRAINING ENROLLMENT - PAYMENT CONFIRMED')
-        .then(success => {
-            if (success) {
-                showNotification(`✅ Training enrollment complete! Your Member ID: ${memberId}`, 'success');
-                
-                // Show Member ID prominently
-                alert(`🎉 ENROLLMENT SUCCESSFUL!\n\nYour Member ID: ${memberId}\n\nSave this ID for accessing training materials.`);
-                
-                closeAllModals();
-            } else {
-                showNotification(`⚠️ Enrolled! Your ID: ${memberId}. Email notification failed.`, 'error');
-            }
-        });
+function proceedToLogin() {
+    closeAllModals();
+    showRealMemberLogin();
 }
 
-// ===== OTHER FORM SUBMISSIONS WITH FIXED EMAIL =====
+// ===== OTHER FORM SUBMISSIONS =====
 function processTrainingRegistration(event) {
     event.preventDefault();
     const form = event.target;
     const formData = new FormData(form);
     const data = Object.fromEntries(formData.entries());
     
-    console.log('Submitting training registration...');
     sendEmailToOrganization(data, 'TRAINING PROGRAM REGISTRATION')
         .then(success => {
             if (success) {
-                showNotification('✅ Training registration successful! Email sent.', 'success');
+                showNotification('✅ Training registration successful!', 'success');
                 closeAllModals();
             } else {
                 showNotification('❌ Email failed. Please contact grouptauafrica@gmail.com', 'error');
@@ -1224,11 +1251,10 @@ function processWorkshopProposal(event) {
     const formData = new FormData(form);
     const data = Object.fromEntries(formData.entries());
     
-    console.log('Submitting workshop proposal...');
     sendEmailToOrganization(data, 'WORKSHOP PROPOSAL SUBMISSION')
         .then(success => {
             if (success) {
-                showNotification('✅ Workshop proposal submitted! Email sent.', 'success');
+                showNotification('✅ Workshop proposal submitted!', 'success');
                 closeAllModals();
             } else {
                 showNotification('❌ Email failed. Please contact grouptauafrica@gmail.com', 'error');
@@ -1242,65 +1268,10 @@ function processResearchRequest(event) {
     const formData = new FormData(form);
     const data = Object.fromEntries(formData.entries());
     
-    console.log('Submitting research request...');
     sendEmailToOrganization(data, 'RESEARCH SERVICES REQUEST')
         .then(success => {
             if (success) {
-                showNotification('✅ Research request submitted! Email sent.', 'success');
-                closeAllModals();
-            } else {
-                showNotification('❌ Email failed. Please contact grouptauafrica@gmail.com', 'error');
-            }
-        });
-}
-
-function processJobPosting(event) {
-    event.preventDefault();
-    const form = event.target;
-    const formData = new FormData(form);
-    const data = Object.fromEntries(formData.entries());
-    
-    console.log('Submitting job posting...');
-    sendEmailToOrganization(data, 'NEW JOB POSTING')
-        .then(success => {
-            if (success) {
-                showNotification('✅ Job posting submitted! Email sent.', 'success');
-                closeAllModals();
-            } else {
-                showNotification('❌ Email failed. Please contact grouptauafrica@gmail.com', 'error');
-            }
-        });
-}
-
-function processJobSearch(event) {
-    event.preventDefault();
-    const form = event.target;
-    const formData = new FormData(form);
-    const data = Object.fromEntries(formData.entries());
-    
-    console.log('Submitting job search...');
-    sendEmailToOrganization(data, 'JOB SEARCH REQUEST')
-        .then(success => {
-            if (success) {
-                showNotification('✅ Job search submitted! Email sent.', 'success');
-                closeAllModals();
-            } else {
-                showNotification('❌ Email failed. Please contact grouptauafrica@gmail.com', 'error');
-            }
-        });
-}
-
-function processJobApplication(event) {
-    event.preventDefault();
-    const form = event.target;
-    const formData = new FormData(form);
-    const data = Object.fromEntries(formData.entries());
-    
-    console.log('Submitting job application...');
-    sendEmailToOrganization(data, 'JOB APPLICATION')
-        .then(success => {
-            if (success) {
-                showNotification('✅ Application submitted! Email sent.', 'success');
+                showNotification('✅ Research request submitted!', 'success');
                 closeAllModals();
             } else {
                 showNotification('❌ Email failed. Please contact grouptauafrica@gmail.com', 'error');
@@ -1314,101 +1285,10 @@ function processCommunityRegistration(event) {
     const formData = new FormData(form);
     const data = Object.fromEntries(formData.entries());
     
-    console.log('Submitting community registration...');
     sendEmailToOrganization(data, 'COMMUNITY PROGRAM REGISTRATION')
         .then(success => {
             if (success) {
-                showNotification('✅ Community registration successful! Email sent.', 'success');
-                closeAllModals();
-            } else {
-                showNotification('❌ Email failed. Please contact grouptauafrica@gmail.com', 'error');
-            }
-        });
-}
-
-function processCorporateRegistration(event) {
-    event.preventDefault();
-    const form = event.target;
-    const formData = new FormData(form);
-    const data = Object.fromEntries(formData.entries());
-    
-    console.log('Submitting corporate registration...');
-    sendEmailToOrganization(data, 'CORPORATE REGISTRATION')
-        .then(success => {
-            if (success) {
-                showNotification('✅ Corporate registration submitted! Email sent.', 'success');
-                closeAllModals();
-            } else {
-                showNotification('❌ Email failed. Please contact grouptauafrica@gmail.com', 'error');
-            }
-        });
-}
-
-function processParSiraiRegistration(event) {
-    event.preventDefault();
-    const form = event.target;
-    const formData = new FormData(form);
-    const data = Object.fromEntries(formData.entries());
-    
-    console.log('Submitting Par Sirai registration...');
-    sendEmailToOrganization(data, 'PAR SIRAI CENTER REGISTRATION')
-        .then(success => {
-            if (success) {
-                showNotification('✅ Par Sirai registration successful! Email sent.', 'success');
-                closeAllModals();
-            } else {
-                showNotification('❌ Email failed. Please contact grouptauafrica@gmail.com', 'error');
-            }
-        });
-}
-
-function processTrustGraphAccess(event) {
-    event.preventDefault();
-    const form = event.target;
-    const formData = new FormData(form);
-    const data = Object.fromEntries(formData.entries());
-    
-    console.log('Submitting Trust Graph access...');
-    sendEmailToOrganization(data, 'TRUST GRAPH ACCESS REQUEST')
-        .then(success => {
-            if (success) {
-                showNotification('✅ Trust Graph access requested! Email sent.', 'success');
-                closeAllModals();
-            } else {
-                showNotification('❌ Email failed. Please contact grouptauafrica@gmail.com', 'error');
-            }
-        });
-}
-
-function processFoundationInquiry(event) {
-    event.preventDefault();
-    const form = event.target;
-    const formData = new FormData(form);
-    const data = Object.fromEntries(formData.entries());
-    
-    console.log('Submitting Foundation inquiry...');
-    sendEmailToOrganization(data, 'FOUNDATION INQUIRY')
-        .then(success => {
-            if (success) {
-                showNotification('✅ Foundation inquiry submitted! Email sent.', 'success');
-                closeAllModals();
-            } else {
-                showNotification('❌ Email failed. Please contact grouptauafrica@gmail.com', 'error');
-            }
-        });
-}
-
-function processHoldingsInquiry(event) {
-    event.preventDefault();
-    const form = event.target;
-    const formData = new FormData(form);
-    const data = Object.fromEntries(formData.entries());
-    
-    console.log('Submitting Holdings inquiry...');
-    sendEmailToOrganization(data, 'COMPANY HOLDINGS INQUIRY')
-        .then(success => {
-            if (success) {
-                showNotification('✅ Holdings inquiry submitted! Email sent.', 'success');
+                showNotification('✅ Community registration successful!', 'success');
                 closeAllModals();
             } else {
                 showNotification('❌ Email failed. Please contact grouptauafrica@gmail.com', 'error');
@@ -1464,10 +1344,10 @@ function generateAIResponse(userMessage) {
     
     if (message.includes('register') || message.includes('join')) {
         return `To register with TAU Africa, you can choose between:<br>
-        • <strong>TASK Team (KSH 500)</strong> - For service providers and skilled professionals<br>
-        • <strong>TALK Team (KSH 2,000)</strong> - For investors and financial supporters<br>
-        • <strong>Job Creation Training (KSH 1,500)</strong> - For aspiring entrepreneurs<br>
-        <br>Click the relevant buttons in the Membership section to get started!`;
+        • <strong>TASK Team (KSH 500)</strong> - For service providers<br>
+        • <strong>TALK Team (KSH 2,000)</strong> - For investors<br>
+        • <strong>Job Creation Training (KSH 1,500)</strong> - For entrepreneurs<br>
+        <br>Click the relevant buttons to get started!`;
     }
     
     if (message.includes('payment') || message.includes('mpesa')) {
@@ -1476,125 +1356,22 @@ function generateAIResponse(userMessage) {
         2. You'll receive a payment prompt on your phone<br>
         3. Enter your M-PESA PIN to confirm<br>
         4. Wait for confirmation<br>
-        <br>All payments are secure and processed instantly!`;
+        <br>All payments are secure!`;
     }
     
     if (message.includes('kabiru') || message.includes('mining')) {
         return `Kabiru is our digital currency! You can:<br>
-        • Mine Kabiru by validating real values in the community<br>
+        • Mine Kabiru by validating real values<br>
         • Use the mining portal<br>
-        • Earn through community contributions<br>
-        • Convert to other currencies through our ecosystem`;
+        • Earn through community contributions`;
     }
     
-    if (message.includes('help') || message.includes('support')) {
-        return `I'm here to help! You can ask me about:<br>
-        • Registration processes and payments<br>
-        • Kabiru mining and digital currency<br>
-        • Community programs and training<br>
-        • Technical issues with the app<br>
-        • Business registration services<br>
-        <br>What specific area would you like help with?`;
-    }
-    
-    return `Thank you for your question! Here are some ways I can help:<br>
-    • Registration and membership information<br>
+    return `Thank you! I can help you with:<br>
+    • Registration and membership<br>
     • Payment and M-PESA guidance<br>
-    • Kabiru mining and digital currency<br>
-    • Community programs and forum access<br>
-    • Technical support<br>
-    <br>Please ask a specific question, or contact <strong>grouptauafrica@gmail.com</strong> for detailed support.`;
-}
-
-// ===== MEMBER LOGIN FUNCTIONS =====
-function showMemberLogin() {
-    const modal = document.createElement('div');
-    modal.className = 'modal';
-    modal.style.display = 'block';
-    modal.innerHTML = `
-        <div class="modal-content">
-            <span class="close" onclick="this.parentElement.parentElement.remove()">&times;</span>
-            <h2>Member Login</h2>
-            <p>Access your TAU Africa member dashboard</p>
-            
-            <form onsubmit="simulateLogin(event)">
-                <div class="form-group">
-                    <label>Email or Member ID</label>
-                    <input type="text" name="loginId" required>
-                </div>
-                <div class="form-group">
-                    <label>Password</label>
-                    <input type="password" name="password" required>
-                </div>
-                <button type="submit" class="btn">Login to Dashboard</button>
-                
-                <div style="text-align: center; margin-top: 20px;">
-                    <p>New member? Complete registration through TASK or TALK teams first!</p>
-                </div>
-            </form>
-            
-            <div style="background: #f0f8ff; padding: 15px; border-radius: 10px; margin-top: 20px;">
-                <h4>Demo Access:</h4>
-                <p>Use any email/password to see dashboard preview</p>
-            </div>
-        </div>
-    `;
-    document.body.appendChild(modal);
-}
-
-function simulateLogin(event) {
-    event.preventDefault();
-    showNotification('Login successful! Loading dashboard...', 'success');
-    setTimeout(() => {
-        closeAllModals();
-        showMemberDashboard();
-    }, 1500);
-}
-
-function showMemberDashboard() {
-    const modal = document.createElement('div');
-    modal.className = 'modal';
-    modal.style.display = 'block';
-    modal.innerHTML = `
-        <div class="modal-content" style="max-width: 800px;">
-            <span class="close" onclick="this.parentElement.parentElement.remove()">&times;</span>
-            <h2>TAU Africa Member Dashboard</h2>
-            <p>Welcome, <strong>Demo User</strong></p>
-            
-            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; margin: 30px 0;">
-                <div style="background: linear-gradient(45deg, #4169e1, #87ceeb); color: white; padding: 20px; border-radius: 15px; text-align: center; cursor: pointer;" onclick="showNotification('Profile management launching soon!', 'success')">
-                    <h4>My Profile</h4>
-                    <p>Manage account</p>
-                </div>
-                <div style="background: linear-gradient(45deg, #ff6b6b, #ee5a24); color: white; padding: 20px; border-radius: 15px; text-align: center; cursor: pointer;" onclick="showNotification('Programs dashboard launching soon!', 'success')">
-                    <h4>My Programs</h4>
-                    <p>Active memberships</p>
-                </div>
-                <div style="background: linear-gradient(45deg, #2ecc71, #27ae60); color: white; padding: 20px; border-radius: 15px; text-align: center; cursor: pointer;" onclick="window.open('https://magero1985.github.io/Kabiru-Mining-Portal-/', '_blank')">
-                    <h4>Kabiru Wallet</h4>
-                    <p>0.00 KABIRU<br><small>Click to mine</small></p>
-                </div>
-                <div style="background: linear-gradient(45deg, #9b59b6, #8e44ad); color: white; padding: 20px; border-radius: 15px; text-align: center; cursor: pointer;" onclick="openModal('forum')">
-                    <h4>Community</h4>
-                    <p>Forum & networking</p>
-                </div>
-            </div>
-            
-            <div style="background: #f8f9fa; padding: 20px; border-radius: 15px; margin: 20px 0;">
-                <h3>Recent Activity</h3>
-                <ul style="list-style: none; padding: 0;">
-                    <li style="padding: 10px 0; border-bottom: 1px solid #eee;">Registration completed - Welcome to TAU Africa!</li>
-                    <li style="padding: 10px 0; border-bottom: 1px solid #eee;">Welcome email sent</li>
-                    <li style="padding: 10px 0;">Ready to start your journey!</li>
-                </ul>
-            </div>
-            
-            <div style="text-align: center; margin-top: 20px;">
-                <p><strong>Note:</strong> This is a dashboard preview. Full functionality available after registration.</p>
-            </div>
-        </div>
-    `;
-    document.body.appendChild(modal);
+    • Kabiru mining<br>
+    • Community programs<br>
+    <br>Contact: <strong>grouptauafrica@gmail.com</strong>`;
 }
 
 // ===== EVENT LISTENERS =====
@@ -1610,51 +1387,693 @@ document.addEventListener('keydown', function(e) {
         document.getElementById('aiChatWindow').style.display = 'none';
     }
 });
+// ===== TAU AFRICA DATABASE SYSTEM =====
 
-// ===== INITIALIZE APP =====
+// Database Configuration
+const DB_CONFIG = {
+    dbKey: 'tauAfricaDB',
+    credentialsKey: 'tauCredentials',
+    referralsKey: 'tauReferrals',
+    jobsPortalKey: 'tauJobsPortal',
+    sessionKey: 'tauCurrentUser'
+};
+
+// ===== MEMBER ID & REFERRAL CODE GENERATION =====
+function generateMemberID(team, referralCode = null) {
+    const prefix = team === 'TASK' ? 'TSK' : team === 'TALK' ? 'TLK' : 'JOB';
+    const timestamp = Date.now().toString().slice(-6);
+    const random = Math.floor(Math.random() * 1000).toString().padStart(3, '0');
+    const id = `${prefix}-${timestamp}-${random}`;
+    
+    if (referralCode) {
+        trackReferral(referralCode, id);
+    }
+    
+    return id;
+}
+
+function generateReferralCode(memberId) {
+    return btoa(memberId).substring(0, 8).toUpperCase();
+}
+
+// ===== REFERRAL TRACKING =====
+function trackReferral(referralCode, newMemberId) {
+    try {
+        const referrals = JSON.parse(localStorage.getItem(DB_CONFIG.referralsKey) || '{}');
+        const members = JSON.parse(localStorage.getItem(DB_CONFIG.dbKey) || '[]');
+        const referrer = members.find(m => m.referralCode === referralCode);
+        
+        if (referrer) {
+            if (!referrals[referrer.id]) {
+                referrals[referrer.id] = {
+                    memberId: referrer.id,
+                    referredMembers: [],
+                    totalEarnings: 0
+                };
+            }
+            
+            const earnings = 500;
+            referrals[referrer.id].referredMembers.push({
+                memberId: newMemberId,
+                date: new Date().toISOString(),
+                earnings: earnings
+            });
+            referrals[referrer.id].totalEarnings += earnings;
+            
+            localStorage.setItem(DB_CONFIG.referralsKey, JSON.stringify(referrals));
+            
+            sendReferralNotification(referrer, earnings);
+        }
+    } catch (error) {
+        console.error('Referral tracking error:', error);
+    }
+}
+
+function sendReferralNotification(referrer, earnings) {
+    const templateParams = {
+        to_email: referrer.email,
+        to_name: referrer.fullName,
+        subject: '🎉 Referral Bonus Earned!',
+        message: `Congratulations! You've earned ${earnings} iKbp (${earnings/10} KSH) from your referral. Total: ${getReferralEarnings(referrer.id)} iKbp.`,
+        from_name: 'TAU Africa',
+        from_email: 'grouptauafrica@gmail.com',
+        phone: referrer.phone || 'Not provided',
+        location: referrer.location || 'Not provided'
+    };
+    
+    emailjs.send('service_xfira7g', 'template_bqxztig', templateParams)
+        .catch(err => console.error('Referral email error:', err));
+}
+
+function getReferralEarnings(memberId) {
+    const referrals = JSON.parse(localStorage.getItem(DB_CONFIG.referralsKey) || '{}');
+    return referrals[memberId]?.totalEarnings || 0;
+}
+
+// ===== CORE DATABASE SYNC FUNCTION =====
+function syncToDatabase(formData, team, referralCode = null) {
+    try {
+        const existingMembers = JSON.parse(localStorage.getItem(DB_CONFIG.dbKey) || '[]');
+        
+        const memberId = generateMemberID(team, referralCode);
+        const memberReferralCode = generateReferralCode(memberId);
+        
+        const member = {
+            id: memberId,
+            referralCode: memberReferralCode,
+            team: team,
+            fullName: formData.fullName || formData.name,
+            email: formData.email,
+            phone: formData.phone,
+            location: formData.location,
+            paymentStatus: 'Paid',
+            dateJoined: new Date().toISOString().split('T')[0],
+            status: 'Active',
+            fee: team === 'TASK' ? 500 : team === 'TALK' ? 2000 : 1500,
+            accountCreated: new Date().toISOString(),
+            lastLogin: null,
+            activities: [],
+            tasks: [],
+            jobs: [],
+            iKbpBalance: 0,
+            referredBy: referralCode || null
+        };
+        
+        // Add team-specific fields
+        if (team === 'TASK') {
+            member.dateOfBirth = formData.dateOfBirth;
+            member.gender = formData.gender;
+            member.nationality = formData.nationality;
+            member.category = formData.category;
+            member.valueDescription = formData.valueDescription;
+            member.experience = formData.experience;
+            member.certifications = formData.certifications;
+            member.languages = formData.languages;
+            member.goodConduct = formData.goodConduct;
+            member.healthStatus = formData.healthStatus;
+            member.trackRecord = formData.trackRecord;
+            member.familySupport = formData.familySupport;
+            member.education = formData.education;
+            member.emergencyContact = formData.emergencyContact;
+            member.referralSource = formData.referralSource;
+        } else if (team === 'TALK') {
+            member.organizationType = formData.organizationType;
+            member.website = formData.website;
+            member.supportLevel = formData.supportLevel;
+            member.supportTypes = formData.supportTypes;
+            member.focusAreas = formData.focusAreas;
+            member.geographicFocus = formData.geographicFocus;
+            member.investmentCriteria = formData.investmentCriteria;
+            member.previousInvestments = formData.previousInvestments;
+            member.goodConduct = formData.goodConduct;
+            member.healthStatus = formData.healthStatus;
+            member.financialTrack = formData.financialTrack;
+            member.netWorth = formData.netWorth;
+            member.familyFinancial = formData.familyFinancial;
+        } else if (team === 'JOB_CREATION') {
+            member.ageRange = formData.ageRange;
+            member.employmentStatus = formData.employmentStatus;
+            member.businessIdea = formData.businessIdea;
+            member.targetMarket = formData.targetMarket;
+            member.startupFunds = formData.startupFunds;
+            member.education = formData.education;
+            member.relevantSkills = formData.relevantSkills;
+            member.focus = formData.focus;
+            member.learningFormat = formData.learningFormat;
+            member.businessTimeline = formData.businessTimeline;
+        }
+        
+        existingMembers.push(member);
+        localStorage.setItem(DB_CONFIG.dbKey, JSON.stringify(existingMembers));
+        
+        storeMemberCredentials(member);
+        
+        window.dispatchEvent(new CustomEvent('tauMemberAdded', { detail: member }));
+        
+        console.log('✅ Member synced to database:', memberId);
+        return { success: true, memberId, member };
+        
+    } catch (error) {
+        console.error('❌ Database sync error:', error);
+        return { success: false, error: error.message };
+    }
+}
+
+// ===== CREDENTIALS STORAGE =====
+function storeMemberCredentials(member) {
+    const credentials = JSON.parse(localStorage.getItem(DB_CONFIG.credentialsKey) || '{}');
+    credentials[member.id] = {
+        email: member.email,
+        phone: member.phone.slice(-4),
+        fullName: member.fullName
+    };
+    localStorage.setItem(DB_CONFIG.credentialsKey, JSON.stringify(credentials));
+}
+
+// ===== AUTHENTICATION =====
+function authenticateMember(identifier, phoneLastFour) {
+    try {
+        const members = JSON.parse(localStorage.getItem(DB_CONFIG.dbKey) || '[]');
+        const member = members.find(m => 
+            (m.id === identifier || m.email === identifier) && 
+            m.phone.slice(-4) === phoneLastFour
+        );
+        
+        if (member) {
+            member.lastLogin = new Date().toISOString();
+            const memberIndex = members.findIndex(m => m.id === member.id);
+            members[memberIndex] = member;
+            localStorage.setItem(DB_CONFIG.dbKey, JSON.stringify(members));
+            
+            sessionStorage.setItem(DB_CONFIG.sessionKey, JSON.stringify(member));
+            return { success: true, member };
+        }
+        
+        return { success: false, error: 'Invalid credentials' };
+    } catch (error) {
+        console.error('Authentication error:', error);
+        return { success: false, error: error.message };
+    }
+}
+
+function getCurrentMember() {
+    const sessionData = sessionStorage.getItem(DB_CONFIG.sessionKey);
+    if (sessionData) {
+        const member = JSON.parse(sessionData);
+        // Refresh from database to get latest data
+        const members = JSON.parse(localStorage.getItem(DB_CONFIG.dbKey) || '[]');
+        const freshMember = members.find(m => m.id === member.id);
+        if (freshMember) {
+            sessionStorage.setItem(DB_CONFIG.sessionKey, JSON.stringify(freshMember));
+            return freshMember;
+        }
+    }
+    return null;
+}
+
+function logoutMember() {
+    sessionStorage.removeItem(DB_CONFIG.sessionKey);
+    return true;
+}
+
+// ===== UPDATE MEMBER DATA =====
+function updateMemberData(memberId, updates) {
+    try {
+        const members = JSON.parse(localStorage.getItem(DB_CONFIG.dbKey) || '[]');
+        const memberIndex = members.findIndex(m => m.id === memberId);
+        
+        if (memberIndex !== -1) {
+            members[memberIndex] = { ...members[memberIndex], ...updates };
+            localStorage.setItem(DB_CONFIG.dbKey, JSON.stringify(members));
+            
+            const currentUser = getCurrentMember();
+            if (currentUser && currentUser.id === memberId) {
+                sessionStorage.setItem(DB_CONFIG.sessionKey, JSON.stringify(members[memberIndex]));
+            }
+            
+            return { success: true, member: members[memberIndex] };
+        }
+        
+        return { success: false, error: 'Member not found' };
+    } catch (error) {
+        return { success: false, error: error.message };
+    }
+}
+
+// ===== ACTIVITY MANAGEMENT =====
+function addMemberActivity(memberId, activity) {
+    try {
+        const members = JSON.parse(localStorage.getItem(DB_CONFIG.dbKey) || '[]');
+        const member = members.find(m => m.id === memberId);
+        
+        if (member) {
+            if (!member.activities) member.activities = [];
+            
+            const activityRecord = {
+                id: `ACT-${Date.now()}`,
+                type: activity.type,
+                description: activity.description,
+                dateAdded: new Date().toISOString(),
+                status: 'Active',
+                iKbpEarned: 0
+            };
+            
+            member.activities.push(activityRecord);
+            updateMemberData(memberId, { activities: member.activities });
+            
+            return { success: true, activity: activityRecord };
+        }
+        
+        return { success: false, error: 'Member not found' };
+    } catch (error) {
+        return { success: false, error: error.message };
+    }
+}
+
+// ===== TASK MANAGEMENT =====
+function addMemberTask(memberId, task) {
+    try {
+        const members = JSON.parse(localStorage.getItem(DB_CONFIG.dbKey) || '[]');
+        const member = members.find(m => m.id === memberId);
+        
+        if (member) {
+            if (!member.tasks) member.tasks = [];
+            
+            const taskRecord = {
+                id: `TSK-${Date.now()}`,
+                title: task.title,
+                description: task.description,
+                category: task.category,
+                dateAssigned: new Date().toISOString(),
+                dueDate: task.dueDate || null,
+                status: 'Assigned',
+                iKbpReward: task.reward || 100,
+                completedDate: null
+            };
+            
+            member.tasks.push(taskRecord);
+            updateMemberData(memberId, { tasks: member.tasks });
+            
+            return { success: true, task: taskRecord };
+        }
+        
+        return { success: false, error: 'Member not found' };
+    } catch (error) {
+        return { success: false, error: error.message };
+    }
+}
+
+function completeTask(memberId, taskId) {
+    try {
+        const members = JSON.parse(localStorage.getItem(DB_CONFIG.dbKey) || '[]');
+        const member = members.find(m => m.id === memberId);
+        
+        if (member && member.tasks) {
+            const task = member.tasks.find(t => t.id === taskId);
+            
+            if (task && task.status !== 'Completed') {
+                task.status = 'Completed';
+                task.completedDate = new Date().toISOString();
+                
+                member.iKbpBalance = (member.iKbpBalance || 0) + task.iKbpReward;
+                
+                updateMemberData(memberId, { 
+                    tasks: member.tasks,
+                    iKbpBalance: member.iKbpBalance
+                });
+                
+                return { 
+                    success: true, 
+                    task, 
+                    newBalance: member.iKbpBalance,
+                    earned: task.iKbpReward
+                };
+            }
+        }
+        
+        return { success: false, error: 'Task not found or already completed' };
+    } catch (error) {
+        return { success: false, error: error.message };
+    }
+}
+
+// ===== JOBS PORTAL =====
+function postJobToPortal(jobData, posterId) {
+    try {
+        const jobs = JSON.parse(localStorage.getItem(DB_CONFIG.jobsPortalKey) || '[]');
+        
+        const job = {
+            id: `JOB-${Date.now()}`,
+            posterId: posterId,
+            title: jobData.title,
+            category: jobData.category,
+            location: jobData.location,
+            description: jobData.description,
+            requirements: jobData.requirements,
+            salary: jobData.salary,
+            datePosted: new Date().toISOString(),
+            status: 'Active',
+            applications: []
+        };
+        
+        jobs.push(job);
+        localStorage.setItem(DB_CONFIG.jobsPortalKey, JSON.stringify(jobs));
+        
+        const member = getCurrentMember();
+        if (member) {
+            const newBalance = (member.iKbpBalance || 0) + 50;
+            updateMemberData(posterId, { iKbpBalance: newBalance });
+        }
+        
+        return { success: true, job, iKbpEarned: 50 };
+    } catch (error) {
+        return { success: false, error: error.message };
+    }
+}
+
+function getJobsFromPortal(filters = {}) {
+    try {
+        let jobs = JSON.parse(localStorage.getItem(DB_CONFIG.jobsPortalKey) || '[]');
+        
+        if (filters.category) {
+            jobs = jobs.filter(j => j.category === filters.category);
+        }
+        if (filters.location) {
+            jobs = jobs.filter(j => j.location.toLowerCase().includes(filters.location.toLowerCase()));
+        }
+        if (filters.status) {
+            jobs = jobs.filter(j => j.status === filters.status);
+        }
+        
+        return { success: true, jobs };
+    } catch (error) {
+        return { success: false, error: error.message };
+    }
+}
+
+function applyForJob(jobId, memberId, applicationData) {
+    try {
+        const jobs = JSON.parse(localStorage.getItem(DB_CONFIG.jobsPortalKey) || '[]');
+        const job = jobs.find(j => j.id === jobId);
+        
+        if (job) {
+            const application = {
+                id: `APP-${Date.now()}`,
+                memberId: memberId,
+                applicantName: applicationData.applicantName,
+                applicantEmail: applicationData.applicantEmail,
+                applicantPhone: applicationData.applicantPhone,
+                coverLetter: applicationData.coverLetter,
+                dateApplied: new Date().toISOString(),
+                status: 'Pending'
+            };
+            
+            job.applications.push(application);
+            localStorage.setItem(DB_CONFIG.jobsPortalKey, JSON.stringify(jobs));
+            
+            return { success: true, application };
+        }
+        
+        return { success: false, error: 'Job not found' };
+    } catch (error) {
+        return { success: false, error: error.message };
+    }
+}
+
+// ===== WELCOME EMAIL =====
+function sendWelcomeEmailWithCredentials(member) {
+    const templateParams = {
+        to_email: member.email,
+        to_name: member.fullName,
+        subject: '🎉 Welcome to TAU Africa - Your Account Details',
+        message: `
+Welcome to TAU Africa Foundation!
+
+Your account has been successfully created:
+━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Member ID: ${member.id}
+Team: ${member.team}
+Referral Code: ${member.referralCode}
+━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+LOGIN INSTRUCTIONS:
+1. Use your Member ID or Email: ${member.email}
+2. Use last 4 digits of your phone: ${member.phone.slice(-4)}
+
+REFERRAL REWARDS:
+Share your referral code and earn 500 iKbp (50 KSH) for each successful referral!
+Your referral link: ${window.location.origin}?ref=${member.referralCode}
+
+ACCESS YOUR ACCOUNT:
+• Main Portal: ${window.location.origin}
+• Kabiru Mining: https://magero1985.github.io/Kabiru-Mining-Portal-/
+
+Start earning Kabiru points (iKbp) by:
+• Completing tasks
+• Participating in activities
+• Referring new members
+• Contributing to the community
+
+Current Balance: ${member.iKbpBalance} iKbp (${member.iKbpBalance/10} KSH)
+
+Welcome to the movement!
+TAU Africa Foundation
+        `,
+        from_name: 'TAU Africa',
+        from_email: 'grouptauafrica@gmail.com',
+        phone: member.phone,
+        location: member.location
+    };
+    
+    return emailjs.send('service_xfira7g', 'template_bqxztig', templateParams);
+}
+
+// ===== MEMBER LOGIN =====
+function showRealMemberLogin() {
+    const modal = document.createElement('div');
+    modal.className = 'modal';
+    modal.style.display = 'block';
+    modal.innerHTML = `
+        <div class="modal-content">
+            <span class="close" onclick="this.parentElement.parentElement.remove()">&times;</span>
+            <h2 style="color: #2a5298; text-align: center;">Member Login</h2>
+            <p style="text-align: center; color: #666;">Access your TAU Africa account</p>
+            
+            <form onsubmit="processRealLogin(event)" style="margin-top: 30px;">
+                <div class="form-group">
+                    <label>Member ID or Email *</label>
+                    <input type="text" id="loginIdentifier" required placeholder="Enter your Member ID or Email">
+                </div>
+                
+                <div class="form-group">
+                    <label>Phone Number (Last 4 digits) *</label>
+                    <input type="text" id="loginPhone" required placeholder="Last 4 digits" maxlength="4" pattern="[0-9]{4}">
+                    <small>Use the last 4 digits of your registered phone number</small>
+                </div>
+                
+                <button type="submit" class="btn" style="width: 100%; margin-top: 20px;">
+                    🔐 Login to Dashboard
+                </button>
+            </form>
+            
+            <div style="text-align: center; margin-top: 20px; padding: 15px; background: #f8f9fa; border-radius: 10px;">
+                <p style="font-size: 0.9rem; color: #666;">Don't have an account?</p>
+                <button class="btn btn-small" onclick="closeAllModals(); openModal('taskRegistration')" style="margin: 5px;">
+                    Join TASK Team
+                </button>
+                <button class="btn btn-small" onclick="closeAllModals(); openModal('talkRegistration')" style="margin: 5px;">
+                    Join TALK Team
+                </button>
+            </div>
+        </div>
+    `;
+    document.body.appendChild(modal);
+}
+
+function processRealLogin(event) {
+    event.preventDefault();
+    
+    const identifier = document.getElementById('loginIdentifier').value.trim();
+    const phoneLastFour = document.getElementById('loginPhone').value.trim();
+    
+    const result = window.TauDB.authenticate(identifier, phoneLastFour);
+    
+    if (result.success) {
+        showNotification('✅ Login successful! Loading your dashboard...', 'success');
+        
+        setTimeout(() => {
+            closeAllModals();
+            showRealMemberDashboard(result.member);
+        }, 1000);
+    } else {
+        showNotification('❌ Invalid credentials. Please check your Member ID/Email and phone number.', 'error');
+    }
+}
+
+function showMemberLogin() {
+    showRealMemberLogin();
+}
+
+// ===== EXPORT DATABASE API =====
+window.TauDB = {
+    sync: syncToDatabase,
+    authenticate: authenticateMember,
+    getCurrentMember: getCurrentMember,
+    logout: logoutMember,
+    updateMember: updateMemberData,
+    addActivity: addMemberActivity,
+    addTask: addMemberTask,
+    completeTask: completeTask,
+    postJob: postJobToPortal,
+    getJobs: getJobsFromPortal,
+    applyJob: applyForJob,
+    sendWelcomeEmail: sendWelcomeEmailWithCredentials,
+    getReferralEarnings: getReferralEarnings,
+    generateReferralCode: generateReferralCode
+};
+
+// ===== INITIALIZATION ON PAGE LOAD =====
 document.addEventListener('DOMContentLoaded', function() {
+    const ref = checkReferralCode();
+    if (ref) {
+        showNotification(`🎁 You're using referral code: ${ref}. The referrer will earn 500 iKbp when you complete registration!`, 'info');
+    }
+    
     console.log('========================================');
     console.log('TAU AFRICA INTERNATIONAL - INITIALIZED');
     console.log('========================================');
-    console.log('✅ EmailJS Status: ACTIVE & CONFIGURED');
-    console.log('✅ Service ID: service_xfira7g');
-    console.log('✅ Template ID: template_q2lu285');
-    console.log('✅ Recipient: grouptauafrica@gmail.com');
+    console.log('✅ EmailJS Status: ACTIVE');
+    console.log('✅ Database: READY');
+    console.log('✅ Authentication: ENABLED');
     console.log('✅ M-PESA Payment: READY');
-    console.log('✅ All Forms: FUNCTIONAL WITH EMAIL');
-    console.log('✅ AI Assistant: ACTIVE');
     console.log('========================================');
-    
-    showNotification('✅ Welcome to TAU Africa International! Email system is now ACTIVE - all forms will send to grouptauafrica@gmail.com', 'success');
 });
-        
-// ===== GET MODAL CONTENT BASED ON TYPE =====
+
+console.log('✅ Part 3 Loaded: Database System & Authentication');
+    // ===== MEMBER DASHBOARD =====
+function showRealMemberDashboard(member) {
+    const modal = document.createElement('div');
+    modal.className = 'modal';
+    modal.style.display = 'block';
+    modal.style.overflowY = 'auto';
+    
+    const currentMember = window.TauDB.getCurrentMember();
+    const displayMember = currentMember || member;
+    
+    modal.innerHTML = `
+        <div class="modal-content" style="max-width: 1200px; padding: 20px;">
+            <span class="close" onclick="window.TauDB.logout(); this.parentElement.parentElement.remove()">&times;</span>
+            
+            <!-- Header -->
+            <div style="background: linear-gradient(45deg, #4169e1, #87ceeb); color: white; padding: 30px; border-radius: 15px; margin-bottom: 30px;">
+                <h1 style="margin: 0 0 10px 0;">Welcome, ${displayMember.fullName}! 👋</h1>
+                <p style="margin: 0; opacity: 0.9;">Member ID: <strong>${displayMember.id}</strong> | Team: <strong>${displayMember.team}</strong></p>
+                <p style="margin: 10px 0 0 0; font-size: 0.9rem;">Last login: ${displayMember.lastLogin ? new Date(displayMember.lastLogin).toLocaleString() : 'First login'}</p>
+            </div>
+            
+            <!-- Dashboard Stats -->
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px; margin-bottom: 30px;">
+                <div style="background: linear-gradient(135deg, #ffd700, #ffed4e); padding: 25px; border-radius: 15px; text-align: center; color: #333;">
+                    <h3 style="margin: 0 0 10px 0;">💰 Kabiru Points</h3>
+                    <h1 style="margin: 0; font-size: 2.5rem;">${displayMember.iKbpBalance || 0}</h1>
+                    <p style="margin: 10px 0 0 0;">iKbp ≈ KSH ${((displayMember.iKbpBalance || 0) / 10).toFixed(2)}</p>
+                    <button class="btn" onclick="window.open('https://magero1985.github.io/Kabiru-Mining-Portal-/', '_blank')" style="margin-top: 15px; background: #333; width: 100%;">
+                        ⚡ Mine More Kabiru
+                    </button>
+                </div>
+                
+                <div style="background: linear-gradient(135deg, #667eea, #764ba2); padding: 25px; border-radius: 15px; text-align: center; color: white;">
+                    <h3 style="margin: 0 0 10px 0;">✅ Tasks</h3>
+                    <h1 style="margin: 0; font-size: 2.5rem;">${(displayMember.tasks || []).filter(t => t.status !== 'Completed').length}</h1>
+                    <p style="margin: 10px 0 0 0;">Active | ${(displayMember.tasks || []).filter(t => t.status === 'Completed').length} Completed</p>
+                </div>
+                
+                <div style="background: linear-gradient(135deg, #2ecc71, #27ae60); padding: 25px; border-radius: 15px; text-align: center; color: white;">
+                    <h3 style="margin: 0 0 10px 0;">🎁 Referrals</h3>
+                    <h1 style="margin: 0; font-size: 2.5rem;">${window.TauDB.getReferralEarnings(displayMember.id)}</h1>
+                    <p style="margin: 10px 0 0 0;">iKbp Earned</p>
+                </div>
+            </div>
+            
+            <!-- Profile Info -->
+            <div style="background: white; padding: 25px; border-radius: 15px; border: 2px solid #eee; margin-bottom: 20px;">
+                <h3 style="color: #2a5298; margin-bottom: 20px;">👤 Your Profile</h3>
+                <div style="display: grid; gap: 10px;">
+                    <p><strong>Email:</strong> ${displayMember.email}</p>
+                    <p><strong>Phone:</strong> ${displayMember.phone}</p>
+                    <p><strong>Location:</strong> ${displayMember.location}</p>
+                    <p><strong>Status:</strong> <span style="color: #2ecc71; font-weight: bold;">${displayMember.status}</span></p>
+                    <p><strong>Referral Code:</strong> <span style="font-weight: bold; color: #ffd700;">${displayMember.referralCode}</span></p>
+                </div>
+            </div>
+            
+            <!-- Referral Section -->
+            <div style="background: linear-gradient(45deg, #667eea, #764ba2); color: white; padding: 25px; border-radius: 15px; margin-bottom: 20px;">
+                <h4 style="margin: 0 0 15px 0;">🎁 Your Referral Code</h4>
+                <div style="background: rgba(255,255,255,0.2); padding: 15px; border-radius: 10px; margin-bottom: 15px;">
+                    <h1 style="margin: 0; font-size: 2.5rem; letter-spacing: 3px;">${displayMember.referralCode}</h1>
+                </div>
+                <button class="btn" onclick="copyReferralLink('${displayMember.referralCode}')" style="background: white; color: #667eea; width: 100%;">
+                    📋 Copy Referral Link
+                </button>
+                <p style="margin-top: 10px; font-size: 0.9rem;">Share and earn 500 iKbp (50 KSH) per referral!</p>
+            </div>
+            
+            <!-- Quick Actions -->
+            <div style="background: #f8f9fa; padding: 25px; border-radius: 15px;">
+                <h3 style="color: #2a5298; margin-bottom: 20px;">⚡ Quick Actions</h3>
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px;">
+                    <button class="btn btn-success" onclick="window.open('https://magero1985.github.io/Kabiru-Mining-Portal-/', '_blank')">⚡ Kabiru Mining</button>
+                    <button class="btn" onclick="copyReferralLink('${displayMember.referralCode}')">📋 Share Referral</button>
+                    <button class="btn" onclick="alert('Contact: grouptauafrica@gmail.com')">💬 Support</button>
+                    <button class="btn" onclick="window.TauDB.logout(); closeAllModals(); showNotification('Logged out successfully', 'success');" style="background: #e74c3c;">🚪 Logout</button>
+                </div>
+            </div>
+        </div>
+    `;
+    
+    document.body.appendChild(modal);
+}
+
+// ===== GET MODAL CONTENT =====
 function getModalContent(type) {
     switch(type) {
         case 'taskRegistration':
             return createTaskRegistrationModal();
         case 'talkRegistration':
             return createTalkRegistrationModal();
-        case 'corporate':
-            return createCorporateModal();
+        case 'jobCreation':
+            return createJobCreationModal();
         case 'training':
             return createTrainingModal();
         case 'workshop':
             return createWorkshopModal();
         case 'research':
             return createResearchModal();
-        case 'jobCreation':
-            return createJobCreationModal();
-        case 'insertJob':
-            return createInsertJobModal();
-        case 'retrieveJob':
-            return createRetrieveJobModal();
-        case 'availableJobs':
-            return createAvailableJobsModal();
-        case 'applyJob':
-            return createApplyJobModal();
         case 'community':
             return createCommunityModal();
+        case 'corporate':
+            return createCorporateModal();
         case 'parSirai':
             return createParSiraiModal();
         case 'trustGraph':
@@ -1670,7 +2089,7 @@ function getModalContent(type) {
     }
 }
 
-// ===== COMPREHENSIVE TASK REGISTRATION MODAL =====
+// ===== TASK REGISTRATION MODAL =====
 function createTaskRegistrationModal() {
     return `
         <div class="modal-content">
@@ -1680,7 +2099,7 @@ function createTaskRegistrationModal() {
             
             <div class="payment-info">
                 <h3>Registration Fee: KSH 500</h3>
-                <p>Secure M-PESA payment required • One-time membership fee</p>
+                <p>Secure M-PESA payment required</p>
             </div>
             
             <form onsubmit="processTaskRegistration(event)" id="taskForm">
@@ -1717,7 +2136,6 @@ function createTaskRegistrationModal() {
                         <option value="Male">Male</option>
                         <option value="Female">Female</option>
                         <option value="Other">Other</option>
-                        <option value="Prefer not to say">Prefer not to say</option>
                     </select>
                 </div>
 
@@ -1734,15 +2152,15 @@ function createTaskRegistrationModal() {
                         <div class="level-btn" onclick="selectCategory('service', this)">Professional Service</div>
                         <div class="level-btn" onclick="selectCategory('profession', this)">Licensed Profession</div>
                         <div class="level-btn" onclick="selectCategory('creativity', this)">Creative Arts</div>
-                        <div class="level-btn" onclick="selectCategory('leadership', this)">Leadership & Management</div>
-                        <div class="level-btn" onclick="selectCategory('business', this)">Business & Entrepreneurship</div>
+                        <div class="level-btn" onclick="selectCategory('leadership', this)">Leadership</div>
+                        <div class="level-btn" onclick="selectCategory('business', this)">Business</div>
                     </div>
                     <input type="hidden" name="category" id="taskCategory" required>
                 </div>
                 
                 <div class="form-group">
                     <label>Describe Your Value/Service *</label>
-                    <textarea name="valueDescription" rows="4" placeholder="Provide a detailed description of what you offer, your expertise, and how it benefits the community" required></textarea>
+                    <textarea name="valueDescription" rows="4" placeholder="Detailed description of what you offer" required></textarea>
                 </div>
                 
                 <div class="form-group">
@@ -1757,25 +2175,22 @@ function createTaskRegistrationModal() {
                 </div>
 
                 <div class="form-group">
-                    <label>Professional Certifications/Licenses</label>
-                    <textarea name="certifications" rows="2" placeholder="List any professional certifications, licenses, or credentials you hold"></textarea>
+                    <label>Professional Certifications</label>
+                    <textarea name="certifications" rows="2" placeholder="List certifications"></textarea>
                 </div>
 
                 <div class="form-group">
                     <label>Languages Spoken *</label>
-                    <input type="text" name="languages" required placeholder="e.g., English, Swahili, French">
+                    <input type="text" name="languages" required placeholder="e.g., English, Swahili">
                 </div>
-                
-                <h3 style="color: #2a5298; margin: 25px 0 15px 0;">Proof of Innocence & Capabilities</h3>
                 
                 <div class="form-group">
                     <label>Certificate of Good Conduct Status *</label>
                     <select name="goodConduct" required>
                         <option value="">Select status</option>
-                        <option value="Available">Available - Can provide immediately</option>
-                        <option value="Will obtain">Will obtain upon request</option>
-                        <option value="In process">Currently in process of obtaining</option>
-                        <option value="Not applicable">Not applicable in my country</option>
+                        <option value="Available">Available</option>
+                        <option value="Will obtain">Will obtain</option>
+                        <option value="In process">In process</option>
                     </select>
                 </div>
                 
@@ -1783,26 +2198,25 @@ function createTaskRegistrationModal() {
                     <label>Health Records Status *</label>
                     <select name="healthStatus" required>
                         <option value="">Select status</option>
-                        <option value="Excellent">Excellent health - Can provide medical certificate</option>
-                        <option value="Good">Good health - Regular checkups</option>
-                        <option value="Will provide">Will provide upon request</option>
-                        <option value="Private">Prefer to keep private</option>
+                        <option value="Excellent">Excellent</option>
+                        <option value="Good">Good</option>
+                        <option value="Will provide">Will provide</option>
                     </select>
                 </div>
                 
                 <div class="form-group">
                     <label>Track Record/References</label>
-                    <textarea name="trackRecord" rows="3" placeholder="Previous work experience, achievements, client testimonials, or references (include contact information if possible)"></textarea>
+                    <textarea name="trackRecord" rows="3" placeholder="Previous work, achievements"></textarea>
                 </div>
                 
                 <div class="form-group">
                     <label>Family/Support System</label>
-                    <textarea name="familySupport" rows="2" placeholder="Brief description of your family situation and support system"></textarea>
+                    <textarea name="familySupport" rows="2" placeholder="Brief description"></textarea>
                 </div>
                 
                 <div class="form-group">
                     <label>Educational Qualifications</label>
-                    <textarea name="education" rows="2" placeholder="Degrees, certificates, training completed, institutions attended"></textarea>
+                    <textarea name="education" rows="2" placeholder="Degrees, certificates"></textarea>
                 </div>
 
                 <div class="form-group">
@@ -1814,11 +2228,10 @@ function createTaskRegistrationModal() {
                     <label>How did you hear about TAU Africa? *</label>
                     <select name="referralSource" required>
                         <option value="">Select source</option>
-                        <option value="Social Media">Social Media (Twitter/X, TikTok, YouTube)</option>
-                        <option value="Friend/Family">Friend or Family Member</option>
+                        <option value="Social Media">Social Media</option>
+                        <option value="Friend/Family">Friend or Family</option>
                         <option value="Community Event">Community Event</option>
                         <option value="Online Search">Online Search</option>
-                        <option value="Business Network">Business Network</option>
                         <option value="Other">Other</option>
                     </select>
                 </div>
@@ -1826,7 +2239,7 @@ function createTaskRegistrationModal() {
                 <div class="form-group">
                     <label>
                         <input type="checkbox" name="terms" required style="width: auto; margin-right: 10px;">
-                        I agree to the TAU Africa Terms of Service and Privacy Policy *
+                        I agree to the TAU Africa Terms of Service *
                     </label>
                 </div>
                 
@@ -1836,28 +2249,28 @@ function createTaskRegistrationModal() {
     `;
 }
 
-// ===== COMPREHENSIVE TALK REGISTRATION MODAL =====
+// ===== TALK REGISTRATION MODAL =====
 function createTalkRegistrationModal() {
     return `
         <div class="modal-content">
             <span class="close" onclick="closeAllModals()">&times;</span>
             <h2>Join TALK Team</h2>
-            <p>Declare financial support, grants, or investments you're offering to the African development ecosystem</p>
+            <p>Declare financial support you're offering to African development</p>
             
             <div class="payment-info">
                 <h3>Registration Fee: KSH 2,000</h3>
-                <p>Secure M-PESA payment • Deposit goes to Valenta Liquid Pool Reserve for Kabiru value conversion</p>
+                <p>Secure M-PESA payment</p>
             </div>
             
             <form onsubmit="processTalkRegistration(event)" id="talkForm">
                 <div class="form-group">
-                    <label>Full Name/Organization Name *</label>
-                    <input type="text" name="fullName" required placeholder="Individual name or organization">
+                    <label>Full Name/Organization *</label>
+                    <input type="text" name="fullName" required>
                 </div>
                 
                 <div class="form-group">
                     <label>Email Address *</label>
-                    <input type="email" name="email" required placeholder="your.email@example.com">
+                    <input type="email" name="email" required>
                 </div>
                 
                 <div class="form-group">
@@ -1866,7 +2279,7 @@ function createTalkRegistrationModal() {
                 </div>
                 
                 <div class="form-group">
-                    <label>Country/Location *</label>
+                    <label>Location *</label>
                     <input type="text" name="location" required>
                 </div>
 
@@ -1877,114 +2290,90 @@ function createTalkRegistrationModal() {
                         <option value="Individual Investor">Individual Investor</option>
                         <option value="Corporation">Corporation</option>
                         <option value="Foundation">Foundation/NGO</option>
-                        <option value="Government Agency">Government Agency</option>
+                        <option value="Government">Government Agency</option>
                         <option value="Investment Fund">Investment Fund</option>
-                        <option value="Development Bank">Development Bank</option>
-                        <option value="Family Office">Family Office</option>
-                        <option value="Other">Other</option>
                     </select>
                 </div>
 
                 <div class="form-group">
-                    <label>Website/LinkedIn Profile</label>
+                    <label>Website</label>
                     <input type="url" name="website" placeholder="https://example.com">
                 </div>
                 
                 <div class="form-group">
                     <label>Financial Support Level *</label>
                     <div class="level-selection">
-                        <div class="level-btn" onclick="selectLevel('ground', this)">Ground Level (&lt; $1,000)</div>
-                        <div class="level-btn" onclick="selectLevel('middle', this)">Middle Level ($1,000-$5,000)</div>
-                        <div class="level-btn" onclick="selectLevel('upper', this)">Upper Level ($5,000-$10,000)</div>
-                        <div class="level-btn" onclick="selectLevel('high', this)">High Level ($10,000-$50,000)</div>
-                        <div class="level-btn" onclick="selectLevel('top', this)">Top Level ($50,000+)</div>
+                        <div class="level-btn" onclick="selectLevel('ground', this)">Ground (&lt;$1K)</div>
+                        <div class="level-btn" onclick="selectLevel('middle', this)">Middle ($1K-$5K)</div>
+                        <div class="level-btn" onclick="selectLevel('upper', this)">Upper ($5K-$10K)</div>
+                        <div class="level-btn" onclick="selectLevel('high', this)">High ($10K-$50K)</div>
+                        <div class="level-btn" onclick="selectLevel('top', this)">Top ($50K+)</div>
                     </div>
                     <input type="hidden" name="supportLevel" id="supportLevel" required>
                 </div>
                 
                 <div class="form-group">
-                    <label>Type of Financial Support *</label>
-                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
-                        <label><input type="checkbox" name="supportTypes" value="Grants"> Grants</label>
-                        <label><input type="checkbox" name="supportTypes" value="Equity Investment"> Equity Investment</label>
-                        <label><input type="checkbox" name="supportTypes" value="Debt Financing"> Debt Financing</label>
-                        <label><input type="checkbox" name="supportTypes" value="Venture Capital"> Venture Capital</label>
-                        <label><input type="checkbox" name="supportTypes" value="Angel Investment"> Angel Investment</label>
-                        <label><input type="checkbox" name="supportTypes" value="Crowdfunding"> Crowdfunding</label>
-                    </div>
-                </div>
-                
-                <div class="form-group">
                     <label>Focus Areas/Industries *</label>
-                    <textarea name="focusAreas" rows="3" placeholder="What sectors, industries, or types of projects do you want to support? (e.g., Agriculture, Technology, Education, Healthcare)" required></textarea>
+                    <textarea name="focusAreas" rows="3" placeholder="What sectors do you want to support?" required></textarea>
                 </div>
 
                 <div class="form-group">
                     <label>Geographic Focus</label>
-                    <input type="text" name="geographicFocus" placeholder="Specific countries or regions of interest">
+                    <input type="text" name="geographicFocus" placeholder="Countries or regions">
                 </div>
 
                 <div class="form-group">
                     <label>Investment Criteria</label>
-                    <textarea name="investmentCriteria" rows="3" placeholder="What criteria do you use when evaluating investment opportunities?"></textarea>
+                    <textarea name="investmentCriteria" rows="3" placeholder="Your evaluation criteria"></textarea>
                 </div>
 
                 <div class="form-group">
                     <label>Previous African Investments</label>
-                    <textarea name="previousInvestments" rows="2" placeholder="Brief description of previous investments or support in Africa"></textarea>
+                    <textarea name="previousInvestments" rows="2" placeholder="Brief description"></textarea>
                 </div>
                 
                 <div id="enhancedRequirements" style="display: none;">
-                    <h3 style="color: #2a5298; margin: 25px 0 15px 0;">Enhanced Requirements (Middle Level & Above)</h3>
+                    <h3 style="color: #2a5298; margin: 25px 0 15px 0;">Enhanced Requirements</h3>
                     
                     <div class="form-group">
-                        <label>Certificate of Good Conduct *</label>
+                        <label>Certificate of Good Conduct</label>
                         <select name="goodConduct">
                             <option value="">Select status</option>
-                            <option value="Available">Available - Can provide</option>
-                            <option value="Will obtain">Will obtain upon request</option>
-                            <option value="Not applicable">Not applicable in my country</option>
+                            <option value="Available">Available</option>
+                            <option value="Will obtain">Will obtain</option>
                         </select>
                     </div>
                     
                     <div class="form-group">
-                        <label>Health Records Status *</label>
+                        <label>Health Status</label>
                         <select name="healthStatus">
                             <option value="">Select status</option>
-                            <option value="Excellent">Excellent health - Can provide certificate</option>
-                            <option value="Good">Good health - Regular checkups</option>
-                            <option value="Will provide">Will provide upon request</option>
+                            <option value="Excellent">Excellent</option>
+                            <option value="Good">Good</option>
                         </select>
                     </div>
                     
                     <div class="form-group">
-                        <label>Financial Track Record *</label>
-                        <textarea name="financialTrack" rows="3" placeholder="Previous investments, business ventures, financial background, investment performance"></textarea>
+                        <label>Financial Track Record</label>
+                        <textarea name="financialTrack" rows="3" placeholder="Investment background"></textarea>
                     </div>
                     
                     <div class="form-group">
-                        <label>Net Worth Range (Optional)</label>
+                        <label>Net Worth Range</label>
                         <select name="netWorth">
                             <option value="">Prefer not to disclose</option>
-                            <option value="Under $100K">Under $100,000</option>
-                            <option value="$100K-$500K">$100,000 - $500,000</option>
-                            <option value="$500K-$1M">$500,000 - $1,000,000</option>
-                            <option value="$1M-$5M">$1,000,000 - $5,000,000</option>
-                            <option value="$5M-$10M">$5,000,000 - $10,000,000</option>
-                            <option value="Over $10M">Over $10,000,000</option>
+                            <option value="Under $100K">Under $100K</option>
+                            <option value="$100K-$500K">$100K-$500K</option>
+                            <option value="$500K-$1M">$500K-$1M</option>
+                            <option value="Over $1M">Over $1M</option>
                         </select>
-                    </div>
-                    
-                    <div class="form-group">
-                        <label>Family/Organizational Financial Support</label>
-                        <textarea name="familyFinancial" rows="2" placeholder="Family financial situation or organizational financial backing"></textarea>
                     </div>
                 </div>
 
                 <div class="form-group">
                     <label>
                         <input type="checkbox" name="terms" required style="width: auto; margin-right: 10px;">
-                        I agree to the TAU Africa Terms of Service and Privacy Policy *
+                        I agree to the TAU Africa Terms of Service *
                     </label>
                 </div>
                 
@@ -1994,20 +2383,19 @@ function createTalkRegistrationModal() {
     `;
 }
 
-// ===== JOB CREATION TRAINING MODAL - COMPREHENSIVE =====
+// ===== JOB CREATION MODAL =====
 function createJobCreationModal() {
     return `
         <div class="modal-content">
             <span class="close" onclick="closeAllModals()">&times;</span>
-            <h2>💼 Job Creation Training Program</h2>
-            <p>Comprehensive entrepreneurship and job creation program designed for African innovators</p>
+            <h2>💼 Job Creation Training</h2>
+            <p>6-week entrepreneurship program</p>
             
             <div class="payment-info">
                 <h3>Training Fee: KSH 1,500</h3>
-                <p>6-week intensive program • Digital materials • Certification • Mentorship support</p>
             </div>
             
-            <form onsubmit="processJobCreationTraining(event)" id="jobCreationForm">
+            <form onsubmit="processJobCreationTraining(event)">
                 <div class="form-group">
                     <label>Full Name *</label>
                     <input type="text" name="fullName" required>
@@ -2019,7 +2407,7 @@ function createJobCreationModal() {
                 </div>
                 
                 <div class="form-group">
-                    <label>Phone Number (M-PESA) *</label>
+                    <label>Phone (M-PESA) *</label>
                     <input type="tel" name="phone" required placeholder="254XXXXXXXXX">
                 </div>
                 
@@ -2031,1076 +2419,223 @@ function createJobCreationModal() {
                 <div class="form-group">
                     <label>Age Range *</label>
                     <select name="ageRange" required>
-                        <option value="">Select age range</option>
-                        <option value="18-25">18-25 years</option>
-                        <option value="26-35">26-35 years</option>
-                        <option value="36-45">36-45 years</option>
-                        <option value="46-55">46-55 years</option>
-                        <option value="56+">56+ years</option>
+                        <option value="">Select age</option>
+                        <option value="18-25">18-25</option>
+                        <option value="26-35">26-35</option>
+                        <option value="36-45">36-45</option>
+                        <option value="46+">46+</option>
                     </select>
                 </div>
                 
                 <div class="form-group">
-                    <label>Current Employment Status *</label>
+                    <label>Employment Status *</label>
                     <select name="employmentStatus" required>
                         <option value="">Select status</option>
                         <option value="Unemployed">Unemployed</option>
-                        <option value="Underemployed">Underemployed</option>
                         <option value="Student">Student</option>
-                        <option value="Self-employed">Self-employed</option>
-                        <option value="Employed">Employed (seeking additional income)</option>
-                        <option value="Recent Graduate">Recent Graduate</option>
+                        <option value="Employed">Employed</option>
                     </select>
                 </div>
                 
                 <div class="form-group">
-                    <label>Business Idea/Interest Area *</label>
-                    <textarea name="businessIdea" rows="3" placeholder="What type of business or job creation are you interested in? Be specific about your vision." required></textarea>
+                    <label>Business Idea *</label>
+                    <textarea name="businessIdea" rows="3" required></textarea>
                 </div>
 
                 <div class="form-group">
-                    <label>Target Market/Customers *</label>
-                    <textarea name="targetMarket" rows="2" placeholder="Who will be your customers or beneficiaries?" required></textarea>
+                    <label>Target Market *</label>
+                    <textarea name="targetMarket" rows="2" required></textarea>
                 </div>
 
                 <div class="form-group">
-                    <label>Available Capital/Startup Funds</label>
+                    <label>Available Capital</label>
                     <select name="startupFunds">
                         <option value="">Select range</option>
-                        <option value="No funds">No funds available</option>
-                        <option value="Under KSH 10K">Under KSH 10,000</option>
-                        <option value="KSH 10K-50K">KSH 10,000 - 50,000</option>
-                        <option value="KSH 50K-100K">KSH 50,000 - 100,000</option>
-                        <option value="KSH 100K-500K">KSH 100,000 - 500,000</option>
-                        <option value="Over KSH 500K">Over KSH 500,000</option>
+                        <option value="No funds">No funds</option>
+                        <option value="Under 10K">Under KSH 10K</option>
+                        <option value="10K-50K">KSH 10K-50K</option>
+                        <option value="Over 50K">Over KSH 50K</option>
                     </select>
                 </div>
                 
                 <div class="form-group">
-                    <label>Educational Background *</label>
+                    <label>Education *</label>
                     <select name="education" required>
                         <option value="">Select level</option>
-                        <option value="Primary School">Primary School</option>
-                        <option value="Secondary School">Secondary School</option>
-                        <option value="College Diploma">College Diploma</option>
-                        <option value="University Degree">University Degree</option>
-                        <option value="Postgraduate">Postgraduate</option>
-                        <option value="Vocational Training">Vocational Training</option>
-                        <option value="Self-taught">Self-taught</option>
-                    </select>
-                </div>
-
-                <div class="form-group">
-                    <label>Relevant Skills/Experience</label>
-                    <textarea name="relevantSkills" rows="2" placeholder="List any skills or experience relevant to your business idea"></textarea>
-                </div>
-                
-                <div class="form-group">
-                    <label>Training Focus Areas (Select all that apply) *</label>
-                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 10px;">
-                        <label><input type="checkbox" name="focus" value="Business Planning"> Business Planning</label>
-                        <label><input type="checkbox" name="focus" value="Financial Management"> Financial Management</label>
-                        <label><input type="checkbox" name="focus" value="Marketing & Sales"> Marketing & Sales</label>
-                        <label><input type="checkbox" name="focus" value="Digital Skills"> Digital Skills</label>
-                        <label><input type="checkbox" name="focus" value="Leadership"> Leadership</label>
-                        <label><input type="checkbox" name="focus" value="Networking"> Networking</label>
-                        <label><input type="checkbox" name="focus" value="Legal Compliance"> Legal Compliance</label>
-                        <label><input type="checkbox" name="focus" value="Product Development"> Product Development</label>
-                    </div>
-                </div>
-
-                <div class="form-group">
-                    <label>Preferred Learning Format *</label>
-                    <select name="learningFormat" required>
-                        <option value="">Select format</option>
-                        <option value="Online only">Online only</option>
-                        <option value="In-person only">In-person only</option>
-                        <option value="Hybrid">Hybrid (Online + In-person)</option>
-                        <option value="Self-paced">Self-paced online</option>
-                    </select>
-                </div>
-
-                <div class="form-group">
-                    <label>Timeline to Start Business *</label>
-                    <select name="businessTimeline" required>
-                        <option value="">Select timeline</option>
-                        <option value="Within 3 months">Within 3 months</option>
-                        <option value="3-6 months">3-6 months</option>
-                        <option value="6-12 months">6-12 months</option>
-                        <option value="Over 1 year">Over 1 year</option>
-                        <option value="Just exploring">Just exploring options</option>
+                        <option value="Primary">Primary</option>
+                        <option value="Secondary">Secondary</option>
+                        <option value="College">College</option>
+                        <option value="University">University</option>
                     </select>
                 </div>
 
                 <div class="form-group">
                     <label>
                         <input type="checkbox" name="terms" required style="width: auto; margin-right: 10px;">
-                        I agree to the TAU Africa Terms of Service and Privacy Policy *
+                        I agree to terms *
                     </label>
                 </div>
                 
-                <button type="submit" class="btn btn-register">Proceed to M-PESA Payment (KSH 1,500)</button>
+                <button type="submit" class="btn btn-register">Proceed to Payment (KSH 1,500)</button>
             </form>
         </div>
     `;
 }
-        // TAU AFRICA INTERNATIONAL - PART 4: REMAINING MODALS (FINAL PART)
-// PASTE THIS INSIDE <script> TAGS AFTER PART 3
 
-// ===== TRAINING MODAL =====
+// ===== SIMPLE MODALS FOR OTHER FEATURES =====
 function createTrainingModal() {
     return `
         <div class="modal-content">
             <span class="close" onclick="closeAllModals()">&times;</span>
-            <h2>📚 Join Training Programs</h2>
-            
+            <h2>📚 Training Programs</h2>
             <form onsubmit="processTrainingRegistration(event)">
                 <div class="form-group">
-                    <label>Full Name *</label>
+                    <label>Name *</label>
                     <input type="text" name="fullName" required>
                 </div>
-                
                 <div class="form-group">
                     <label>Email *</label>
                     <input type="email" name="email" required>
                 </div>
-                
                 <div class="form-group">
-                    <label>Phone Number *</label>
+                    <label>Phone *</label>
                     <input type="tel" name="phone" required>
                 </div>
-                
                 <div class="form-group">
-                    <label>Training Category *</label>
+                    <label>Training Interest *</label>
                     <select name="trainingCategory" required>
-                        <option value="">Select training area</option>
-                        <option>Digital Skills & Technology</option>
-                        <option>Business & Entrepreneurship</option>
-                        <option>Financial Literacy</option>
-                        <option>Leadership Development</option>
-                        <option>Agricultural Innovation</option>
-                        <option>Pan-African Studies</option>
-                        <option>Health & Wellness</option>
-                        <option>Creative Arts</option>
+                        <option value="">Select area</option>
+                        <option>Digital Skills</option>
+                        <option>Business</option>
+                        <option>Leadership</option>
                     </select>
                 </div>
-                
-                <div class="form-group">
-                    <label>Experience Level *</label>
-                    <select name="level" required>
-                        <option value="">Select level</option>
-                        <option>Beginner</option>
-                        <option>Intermediate</option>
-                        <option>Advanced</option>
-                    </select>
-                </div>
-                
-                <div class="form-group">
-                    <label>Learning Goals *</label>
-                    <textarea name="goals" rows="3" placeholder="What do you hope to achieve through this training?" required></textarea>
-                </div>
-                
-                <div class="form-group">
-                    <label>Preferred Training Format</label>
-                    <select name="format">
-                        <option>Online</option>
-                        <option>In-person</option>
-                        <option>Hybrid</option>
-                    </select>
-                </div>
-                
-                <button type="submit" class="btn">Register for Training</button>
+                <button type="submit" class="btn">Register</button>
             </form>
         </div>
     `;
 }
 
-// ===== WORKSHOP MODAL =====
 function createWorkshopModal() {
     return `
         <div class="modal-content">
             <span class="close" onclick="closeAllModals()">&times;</span>
-            <h2>🎯 Host a Workshop</h2>
-            
+            <h2>🎯 Host Workshop</h2>
             <form onsubmit="processWorkshopProposal(event)">
                 <div class="form-group">
-                    <label>Your Name *</label>
+                    <label>Name *</label>
                     <input type="text" name="hostName" required>
                 </div>
-                
                 <div class="form-group">
                     <label>Email *</label>
                     <input type="email" name="email" required>
                 </div>
-                
-                <div class="form-group">
-                    <label>Phone Number *</label>
-                    <input type="tel" name="phone" required>
-                </div>
-                
                 <div class="form-group">
                     <label>Workshop Title *</label>
                     <input type="text" name="workshopTitle" required>
                 </div>
-                
                 <div class="form-group">
-                    <label>Workshop Category *</label>
-                    <select name="category" required>
-                        <option value="">Select category</option>
-                        <option>Business & Entrepreneurship</option>
-                        <option>Technology & Innovation</option>
-                        <option>Arts & Culture</option>
-                        <option>Health & Wellness</option>
-                        <option>Education & Skills</option>
-                        <option>Pan-African Studies</option>
-                        <option>Financial Literacy</option>
-                        <option>Agriculture & Food Security</option>
-                    </select>
+                    <label>Description *</label>
+                    <textarea name="description" rows="4" required></textarea>
                 </div>
-                
-                <div class="form-group">
-                    <label>Workshop Description *</label>
-                    <textarea name="description" rows="4" placeholder="Detailed description of workshop content and objectives" required></textarea>
-                </div>
-                
-                <div class="form-group">
-                    <label>Target Audience *</label>
-                    <textarea name="audience" rows="2" placeholder="Who should attend this workshop?" required></textarea>
-                </div>
-                
-                <div class="form-group">
-                    <label>Duration *</label>
-                    <select name="duration" required>
-                        <option value="">Select duration</option>
-                        <option>2 hours</option>
-                        <option>Half day (4 hours)</option>
-                        <option>Full day (8 hours)</option>
-                        <option>2 days</option>
-                        <option>3-5 days</option>
-                        <option>1 week</option>
-                    </select>
-                </div>
-                
-                <div class="form-group">
-                    <label>Your Expertise/Qualifications *</label>
-                    <textarea name="expertise" rows="3" placeholder="Your background and qualifications for hosting this workshop" required></textarea>
-                </div>
-                
-                <button type="submit" class="btn">Submit Workshop Proposal</button>
+                <button type="submit" class="btn">Submit Proposal</button>
             </form>
         </div>
     `;
 }
 
-// ===== RESEARCH SERVICES MODAL =====
 function createResearchModal() {
     return `
         <div class="modal-content">
             <span class="close" onclick="closeAllModals()">&times;</span>
             <h2>🔬 Research Services</h2>
-            
             <form onsubmit="processResearchRequest(event)">
                 <div class="form-group">
-                    <label>Organization/Individual Name *</label>
+                    <label>Name *</label>
                     <input type="text" name="clientName" required>
                 </div>
-                
-                <div class="form-group">
-                    <label>Contact Email *</label>
-                    <input type="email" name="email" required>
-                </div>
-                
-                <div class="form-group">
-                    <label>Phone Number *</label>
-                    <input type="tel" name="phone" required>
-                </div>
-                
-                <div class="form-group">
-                    <label>Research Type *</label>
-                    <select name="researchType" required>
-                        <option value="">Select research type</option>
-                        <option>Market Research</option>
-                        <option>Academic Research</option>
-                        <option>Policy Research</option>
-                        <option>Social Impact Assessment</option>
-                        <option>Business Intelligence</option>
-                        <option>Pan-African Studies</option>
-                        <option>Economic Analysis</option>
-                        <option>Cultural Research</option>
-                    </select>
-                </div>
-                
-                <div class="form-group">
-                    <label>Research Topic/Subject *</label>
-                    <input type="text" name="topic" placeholder="Brief description of research topic" required>
-                </div>
-                
-                <div class="form-group">
-                    <label>Detailed Research Requirements *</label>
-                    <textarea name="requirements" rows="4" placeholder="Specific research questions, methodology preferences, deliverables expected" required></textarea>
-                </div>
-                
-                <div class="form-group">
-                    <label>Timeline *</label>
-                    <select name="timeline" required>
-                        <option value="">Select timeline</option>
-                        <option>1-2 weeks</option>
-                        <option>1 month</option>
-                        <option>2-3 months</option>
-                        <option>3-6 months</option>
-                        <option>6+ months</option>
-                    </select>
-                </div>
-                
-                <div class="form-group">
-                    <label>Budget Range (USD)</label>
-                    <select name="budget">
-                        <option value="">Select budget range</option>
-                        <option>Under $1,000</option>
-                        <option>$1,000 - $5,000</option>
-                        <option>$5,000 - $10,000</option>
-                        <option>$10,000 - $25,000</option>
-                        <option>$25,000+</option>
-                        <option>To be discussed</option>
-                    </select>
-                </div>
-                
-                <button type="submit" class="btn">Submit Research Request</button>
-            </form>
-        </div>
-    `;
-}
-
-// ===== INSERT JOB MODAL =====
-function createInsertJobModal() {
-    return `
-        <div class="modal-content">
-            <span class="close" onclick="closeAllModals()">&times;</span>
-            <h2>📝 Post a Job Opening</h2>
-            
-            <form onsubmit="processJobPosting(event)">
-                <div class="form-group">
-                    <label>Company/Organization Name *</label>
-                    <input type="text" name="companyName" required>
-                </div>
-                
-                <div class="form-group">
-                    <label>Contact Email *</label>
-                    <input type="email" name="email" required>
-                </div>
-                
-                <div class="form-group">
-                    <label>Contact Phone *</label>
-                    <input type="tel" name="phone" required>
-                </div>
-                
-                <div class="form-group">
-                    <label>Job Title *</label>
-                    <input type="text" name="jobTitle" required>
-                </div>
-                
-                <div class="form-group">
-                    <label>Job Category *</label>
-                    <select name="jobCategory" required>
-                        <option value="">Select category</option>
-                        <option>IT & Digital Economy</option>
-                        <option>Marketing & Advertisements</option>
-                        <option>Front Desk & Data Handlers</option>
-                        <option>Management</option>
-                        <option>Healthcare</option>
-                        <option>Sales & Customer Service</option>
-                        <option>Education & Training</option>
-                        <option>Engineering</option>
-                        <option>Finance & Accounting</option>
-                        <option>Agriculture & Food</option>
-                        <option>Manufacturing</option>
-                        <option>Transportation & Logistics</option>
-                    </select>
-                </div>
-                
-                <div class="form-group">
-                    <label>Job Type *</label>
-                    <select name="jobType" required>
-                        <option value="">Select type</option>
-                        <option>Full-time</option>
-                        <option>Part-time</option>
-                        <option>Contract</option>
-                        <option>Freelance</option>
-                        <option>Internship</option>
-                        <option>Temporary</option>
-                    </select>
-                </div>
-                
-                <div class="form-group">
-                    <label>Location *</label>
-                    <input type="text" name="location" required>
-                </div>
-                
-                <div class="form-group">
-                    <label>Job Description *</label>
-                    <textarea name="jobDescription" rows="4" placeholder="Detailed job description, responsibilities, requirements" required></textarea>
-                </div>
-                
-                <div class="form-group">
-                    <label>Required Qualifications *</label>
-                    <textarea name="qualifications" rows="3" required></textarea>
-                </div>
-                
-                <div class="form-group">
-                    <label>Experience Level *</label>
-                    <select name="experienceLevel" required>
-                        <option value="">Select level</option>
-                        <option>Entry Level (0-2 years)</option>
-                        <option>Mid Level (2-5 years)</option>
-                        <option>Senior Level (5-10 years)</option>
-                        <option>Executive Level (10+ years)</option>
-                    </select>
-                </div>
-                
-                <div class="form-group">
-                    <label>Salary Range (Optional)</label>
-                    <input type="text" name="salary" placeholder="e.g., KSH 50,000 - 80,000">
-                </div>
-                
-                <button type="submit" class="btn">Post Job Opening</button>
-            </form>
-        </div>
-    `;
-}
-
-// ===== JOB SEARCH MODAL =====
-function createRetrieveJobModal() {
-    return `
-        <div class="modal-content">
-            <span class="close" onclick="closeAllModals()">&times;</span>
-            <h2>🔍 Job Search Portal</h2>
-            
-            <form onsubmit="processJobSearch(event)">
-                <div class="form-group">
-                    <label>Your Name *</label>
-                    <input type="text" name="searcherName" required>
-                </div>
-                
                 <div class="form-group">
                     <label>Email *</label>
                     <input type="email" name="email" required>
                 </div>
-                
                 <div class="form-group">
-                    <label>Job Category</label>
-                    <select name="category">
-                        <option value="">All categories</option>
-                        <option>IT & Digital Economy</option>
-                        <option>Marketing & Advertisements</option>
-                        <option>Front Desk & Data Handlers</option>
-                        <option>Management</option>
-                        <option>Healthcare</option>
-                        <option>Sales & Customer Service</option>
-                        <option>Education & Training</option>
-                        <option>Engineering</option>
-                        <option>Finance & Accounting</option>
-                    </select>
+                    <label>Research Topic *</label>
+                    <input type="text" name="topic" required>
                 </div>
-                
                 <div class="form-group">
-                    <label>Preferred Location</label>
-                    <input type="text" name="location" placeholder="City, Country or Remote">
+                    <label>Requirements *</label>
+                    <textarea name="requirements" rows="4" required></textarea>
                 </div>
-                
-                <div class="form-group">
-                    <label>Experience Level</label>
-                    <select name="experience">
-                        <option value="">Any level</option>
-                        <option>Entry Level</option>
-                        <option>Mid Level</option>
-                        <option>Senior Level</option>
-                        <option>Executive Level</option>
-                    </select>
-                </div>
-                
-                <div class="form-group">
-                    <label>Job Type</label>
-                    <select name="jobType">
-                        <option value="">Any type</option>
-                        <option>Full-time</option>
-                        <option>Part-time</option>
-                        <option>Contract</option>
-                        <option>Freelance</option>
-                        <option>Internship</option>
-                    </select>
-                </div>
-                
-                <button type="submit" class="btn">Search Jobs</button>
+                <button type="submit" class="btn">Submit Request</button>
             </form>
         </div>
     `;
 }
 
-// ===== AVAILABLE JOBS MODAL =====
-function createAvailableJobsModal() {
-    return `
-        <div class="modal-content">
-            <span class="close" onclick="closeAllModals()">&times;</span>
-            <h2>📋 Available Jobs</h2>
-            <p>Browse current job opportunities</p>
-            
-            <div style="background: #f8f9fa; padding: 20px; border-radius: 10px; margin: 20px 0;">
-                <h3>Sample Job Listings:</h3>
-                <div style="border: 1px solid #ddd; padding: 15px; margin: 10px 0; border-radius: 8px;">
-                    <h4>Software Developer - Tech Startup</h4>
-                    <p><strong>Location:</strong> Nairobi, Kenya</p>
-                    <p><strong>Requirements:</strong> 2+ years experience, JavaScript, React</p>
-                    <button class="btn" onclick="openModal('applyJob')">Apply Now</button>
-                </div>
-                <div style="border: 1px solid #ddd; padding: 15px; margin: 10px 0; border-radius: 8px;">
-                    <h4>Marketing Manager - NGO</h4>
-                    <p><strong>Location:</strong> Lagos, Nigeria</p>
-                    <p><strong>Requirements:</strong> Marketing degree, 3+ years experience</p>
-                    <button class="btn" onclick="openModal('applyJob')">Apply Now</button>
-                </div>
-            </div>
-            
-            <div style="text-align: center;">
-                <p>More jobs available to registered members</p>
-                <button class="btn" onclick="openModal('taskRegistration')">Join TASK Team to Access All Jobs</button>
-            </div>
-        </div>
-    `;
-}
-
-// ===== APPLY FOR JOB MODAL =====
-function createApplyJobModal() {
-    return `
-        <div class="modal-content">
-            <span class="close" onclick="closeAllModals()">&times;</span>
-            <h2>📋 Job Application</h2>
-            
-            <form onsubmit="processJobApplication(event)">
-                <div class="form-group">
-                    <label>Full Name *</label>
-                    <input type="text" name="fullName" required>
-                </div>
-                
-                <div class="form-group">
-                    <label>Email *</label>
-                    <input type="email" name="email" required>
-                </div>
-                
-                <div class="form-group">
-                    <label>Phone *</label>
-                    <input type="tel" name="phone" required>
-                </div>
-                
-                <div class="form-group">
-                    <label>Location/Address *</label>
-                    <input type="text" name="location" required>
-                </div>
-                
-                <div class="form-group">
-                    <label>Position Applying For *</label>
-                    <input type="text" name="position" required>
-                </div>
-                
-                <div class="form-group">
-                    <label>Job Category *</label>
-                    <select name="jobCategory" required>
-                        <option value="">Select category</option>
-                        <option>IT & Digital Economy</option>
-                        <option>Marketing & Advertisements</option>
-                        <option>Front Desk & Data Handlers</option>
-                        <option>Management</option>
-                        <option>Healthcare</option>
-                        <option>Sales</option>
-                        <option>Education</option>
-                        <option>Engineering</option>
-                        <option>Finance</option>
-                        <option>Agriculture</option>
-                    </select>
-                </div>
-                
-                <div class="form-group">
-                    <label>Experience Level *</label>
-                    <select name="experience" required>
-                        <option value="">Select level</option>
-                        <option>Entry Level (0-2 years)</option>
-                        <option>Mid Level (2-5 years)</option>
-                        <option>Senior Level (5-10 years)</option>
-                        <option>Executive Level (10+ years)</option>
-                    </select>
-                </div>
-                
-                <div class="form-group">
-                    <label>Key Skills *</label>
-                    <textarea name="skills" rows="3" placeholder="List your relevant skills" required></textarea>
-                </div>
-                
-                <div class="form-group">
-                    <label>Work Experience *</label>
-                    <textarea name="workExperience" rows="4" placeholder="Describe your relevant work experience" required></textarea>
-                </div>
-                
-                <div class="form-group">
-                    <label>Education *</label>
-                    <textarea name="education" rows="3" placeholder="Your educational background" required></textarea>
-                </div>
-                
-                <div class="form-group">
-                    <label>Why are you interested in this position? *</label>
-                    <textarea name="interest" rows="3" required></textarea>
-                </div>
-                
-                <div class="form-group">
-                    <label>Availability *</label>
-                    <select name="availability" required>
-                        <option value="">Select availability</option>
-                        <option>Immediately</option>
-                        <option>Within 2 weeks</option>
-                        <option>Within 1 month</option>
-                        <option>To be discussed</option>
-                    </select>
-                </div>
-                
-                <button type="submit" class="btn">Submit Application</button>
-            </form>
-        </div>
-    `;
-}
-
-// ===== COMMUNITY PROGRAMS MODAL =====
 function createCommunityModal() {
     return `
         <div class="modal-content">
             <span class="close" onclick="closeAllModals()">&times;</span>
-            <h2>🤝 Join Community Programs</h2>
-            
+            <h2>🤝 Community Programs</h2>
             <form onsubmit="processCommunityRegistration(event)">
                 <div class="form-group">
-                    <label>Full Name *</label>
+                    <label>Name *</label>
                     <input type="text" name="fullName" required>
                 </div>
-                
                 <div class="form-group">
                     <label>Email *</label>
                     <input type="email" name="email" required>
                 </div>
-                
                 <div class="form-group">
                     <label>Phone *</label>
                     <input type="tel" name="phone" required>
                 </div>
-                
                 <div class="form-group">
-                    <label>Location/Community *</label>
+                    <label>Location *</label>
                     <input type="text" name="location" required>
                 </div>
-                
                 <div class="form-group">
-                    <label>Program Interest (Select all that apply) *</label>
-                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 10px;">
-                        <label><input type="checkbox" name="programs" value="Agriculture"> Agriculture</label>
-                        <label><input type="checkbox" name="programs" value="Climate"> Climate Action</label>
-                        <label><input type="checkbox" name="programs" value="Environment"> Environment</label>
-                        <label><input type="checkbox" name="programs" value="Water"> Water & Sanitation</label>
-                        <label><input type="checkbox" name="programs" value="Education"> Education</label>
-                        <label><input type="checkbox" name="programs" value="ChildCare"> Child Care</label>
-                    </div>
-                </div>
-                
-                <div class="form-group">
-                    <label>Role Preference *</label>
-                    <select name="role" required>
-                        <option value="">How would you like to contribute?</option>
-                        <option>Volunteer Worker</option>
-                        <option>Community Organizer</option>
-                        <option>Technical Advisor</option>
-                        <option>Funding/Donor</option>
-                        <option>Program Coordinator</option>
+                    <label>Program Interest *</label>
+                    <select name="program" required>
+                        <option value="">Select program</option>
+                        <option>Agriculture</option>
+                        <option>Climate</option>
+                        <option>Education</option>
+                        <option>Water & Sanitation</option>
                     </select>
                 </div>
-                
-                <div class="form-group">
-                    <label>Available Time Commitment</label>
-                    <select name="timeCommitment">
-                        <option>2-4 hours per week</option>
-                        <option>5-10 hours per week</option>
-                        <option>10-20 hours per week</option>
-                        <option>Full-time volunteer</option>
-                        <option>Project-based</option>
-                    </select>
-                </div>
-                
-                <div class="form-group">
-                    <label>Your Skills/Experience</label>
-                    <textarea name="skills" rows="3" placeholder="What skills or experience can you contribute?"></textarea>
-                </div>
-                
-                <button type="submit" class="btn">Join Community Programs</button>
+                <button type="submit" class="btn">Join Program</button>
             </form>
         </div>
     `;
 }
 
-// ===== CORPORATE REGISTRATION MODAL =====
 function createCorporateModal() {
-    return `
-        <div class="modal-content">
-            <span class="close" onclick="closeAllModals()">&times;</span>
-            <h2>🏢 Corporate Registration - Valenta Holdings</h2>
-            
-            <div class="payment-info">
-                <h3>Corporate Registration Package</h3>
-                <p>Comprehensive business registration and setup services</p>
-            </div>
-            
-            <form onsubmit="processCorporateRegistration(event)">
-                <div class="form-group">
-                    <label>Company Name *</label>
-                    <input type="text" name="companyName" required>
-                </div>
-                
-                <div class="form-group">
-                    <label>Business Type *</label>
-                    <select name="businessType" required>
-                        <option value="">Select business type</option>
-                        <option>Limited Company</option>
-                        <option>Partnership</option>
-                        <option>Sole Proprietorship</option>
-                        <option>NGO/Foundation</option>
-                        <option>Cooperative</option>
-                    </select>
-                </div>
-                
-                <div class="form-group">
-                    <label>Industry Sector *</label>
-                    <select name="sector" required>
-                        <option value="">Select sector</option>
-                        <option>Technology & Innovation</option>
-                        <option>Agriculture & Food</option>
-                        <option>Healthcare & Pharmaceuticals</option>
-                        <option>Education & Training</option>
-                        <option>Finance & Banking</option>
-                        <option>Manufacturing</option>
-                        <option>Retail & Commerce</option>
-                        <option>Energy & Environment</option>
-                        <option>Tourism & Hospitality</option>
-                        <option>Media & Entertainment</option>
-                        <option>Construction & Real Estate</option>
-                        <option>Transportation & Logistics</option>
-                    </select>
-                </div>
-                
-                <div class="form-group">
-                    <label>Training for Trade Program</label>
-                    <select name="trainingTrade">
-                        <option value="">Not applicable</option>
-                        <option>Yes - Include training for employees</option>
-                        <option>Yes - Include skills development</option>
-                        <option>Yes - Include professional certification</option>
-                    </select>
-                </div>
-                
-                <div class="form-group">
-                    <label>Contact Person *</label>
-                    <input type="text" name="contactName" required>
-                </div>
-                
-                <div class="form-group">
-                    <label>Email *</label>
-                    <input type="email" name="email" required>
-                </div>
-                
-                <div class="form-group">
-                    <label>Phone Number *</label>
-                    <input type="tel" name="phone" required>
-                </div>
-                
-                <div class="form-group">
-                    <label>Country *</label>
-                    <input type="text" name="country" required>
-                </div>
-                
-                <div class="form-group">
-                    <label>Business Address *</label>
-                    <textarea name="address" rows="3" required></textarea>
-                </div>
-                
-                <div class="form-group">
-                    <label>Business Description *</label>
-                    <textarea name="businessDescription" rows="4" placeholder="Describe your business activities, products, services" required></textarea>
-                </div>
-                
-                <div class="form-group">
-                    <label>Expected Initial Investment (USD)</label>
-                    <select name="investment">
-                        <option value="">Select range</option>
-                        <option>Under $10,000</option>
-                        <option>$10,000 - $50,000</option>
-                        <option>$50,000 - $100,000</option>
-                        <option>$100,000 - $500,000</option>
-                        <option>$500,000 - $1,000,000</option>
-                        <option>Over $1,000,000</option>
-                    </select>
-                </div>
-                
-                <div class="form-group">
-                    <label>Expected Number of Employees</label>
-                    <select name="employees">
-                        <option value="">Select range</option>
-                        <option>1-5 employees</option>
-                        <option>6-20 employees</option>
-                        <option>21-50 employees</option>
-                        <option>51-100 employees</option>
-                        <option>100+ employees</option>
-                    </select>
-                </div>
-                
-                <div class="form-group">
-                    <label>Pan-African Vision Alignment</label>
-                    <textarea name="alignment" rows="3" placeholder="How does your business align with Pan-African development goals?"></textarea>
-                </div>
-                
-                <button type="submit" class="btn">Submit Corporate Registration</button>
-            </form>
-        </div>
-    `;
+    return '<div class="modal-content"><span class="close" onclick="closeAllModals()">&times;</span><h2>🏢 Corporate Services</h2><p>Contact us at grouptauafrica@gmail.com for corporate services.</p></div>';
 }
 
-// ===== PAR SIRAI MODAL =====
 function createParSiraiModal() {
-    return `
-        <div class="modal-content">
-            <span class="close" onclick="closeAllModals()">&times;</span>
-            <h2>🏛️ Par Sirai Center</h2>
-            <p>Center for Knowledge and Spirituality within AUFFI</p>
-            
-            <div style="padding: 20px;">
-                <div style="background: linear-gradient(45deg, #ff6b6b, #4ecdc4); color: white; padding: 30px; border-radius: 15px; margin: 20px 0; text-align: center;">
-                    <h3>Welcome to Par Sirai Center</h3>
-                    <p>The spiritual and intellectual heart of Pan-African awakening</p>
-                </div>
-                
-                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px;">
-                    <div style="background: #f8f9fa; padding: 20px; border-radius: 15px;">
-                        <h4>📚 Knowledge Repository</h4>
-                        <p>Access to Pan-African history, philosophy, and wisdom traditions</p>
-                    </div>
-                    <div style="background: #f8f9fa; padding: 20px; border-radius: 15px;">
-                        <h4>🧘 Spiritual Practices</h4>
-                        <p>Meditation, prayer, and consciousness development programs</p>
-                    </div>
-                    <div style="background: #f8f9fa; padding: 20px; border-radius: 15px;">
-                        <h4>👥 Community Circles</h4>
-                        <p>Discussion groups and learning circles for spiritual growth</p>
-                    </div>
-                    <div style="background: #f8f9fa; padding: 20px; border-radius: 15px;">
-                        <h4>🌟 Awakening Programs</h4>
-                        <p>Structured programs for social and spiritual consciousness</p>
-                    </div>
-                </div>
-                
-                <form onsubmit="processParSiraiRegistration(event)" style="margin-top: 30px;">
-                    <div class="form-group">
-                        <label>Name *</label>
-                        <input type="text" name="name" required>
-                    </div>
-                    <div class="form-group">
-                        <label>Email *</label>
-                        <input type="email" name="email" required>
-                    </div>
-                    <div class="form-group">
-                        <label>Interest Area *</label>
-                        <select name="interest" required>
-                            <option value="">Select area</option>
-                            <option>Pan-African Book of Oloo</option>
-                            <option>Spiritual Life of Oloo</option>
-                            <option>Philosophy & Wisdom of Oloo</option>
-                            <option>African Community Leadership</option>
-                            <option>African Cultural Heritage</option>
-                        </select>
-                    </div>
-                    <button type="submit" class="btn">Join Par Sirai Center</button>
-                </form>
-            </div>
-        </div>
-    `;
+    return '<div class="modal-content"><span class="close" onclick="closeAllModals()">&times;</span><h2>🏛️ Par Sirai Center</h2><p>Center for Knowledge and Spirituality. Contact: grouptauafrica@gmail.com</p></div>';
 }
 
-// ===== TRUST GRAPH MODAL =====
 function createTrustGraphModal() {
-    return `
-        <div class="modal-content">
-            <span class="close" onclick="closeAllModals()">&times;</span>
-            <h2>🔗 Trust Graph Ledger</h2>
-            <div style="padding: 20px; text-align: center;">
-                <div style="background: linear-gradient(45deg, #667eea, #764ba2); color: white; padding: 30px; border-radius: 15px; margin: 20px 0;">
-                    <h3>Blockchain-Based Trust System</h3>
-                    <p>Building transparent and verifiable trust networks across Africa</p>
-                </div>
-                <p style="margin: 20px 0;">The Trust Graph Ledger is currently in development. This system will enable:</p>
-                <ul style="text-align: left; max-width: 500px; margin: 0 auto;">
-                    <li>Verified identity and reputation tracking</li>
-                    <li>Transparent transaction histories</li>
-                    <li>Community-validated trust scores</li>
-                    <li>Decentralized governance mechanisms</li>
-                </ul>
-            </div>
-            
-            <form onsubmit="processTrustGraphAccess(event)" id="trustGraphForm">
-                <div class="form-group">
-                    <label>Organization Name *</label>
-                    <input type="text" name="organization" required>
-                </div>
-                <div class="form-group">
-                    <label>Contact Email *</label>
-                    <input type="email" name="email" required>
-                </div>
-                <div class="form-group">
-                    <label>Access Level *</label>
-                    <select name="accessLevel" required>
-                        <option value="">Select level</option>
-                        <option value="Basic">Basic Access</option>
-                        <option value="Business">Corporate Access</option>
-                        <option value="Enterprise">Sovereign Access</option>
-                    </select>
-                </div>
-                <button type="submit" class="btn">Request Access</button>
-            </form>
-        </div>
-    `;
+    return '<div class="modal-content"><span class="close" onclick="closeAllModals()">&times;</span><h2>🔗 Trust Graph</h2><p>Blockchain-based trust system. Coming soon!</p></div>';
 }
 
-// ===== FOUNDATION MODAL =====
 function createFoundationModal() {
-    return `
-        <div class="modal-content">
-            <span class="close" onclick="closeAllModals()">&times;</span>
-            <h2>🌍 TAU Africa Foundation</h2>
-            <div style="padding: 20px;">
-                <div style="background: linear-gradient(45deg, #2ecc71, #27ae60); color: white; padding: 30px; border-radius: 15px; margin: 20px 0; text-align: center;">
-                    <h3>Foundation for Sustainable Development</h3>
-                    <p>Empowering African communities through strategic partnerships</p>
-                </div>
-                
-                <form onsubmit="processFoundationInquiry(event)">
-                    <div class="form-group">
-                        <label>Organization/Individual Name *</label>
-                        <input type="text" name="name" required>
-                    </div>
-                    <div class="form-group">
-                        <label>Email *</label>
-                        <input type="email" name="email" required>
-                    </div>
-                    <div class="form-group">
-                        <label>Inquiry Type *</label>
-                        <select name="inquiryType" required>
-                            <option value="">Select inquiry type</option>
-                            <option>Grant Application</option>
-                            <option>Partnership Opportunity</option>
-                            <option>Donation/Contribution</option>
-                            <option>Program Collaboration</option>
-                            <option>General Information</option>
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <label>Message *</label>
-                        <textarea name="message" rows="4" required></textarea>
-                    </div>
-                    <button type="submit" class="btn">Submit Foundation Inquiry</button>
-                </form>
-            </div>
-        </div>
-    `;
+    return '<div class="modal-content"><span class="close" onclick="closeAllModals()">&times;</span><h2>🌍 TAU Africa Foundation</h2><p>Foundation for Sustainable Development. Contact: grouptauafrica@gmail.com</p></div>';
 }
 
-// ===== HOLDINGS MODAL =====
 function createHoldingsModal() {
-    return `
-        <div class="modal-content">
-            <span class="close" onclick="closeAllModals()">&times;</span>
-            <h2>🏢 Company Holdings</h2>
-            <div style="padding: 20px;">
-                <div style="background: linear-gradient(45deg, #9b59b6, #8e44ad); color: white; padding: 30px; border-radius: 15px; margin: 20px 0; text-align: center;">
-                    <h3>Valenta Holdings Portfolio</h3>
-                    <p>Strategic investments in African development</p>
-                </div>
-                
-                <div style="display: grid; gap: 15px; margin: 20px 0;">
-                    <div style="border: 1px solid #ddd; padding: 15px; border-radius: 10px;">
-                        <h4>Kabiru Digital Currency</h4>
-                        <p>Revolutionary blockchain-based currency for African trade</p>
-                    </div>
-                    <div style="border: 1px solid #ddd; padding: 15px; border-radius: 10px;">
-                        <h4>AUFFI Community Network</h4>
-                        <p>Pan-African social and spiritual unity platform</p>
-                    </div>
-                    <div style="border: 1px solid #ddd; padding: 15px; border-radius: 10px;">
-                        <h4>Agricultural Innovation Centers</h4>
-                        <p>Modern farming techniques and food security</p>
-                    </div>
-                </div>
-                
-                <form onsubmit="processHoldingsInquiry(event)">
-                    <div class="form-group">
-                        <label>Name/Organization *</label>
-                        <input type="text" name="name" required>
-                    </div>
-                    <div class="form-group">
-                        <label>Email *</label>
-                        <input type="email" name="email" required>
-                    </div>
-                    <div class="form-group">
-                        <label>Interest *</label>
-                        <select name="interest" required>
-                            <option value="">Select interest</option>
-                            <option>Investment Opportunities</option>
-                            <option>Partnership Proposals</option>
-                            <option>Acquisition Inquiries</option>
-                            <option>Joint Ventures</option>
-                            <option>General Information</option>
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <label>Message *</label>
-                        <textarea name="message" rows="3" required></textarea>
-                    </div>
-                    <button type="submit" class="btn">Submit Holdings Inquiry</button>
-                </form>
-            </div>
-        </div>
-    `;
+    return '<div class="modal-content"><span class="close" onclick="closeAllModals()">&times;</span><h2>🏢 Company Holdings</h2><p>Valenta Holdings Portfolio. Contact: grouptauafrica@gmail.com</p></div>';
 }
 
-// ===== FORUM MODAL =====
 function createForumModal() {
-    return `
-        <div class="modal-content">
-            <span class="close" onclick="closeAllModals()">&times;</span>
-            <h2>💬 Member Forum</h2>
-            <p>Connect with fellow TAU Africa members</p>
-            
-            <div style="background: #f8f9fa; padding: 20px; border-radius: 10px; margin: 20px 0;">
-                <h3>Forum Features:</h3>
-                <ul style="text-align: left;">
-                    <li>Discussion boards by topic</li>
-                    <li>Job sharing and networking</li>
-                    <li>Training materials access</li>
-                    <li>Voice calls and messaging</li>
-                    <li>Business collaboration</li>
-                </ul>
-                
-                <div style="margin-top: 20px; padding: 15px; background: #fff3cd; border-radius: 8px;">
-                    <strong>Notice:</strong> Forum access requires active TASK or TALK membership
-                </div>
-            </div>
-            
-            <div style="text-align: center;">
-                <button class="btn" onclick="openModal('taskRegistration')">Join TASK Team</button>
-                <button class="btn" onclick="openModal('talkRegistration')">Join TALK Team</button>
-                <button class="btn" onclick="showMemberLogin()">Member Login</button>
-            </div>
-        </div>
-    `;
+    return '<div class="modal-content"><span class="close" onclick="closeAllModals()">&times;</span><h2>💬 Member Forum</h2><p>Forum access requires active membership. Please login or register first.</p><button class="btn" onclick="showMemberLogin()">Member Login</button></div>';
 }
+
+console.log('✅ Part 4 Loaded: Dashboard & Modals');
 </script>
-</body>
-    </html>
+</head>
+<body>
+    
