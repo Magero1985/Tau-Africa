@@ -1474,6 +1474,16 @@ function showMemberDashboard() {
             <div style="text-align: center; margin-top: 20px;">
                 <p><strong>Note:</strong> This is a dashboard preview. Full functionality available after registration.</p>
             </div>
+            👨‍💼 Admin & Validator Access
+
+    
+
+        Authenticate activities, tasks, and manage member data
+    
+
+
+    
+        🔐 Open Admin Dashboard
         </div>
     `;
     document.body.appendChild(modal);
@@ -4312,6 +4322,106 @@ if ('serviceWorker' in navigator) {
   navigator.serviceWorker.register('/service-worker.js')
     .then(() => console.log('✅ PWA installed'))
     .catch(err => console.log('❌ PWA error:', err));
+}
+
+        // ===== ADMIN DATABASE ACCESS WITH ROLE CHECKING =====
+function openAdminDatabase() {
+    const currentMember = window.TauDB?.getCurrentMember();
+    
+    // Define admin/validator roles
+    const ADMIN_ROLES = ['admin', 'validator', 'moderator'];
+    const ADMIN_IDS = ['TSK-000000-001', 'TLK-000000-001']; // Add your admin Member IDs
+    const ADMIN_EMAILS = [
+        'admin@tauafrica.org',
+        'validator@tauafrica.org',
+        'grouptauafrica@gmail.com'
+    ];
+    
+    // Check if user has admin access
+    const hasAccess = currentMember && (
+        ADMIN_IDS.includes(currentMember.id) ||
+        ADMIN_EMAILS.includes(currentMember.email) ||
+        ADMIN_ROLES.includes(currentMember.role)
+    );
+    
+    if (hasAccess) {
+        // User has admin access - open database
+        const dbWindow = window.open('databse.html', '_blank', 'width=1400,height=900');
+        
+        if (!dbWindow) {
+            showNotification('⚠️ Please allow popups for this site', 'error');
+            // Fallback: Open in same tab
+            window.location.href = 'databse.html';
+        } else {
+            showNotification('✅ Opening Admin Dashboard...', 'success');
+        }
+    } else {
+        // User doesn't have access - show access request
+        showAdminAccessRequest();
+    }
+}
+
+function showAdminAccessRequest() {
+    const modal = document.createElement('div');
+    modal.className = 'modal';
+    modal.style.display = 'block';
+    modal.innerHTML = `
+        
+
+            ×
+            
+🔐 Admin Access Request
+
+            
+This area is restricted to admins and validators only.
+
+
+            
+            
+
+                
+
+                    Admin Access Code
+                    
+Enter admin code
+
+                
+
+                Verify & Access
+            
+
+            
+            
+
+                Need admin access?
+                
+Contact: grouptauafrica@gmail.com
+
+
+            
+
+        
+
+    `;
+    document.body.appendChild(modal);
+}
+
+function requestAdminAccess(event) {
+    event.preventDefault();
+    const code = document.getElementById('adminAccessCode').value;
+    const correctCode = 'TAU2025ADMIN'; // Change this to your secret code
+    
+    if (code === correctCode) {
+        closeAllModals();
+        const dbWindow = window.open('databse.html', '_blank', 'width=1400,height=900');
+        if (!dbWindow) {
+            showNotification('⚠️ Please allow popups', 'error');
+            window.location.href = 'databse.html';
+        }
+        showNotification('✅ Access granted!', 'success');
+    } else {
+        showNotification('❌ Invalid access code', 'error');
+    }
 }
     </script>
 </body>
