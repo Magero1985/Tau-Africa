@@ -4049,5 +4049,68 @@ function createForumModal() {
     console.log('✅ TAU UI COMPONENTS LOADED - COMPLETE');
 })();
 </script>
+    <script>
+// ============================================
+// TAU AFRICA - WELCOME BONUS SOCKET
+// Paste before </body> in both apps
+// ============================================
+(function() {
+    'use strict';
+    
+    function initWelcomeBonusSystem() {
+        const DB_KEY = 'tauAfricaDB';
+        const BONUS_KEY = 'tauWelcomeBonuses';
+        const BONUS_AMOUNT = 500;
+        
+        function checkAndAwardBonuses() {
+            try {
+                const members = JSON.parse(localStorage.getItem(DB_KEY) || '[]');
+                const bonusTracking = JSON.parse(localStorage.getItem(BONUS_KEY) || '{}');
+                let newBonuses = 0;
+                
+                members.forEach(member => {
+                    if (!bonusTracking[member.id]) {
+                        // Award welcome bonus
+                        member.iKbpBalance = (member.iKbpBalance || 0) + BONUS_AMOUNT;
+                        
+                        // Track bonus
+                        bonusTracking[member.id] = {
+                            awarded: true,
+                            amount: BONUS_AMOUNT,
+                            date: new Date().toISOString(),
+                            memberId: member.id,
+                            memberName: member.fullName
+                        };
+                        
+                        newBonuses++;
+                        console.log(`✅ Welcome bonus awarded: ${member.fullName} (+${BONUS_AMOUNT} iKbp)`);
+                    }
+                });
+                
+                if (newBonuses > 0) {
+                    localStorage.setItem(DB_KEY, JSON.stringify(members));
+                    localStorage.setItem(BONUS_KEY, JSON.stringify(bonusTracking));
+                    console.log(`🎁 Total new bonuses awarded: ${newBonuses}`);
+                }
+            } catch (error) {
+                console.error('Welcome bonus error:', error);
+            }
+        }
+        
+        // Check every 5 seconds for new registrations
+        setInterval(checkAndAwardBonuses, 5000);
+        checkAndAwardBonuses(); // Initial check
+        
+        console.log('✅ Welcome Bonus System initialized');
+    }
+    
+    // Auto-initialize when DOM loads
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', initWelcomeBonusSystem);
+    } else {
+        initWelcomeBonusSystem();
+    }
+})();
+</script>
 </body>
     </html>
