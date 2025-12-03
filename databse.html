@@ -1305,7 +1305,7 @@ window.addEventListener('message', function(event) {
         // Test email function
         function testEmail() {
             const testMember = {
-                email: 'grouptauafrica@gmail.com',
+                email: 'member.email',
                 fullName: 'Test User',
                 id: 'TEST-000000-000',
                 team: 'TASK',
@@ -1952,5 +1952,167 @@ window.addEventListener('message', function(event) {
             }
         }, 300000);
     </script>
+    <script>
+// ============================================
+// TAU AFRICA - WELCOME BONUS SOCKET
+// Paste before body script in both apps
+// ============================================
+(function() {
+    'use strict';
+    
+    function initWelcomeBonusSystem() {
+        const DB_KEY = 'tauAfricaDB';
+        const BONUS_KEY = 'tauWelcomeBonuses';
+        const BONUS_AMOUNT = 500;
+        
+        function checkAndAwardBonuses() {
+            try {
+                const members = JSON.parse(localStorage.getItem(DB_KEY) || '[]');
+                const bonusTracking = JSON.parse(localStorage.getItem(BONUS_KEY) || '{}');
+                let newBonuses = 0;
+                
+                members.forEach(member => {
+                    if (!bonusTracking[member.id]) {
+                        // Award welcome bonus
+                        member.iKbpBalance = (member.iKbpBalance || 0) + BONUS_AMOUNT;
+                        
+                        // Track bonus
+                        bonusTracking[member.id] = {
+                            awarded: true,
+                            amount: BONUS_AMOUNT,
+                            date: new Date().toISOString(),
+                            memberId: member.id,
+                            memberName: member.fullName
+                        };
+                        
+                        newBonuses++;
+                        console.log(`✅ Welcome bonus awarded: ${member.fullName} (+${BONUS_AMOUNT} iKbp)`);
+                    }
+                });
+                
+                if (newBonuses > 0) {
+                    localStorage.setItem(DB_KEY, JSON.stringify(members));
+                    localStorage.setItem(BONUS_KEY, JSON.stringify(bonusTracking));
+                    console.log(`🎁 Total new bonuses awarded: ${newBonuses}`);
+                }
+            } catch (error) {
+                console.error('Welcome bonus error:', error);
+            }
+        }
+        
+        // Check every 5 seconds for new registrations
+        setInterval(checkAndAwardBonuses, 5000);
+        checkAndAwardBonuses(); // Initial check
+        
+        console.log('✅ Welcome Bonus System initialized');
+    }
+    
+    // Auto-initialize when DOM loads
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', initWelcomeBonusSystem);
+    } else {
+        initWelcomeBonusSystem();
+    }
+})();
+    </script>
+    <script>
+// ============================================
+// TAU AFRICA - LIMITS ENFORCEMENT SOCKET
+// ============================================
+(function() {
+    'use strict';
+    
+    const EARNING_LIMITS = {
+        1: 2000,
+        2: 5000,
+        3: 11000,
+        4: 23000
+    };
+    
+    const WITHDRAWAL_LIMITS = {
+        1: 10000,  // KSH 1,000
+        2: 25000,  // KSH 2,500
+        3: 35000,  // KSH 3,500
+        4: 50000   // KSH 5,000
+    };
+    
+    window.TauLimits = {
+        checkEarningLimit: function(memberId, amount) {
+            const members = JSON.parse(localStorage.getItem('tauAfricaDB') || '[]');
+            const member = members.find(m => m.id === memberId);
+            if (!member) return { allowed: false, reason: 'Member not found' };
+            
+            const level = member.level || 1;
+            const today = new Date().toISOString().split('T')[0];
+            const dailyEarnings = JSON.parse(localStorage.getItem('tauDailyEarnings') || '{}');
+            
+            if (!dailyEarnings[today]) dailyEarnings[today] = {};
+            const todayEarned = dailyEarnings[today][memberId] || 0;
+            
+            const limit = EARNING_LIMITS[level];
+            const remaining = limit - todayEarned;
+            
+            if (todayEarned + amount > limit) {
+                return {
+                    allowed: false,
+                    reason: `Daily earning limit reached. Level ${level} max: ${limit} iKbp`,
+                    earned: todayEarned,
+                    limit: limit,
+                    remaining: remaining
+                };
+            }
+            
+            // Update daily earnings
+            dailyEarnings[today][memberId] = todayEarned + amount;
+            localStorage.setItem('tauDailyEarnings', JSON.stringify(dailyEarnings));
+            
+            return {
+                allowed: true,
+                earned: todayEarned + amount,
+                limit: limit,
+                remaining: limit - (todayEarned + amount)
+            };
+        },
+        
+        checkWithdrawalLimit: function(memberId, amount) {
+            const members = JSON.parse(localStorage.getItem('tauAfricaDB') || '[]');
+            const member = members.find(m => m.id === memberId);
+            if (!member) return { allowed: false, reason: 'Member not found' };
+            
+            const level = member.level || 1;
+            const limit = WITHDRAWAL_LIMITS[level];
+            
+            if (amount > limit) {
+                return {
+                    allowed: false,
+                    reason: `Exceeds daily withdrawal limit. Level ${level} max: ${limit} iKbp (KSH ${limit/10})`,
+                    limit: limit,
+                    limitKsh: limit / 10
+                };
+            }
+            
+            if (amount > (member.iKbpBalance || 0)) {
+                return {
+                    allowed: false,
+                    reason: 'Insufficient balance',
+                    balance: member.iKbpBalance || 0
+                };
+            }
+            
+            return { allowed: true, limit: limit, limitKsh: limit / 10 };
+        },
+        
+        getLimits: function(level) {
+            return {
+                earningLimit: EARNING_LIMITS[level] || EARNING_LIMITS[1],
+                withdrawalLimit: WITHDRAWAL_LIMITS[level] || WITHDRAWAL_LIMITS[1],
+                withdrawalLimitKsh: (WITHDRAWAL_LIMITS[level] || WITHDRAWAL_LIMITS[1]) / 10
+            };
+        }
+    };
+    
+    console.log('✅ Limits Enforcement System initialized');
+})();
+</script>
 </body>
     </html>
