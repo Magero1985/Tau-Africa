@@ -550,6 +550,45 @@
                 overflow-x: auto;
             }
         }
+        .validation-section {
+    padding: 20px 0;
+}
+
+.validation-list {
+    display: grid;
+    gap: 20px;
+    margin: 20px 0;
+}
+
+.validation-card {
+    background: white;
+    border: 2px solid #eee;
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+}
+
+.validation-card h3 {
+    color: #2a5298;
+    margin-bottom: 15px;
+}
+
+.validation-card p {
+    margin: 8px 0;
+    color: #666;
+}
+
+.validation-actions {
+    display: flex;
+    gap: 10px;
+    margin-top: 15px;
+}
+
+.validation-actions .btn {
+    flex: 1;
+    padding: 10px;
+    font-size: 14px;
+            }
     </style>
 </head>
 <body>
@@ -2113,6 +2152,269 @@ window.addEventListener('message', function(event) {
     
     console.log('✅ Limits Enforcement System initialized');
 })();
+       // ===== ACTIVITY & TASK VALIDATION SYSTEM =====
+function showValidationTab() {
+    const members = JSON.parse(localStorage.getItem('tauAfricaDB') || '[]');
+    
+    // Get all pending activities and tasks
+    const pendingActivities = [];
+    const pendingTasks = [];
+    
+    members.forEach(member => {
+        if (member.activities) {
+            member.activities.forEach(activity => {
+                if (activity.status === 'Pending' || activity.status === 'Active') {
+                    pendingActivities.push({
+                        ...activity,
+                        memberId: member.id,
+                        memberName: member.fullName
+                    });
+                }
+            });
+        }
+        
+        if (member.tasks) {
+            member.tasks.forEach(task => {
+                if (task.status === 'Assigned' || task.status === 'In Progress') {
+                    pendingTasks.push({
+                        ...task,
+                        memberId: member.id,
+                        memberName: member.fullName
+                    });
+                }
+            });
+        }
+    });
+    
+    return `
+        
+
+            
+📋 Activity Validation (${pendingActivities.length})
+
+            
+
+                ${pendingActivities.length > 0 ? pendingActivities.map(activity => `
+                    
+
+                        
+${activity.title || activity.type}
+
+                        
+Member: ${activity.memberName} (${activity.memberId})
+
+
+                        
+Description: ${activity.description}
+
+
+                        
+Reward: ${activity.iKbpReward} iKbp
+
+
+                        
+Date: ${new Date(activity.dateAdded).toLocaleDateString()}
+
+
+                        
+
+                            
+                                ✓ Approve & Award
+                            
+                            
+                                ✗ Reject
+                            
+                        
+
+                    
+
+                `).join('') : '
+No pending activities
+
+'}
+            
+
+            
+            
+✅ Task Validation (${pendingTasks.length})
+
+            
+
+                ${pendingTasks.length > 0 ? pendingTasks.map(task => `
+                    
+
+                        
+${task.title}
+
+                        
+Member: ${task.memberName} (${task.memberId})
+
+
+                        
+Description: ${task.description}
+
+
+                        
+Category: ${task.category}
+
+
+                        
+Reward: ${task.iKbpReward} iKbp
+
+
+                        
+Assigned: ${new Date(task.dateAssigned).toLocaleDateString()}
+
+
+                        
+
+                            
+                                ✓ Approve & Complete
+                            
+                            
+                                ✗ Reject
+                            
+                        
+
+                    
+
+                `).join('') : '
+No pending tasks
+
+'}
+            
+
+        
+
+    `;
+}
+
+function approveActivity(memberId, activityId) {
+    const members = JSON.parse(localStorage.getItem('tauAfricaDB') || '[]');
+    const member = members.find(m => m.id === memberId);
+    
+    if (!member) {
+        showNotification('Member not found', 'error');
+        return;
+    }
+    
+    const activity = member.activities.find(a => a.id === activityId);
+    if (!activity) {
+        showNotification('Activity not found', 'error');
+        return;
+    }
+    
+    // Approve and award
+    activity.status = 'Approved';
+    activity.approvedDate = new Date().toISOString();
+    member.iKbpBalance = (member.iKbpBalance || 0) + activity.iKbpReward;
+    
+    // Save
+    localStorage.setItem('tauAfricaDB', JSON.stringify(members));
+    
+    // Send notification to member
+    sendValidationNotification(member, 'activity', 'approved', activity);
+    
+    showNotification(`✅ Activity approved! ${member.fullName} earned ${activity.iKbpReward} iKbp`, 'success');
+    renderValidationTab();
+}
+
+function rejectActivity(memberId, activityId) {
+    const reason = prompt('Reason for rejection:');
+    if (!reason) return;
+    
+    const members = JSON.parse(localStorage.getItem('tauAfricaDB') || '[]');
+    const member = members.find(m => m.id === memberId);
+    
+    if (!member) return;
+    
+    const activity = member.activities.find(a => a.id === activityId);
+    if (!activity) return;
+    
+    activity.status = 'Rejected';
+    activity.rejectionReason = reason;
+    activity.rejectedDate = new Date().toISOString();
+    
+    localStorage.setItem('tauAfricaDB', JSON.stringify(members));
+    sendValidationNotification(member, 'activity', 'rejected', activity);
+    
+    showNotification('Activity rejected', 'info');
+    renderValidationTab();
+}
+
+function approveTask(memberId, taskId) {
+    const members = JSON.parse(localStorage.getItem('tauAfricaDB') || '[]');
+    const member = members.find(m => m.id === memberId);
+    
+    if (!member) return;
+    
+    const task = member.tasks.find(t => t.id === taskId);
+    if (!task) return;
+    
+    task.status = 'Completed';
+    task.completedDate = new Date().toISOString();
+    member.iKbpBalance = (member.iKbpBalance || 0) + task.iKbpReward;
+    
+    localStorage.setItem('tauAfricaDB', JSON.stringify(members));
+    sendValidationNotification(member, 'task', 'approved', task);
+    
+    showNotification(`✅ Task approved! ${member.fullName} earned ${task.iKbpReward} iKbp`, 'success');
+    renderValidationTab();
+}
+
+function rejectTask(memberId, taskId) {
+    const reason = prompt('Reason for rejection:');
+    if (!reason) return;
+    
+    const members = JSON.parse(localStorage.getItem('tauAfricaDB') || '[]');
+    const member = members.find(m => m.id === memberId);
+    
+    if (!member) return;
+    
+    const task = member.tasks.find(t => t.id === taskId);
+    if (!task) return;
+    
+    task.status = 'Rejected';
+    task.rejectionReason = reason;
+    
+    localStorage.setItem('tauAfricaDB', JSON.stringify(members));
+    sendValidationNotification(member, 'task', 'rejected', task);
+    
+    showNotification('Task rejected', 'info');
+    renderValidationTab();
+}
+
+function sendValidationNotification(member, type, action, item) {
+    const NOTIF_KEY = 'tauNotifications';
+    const allNotifications = JSON.parse(localStorage.getItem(NOTIF_KEY) || '{}');
+    
+    if (!allNotifications[member.id]) {
+        allNotifications[member.id] = [];
+    }
+    
+    const notification = {
+        id: `NOTIF-${Date.now()}`,
+        title: action === 'approved' 
+            ? `${type === 'activity' ? 'Activity' : 'Task'} Approved!` 
+            : `${type === 'activity' ? 'Activity' : 'Task'} Rejected`,
+        message: action === 'approved'
+            ? `Your ${type} "${item.title || item.type}" has been approved! You earned ${item.iKbpReward} iKbp.`
+            : `Your ${type} "${item.title || item.type}" was rejected. Reason: ${item.rejectionReason}`,
+        timestamp: new Date().toISOString(),
+        read: false,
+        type: action
+    };
+    
+    allNotifications[member.id].unshift(notification);
+    localStorage.setItem(NOTIF_KEY, JSON.stringify(allNotifications));
+}
+
+function renderValidationTab() {
+    const validationTab = document.getElementById('validationTab');
+    if (validationTab) {
+        validationTab.innerHTML = showValidationTab();
+    }
+} 
 </script>
 </body>
     </html>
