@@ -806,38 +806,27 @@ let selectedLevel = '';
 let selectedCategory = '';
 
 // ===== FIXED EMAIL SENDING FUNCTION =====
+sendEmailToOrganization function
 function sendEmailToOrganization(formData, subject) {
-    console.log('📧 Attempting to send email...');
-    console.log('Subject:', subject);
-    console.log('Form Data:', formData);
-
-    // Create detailed message content
-    let messageContent = `${subject}\n\n`;
-    for (let key in formData) {
-        if (formData.hasOwnProperty(key)) {
-            messageContent += `${key}: ${formData[key]}\n`;
-        }
-    }
-    messageContent += `\nSubmitted: ${new Date().toLocaleString()}`;
-
     const templateParams = {
-        from_name: formData.fullName || formData.name || formData.contactName || 'TAU Africa User',
-        from_email: formData.email || 'noreply@tauafrica.com',
+        to_email: formData.email,  // ✅ SEND TO MEMBER
+        to_name: formData.fullName || formData.name,
         subject: subject,
-        message: messageContent,
-        phone: formData.phone || 'Not provided',
-        location: formData.location || formData.country || 'Not provided'
+        message: `Welcome to TAU Africa!
+
+Member ID: ${formData.memberId || 'TBD'}
+Team: ${formData.team}
+Email: ${formData.email}
+
+Your account has been created successfully!`,
+        from_name: 'TAU Africa Foundation',
+        from_email: 'grouptauafrica@gmail.com',  // ✅ FROM ORGANIZATION
+        phone: formData.phone,
+        location: formData.location
     };
-
-    console.log('📨 Sending email with template: template_bqxztig');
-    console.log('📨 Template params:', templateParams);
-
-    return emailjs.send('service_xfira7g', 'template_bqxztig', templateParams)
-        .then(function(response) {
-            console.log('✅ SUCCESS! Email sent:', response.status, response.text);
-            console.log('✅ Full response:', response);
-            return true;
-        })
+    
+    return emailjs.send('service_xfira7g', 'template_bqxztig', templateParams);
+}
         .catch(function(error) {
             console.error('❌ FAILED! Email error:', error);
             console.error('❌ Error status:', error.status);
