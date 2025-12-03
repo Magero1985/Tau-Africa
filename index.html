@@ -815,7 +815,7 @@ let selectedCategory = '';
 sendEmailToOrganization function
 function sendEmailToOrganization(formData, subject) {
     const templateParams = {
-        to_email: formData.email,  // ✅ SEND TO MEMBER
+        to_email: formData.email,
         to_name: formData.fullName || formData.name,
         subject: subject,
         message: `Welcome to TAU Africa!
@@ -826,22 +826,18 @@ Email: ${formData.email}
 
 Your account has been created successfully!`,
         from_name: 'TAU Africa Foundation',
-        from_email: 'grouptauafrica@gmail.com',  // ✅ FROM ORGANIZATION
+        from_email: 'grouptauafrica@gmail.com',
         phone: formData.phone,
         location: formData.location
     };
     
-    return emailjs.send('service_xfira7g', 'template_bqxztig', templateParams);
-}
+    return emailjs.send('service_xfira7g', 'template_bqxztig', templateParams)
+        .then(() => true)
         .catch(function(error) {
             console.error('❌ FAILED! Email error:', error);
-            console.error('❌ Error status:', error.status);
-            console.error('❌ Error text:', error.text);
-            console.error('❌ Full error object:', error);
             return false;
         });
 }
-
 // ===== M-PESA PAYMENT INTEGRATION =====
 function initiateMpesaPayment(amount, phoneNumber, formData, successCallback) {
     showPaymentModal(amount, phoneNumber, formData, successCallback);
