@@ -793,6 +793,16 @@ input[type="date"] {
         <button onclick="✅ Validate()">➤</button>
     </div>
 </div>
+    <!-- Floating Admin Access Button -->
+<div class="admin-floating-btn" onclick="openAdminDatabase()" 
+     title="Admin Access"
+     style="position: fixed; bottom: 170px; right: 30px; width: 60px; height: 60px; 
+            background: linear-gradient(45deg, #667eea, #764ba2); border-radius: 50%; 
+            display: flex; align-items: center; justify-content: center; 
+            color: white; font-size: 24px; cursor: pointer; 
+            box-shadow: 0 4px 12px rgba(0,0,0,0.3); z-index: 100;">
+    👨‍💼
+</div>
 
 <script>
 // Initialize EmailJS with iOS compatibility
@@ -3964,6 +3974,22 @@ function createForumModal() {
                     <h1 style="letter-spacing: 3px;">${currentMember.referralCode}</h1>
                     <button class="btn" onclick="copyReferralLink('${currentMember.referralCode}')" style="background: white; color: #667eea; width: 100%;">Copy Link</button>
                 </div>
+                <div style="margin-top: 30px; padding: 20px; background: #f8f9fa; border-radius: 10px;">
+    <h3>Quick Actions</h3>
+    <button class="btn" onclick="openModal('forum')">💬 Forum</button>
+    <button class="btn" onclick="openModal('activities')">📚 Activities</button>
+    <button class="btn" onclick="openModal('tasks')">✅ Tasks</button>
+    
+    <!-- ADD THIS ADMIN BUTTON -->
+    <button class="btn" onclick="openAdminDatabase()" 
+            style="background: linear-gradient(45deg, #667eea, #764ba2);">
+        👨‍💼 Admin Panel
+    </button>
+    
+    <button class="btn btn-success" onclick="window.open('https://magero1985.github.io/Kabiru-Mining-Portal-/', '_blank')">
+        ⚡ Mining
+    </button>
+</div>
                 
                 <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px;">
                     <button class="btn" onclick="closeAllModals(); openModal('forum')">💬 Forum</button>
@@ -4420,6 +4446,77 @@ function requestAdminAccess(event) {
             showNotification('⚠️ Please allow popups', 'error');
             window.location.href = 'databse.html';
         }
+        showNotification('✅ Access granted!', 'success');
+    } else {
+        showNotification('❌ Invalid access code', 'error');
+    }
+}
+    // ===== ADMIN ACCESS WITH VERIFICATION =====
+function openAdminDatabase() {
+    // Check if user has admin privileges
+    const currentMember = window.TauDB?.getCurrentMember();
+    
+    // Option 1: Check by specific Member IDs
+    const adminIds = ['TSK-000000-001', 'TLK-000000-001']; // Add your admin IDs
+    
+    // Option 2: Check by email domain
+    const adminEmails = ['admin@tauafrica.org', 'validator@tauafrica.org'];
+    
+    if (currentMember && 
+        (adminIds.includes(currentMember.id) || 
+         adminEmails.includes(currentMember.email) ||
+         currentMember.role === 'admin' || 
+         currentMember.role === 'validator')) {
+        
+        const dbWindow = window.open('databse.html', '_blank', 'width=1400,height=900');
+        
+        if (!dbWindow) {
+            showNotification('⚠️ Please allow popups', 'error');
+            window.location.href = 'databse.html';
+        } else {
+            showNotification('✅ Opening Admin Dashboard...', 'success');
+        }
+    } else {
+        // Show access request form
+        showAdminAccessRequest();
+    }
+}
+
+function showAdminAccessRequest() {
+    const modal = document.createElement('div');
+    modal.className = 'modal';
+    modal.style.display = 'block';
+    modal.innerHTML = `
+        <div class="modal-content">
+            <span class="close" onclick="this.parentElement.parentElement.remove()">×</span>
+            <h2>🔐 Admin Access Request</h2>
+            <p>This area is restricted to admins and validators only.</p>
+            
+            <form onsubmit="requestAdminAccess(event)">
+                <div class="form-group">
+                    <label>Admin Access Code</label>
+                    <input type="password" id="adminAccessCode" placeholder="Enter admin code" required>
+                </div>
+                <button type="submit" class="btn">Verify & Access</button>
+            </form>
+            
+            <div style="margin-top: 20px; padding: 15px; background: #f8f9fa; border-radius: 10px;">
+                <small>Don't have access? Contact: grouptauafrica@gmail.com</small>
+            </div>
+        </div>
+    `;
+    document.body.appendChild(modal);
+}
+
+function requestAdminAccess(event) {
+    event.preventDefault();
+    const code = document.getElementById('adminAccessCode').value;
+    const correctCode = 'TAU2025ADMIN'; // Change this to your secret code
+    
+    if (code === correctCode) {
+        closeAllModals();
+        const dbWindow = window.open('databse.html', '_blank', 'width=1400,height=900');
+        if (!dbWindow) window.location.href = 'databse.html';
         showNotification('✅ Access granted!', 'success');
     } else {
         showNotification('❌ Invalid access code', 'error');
