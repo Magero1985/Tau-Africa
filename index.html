@@ -4112,5 +4112,116 @@ function createForumModal() {
     }
 })();
 </script>
+    <!-- Notification Bell Icon - Add to your header -->
+<div id="tauNotificationBell" style="position: fixed; top: 20px; right: 80px; z-index: 1000;">
+    <button onclick="openTauNotifications()" style="background: #667eea; color: white; border: none; padding: 12px; border-radius: 50%; cursor: pointer; box-shadow: 0 4px 12px rgba(0,0,0,0.2); position: relative;">
+        🔔
+        <span id="tauNotifBadge" style="display: none; position: absolute; top: -5px; right: -5px; background: red; color: white; border-radius: 50%; width: 20px; height: 20px; font-size: 10px; line-height: 20px; text-align: center;">0</span>
+    </button>
+</div>
+
+<!-- Notification Panel -->
+<div id="tauNotificationPanel" style="display: none; position: fixed; top: 70px; right: 20px; width: 350px; max-height: 500px; background: white; border-radius: 15px; box-shadow: 0 10px 30px rgba(0,0,0,0.3); z-index: 1000; overflow-y: auto;">
+    <div style="padding: 20px; border-bottom: 2px solid #eee;">
+        <h3 style="margin: 0;">🔔 Notifications</h3>
+    </div>
+    <div id="tauNotificationList" style="padding: 10px;"></div>
+</div>
+
+<script>
+// ============================================
+// TAU AFRICA - NOTIFICATION SOCKET
+// ============================================
+(function() {
+    'use strict';
+    
+    function initNotificationSystem() {
+        const NOTIF_KEY = 'tauNotifications';
+        
+        window.openTauNotifications = function() {
+            const panel = document.getElementById('tauNotificationPanel');
+            panel.style.display = panel.style.display === 'none' ? 'block' : 'none';
+            loadNotifications();
+        };
+        
+        function loadNotifications() {
+            const currentMember = window.TauDB?.getCurrentMember();
+            if (!currentMember) {
+                document.getElementById('tauNotificationList').innerHTML = 
+                    '<p style="text-align: center; color: #666;">Please login to view notifications</p>';
+                return;
+            }
+            
+            const allNotifications = JSON.parse(localStorage.getItem(NOTIF_KEY) || '{}');
+            const memberNotifs = allNotifications[currentMember.id] || [];
+            const unreadCount = memberNotifs.filter(n => !n.read).length;
+            
+            // Update badge
+            const badge = document.getElementById('tauNotifBadge');
+            if (unreadCount > 0) {
+                badge.style.display = 'block';
+                badge.textContent = unreadCount;
+            } else {
+                badge.style.display = 'none';
+            }
+            
+            // Render notifications
+            const list = document.getElementById('tauNotificationList');
+            if (memberNotifs.length === 0) {
+                list.innerHTML = '<p style="text-align: center; color: #666; padding: 20px;">No notifications yet</p>';
+                return;
+            }
+            
+            list.innerHTML = memberNotifs.map(notif => `
+                <div style="padding: 15px; border-bottom: 1px solid #eee; background: ${notif.read ? '#fff' : '#f0f4ff'}; border-left: 4px solid ${notif.read ? '#ddd' : '#667eea'};">
+                    <strong>${notif.title}</strong>
+                    <p style="margin: 5px 0; font-size: 14px; color: #666;">${notif.message}</p>
+                    <small style="color: #999;">${new Date(notif.timestamp).toLocaleString()}</small>
+                    ${!notif.read ? `<button onclick="markNotificationRead('${notif.id}')" style="margin-top: 8px; background: #667eea; color: white; border: none; padding: 5px 10px; border-radius: 5px; cursor: pointer; font-size: 12px;">Mark as read</button>` : ''}
+                </div>
+            `).join('');
+        }
+        
+        window.markNotificationRead = function(notifId) {
+            const currentMember = window.TauDB?.getCurrentMember();
+            if (!currentMember) return;
+            
+            const allNotifications = JSON.parse(localStorage.getItem(NOTIF_KEY) || '{}');
+            if (allNotifications[currentMember.id]) {
+                const notif = allNotifications[currentMember.id].find(n => n.id === notifId);
+                if (notif) notif.read = true;
+                localStorage.setItem(NOTIF_KEY, JSON.stringify(allNotifications));
+                loadNotifications();
+            }
+        };
+        
+        // Check for new notifications every 10 seconds
+        setInterval(() => {
+            const currentMember = window.TauDB?.getCurrentMember();
+            if (currentMember) {
+                const allNotifications = JSON.parse(localStorage.getItem(NOTIF_KEY) || '{}');
+                const memberNotifs = allNotifications[currentMember.id] || [];
+                const unreadCount = memberNotifs.filter(n => !n.read).length;
+                
+                const badge = document.getElementById('tauNotifBadge');
+                if (unreadCount > 0) {
+                    badge.style.display = 'block';
+                    badge.textContent = unreadCount;
+                } else {
+                    badge.style.display = 'none';
+                }
+            }
+        }, 10000);
+        
+        console.log('✅ Notification System initialized');
+    }
+    
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', initNotificationSystem);
+    } else {
+        initNotificationSystem();
+    }
+})();
+</script>
 </body>
     </html>
