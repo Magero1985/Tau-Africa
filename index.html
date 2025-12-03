@@ -3394,14 +3394,14 @@ function createForumModal() {
         // Welcome Email
     function sendWelcomeEmail(member) {
         const templateParams = {
-            to_email: member.email,
-            to_name: member.fullName,
+            to_email:formData.email,
+            to_name: formData.fullName,
             subject: '🎉 Welcome to TAU Africa',
             message: `Welcome ${member.fullName}!\n\nMember ID: ${member.id}\nReferral Code: ${member.referralCode}\n\nLogin: ${window.location.origin}\n\nEarn iKbp by:\n- Referring members: 500 iKbp\n- Completing tasks: 100-500 iKbp\n- Forum posts: 50 iKbp\n\nBalance: ${member.iKbpBalance} iKbp`,
             from_name: 'TAU Africa',
             from_email: 'grouptauafrica@gmail.com',
-            phone: member.phone,
-            location: member.location
+            phone: formData.phone,
+            location: formData.location
         };
         
         return emailjs.send('service_xfira7g', 'template_bqxztig', templateParams);
