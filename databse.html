@@ -945,8 +945,9 @@
                     <p>Add this code to your registration success handlers:</p>
                     
                     <div class="code-block">
-// After successful payment in your TAU Africa app
-function syncToDatabase(memberData) {
+
+    // After successful payment in your TAU Africa app
+    function syncToDatabase(memberData) {
     // Method 1: Direct localStorage sync (same domain)
     const dbKey = 'tauAfricaDB';
     const existingMembers = JSON.parse(
@@ -1299,7 +1300,21 @@ window.addEventListener('message', function(event) {
                 document.getElementById('dashboard').style.display = 'none';
             }
         }
-
+function switchTab(tab) {
+    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+    document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+    
+    event.target.classList.add('active');
+    
+    // Special handling for validation tab
+    if (tab === 'validation') {
+        const validationTab = document.getElementById('validationTab');
+        validationTab.innerHTML = showValidationTab();
+        validationTab.classList.add('active');
+    } else {
+        document.getElementById(tab + 'Tab').classList.add('active');
+    }
+}
         // Generate unique member ID
         function generateMemberID(team) {
             const prefix = team === 'TASK' ? 'TSK' : 'TLK';
