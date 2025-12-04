@@ -433,6 +433,16 @@
                 </div>
 
                 <div class="form-group">
+                    <label>Category</label>
+                    <select id="activity-category">
+                        <option value="Training">Training</option>
+                        <option value="Community">Community Service</option>
+                        <option value="Onboarding">Onboarding</option>
+                        <option value="Education">Education</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
                     <label>Reward (iKbp)</label>
                     <input type="number" id="activity-reward" value="50" min="25" max="500">
                 </div>
@@ -457,8 +467,8 @@
 
             <form onsubmit="createValue(event)">
                 <div class="form-group">
-                    <label>Validator Code *</label>
-                    <input type="password" id="value-validator-code" required>
+                    <label>Admin Passcode *</label>
+                    <input type="password" id="value-admin-code" required>
                 </div>
 
                 <div class="form-group">
@@ -484,12 +494,12 @@
 
                 <div class="form-group">
                     <label>Worth (KSH)</label>
-                    <input type="number" id="value-worth" min="0">
+                    <input type="number" id="value-worth" min="0" value="1000">
                 </div>
 
                 <div class="form-group">
                     <label>Submitted By (Member ID) *</label>
-                    <input type="text" id="value-member" required>
+                    <input type="text" id="value-member" required placeholder="e.g., MEM-12345">
                 </div>
 
                 <button type="submit" class="btn">Submit Value</button>
@@ -597,21 +607,17 @@
         // TAB SWITCHING
         // ==========================================
         function showTab(tabName) {
-            // Hide all content boxes
             document.querySelectorAll('.content-box').forEach(box => {
                 box.classList.remove('active');
             });
 
-            // Remove active from all tabs
             document.querySelectorAll('.tab').forEach(tab => {
                 tab.classList.remove('active');
             });
 
-            // Show selected content
             document.getElementById(tabName).classList.add('active');
             event.target.classList.add('active');
 
-            // Reload data for that tab
             if (tabName === 'tasks') loadTasks();
             if (tabName === 'activities') loadActivities();
             if (tabName === 'values') loadValues();
@@ -643,43 +649,42 @@
         }
 
         // ==========================================
-        // TASKS
-        // =========================================
-function createTask(event) {
-    event.preventDefault();
+        // TASKS - FIXED
+        // ==========================================
+        function createTask(event) {
+            event.preventDefault();
 
-    const code = document.getElementById('task-admin-code').value;
-    if (code !== MASTER_CODE) {
-        notify('Invalid admin code', 'error');
-        return;
-    }
+            const code = document.getElementById('task-admin-code').value;
+            if (code !== MASTER_CODE) {
+                notify('Invalid admin code', 'error');
+                return;
+            }
 
-    const task = {
-        id: 'TSK-' + Date.now(),
-        title: document.getElementById('task-title').value,
-        description: document.getElementById('task-desc').value,
-        category: document.getElementById('task-category').value,
-        reward: parseInt(document.getElementById('task-reward').value),
-        validationCode: generateCode('TASK'),
-        status: 'Active',
-        created: new Date().toISOString(),
-        validated: true // <-- SET TO TRUE SO IT SHOWS IMMEDIATELY
-    };
+            const task = {
+                id: 'TSK-' + Date.now(),
+                title: document.getElementById('task-title').value,
+                description: document.getElementById('task-desc').value,
+                category: document.getElementById('task-category').value,
+                reward: parseInt(document.getElementById('task-reward').value),
+                validationCode: generateCode('TASK'),
+                status: 'Active',
+                created: new Date().toISOString(),
+                validated: true
+            };
 
-    const tasks = JSON.parse(localStorage.getItem(DB.tasks) || '[]');
-    tasks.push(task);
-    localStorage.setItem(DB.tasks, JSON.stringify(tasks));
+            const tasks = JSON.parse(localStorage.getItem(DB.tasks) || '[]');
+            tasks.push(task);
+            localStorage.setItem(DB.tasks, JSON.stringify(tasks));
 
-    // NOTIFY ALL MEMBERS
-    if (typeof notifyAllMembers === 'function') {
-        notifyAllMembers('🎯 New Task Available!', `Complete "${task.title}" to earn ${task.reward} iKbp`);
-    }
+            if (typeof notifyAllMembers === 'function') {
+                notifyAllMembers('🎯 New Task Available!', `Complete "${task.title}" to earn ${task.reward} iKbp`);
+            }
 
-    notify('Task created! Visible to all members.', 'success');
-    event.target.reset();
-    loadTasks();
-    updateDashboard();
-}
+            notify('Task created! Visible to all members.', 'success');
+            event.target.reset();
+            loadTasks();
+            updateDashboard();
+        }
 
         function loadTasks() {
             const tasks = JSON.parse(localStorage.getItem(DB.tasks) || '[]');
@@ -707,43 +712,43 @@ function createTask(event) {
         }
 
         // ==========================================
-        // ACTIVITIES
+        // ACTIVITIES - FIXED
         // ==========================================
-function createActivity(event) {
-    event.preventDefault();
+        function createActivity(event) {
+            event.preventDefault();
 
-    const code = document.getElementById('activity-admin-code').value;
-    if (code !== MASTER_CODE) {
-        notify('Invalid admin code', 'error');
-        return;
-    }
+            const code = document.getElementById('activity-admin-code').value;
+            if (code !== MASTER_CODE) {
+                notify('Invalid admin code', 'error');
+                return;
+            }
 
-    const task = {
-        id: 'ACT-' + Date.now(),
-        title: document.getElementById('activity-title').value,
-        description: document.getElementById('activity-desc').value,
-        category: document.getElementById('activity-category').value,
-        reward: parseInt(document.getElementById('activity-reward').value),
-        validationCode: generateCode('ACTIVITY),
-        status: 'Active',
-        created: new Date().toISOString(),
-        validated: true // <-- SET TO TRUE SO IT SHOWS IMMEDIATELY
-    };
+            const activity = {
+                id: 'ACT-' + Date.now(),
+                title: document.getElementById('activity-title').value,
+                description: document.getElementById('activity-desc').value,
+                category: document.getElementById('activity-category').value,
+                reward: parseInt(document.getElementById('activity-reward').value),
+                validationCode: generateCode('ACTIVITY'),
+                status: 'Active',
+                created: new Date().toISOString(),
+                validated: true
+            };
 
-    const tasks = JSON.parse(localStorage.getItem(DB.activities) || '[]');
-    tasks.push(activity);
-    localStorage.setItem(DB.tasks, JSON.stringify(activities));
+            const activities = JSON.parse(localStorage.getItem(DB.activities) || '[]');
+            activities.push(activity);
+            localStorage.setItem(DB.activities, JSON.stringify(activities));
 
-    // NOTIFY ALL MEMBERS
-    if (typeof notifyAllMembers === 'function') {
-        notifyAllMembers('🎯 New Activity Available!', `Complete "${activity.title}" to earn ${activity.reward} iKbp`);
-    }
+            if (typeof notifyAllMembers === 'function') {
+                notifyAllMembers('🎯 New Activity Available!', `Complete "${activity.title}" to earn ${activity.reward} iKbp`);
+            }
 
-    notify('Activity created! Visible to all members.', 'success');
-    event.target.reset();
-    loadTasks();
-    updateDashboard();
-}
+            notify('Activity created! Visible to all members.', 'success');
+            event.target.reset();
+            loadActivities();
+            updateDashboard();
+        }
+
         function loadActivities() {
             const activities = JSON.parse(localStorage.getItem(DB.activities) || '[]');
             const list = document.getElementById('activities-list');
@@ -770,43 +775,43 @@ function createActivity(event) {
         }
 
         // ==========================================
-        // VALUES
+        // VALUES - FIXED
         // ==========================================
-function createValue(event) {
-    event.preventDefault();
+        function createValue(event) {
+            event.preventDefault();
 
-    const code = document.getElementById('value-admin-code').value;
-    if (code !== MASTER_CODE) {
-        notify('Invalid admin code', 'error');
-        return;
-    }
+            const code = document.getElementById('value-admin-code').value;
+            if (code !== MASTER_CODE) {
+                notify('Invalid admin code', 'error');
+                return;
+            }
 
-    const value = {
-        id: 'VAL-' + Date.now(),
-        title: document.getElementById('value-title').value,
-        description: document.getElementById('value-desc').value,
-        category: document.getElementById('value-category').value,
-        reward: parseInt(document.getElementById('value-reward').value),
-        validationCode: generateCode('VALUE'),
-        status: 'Active',
-        created: new Date().toISOString(),
-        validated: true // <-- SET TO TRUE SO IT SHOWS IMMEDIATELY
-    };
+            const worthKsh = parseInt(document.getElementById('value-worth').value) || 0;
+            const worthIkb = Math.floor(worthKsh / 10);
 
-    const tasks = JSON.parse(localStorage.getItem(DB.values) || '[]');
-    value.push(values);
-    localStorage.setItem(DB.values, JSON.stringify(values));
+            const value = {
+                id: 'VAL-' + Date.now(),
+                type: document.getElementById('value-type').value,
+                title: document.getElementById('value-title').value,
+                description: document.getElementById('value-desc').value,
+                worthKsh: worthKsh,
+                worthIkb: worthIkb,
+                submittedBy: document.getElementById('value-member').value,
+                validationCode: generateCode('VALUE'),
+                status: 'Pending',
+                created: new Date().toISOString(),
+                validated: false
+            };
 
-    // NOTIFY ALL MEMBERS
-    if (typeof notifyAllMembers === 'function') {
-        notifyAllMembers('🎯 New Value Available!', `Complete "${value.title}" to earn ${value.reward} iKbp`);
-    }
+            const values = JSON.parse(localStorage.getItem(DB.values) || '[]');
+            values.push(value);
+            localStorage.setItem(DB.values, JSON.stringify(values));
 
-    notify('Value created! Visible to all members.', 'success');
-    event.target.reset();
-    loadValues();
-    updateDashboard();
-}
+            notify('Value submitted for approval!', 'success');
+            event.target.reset();
+            loadValues();
+            updateDashboard();
+        }
 
         function loadValues() {
             const values = JSON.parse(localStorage.getItem(DB.values) || '[]');
@@ -850,18 +855,6 @@ function createValue(event) {
         // ==========================================
         // VALIDATION
         // ==========================================
-        function addToValidationQueue(type, item) {
-            const validations = JSON.parse(localStorage.getItem(DB.validations) || '[]');
-            validations.push({
-                id: 'VALID-' + Date.now(),
-                type: type,
-                data: item,
-                status: 'Pending',
-                created: new Date().toISOString()
-            });
-            localStorage.setItem(DB.validations, JSON.stringify(validations));
-        }
-
         function loadValidations() {
             const validations = JSON.parse(localStorage.getItem(DB.validations) || '[]');
             const list = document.getElementById('validations-list');
@@ -925,7 +918,6 @@ function createValue(event) {
             validation.status = 'Approved';
             validation.validated = new Date().toISOString();
 
-            // Update original item
             if (validation.type === 'task') {
                 const tasks = JSON.parse(localStorage.getItem(DB.tasks) || '[]');
                 const task = tasks.find(t => t.id === validation.data.id);
@@ -1098,205 +1090,140 @@ function createValue(event) {
             }, 4000);
         }
 
-        // Auto-refresh dashboard every 30 seconds
         setInterval(updateDashboard, 30000);
     </script>
+
     <script>
-// ============================================
-// UNIVERSAL REAL-TIME SYNC SOCKET
-// Add to: Main App, Database, and Bridge
-// ============================================
-(function() {
-    'use strict';
-    
-    const SYNC_INTERVAL = 2000; // Check every 2 seconds
-    const STORAGE_KEYS = {
-        members: 'tauAfricaDB',
-        tasks: 'tauTasks',
-        activities: 'tauActivities',
-        values: 'tauValues',
-        validations: 'tauPendingValidations',
-        notifications: 'tauNotifications',
-        codes: 'tauValidatorCodes'
-    };
-    
-    // Track last known state
-    let lastState = {};
-    
-    function initSync() {
-        // Initialize last state
-        Object.keys(STORAGE_KEYS).forEach(key => {
-            const data = localStorage.getItem(STORAGE_KEYS[key]) || '[]';
-            lastState[key] = data;
-        });
-        
-        console.log('✅ Universal Sync Socket initialized');
-    }
-    
-    function checkForChanges() {
-        let hasChanges = false;
-        
-        Object.keys(STORAGE_KEYS).forEach(key => {
-            const currentData = localStorage.getItem(STORAGE_KEYS[key]) || '[]';
+        // ============================================
+        // UNIVERSAL REAL-TIME SYNC SOCKET
+        // ============================================
+        (function() {
+            'use strict';
             
-            if (currentData !== lastState[key]) {
-                hasChanges = true;
-                lastState[key] = currentData;
-                handleDataChange(key, JSON.parse(currentData));
+            const SYNC_INTERVAL = 2000;
+            const STORAGE_KEYS = {
+                members: 'tauAfricaDB',
+                tasks: 'tauTasks',
+                activities: 'tauActivities',
+                values: 'tauValues',
+                validations: 'tauPendingValidations',
+                notifications: 'tauNotifications',
+                codes: 'tauValidatorCodes'
+            };
+            
+            let lastState = {};
+            
+            function initSync() {
+                Object.keys(STORAGE_KEYS).forEach(key => {
+                    const data = localStorage.getItem(STORAGE_KEYS[key]) || '[]';
+                    lastState[key] = data;
+                });
+                
+                console.log('✅ Universal Sync Socket initialized');
             }
-        });
-        
-        if (hasChanges) {
-            triggerUIRefresh();
-        }
-    }
-    
-    function handleDataChange(key, data) {
-        console.log(`🔄 Data changed: ${key}`, data.length);
-        
-        // Trigger appropriate refresh based on key
-        switch(key) {
-            case 'members':
-                if (typeof updateStats === 'function') updateStats();
-                if (typeof renderMembers === 'function') renderMembers();
-                break;
-            case 'tasks':
-                if (typeof loadTasks === 'function') loadTasks();
-                if (typeof refreshPublicTasks === 'function') refreshPublicTasks();
-                break;
-            case 'activities':
-                if (typeof loadActivities === 'function') loadActivities();
-                if (typeof refreshPublicActivities === 'function') refreshPublicActivities();
-                break;
-            case 'values':
-                if (typeof loadValues === 'function') loadValues();
-                if (typeof refreshPublicValues === 'function') refreshPublicValues();
-                break;
-            case 'validations':
-                if (typeof loadValidations === 'function') loadValidations();
-                break;
-            case 'notifications':
-                if (typeof loadNotifications === 'function') loadNotifications();
-                createNotificationPopup(data);
-                break;
-        }
-    }
-    
-    function triggerUIRefresh() {
-        // Update badge counts
-        const currentMember = window.TauDB?.getCurrentMember();
-        if (currentMember) {
-            updateNotificationBadge();
-            updateTaskBadge();
-        }
-        
-        // Dispatch custom event for any listeners
-        window.dispatchEvent(new CustomEvent('tauDataSync', {
-            detail: { timestamp: Date.now() }
-        }));
-    }
-    
-    function updateNotificationBadge() {
-        const currentMember = window.TauDB?.getCurrentMember();
-        if (!currentMember) return;
-        
-        const notifs = JSON.parse(localStorage.getItem(STORAGE_KEYS.notifications) || '{}');
-        const memberNotifs = notifs[currentMember.id] || [];
-        const unread = memberNotifs.filter(n => !n.read).length;
-        
-        const badge = document.getElementById('tauNotifBadge');
-        if (badge) {
-            if (unread > 0) {
-                badge.style.display = 'block';
-                badge.textContent = unread;
-            } else {
-                badge.style.display = 'none';
+            
+            function checkForChanges() {
+                let hasChanges = false;
+                
+                Object.keys(STORAGE_KEYS).forEach(key => {
+                    const currentData = localStorage.getItem(STORAGE_KEYS[key]) || '[]';
+                    
+                    if (currentData !== lastState[key]) {
+                        hasChanges = true;
+                        lastState[key] = currentData;
+                        handleDataChange(key, JSON.parse(currentData));
+                    }
+                });
+                
+                if (hasChanges) {
+                    triggerUIRefresh();
+                }
             }
-        }
-    }
-    
-    function updateTaskBadge() {
-        const tasks = JSON.parse(localStorage.getItem(STORAGE_KEYS.tasks) || '[]');
-        const activities = JSON.parse(localStorage.getItem(STORAGE_KEYS.activities) || '[]');
-        const values = JSON.parse(localStorage.getItem(STORAGE_KEYS.values) || '[]');
-        
-        const activeTasks = tasks.filter(t => t.validated).length;
-        const activeActivities = activities.filter(a => a.validated).length;
-        const activeValues = values.filter(v => v.validated && v.status === 'Approved').length;
-        
-        console.log(`📊 Active items - Tasks: ${activeTasks}, Activities: ${activeActivities}, Values: ${activeValues}`);
-    }
-    
-    function createNotificationPopup(notifications) {
-        const currentMember = window.TauDB?.getCurrentMember();
-        if (!currentMember) return;
-        
-        const memberNotifs = notifications[currentMember.id] || [];
-        const latest = memberNotifs.filter(n => !n.read).slice(0, 1)[0];
-        
-        if (latest && typeof showNotification === 'function') {
-            showNotification(latest.title + ': ' + latest.message, 'info');
-        }
-    }
-    
-    // Start sync loop
-    initSync();
-    setInterval(checkForChanges, SYNC_INTERVAL);
-    
-    // Listen for storage events from other tabs/windows
-    window.addEventListener('storage', function(e) {
-        if (Object.values(STORAGE_KEYS).includes(e.key)) {
-            console.log('🔄 Storage event detected:', e.key);
-            checkForChanges();
-        }
-    });
-    
-    console.log('🚀 Real-time sync active');
-})();
-</script>
+            
+            function handleDataChange(key, data) {
+                console.log(`🔄 Data changed: ${key}`, data.length);
+                
+                switch(key) {
+                    case 'members':
+                        if (typeof updateDashboard === 'function') updateDashboard();
+                        break;
+                    case 'tasks':
+                        if (typeof loadTasks === 'function') loadTasks();
+                        break;
+                    case 'activities':
+                        if (typeof loadActivities === 'function') loadActivities();
+                        break;
+                    case 'values':
+                        if (typeof loadValues === 'function') loadValues();
+                        break;
+                    case 'validations':
+                        if (typeof loadValidations === 'function') loadValidations();
+                        break;
+                }
+            }
+            
+            function triggerUIRefresh() {
+                window.dispatchEvent(new CustomEvent('tauDataSync', {
+                    detail: { timestamp: Date.now() }
+                }));
+            }
+            
+            initSync();
+            setInterval(checkForChanges, SYNC_INTERVAL);
+            
+            window.addEventListener('storage', function(e) {
+                if (Object.values(STORAGE_KEYS).includes(e.key)) {
+                    console.log('🔄 Storage event detected:', e.key);
+                    checkForChanges();
+                }
+            });
+            
+            console.log('🚀 Real-time sync active');
+        })();
+    </script>
+
     <script>
-// ============================================
-// NOTIFICATION GENERATOR
-// ============================================
-(function() {
-    'use strict';
-    
-    window.createNotification = function(memberId, title, message, type = 'info') {
-        const NOTIF_KEY = 'tauNotifications';
-        const allNotifications = JSON.parse(localStorage.getItem(NOTIF_KEY) || '{}');
-        
-        if (!allNotifications[memberId]) {
-            allNotifications[memberId] = [];
-        }
-        
-        const notification = {
-            id: `NOTIF-${Date.now()}`,
-            title: title,
-            message: message,
-            timestamp: new Date().toISOString(),
-            read: false,
-            type: type
-        };
-        
-        allNotifications[memberId].unshift(notification);
-        
-        // Keep only last 50 notifications
-        if (allNotifications[memberId].length > 50) {
-            allNotifications[memberId] = allNotifications[memberId].slice(0, 50);
-        }
-        
-        localStorage.setItem(NOTIF_KEY, JSON.stringify(allNotifications));
-        console.log(`📬 Notification created for ${memberId}:`, title);
-    };
-    
-    window.notifyAllMembers = function(title, message) {
-        const members = JSON.parse(localStorage.getItem('tauAfricaDB') || '[]');
-        members.forEach(member => {
-            createNotification(member.id, title, message, 'info');
-        });
-        console.log(`📢 Broadcast notification sent to ${members.length} members`);
-    };
-})();
-</script>
+        // ============================================
+        // NOTIFICATION GENERATOR
+        // ============================================
+        (function() {
+            'use strict';
+            
+            window.createNotification = function(memberId, title, message, type = 'info') {
+                const NOTIF_KEY = 'tauNotifications';
+                const allNotifications = JSON.parse(localStorage.getItem(NOTIF_KEY) || '{}');
+                
+                if (!allNotifications[memberId]) {
+                    allNotifications[memberId] = [];
+                }
+                
+                const notification = {
+                    id: `NOTIF-${Date.now()}`,
+                    title: title,
+                    message: message,
+                    timestamp: new Date().toISOString(),
+                    read: false,
+                    type: type
+                };
+                
+                allNotifications[memberId].unshift(notification);
+                
+                if (allNotifications[memberId].length > 50) {
+                    allNotifications[memberId] = allNotifications[memberId].slice(0, 50);
+                }
+                
+                localStorage.setItem(NOTIF_KEY, JSON.stringify(allNotifications));
+                console.log(`📬 Notification created for ${memberId}:`, title);
+            };
+            
+            window.notifyAllMembers = function(title, message) {
+                const members = JSON.parse(localStorage.getItem('tauAfricaDB') || '[]');
+                members.forEach(member => {
+                    createNotification(member.id, title, message, 'info');
+                });
+                console.log(`📢 Broadcast notification sent to ${members.length} members`);
+            };
+        })();
+    </script>
 </body>
-                    </html>
+</html>
