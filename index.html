@@ -4346,12 +4346,6 @@ function createForumModal() {
     console.log('✅ Limits Enforcement System initialized');
 })();
 
-if ('serviceWorker' in navigator) {
-  navigator.serviceWorker.register('/service-worker.js')
-    .then(() => console.log('✅ PWA installed'))
-    .catch(err => console.log('❌ PWA error:', err));
-}
-
         // ===== ADMIN DATABASE ACCESS WITH ROLE CHECKING =====
 function openAdminDatabase() {
     const currentMember = window.TauDB?.getCurrentMember();
@@ -4523,5 +4517,14 @@ function requestAdminAccess(event) {
     }
 }
     </script>
+    <script>
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('/Tau-Africa/service-worker.js')
+      .then(reg => console.log('✅ PWA registered'))
+      .catch(err => console.log('❌ PWA error:', err));
+  });
+}
+</script>
 </body>
     </html>
