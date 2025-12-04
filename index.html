@@ -4526,5 +4526,158 @@ if ('serviceWorker' in navigator) {
   });
 }
 </script>
+    <script>
+// ============================================
+// UNIVERSAL REAL-TIME SYNC SOCKET
+// Add to: Main App, Database, and Bridge
+// ============================================
+(function() {
+    'use strict';
+    
+    const SYNC_INTERVAL = 2000; // Check every 2 seconds
+    const STORAGE_KEYS = {
+        members: 'tauAfricaDB',
+        tasks: 'tauTasks',
+        activities: 'tauActivities',
+        values: 'tauValues',
+        validations: 'tauPendingValidations',
+        notifications: 'tauNotifications',
+        codes: 'tauValidatorCodes'
+    };
+    
+    // Track last known state
+    let lastState = {};
+    
+    function initSync() {
+        // Initialize last state
+        Object.keys(STORAGE_KEYS).forEach(key => {
+            const data = localStorage.getItem(STORAGE_KEYS[key]) || '[]';
+            lastState[key] = data;
+        });
+        
+        console.log('✅ Universal Sync Socket initialized');
+    }
+    
+    function checkForChanges() {
+        let hasChanges = false;
+        
+        Object.keys(STORAGE_KEYS).forEach(key => {
+            const currentData = localStorage.getItem(STORAGE_KEYS[key]) || '[]';
+            
+            if (currentData !== lastState[key]) {
+                hasChanges = true;
+                lastState[key] = currentData;
+                handleDataChange(key, JSON.parse(currentData));
+            }
+        });
+        
+        if (hasChanges) {
+            triggerUIRefresh();
+        }
+    }
+    
+    function handleDataChange(key, data) {
+        console.log(`🔄 Data changed: ${key}`, data.length);
+        
+        // Trigger appropriate refresh based on key
+        switch(key) {
+            case 'members':
+                if (typeof updateStats === 'function') updateStats();
+                if (typeof renderMembers === 'function') renderMembers();
+                break;
+            case 'tasks':
+                if (typeof loadTasks === 'function') loadTasks();
+                if (typeof refreshPublicTasks === 'function') refreshPublicTasks();
+                break;
+            case 'activities':
+                if (typeof loadActivities === 'function') loadActivities();
+                if (typeof refreshPublicActivities === 'function') refreshPublicActivities();
+                break;
+            case 'values':
+                if (typeof loadValues === 'function') loadValues();
+                if (typeof refreshPublicValues === 'function') refreshPublicValues();
+                break;
+            case 'validations':
+                if (typeof loadValidations === 'function') loadValidations();
+                break;
+            case 'notifications':
+                if (typeof loadNotifications === 'function') loadNotifications();
+                createNotificationPopup(data);
+                break;
+        }
+    }
+    
+    function triggerUIRefresh() {
+        // Update badge counts
+        const currentMember = window.TauDB?.getCurrentMember();
+        if (currentMember) {
+            updateNotificationBadge();
+            updateTaskBadge();
+        }
+        
+        // Dispatch custom event for any listeners
+        window.dispatchEvent(new CustomEvent('tauDataSync', {
+            detail: { timestamp: Date.now() }
+        }));
+    }
+    
+    function updateNotificationBadge() {
+        const currentMember = window.TauDB?.getCurrentMember();
+        if (!currentMember) return;
+        
+        const notifs = JSON.parse(localStorage.getItem(STORAGE_KEYS.notifications) || '{}');
+        const memberNotifs = notifs[currentMember.id] || [];
+        const unread = memberNotifs.filter(n => !n.read).length;
+        
+        const badge = document.getElementById('tauNotifBadge');
+        if (badge) {
+            if (unread > 0) {
+                badge.style.display = 'block';
+                badge.textContent = unread;
+            } else {
+                badge.style.display = 'none';
+            }
+        }
+    }
+    
+    function updateTaskBadge() {
+        const tasks = JSON.parse(localStorage.getItem(STORAGE_KEYS.tasks) || '[]');
+        const activities = JSON.parse(localStorage.getItem(STORAGE_KEYS.activities) || '[]');
+        const values = JSON.parse(localStorage.getItem(STORAGE_KEYS.values) || '[]');
+        
+        const activeTasks = tasks.filter(t => t.validated).length;
+        const activeActivities = activities.filter(a => a.validated).length;
+        const activeValues = values.filter(v => v.validated && v.status === 'Approved').length;
+        
+        console.log(`📊 Active items - Tasks: ${activeTasks}, Activities: ${activeActivities}, Values: ${activeValues}`);
+    }
+    
+    function createNotificationPopup(notifications) {
+        const currentMember = window.TauDB?.getCurrentMember();
+        if (!currentMember) return;
+        
+        const memberNotifs = notifications[currentMember.id] || [];
+        const latest = memberNotifs.filter(n => !n.read).slice(0, 1)[0];
+        
+        if (latest && typeof showNotification === 'function') {
+            showNotification(latest.title + ': ' + latest.message, 'info');
+        }
+    }
+    
+    // Start sync loop
+    initSync();
+    setInterval(checkForChanges, SYNC_INTERVAL);
+    
+    // Listen for storage events from other tabs/windows
+    window.addEventListener('storage', function(e) {
+        if (Object.values(STORAGE_KEYS).includes(e.key)) {
+            console.log('🔄 Storage event detected:', e.key);
+            checkForChanges();
+        }
+    });
+    
+    console.log('🚀 Real-time sync active');
+})();
+        </script>
 </body>
     </html>
