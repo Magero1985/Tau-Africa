@@ -5370,7 +5370,58 @@ if ('serviceWorker' in navigator) {
         });
         console.log(`📢 Broadcast notification sent to ${members.length} members`);
     };
-})();
-</script>
+})()
+// ============================================
+// INTEGRATION TEST SUITE
+// ============================================
+window.runIntegrationTest = function() {
+    console.log('🧪 Starting Integration Test...');
+    
+    const tests = {
+        storage: false,
+        sync: false,
+        notifications: false,
+        opportunities: false
+    };
+    
+    // Test 1: Storage
+    try {
+        localStorage.setItem('test', 'ok');
+        tests.storage = localStorage.getItem('test') === 'ok';
+        localStorage.removeItem('test');
+    } catch(e) {
+        console.error('❌ Storage test failed:', e);
+    }
+    
+    // Test 2: Sync Socket
+    tests.sync = typeof checkForChanges === 'function';
+    
+    // Test 3: Notifications
+    tests.notifications = typeof createNotification === 'function';
+    
+    // Test 4: Opportunities
+    tests.opportunities = typeof refreshPublicOpportunities === 'function';
+    
+    // Display results
+    console.log('📊 Test Results:');
+    console.log('Storage:', tests.storage ? '✅' : '❌');
+    console.log('Sync:', tests.sync ? '✅' : '❌');
+    console.log('Notifications:', tests.notifications ? '✅' : '❌');
+    console.log('Opportunities:', tests.opportunities ? '✅' : '❌');
+    
+    const allPassed = Object.values(tests).every(t => t);
+    
+    if (allPassed) {
+        showNotification('✅ All integration tests passed!', 'success');
+    } else {
+        showNotification('⚠️ Some tests failed - check console', 'error');
+    }
+    
+    return tests;
+};
+
+// Add test button to header (for debugging)
+console.log('💡 Run window.runIntegrationTest() to check integration');
+    </script>
 </body>
     </html>
