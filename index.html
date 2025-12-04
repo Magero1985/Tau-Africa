@@ -733,6 +733,100 @@ input[type="date"] {
         <div id="publicOpportunitiesContainer"></div>
     </div>
 </div>
+            <!-- Activity Area -->
+            <div class="section">
+                <h3 class="section-title">📚 ACTIVITIES</h3>
+                <p>Training workshops, job creation & research services</p>
+                <button class="btn" onclick="openModal('training')">Join member training</button>
+                <button class="btn" onclick="openModal('workshop')">Host corporate Workshop</button>
+                <button class="btn" onclick="openModal('research')">Research Services</button>
+                <button class="btn" onclick="openModal('jobCreation')">Job Creation workshop</button>
+            </div>
+
+            <!-- Jobs Area -->
+            <div class="section">
+                <h3 class="section-title">💼 TASKS</h3>
+                <p>Connect job seekers with verified opportunities</p>
+                <button class="btn" onclick="openModal('insertJob')">Insert value</button>
+                <button class="btn" onclick="openModal('retrieveJob')">Search value</button>
+                <button class="btn" onclick="openModal('availableJobs')">Browse value</button>
+                <button class="btn" onclick="openModal('applyJob')">seek value</button>
+            </div>
+
+            <!-- Community -->
+            <div class="section">
+                <h3 class="section-title">🤝 COMMUNITY</h3>
+                <p>Community support programs</p>
+                <button class="btn" onclick="openModal('community')">Join Programs</button>
+                <div style="margin-top: 10px; font-size: 0.9rem;">
+                    Agriculture • Climate • Environment<br>
+                    Water & Sanitation • Education • Child Care
+                </div>
+            </div>
+
+            <!-- Interactive Forum -->
+            <div class="section">
+                <h3 class="section-title">💬 MEMBER FORUM</h3>
+                <p>Connect, share ideas, and collaborate with fellow members</p>
+                <button class="btn" onclick="openModal('forum')">Access Forum</button>
+                <div style="margin-top: 10px; font-size: 0.9rem;">
+                    Discussions • Job Sharing • Training Materials<br>
+                    Voice Calls • Messaging • Networking
+                </div>
+            </div>
+        </div>
+
+        <!-- Kabiru Mining Section -->
+        <div class="kabiru-section">
+            <h2>⚡ KABIRU MINING</h2>
+            <p>Mine Kabiru coins by proving and validating real values</p>
+            <button class="btn-kabiru" onclick="window.open('https://magero1985.github.io/Kabiru-Mining-Portal-/', '_blank')">Access Kabiru Mining App</button>
+        </div>
+    </div>
+
+    <!-- Notification -->
+    <div id="notification" class="notification"></div>
+
+    <!-- Floating Member Access Button -->
+    <div class="floating-btn" onclick="showMemberLogin()" title="Member Access">👤</div>
+
+    <!-- AI Assistant -->
+    <div class="ai-assistant" onclick="toggleAIChat()" title="AI Assistant - Get Help">🤖</div>
+
+    <!-- AI Chat Window -->
+    <div class="ai-chat-window" id="aiChatWindow">
+        <div class="ai-chat-header">
+            <span>TAU AI Assistant</span>
+            <span onclick="toggleAIChat()" style="cursor: pointer;">✖</span>
+        </div>
+        <div class="ai-chat-messages" id="aiChatMessages">
+            <div class="ai-message">
+                Hello! I'm your TAU Africa AI assistant. I can help you with:
+                <br>• Navigating the app
+                <br>• Understanding registration process
+                <br>• Payment procedures
+                <br>• Technical support
+                <br>• General questions about TAU Africa
+                <br><br>How can I assist you today?
+            </div>
+        </div>
+        <div class="ai-chat-input">
+            <input type="text" id="aiChatInput" placeholder="Ask me anything..." onkeypress="handleAIChatKeyPress(event)">
+            <button onclick="sendAIMessage()">➤</button>
+        </div>
+        <button onclick="✅ Validate()">➤</button>
+    </div>
+</div>
+    <!-- Floating Admin Access Button -->
+<div class="admin-floating-btn" onclick="('openDatabase')" 
+     title="Admin Access"
+     style="position: fixed; bottom: 170px; right: 30px; width: 60px; height: 60px; 
+            background: linear-gradient(45deg, #667eea, #764ba2); border-radius: 50%; 
+            display: flex; align-items: center; justify-content: center; 
+            color: white; font-size: 24px; cursor: pointer; 
+            box-shadow: 0 4px 12px rgba(0,0,0,0.3); z-index: 100;">
+    👨‍💼
+</div>
 
 <script>
 // ============================================
@@ -1324,102 +1418,6 @@ input[type="date"] {
     }
 })();
 </script>
-
-            <!-- Activity Area -->
-            <div class="section">
-                <h3 class="section-title">📚 ACTIVITIES</h3>
-                <p>Training workshops, job creation & research services</p>
-                <button class="btn" onclick="openModal('training')">Join member training</button>
-                <button class="btn" onclick="openModal('workshop')">Host corporate Workshop</button>
-                <button class="btn" onclick="openModal('research')">Research Services</button>
-                <button class="btn" onclick="openModal('jobCreation')">Job Creation workshop</button>
-            </div>
-
-            <!-- Jobs Area -->
-            <div class="section">
-                <h3 class="section-title">💼 TASKS</h3>
-                <p>Connect job seekers with verified opportunities</p>
-                <button class="btn" onclick="openModal('insertJob')">Insert value</button>
-                <button class="btn" onclick="openModal('retrieveJob')">Search value</button>
-                <button class="btn" onclick="openModal('availableJobs')">Browse value</button>
-                <button class="btn" onclick="openModal('applyJob')">seek value</button>
-            </div>
-
-            <!-- Community -->
-            <div class="section">
-                <h3 class="section-title">🤝 COMMUNITY</h3>
-                <p>Community support programs</p>
-                <button class="btn" onclick="openModal('community')">Join Programs</button>
-                <div style="margin-top: 10px; font-size: 0.9rem;">
-                    Agriculture • Climate • Environment<br>
-                    Water & Sanitation • Education • Child Care
-                </div>
-            </div>
-
-            <!-- Interactive Forum -->
-            <div class="section">
-                <h3 class="section-title">💬 MEMBER FORUM</h3>
-                <p>Connect, share ideas, and collaborate with fellow members</p>
-                <button class="btn" onclick="openModal('forum')">Access Forum</button>
-                <div style="margin-top: 10px; font-size: 0.9rem;">
-                    Discussions • Job Sharing • Training Materials<br>
-                    Voice Calls • Messaging • Networking
-                </div>
-            </div>
-        </div>
-
-        <!-- Kabiru Mining Section -->
-        <div class="kabiru-section">
-            <h2>⚡ KABIRU MINING</h2>
-            <p>Mine Kabiru coins by proving and validating real values</p>
-            <button class="btn-kabiru" onclick="window.open('https://magero1985.github.io/Kabiru-Mining-Portal-/', '_blank')">Access Kabiru Mining App</button>
-        </div>
-    </div>
-
-    <!-- Notification -->
-    <div id="notification" class="notification"></div>
-
-    <!-- Floating Member Access Button -->
-    <div class="floating-btn" onclick="showMemberLogin()" title="Member Access">👤</div>
-
-    <!-- AI Assistant -->
-    <div class="ai-assistant" onclick="toggleAIChat()" title="AI Assistant - Get Help">🤖</div>
-
-    <!-- AI Chat Window -->
-    <div class="ai-chat-window" id="aiChatWindow">
-        <div class="ai-chat-header">
-            <span>TAU AI Assistant</span>
-            <span onclick="toggleAIChat()" style="cursor: pointer;">✖</span>
-        </div>
-        <div class="ai-chat-messages" id="aiChatMessages">
-            <div class="ai-message">
-                Hello! I'm your TAU Africa AI assistant. I can help you with:
-                <br>• Navigating the app
-                <br>• Understanding registration process
-                <br>• Payment procedures
-                <br>• Technical support
-                <br>• General questions about TAU Africa
-                <br><br>How can I assist you today?
-            </div>
-        </div>
-        <div class="ai-chat-input">
-            <input type="text" id="aiChatInput" placeholder="Ask me anything..." onkeypress="handleAIChatKeyPress(event)">
-            <button onclick="sendAIMessage()">➤</button>
-        </div>
-        <button onclick="✅ Validate()">➤</button>
-    </div>
-</div>
-    <!-- Floating Admin Access Button -->
-<div class="admin-floating-btn" onclick="('openDatabase')" 
-     title="Admin Access"
-     style="position: fixed; bottom: 170px; right: 30px; width: 60px; height: 60px; 
-            background: linear-gradient(45deg, #667eea, #764ba2); border-radius: 50%; 
-            display: flex; align-items: center; justify-content: center; 
-            color: white; font-size: 24px; cursor: pointer; 
-            box-shadow: 0 4px 12px rgba(0,0,0,0.3); z-index: 100;">
-    👨‍💼
-</div>
-
 <script>
 // Initialize EmailJS with iOS compatibility
 (function() {
