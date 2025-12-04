@@ -1697,21 +1697,17 @@ function processJobCreationTraining(event) {
 function processTaskSuccess(formData) {
     console.log('Processing TASK success with email...');
     sendEmailToOrganization(formData, 'NEW TASK TEAM REGISTRATION - PAYMENT CONFIRMED')
-        sendAdminNotificationEmail(member, 'TASK');
         .then(success => {
             if (success) {
-                showNotification('✅ Registration complete! Welcome to TASK team. Confirmation email sent to grouptauafrica@gmail.com', 'success');
+                showNotification('✅ Registration complete!', 'success');
                 closeAllModals();
-            } else {
-                showNotification('⚠️ Registration saved but email notification failed. Our team will contact you.', 'error');
             }
         });
-}
+    }
 
 function processTalkSuccess(formData) {
     console.log('Processing TALK success with email...');
     sendEmailToOrganization(formData, 'NEW TALK TEAM REGISTRATION - PAYMENT CONFIRMED')
-        sendAdminNotificationEmail(member, 'TALK');
         .then(success => {
             if (success) {
                 showNotification('✅ Registration complete! Welcome to TALK team. Confirmation email sent to grouptauafrica@gmail.com', 'success');
@@ -1725,7 +1721,6 @@ function processTalkSuccess(formData) {
 function processJobCreationSuccess(formData) {
     console.log('Processing Job Creation success with email...');
     sendEmailToOrganization(formData, 'JOB CREATION TRAINING ENROLLMENT - PAYMENT CONFIRMED')
-        sendAdminNotificationEmail(member, 'JOB_CREATION');
         .then(success => {
             if (success) {
                 showNotification('✅ Training enrollment complete! Confirmation email sent to grouptauafrica@gmail.com', 'success');
@@ -1744,7 +1739,7 @@ function processTrainingRegistration(event) {
     const data = Object.fromEntries(formData.entries());
     
     console.log('Submitting training registration...');
-    sendEmailToOrganization(data, 'TRAINING PROGRAM
+    sendEmailToOrganization(data, 'TRAINING PROGRAM')
         .then(success => {
             if (success) {
                 showNotification('✅ Training registration successful! Email sent.', 'success');
@@ -1919,7 +1914,7 @@ function processTrustGraphAccess(event) {
 
 function processFoundationInquiry(event) {
     event.preventDefault();
-    const form = eventmember.email.target;
+    const form = event.target;
     const formData = new FormData(form);
     const data = Object.fromEntries(formData.entries());
     
