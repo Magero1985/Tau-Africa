@@ -708,6 +708,288 @@ input[type="date"] {
                 <button class="btn btn-register" onclick="openModal('talkRegistration')">Join TALK Team</button>
                 <p style="margin-top: 15px; font-weight: bold; color: #e74c3c;">TASK Fee: KSH 500 | TALK Fee: KSH 2,000</p>
             </div>
+            <!-- PUBLIC OPPORTUNITIES SECTION - Add to Main App -->
+<div class="main-sections" style="margin-top: 40px;">
+    <div class="section" style="grid-column: 1 / -1;">
+        <h3 class="section-title">🎯 AVAILABLE OPPORTUNITIES</h3>
+        <p style="text-align: center; margin-bottom: 20px;">Complete these to earn iKbp and iKb!</p>
+        
+        <div style="display: flex; gap: 10px; margin-bottom: 20px; justify-content: center;">
+            <button class="btn btn-small" onclick="filterOpportunities('all')" id="filter-all">All</button>
+            <button class="btn btn-small" onclick="filterOpportunities('activities')" id="filter-activities">Activities</button>
+            <button class="btn btn-small" onclick="filterOpportunities('tasks')" id="filter-tasks">Tasks</button>
+            <button class="btn btn-small" onclick="filterOpportunities('values')" id="filter-values">Values</button>
+        </div>
+        
+        <div id="publicOpportunitiesContainer"></div>
+    </div>
+</div>
+
+<script>
+// ============================================
+// PUBLIC OPPORTUNITIES DISPLAY - Main App
+// ============================================
+(function() {
+    'use strict';
+    
+    let currentFilter = 'all';
+    
+    window.filterOpportunities = function(filter) {
+        currentFilter = filter;
+        
+        // Update button styles
+        document.querySelectorAll('[id^="filter-"]').forEach(btn => {
+            btn.style.background = 'linear-gradient(45deg, #95a5a6, #7f8c8d)';
+        });
+        document.getElementById('filter-' + filter).style.background = 'linear-gradient(45deg, #4169e1, #87ceeb)';
+        
+        refreshPublicOpportunities();
+    };
+    
+    window.refreshPublicOpportunities = function() {
+        refreshPublicTasks();
+        refreshPublicActivities();
+        refreshPublicValues();
+    };
+    
+    window.refreshPublicTasks = function() {
+        displayOpportunities();
+    };
+    
+    window.refreshPublicActivities = function() {
+        displayOpportunities();
+    };
+    
+    window.refreshPublicValues = function() {
+        displayOpportunities();
+    };
+    
+    function displayOpportunities() {
+        const container = document.getElementById('publicOpportunitiesContainer');
+        if (!container) return;
+        
+        const tasks = JSON.parse(localStorage.getItem('tauTasks') || '[]').filter(t => t.validated);
+        const activities = JSON.parse(localStorage.getItem('tauActivities') || '[]').filter(a => a.validated);
+        const values = JSON.parse(localStorage.getItem('tauValues') || '[]').filter(v => v.validated && v.status === 'Approved');
+        
+        let items = [];
+        
+        if (currentFilter === 'all' || currentFilter === 'activities') {
+            items = items.concat(activities.map(a => ({...a, type: 'activity'})));
+        }
+        if (currentFilter === 'all' || currentFilter === 'tasks') {
+            items = items.concat(tasks.map(t => ({...t, type: 'task'})));
+        }
+        if (currentFilter === 'all' || currentFilter === 'values') {
+            items = items.concat(values.map(v => ({...v, type: 'value'})));
+        }
+        
+        if (items.length === 0) {
+            container.innerHTML = '<p style="text-align: center; padding: 40px; color: #999;">No opportunities available yet</p>';
+            return;
+        }
+        
+        container.innerHTML = `
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px;">
+                ${items.map(item => `
+                    <div style="background: white; border-radius: 15px; padding: 25px; box-shadow: 0 5px 15px rgba(0,0,0,0.1); border-left: 4px solid ${getColorForType(item.type)};">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+                            <h4 style="margin: 0; color: #2a5298;">${item.title}</h4>
+                            <span style="background: ${getColorForType(item.type)}; color: white; padding: 5px 12px; border-radius: 12px; font-size: 12px; font-weight: 600;">
+                                ${item.type.toUpperCase()}
+                            </span>
+                        </div>
+                        
+                        <p style="color: #666; margin-bottom: 15px;">${item.description}</p>
+                        
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+                            <span style="background: #ffd700; color: #333; padding: 8px 15px; border-radius: 20px; font-weight: bold;">
+                                ${item.type === 'value' ? item.worthIkb + ' iKb' : item.reward + ' iKbp'}
+                            </span>
+                            ${item.category ? `<span style="font-size: 12px; color: #999;">${item.category}</span>` : ''}
+                        </div>
+                        
+                        <button class="btn" onclick="claimOpportunity('${item.type}', '${item.id}')" style="width: 100%; padding: 12px;">
+                            ${item.type === 'value' ? '💎 Claim Value' : '✅ Complete & Earn'}
+                        </button>
+                    </div>
+                `).join('')}
+            </div>
+        `;
+    }
+    
+    function getColorForType(type) {
+        switch(type) {
+            case 'activity': return '#ff6b6b';
+            case 'task': return '#4169e1';
+            case 'value': return '#ffd700';
+            default: return '#95a5a6';
+        }
+    }
+    
+    window.claimOpportunity = function(type, id) {
+        const currentMember = window.TauDB?.getCurrentMember();
+        
+        if (!currentMember) {
+            showNotification('Please login to claim opportunities', 'error');
+            showRealMemberLogin();
+            return;
+        }
+        
+        const storageKey = type === 'activity' ? 'tauActivities' : type === 'task' ? 'tauTasks' : 'tauValues';
+        const items = JSON.parse(localStorage.getItem(storageKey) || '[]');
+        const item = items.find(i => i.id === id);
+        
+        if (!item) {
+            showNotification('Item not found', 'error');
+            return;
+        }
+        
+        if (type === 'value') {
+            openValueClaimModal(item);
+        } else {
+            openCompletionModal(type, item);
+        }
+    };
+    
+    function openCompletionModal(type, item) {
+        const modal = document.createElement('div');
+        modal.className = 'modal';
+        modal.style.display = 'block';
+        modal.innerHTML = `
+            <div class="modal-content">
+                <span class="close" onclick="this.parentElement.parentElement.remove()">&times;</span>
+                <h2>${type === 'activity' ? '📚' : '📋'} Complete ${type.charAt(0).toUpperCase() + type.slice(1)}</h2>
+                
+                <div style="background: #f8f9fa; padding: 20px; border-radius: 10px; margin: 20px 0;">
+                    <h3>${item.title}</h3>
+                    <p>${item.description}</p>
+                    <p style="font-weight: bold; color: #ffd700;">Reward: ${item.reward} iKbp</p>
+                </div>
+                
+                <form onsubmit="submitCompletion(event, '${type}', '${item.id}')">
+                    <div class="form-group">
+                        <label>Proof of Completion *</label>
+                        <textarea name="proof" rows="4" placeholder="Describe what you did, attach links, etc." required></textarea>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Validation Code (if you have one)</label>
+                        <input type="text" name="validationCode" placeholder="Optional">
+                    </div>
+                    
+                    <button type="submit" class="btn">Submit for Review</button>
+                </form>
+            </div>
+        `;
+        document.body.appendChild(modal);
+    }
+    
+    function openValueClaimModal(item) {
+        const modal = document.createElement('div');
+        modal.className = 'modal';
+        modal.style.display = 'block';
+        modal.innerHTML = `
+            <div class="modal-content">
+                <span class="close" onclick="this.parentElement.parentElement.remove()">&times;</span>
+                <h2>💎 Claim Value</h2>
+                
+                <div style="background: linear-gradient(45deg, #ffd700, #ffed4e); padding: 20px; border-radius: 10px; margin: 20px 0;">
+                    <h3 style="color: #333;">${item.title}</h3>
+                    <p style="color: #666;">${item.description}</p>
+                    <p style="font-weight: bold; color: #333;">Worth: ${item.worthIkb} iKb (${item.worthKsh} KSH)</p>
+                </div>
+                
+                <form onsubmit="submitValueClaim(event, '${item.id}')">
+                    <div class="form-group">
+                        <label>How will you provide this value? *</label>
+                        <textarea name="proposal" rows="4" required></textarea>
+                    </div>
+                    
+                    <button type="submit" class="btn">Submit Claim</button>
+                </form>
+            </div>
+        `;
+        document.body.appendChild(modal);
+    }
+    
+    window.submitCompletion = function(event, type, itemId) {
+        event.preventDefault();
+        const currentMember = window.TauDB?.getCurrentMember();
+        if (!currentMember) return;
+        
+        const formData = new FormData(event.target);
+        const proof = formData.get('proof');
+        
+        // Add to member's record
+        if (type === 'activity') {
+            window.TauDB.addActivity(currentMember.id, {
+                type: 'Completed Activity',
+                title: 'Activity Completion',
+                description: proof,
+                reward: 0 // Pending approval
+            });
+        } else {
+            window.TauDB.addTask(currentMember.id, {
+                title: 'Task Completion',
+                description: proof,
+                category: 'User Submitted',
+                reward: 0 // Pending approval
+            });
+        }
+        
+        // Create notification for admins
+        createAdminNotification('completion', {
+            memberId: currentMember.id,
+            memberName: currentMember.fullName,
+            itemType: type,
+            itemId: itemId,
+            proof: proof
+        });
+        
+        closeAllModals();
+        showNotification('✅ Submitted for review! You will be notified when approved.', 'success');
+    };
+    
+    window.submitValueClaim = function(event, valueId) {
+        event.preventDefault();
+        const currentMember = window.TauDB?.getCurrentMember();
+        if (!currentMember) return;
+        
+        const formData = new FormData(event.target);
+        const proposal = formData.get('proposal');
+        
+        // Create admin notification
+        createAdminNotification('value_claim', {
+            memberId: currentMember.id,
+            memberName: currentMember.fullName,
+            valueId: valueId,
+            proposal: proposal
+        });
+        
+        closeAllModals();
+        showNotification('✅ Value claim submitted! Admins will review.', 'success');
+    };
+    
+    function createAdminNotification(type, data) {
+        const adminNotifs = JSON.parse(localStorage.getItem('tauAdminNotifications') || '[]');
+        adminNotifs.unshift({
+            id: 'ADMIN-' + Date.now(),
+            type: type,
+            data: data,
+            timestamp: new Date().toISOString(),
+            read: false
+        });
+        localStorage.setItem('tauAdminNotifications', JSON.stringify(adminNotifs));
+    }
+    
+    // Auto-refresh every 10 seconds
+    setInterval(refreshPublicOpportunities, 10000);
+    
+    // Initial load
+    setTimeout(refreshPublicOpportunities, 1000);
+})();
+        </script>
 
             <!-- Activity Area -->
             <div class="section">
