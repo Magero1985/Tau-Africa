@@ -2,21 +2,47 @@
   "name": "TAU Africa International",
   "short_name": "TAU Africa",
   "description": "TAU Africa Foundation - Community, Value, Corporate, Sovereignty",
-  "start_url": "/",
+  "start_url": "/Tau-Africa/",
+  "scope": "/Tau-Africa/",
   "display": "standalone",
   "background_color": "#1e3c72",
   "theme_color": "#4169e1",
-  "orientation": "portrait",
+  "orientation": "portrait-primary",
   "icons": [
     {
       "src": "icon-192.png",
       "sizes": "192x192",
-      "type": "image/png"
+      "type": "image/png",
+      "purpose": "any maskable"
     },
     {
       "src": "icon-512.png",
       "sizes": "512x512",
-      "type": "image/png"
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Main App",
+      "short_name": "Main",
+      "description": "Open TAU Africa Main App",
+      "url": "/Tau-Africa/",
+      "icons": [{ "src": "icon-192.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "Admin Bridge",
+      "short_name": "Bridge",
+      "description": "Open Admin Bridge",
+      "url": "/Tau-Africa/bridge.html",
+      "icons": [{ "src": "icon-192.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "Database",
+      "short_name": "Database",
+      "description": "Open Database",
+      "url": "/Tau-Africa/databse.html",
+      "icons": [{ "src": "icon-192.png", "sizes": "192x192" }]
     }
   ]
 }
