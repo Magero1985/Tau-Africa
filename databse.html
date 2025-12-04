@@ -596,6 +596,7 @@
     <div id="modeSwitcher" class="mode-switcher" style="position: fixed; top: 10px; left: 10px; z-index: 100; background: white; padding: 10px; border-radius: 10px;">
         <button class="mode-btn active" onclick="switchMode('admin')">👨‍💼 Admin</button>
         <button class="mode-btn" onclick="switchMode('member')">👤 Member</button>
+        
     </div>
 
     <!-- Login Screen -->
@@ -713,6 +714,20 @@
                 <button class="tab" onclick="switchTab('api')">🔌 API</button>
                 <button class="tab" onclick="switchTab('export')">💾 Export</button>
                 <button class="tab" onclick="switchTab('settings')">⚙️ Settings</button>
+                <button class="tab" onclick="switchTab('approvals')">✅ Approvals</button>
+            </div>
+            <div id="approvalsTab" class="tab-content">
+    <h2>✅ Pending Approvals</h2>
+    <p>Review and approve member submissions</p>
+    
+    <div style="display: flex; gap: 10px; margin-bottom: 20px;">
+        <button class="btn btn-small" onclick="filterApprovals('all')" id="approve-filter-all">All</button>
+        <button class="btn btn-small" onclick="filterApprovals('completions')" id="approve-filter-completions">Task/Activity Completions</button>
+        <button class="btn btn-small" onclick="filterApprovals('values')" id="approve-filter-values">Value Submissions</button>
+        <button class="btn btn-small" onclick="filterApprovals('claims')" id="approve-filter-claims">Value Claims</button>
+    </div>
+    
+    <div id="approvalsContainer"></div>
             </div>
 
             <!-- Members Tab -->
@@ -1150,7 +1165,22 @@ window.addEventListener('message', function(event) {
     </div>
 
     <div id="notification" class="notification"></div>
+    
+<!-- Add this notification bell to database header -->
+<div style="position: fixed; top: 20px; right: 80px; z-index: 1000;">
+    <button onclick="toggleAdminNotifications()" style="background: #e74c3c; color: white; border: none; padding: 12px; border-radius: 50%; cursor: pointer; box-shadow: 0 4px 12px rgba(0,0,0,0.2); position: relative;">
+        🔔
+        <span id="adminNotifBadge" style="display: none; position: absolute; top: -5px; right: -5px; background: #ffd700; color: #333; border-radius: 50%; width: 24px; height: 24px; font-size: 12px; line-height: 24px; text-align: center; font-weight: bold;">0</span>
+    </button>
+</div>
 
+<!-- Admin Notification Panel -->
+<div id="adminNotificationPanel" style="display: none; position: fixed; top: 70px; right: 20px; width: 400px; max-height: 600px; background: white; border-radius: 15px; box-shadow: 0 10px 30px rgba(0,0,0,0.3); z-index: 1000; overflow-y: auto;">
+    <div style="padding: 20px; border-bottom: 2px solid #eee; position: sticky; top: 0; background: white; border-radius: 15px 15px 0 0;">
+        <h3 style="margin: 0;">🔔 Admin Notifications</h3>
+    </div>
+    <div id="adminNotificationList" style="padding: 10px;"></div>
+</div>
     <script>
         // Initialize EmailJS
         (function() {
@@ -2627,6 +2657,534 @@ function renderValidationTab() {
         console.log(`📢 Broadcast notification sent to ${members.length} members`);
     };
 })();
-</script>
+    </script>
+    <script>
+// ============================================
+// ADMIN APPROVAL SYSTEM - Database
+// ============================================
+(function() {
+    'use strict';
+    
+    let currentApprovalFilter = 'all';
+    
+    window.filterApprovals = function(filter) {
+        currentApprovalFilter = filter;
+        
+        // Update button styles
+        document.querySelectorAll('[id^="approve-filter-"]').forEach(btn => {
+            btn.style.background = 'linear-gradient(45deg, #95a5a6, #7f8c8d)';
+        });
+        const activeBtn = document.getElementById('approve-filter-' + filter);
+        if (activeBtn) {
+            activeBtn.style.background = 'linear-gradient(45deg, #4169e1, #87ceeb)';
+        }
+        
+        loadApprovals();
+    };
+    
+    window.loadApprovals = function() {
+        const container = document.getElementById('approvalsContainer');
+        if (!container) return;
+        
+        const adminNotifs = JSON.parse(localStorage.getItem('tauAdminNotifications') || '[]');
+        const pendingValidations = JSON.parse(localStorage.getItem('tauPendingValidations') || '[]');
+        
+        let items = [];
+        
+        // Filter admin notifications
+        if (currentApprovalFilter === 'all' || currentApprovalFilter === 'completions') {
+            const completions = adminNotifs.filter(n => n.type === 'completion' && !n.read);
+            items = items.concat(completions.map(c => ({...c, category: 'completion'})));
+        }
+        
+        if (currentApprovalFilter === 'all' || currentApprovalFilter === 'claims') {
+            const claims = adminNotifs.filter(n => n.type === 'value_claim' && !n.read);
+            items = items.concat(claims.map(c => ({...c, category: 'claim'})));
+        }
+        
+        if (currentApprovalFilter === 'all' || currentApprovalFilter === 'values') {
+            const values = pendingValidations.filter(v => v.type === 'value' && v.status === 'Pending');
+            items = items.concat(values.map(v => ({...v, category: 'value_submission'})));
+        }
+        
+        if (items.length === 0) {
+            container.innerHTML = `
+                <div style="text-align: center; padding: 60px 20px;">
+                    <div style="font-size: 80px; margin-bottom: 20px;">✅</div>
+                    <h3 style="color: #2ecc71;">All caught up!</h3>
+                    <p style="color: #666;">No pending approvals at this time.</p>
+                </div>
+            `;
+            return;
+        }
+        
+        container.innerHTML = items.map(item => {
+            if (item.category === 'completion') {
+                return renderCompletionApproval(item);
+            } else if (item.category === 'claim') {
+                return renderClaimApproval(item);
+            } else if (item.category === 'value_submission') {
+                return renderValueApproval(item);
+            }
+        }).join('');
+    };
+    
+    function renderCompletionApproval(item) {
+        return `
+            <div class="stat-card" style="text-align: left; margin-bottom: 20px; border-left: 4px solid #4169e1;">
+                <h3 style="margin-bottom: 15px; color: #2a5298;">
+                    📋 Task/Activity Completion
+                </h3>
+                
+                <div class="detail-row">
+                    <div class="detail-label">Member:</div>
+                    <div class="detail-value">${item.data.memberName} (${item.data.memberId})</div>
+                </div>
+                
+                <div class="detail-row">
+                    <div class="detail-label">Type:</div>
+                    <div class="detail-value">${item.data.itemType}</div>
+                </div>
+                
+                <div class="detail-row">
+                    <div class="detail-label">Proof:</div>
+                    <div class="detail-value">${item.data.proof}</div>
+                </div>
+                
+                <div class="detail-row">
+                    <div class="detail-label">Submitted:</div>
+                    <div class="detail-value">${new Date(item.timestamp).toLocaleString()}</div>
+                </div>
+                
+                <div style="margin-top: 20px; display: flex; gap: 10px;">
+                    <input type="number" id="reward-${item.id}" placeholder="Reward (iKbp)" value="100" style="flex: 1; padding: 10px; border: 2px solid #ddd; border-radius: 8px;">
+                    <button onclick="approveCompletion('${item.id}', '${item.data.memberId}', '${item.data.itemType}')" class="btn btn-success" style="flex: 1;">
+                        ✅ Approve & Award
+                    </button>
+                    <button onclick="rejectApproval('${item.id}')" class="btn btn-secondary" style="flex: 1;">
+                        ❌ Reject
+                    </button>
+                </div>
+            </div>
+        `;
+    }
+    
+    function renderClaimApproval(item) {
+        return `
+            <div class="stat-card" style="text-align: left; margin-bottom: 20px; border-left: 4px solid #ffd700;">
+                <h3 style="margin-bottom: 15px; color: #e65100;">
+                    💎 Value Claim Request
+                </h3>
+                
+                <div class="detail-row">
+                    <div class="detail-label">Member:</div>
+                    <div class="detail-value">${item.data.memberName} (${item.data.memberId})</div>
+                </div>
+                
+                <div class="detail-row">
+                    <div class="detail-label">Value ID:</div>
+                    <div class="detail-value">${item.data.valueId}</div>
+                </div>
+                
+                <div class="detail-row">
+                    <div class="detail-label">Proposal:</div>
+                    <div class="detail-value">${item.data.proposal}</div>
+                </div>
+                
+                <div style="margin-top: 20px; display: flex; gap: 10px;">
+                    <button onclick="approveValueClaim('${item.id}', '${item.data.valueId}', '${item.data.memberId}')" class="btn btn-success" style="flex: 1;">
+                        ✅ Approve Claim
+                    </button>
+                    <button onclick="rejectApproval('${item.id}')" class="btn btn-secondary" style="flex: 1;">
+                        ❌ Reject
+                    </button>
+                </div>
+            </div>
+        `;
+    }
+    
+    function renderValueApproval(item) {
+        const value = item.data;
+        return `
+            <div class="stat-card" style="text-align: left; margin-bottom: 20px; border-left: 4px solid #ff6b6b;">
+                <h3 style="margin-bottom: 15px; color: #c0392b;">
+                    💎 New Value Submission
+                </h3>
+                
+                <div class="detail-row">
+                    <div class="detail-label">Title:</div>
+                    <div class="detail-value"><strong>${value.title}</strong></div>
+                </div>
+                
+                <div class="detail-row">
+                    <div class="detail-label">Type:</div>
+                    <div class="detail-value">${value.type}</div>
+                </div>
+                
+                <div class="detail-row">
+                    <div class="detail-label">Description:</div>
+                    <div class="detail-value">${value.description}</div>
+                </div>
+                
+                <div class="detail-row">
+                    <div class="detail-label">Worth:</div>
+                    <div class="detail-value">${value.worthIkb} iKb (${value.worthKsh} KSH)</div>
+                </div>
+                
+                <div class="detail-row">
+                    <div class="detail-label">Submitted By:</div>
+                    <div class="detail-value">${value.submittedByName} (${value.submittedBy})</div>
+                </div>
+                
+                <div class="detail-row">
+                    <div class="detail-label">Category:</div>
+                    <div class="detail-value">${value.category}</div>
+                </div>
+                
+                <div class="detail-row">
+                    <div class="detail-label">Location:</div>
+                    <div class="detail-value">${value.location}</div>
+                </div>
+                
+                <div class="detail-row">
+                    <div class="detail-label">Availability:</div>
+                    <div class="detail-value">${value.availability}</div>
+                </div>
+                
+                <div class="detail-row">
+                    <div class="detail-label">Validation Code:</div>
+                    <div class="detail-value"><code style="background: #f8f9fa; padding: 5px 10px; border-radius: 5px;">${value.validationCode}</code></div>
+                </div>
+                
+                <div style="margin-top: 20px; display: flex; gap: 10px;">
+                    <button onclick="approveValueSubmission('${item.id}', '${value.id}', '${value.submittedBy}')" class="btn btn-success" style="flex: 1;">
+                        ✅ Approve & Publish
+                    </button>
+                    <button onclick="rejectValueSubmission('${item.id}', '${value.id}', '${value.submittedBy}')" class="btn btn-secondary" style="flex: 1;">
+                        ❌ Reject
+                    </button>
+                </div>
+            </div>
+        `;
+    }
+    
+    window.approveCompletion = function(notifId, memberId, itemType) {
+        const rewardInput = document.getElementById('reward-' + notifId);
+        const reward = parseInt(rewardInput.value) || 100;
+        
+        if (!confirm(`Award ${reward} iKbp to this member?`)) return;
+        
+        // Award iKbp to member
+        if (itemType === 'activity') {
+            window.TauDB?.addActivity(memberId, {
+                type: 'Approved Completion',
+                title: 'Activity Completed',
+                description: 'Admin approved completion',
+                reward: reward
+            });
+        } else {
+            window.TauDB?.completeTask(memberId, 'custom');
+            // Manually add reward
+            const members = JSON.parse(localStorage.getItem('tauAfricaDB') || '[]');
+            const member = members.find(m => m.id === memberId);
+            if (member) {
+                member.iKbpBalance = (member.iKbpBalance || 0) + reward;
+                localStorage.setItem('tauAfricaDB', JSON.stringify(members));
+            }
+        }
+        
+        // Notify member
+        createNotification(memberId, '🎉 Completion Approved!', 
+            `Your ${itemType} completion was approved! You earned ${reward} iKbp.`, 
+            'success');
+        
+        // Mark notification as read
+        markAdminNotificationRead(notifId);
+        
+        showNotification(`✅ Approved! Member awarded ${reward} iKbp`, 'success');
+        loadApprovals();
+        updateStats();
+    };
+    
+    window.approveValueClaim = function(notifId, valueId, memberId) {
+        if (!confirm('Approve this value claim?')) return;
+        
+        // Get value details
+        const values = JSON.parse(localStorage.getItem('tauValues') || '[]');
+        const value = values.find(v => v.id === valueId);
+        
+        if (!value) {
+            showNotification('Value not found', 'error');
+            return;
+        }
+        
+        // Award iKb to value submitter
+        const members = JSON.parse(localStorage.getItem('tauAfricaDB') || '[]');
+        const submitter = members.find(m => m.id === value.submittedBy);
+        
+        if (submitter) {
+            submitter.iKbBalance = (submitter.iKbBalance || 0) + parseFloat(value.worthIkb);
+            localStorage.setItem('tauAfricaDB', JSON.stringify(members));
+            
+            // Notify submitter
+            createNotification(value.submittedBy, '💎 Value Claimed!', 
+                `Your value "${value.title}" was claimed! You earned ${value.worthIkb} iKb.`, 
+                'success');
+        }
+        
+        // Notify claimer
+        createNotification(memberId, '✅ Claim Approved!', 
+            `Your claim for "${value.title}" was approved!`, 
+            'success');
+        
+        // Mark as claimed
+        value.status = 'Claimed';
+        value.claimedBy = memberId;
+        value.claimedDate = new Date().toISOString();
+        localStorage.setItem('tauValues', JSON.stringify(values));
+        
+        markAdminNotificationRead(notifId);
+        showNotification('✅ Value claim approved!', 'success');
+        loadApprovals();
+    };
+    
+    window.approveValueSubmission = function(validationId, valueId, submitterId) {
+        if (!confirm('Approve and publish this value?')) return;
+        
+        // Update value status
+        const values = JSON.parse(localStorage.getItem('tauValues') || '[]');
+        const value = values.find(v => v.id === valueId);
+        
+        if (!value) {
+            showNotification('Value notfound', 'error'); return; }
+value.validated = true;
+    value.status = 'Approved';
+    value.approvedDate = new Date().toISOString();
+    localStorage.setItem('tauValues', JSON.stringify(values));
+    
+    // Update validation queue
+    const validations = JSON.parse(localStorage.getItem('tauPendingValidations') || '[]');
+    const validation = validations.find(v => v.id === validationId);
+    if (validation) {
+        validation.status = 'Approved';
+    }
+    localStorage.setItem('tauPendingValidations', JSON.stringify(validations));
+    
+    // Notify submitter
+    createNotification(submitterId, '💎 Value Approved!', 
+        `Your value "${value.title}" has been approved and is now visible to all members!`, 
+        'success');
+    
+    // Broadcast to all members
+    notifyAllMembers('💎 New Value Available!', 
+        `"${value.title}" is now available - worth ${value.worthIkb} iKb`);
+    
+    showNotification('✅ Value approved and published!', 'success');
+    loadApprovals();
+    updateStats();
+};
+
+window.rejectValueSubmission = function(validationId, valueId, submitterId) {
+    const reason = prompt('Reason for rejection:');
+    if (!reason) return;
+    
+    // Update value status
+    const values = JSON.parse(localStorage.getItem('tauValues') || '[]');
+    const value = values.find(v => v.id === valueId);
+    
+    if (value) {
+        value.status = 'Rejected';
+        value.rejectionReason = reason;
+        value.rejectedDate = new Date().toISOString();
+        localStorage.setItem('tauValues', JSON.stringify(values));
+    }
+    
+    // Update validation queue
+    const validations = JSON.parse(localStorage.getItem('tauPendingValidations') || '[]');
+    const updated = validations.filter(v => v.id !== validationId);
+    localStorage.setItem('tauPendingValidations', JSON.stringify(updated));
+    
+    // Notify submitter
+    createNotification(submitterId, '❌ Value Rejected', 
+        `Your value submission was rejected. Reason: ${reason}`, 
+        'error');
+    
+    showNotification('Value rejected', 'info');
+    loadApprovals();
+};
+
+window.rejectApproval = function(notifId) {
+    const reason = prompt('Reason for rejection:');
+    if (!reason) return;
+    
+    markAdminNotificationRead(notifId);
+    showNotification('Approval rejected', 'info');
+    loadApprovals();
+};
+
+function markAdminNotificationRead(notifId) {
+    const adminNotifs = JSON.parse(localStorage.getItem('tauAdminNotifications') || '[]');
+    const notif = adminNotifs.find(n => n.id === notifId);
+    if (notif) {
+        notif.read = true;
+        localStorage.setItem('tauAdminNotifications', JSON.stringify(adminNotifs));
+    }
+}
+
+// Auto-load approvals when tab is opened
+const originalSwitchTab = window.switchTab;
+window.switchTab = function(tab) {
+    originalSwitchTab(tab);
+    if (tab === 'approvals') {
+        loadApprovals();
+    }
+};
+
+// Initial load if on approvals tab
+setTimeout(() => {
+    if (document.getElementById('approvalsTab')?.classList.contains('active')) {
+        loadApprovals();
+    }
+}, 1000);
+})(); 
+<script>
+// ============================================
+// ADMIN NOTIFICATION SYSTEM - Database
+// ============================================
+(function() {
+    'use strict';
+    
+    window.toggleAdminNotifications = function() {
+        const panel = document.getElementById('adminNotificationPanel');
+        panel.style.display = panel.style.display === 'none' ? 'block' : 'none';
+        if (panel.style.display === 'block') {
+            loadAdminNotifications();
+        }
+    };
+    
+    window.loadAdminNotifications = function() {
+        const adminNotifs = JSON.parse(localStorage.getItem('tauAdminNotifications') || '[]');
+        const unread = adminNotifs.filter(n => !n.read);
+        
+        // Update badge
+        const badge = document.getElementById('adminNotifBadge');
+        if (unread.length > 0) {
+            badge.style.display = 'block';
+            badge.textContent = unread.length;
+        } else {
+            badge.style.display = 'none';
+        }
+        
+        // Render notifications
+        const list = document.getElementById('adminNotificationList');
+        if (adminNotifs.length === 0) {
+            list.innerHTML = '<p style="text-align: center; color: #999; padding: 40px;">No notifications</p>';
+            return;
+        }
+        
+        list.innerHTML = adminNotifs.slice(0, 20).map(notif => {
+            let icon = '📬';
+            let color = '#4169e1';
+            
+            switch(notif.type) {
+                case 'new_value_submission':
+                    icon = '💎';
+                    color = '#ffd700';
+                    break;
+                case 'completion':
+                    icon = '✅';
+                    color = '#2ecc71';
+                    break;
+                case 'value_claim':
+                    icon = '🤝';
+                    color = '#e67e22';
+                    break;
+            }
+            
+            return `
+                <div style="padding: 15px; border-bottom: 1px solid #eee; background: ${notif.read ? '#fff' : '#f0f4ff'}; cursor: pointer;" onclick="handleAdminNotificationClick('${notif.id}', '${notif.type}')">
+                    <div style="display: flex; gap: 10px; align-items: start;">
+                        <span style="font-size: 24px;">${icon}</span>
+                        <div style="flex: 1;">
+                            <strong style="color: ${color}; display: block; margin-bottom: 5px;">
+                                ${getNotificationTitle(notif)}
+                            </strong>
+                            <p style="margin: 0; font-size: 13px; color: #666;">
+                                ${getNotificationMessage(notif)}
+                            </p>
+                            <small style="color: #999; display: block; margin-top: 5px;">
+                                ${new Date(notif.timestamp).toLocaleString()}
+                            </small>
+                        </div>
+                        ${!notif.read ? '<span style="width: 8px; height: 8px; background: #e74c3c; border-radius: 50%; display: block;"></span>' : ''}
+                    </div>
+                </div>
+            `;
+        }).join('');
+    };
+    
+    function getNotificationTitle(notif) {
+        switch(notif.type) {
+            case 'new_value_submission':
+                return 'New Value Submission';
+            case 'completion':
+                return 'Task/Activity Completed';
+            case 'value_claim':
+                return 'Value Claim Request';
+            default:
+                return 'Notification';
+        }
+    }
+    
+    function getNotificationMessage(notif) {
+        switch(notif.type) {
+            case 'new_value_submission':
+                return `${notif.data.submittedBy} submitted "${notif.data.valueName}" worth ${notif.data.worth}`;
+            case 'completion':
+                return `${notif.data.memberName} completed a ${notif.data.itemType}`;
+            case 'value_claim':
+                return `${notif.data.memberName} wants to claim a value`;
+            default:
+                return 'New notification';
+        }
+    }
+    
+    window.handleAdminNotificationClick = function(notifId, type) {
+        // Mark as read
+        const adminNotifs = JSON.parse(localStorage.getItem('tauAdminNotifications') || '[]');
+        const notif = adminNotifs.find(n => n.id === notifId);
+        if (notif && !notif.read) {
+            notif.read = true;
+            localStorage.setItem('tauAdminNotifications', JSON.stringify(adminNotifs));
+        }
+        
+        // Navigate to approvals tab
+        document.getElementById('adminNotificationPanel').style.display = 'none';
+        switchTab('approvals');
+        
+        // Reload notifications
+        setTimeout(loadAdminNotifications, 500);
+    };
+    
+    // Check for new admin notifications every 5 seconds
+    setInterval(() => {
+        const adminNotifs = JSON.parse(localStorage.getItem('tauAdminNotifications') || '[]');
+        const unread = adminNotifs.filter(n => !n.read);
+        
+        const badge = document.getElementById('adminNotifBadge');
+        if (badge) {
+            if (unread.length > 0) {
+                badge.style.display = 'block';
+                badge.textContent = unread.length;
+            } else {
+                badge.style.display = 'none';
+            }
+        }
+    }, 5000);
+    
+    // Initial load
+    setTimeout(loadAdminNotifications, 1000);
+})();
+</script>  
 </body>
     </html>
