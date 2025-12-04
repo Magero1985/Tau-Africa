@@ -631,6 +631,12 @@ input[type="date"] {
                 font-size: 12px;
                 padding: 6px 12px;
             }
+            if .btn-small isn't defined:
+.btn-small {
+    padding: 10px 15px;
+    font-size: 14px;
+    min-width: 120px;
+            }
         }
     </style>
 </head>
@@ -723,12 +729,12 @@ input[type="date"] {
         <h3 class="section-title">🎯 AVAILABLE OPPORTUNITIES</h3>
         <p style="text-align: center; margin-bottom: 20px;">Complete these to earn iKbp and iKb!</p>
         
-        <div style="display: flex; gap: 10px; margin-bottom: 20px; justify-content: center;">
-            <button class="btn btn-small" onclick="filterOpportunities('all')" id="filter-all">All</button>
-            <button class="btn btn-small" onclick="filterOpportunities('activities')" id="filter-activities">Activities</button>
-            <button class="btn btn-small" onclick="filterOpportunities('tasks')" id="filter-tasks">Tasks</button>
-            <button class="btn btn-small" onclick="filterOpportunities('values')" id="filter-values">Values</button>
-        </div>
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 20px; max-width: 400px; margin-left: auto; margin-right: auto;">
+    <button class="btn btn-small" onclick="filterOpportunities('all')" id="filter-all">All</button>
+    <button class="btn btn-small" onclick="filterOpportunities('activities')" id="filter-activities">Activities</button>
+    <button class="btn btn-small" onclick="filterOpportunities('tasks')" id="filter-tasks">Tasks</button>
+    <button class="btn btn-small" onclick="filterOpportunities('values')" id="filter-values">Values</button>
+</div>
         
         <div id="publicOpportunitiesContainer"></div>
     </div>
@@ -950,10 +956,14 @@ input[type="date"] {
         
         if (!currentMember) {
             showNotification('Please login to claim opportunities', 'error');
-            showRealMemberLogin();
+            showMemberLogin();
             return;
         }
-        
+        if (typeof showRealMemberLogin === 'function') {
+    showRealMemberLogin();
+} else if (typeof showMemberLogin === 'function') {
+    showMemberLogin();
+        }
         const storageKey = type === 'activity' ? 'tauActivities' : type === 'task' ? 'tauTasks' : 'tauValues';
         const items = JSON.parse(localStorage.getItem(storageKey) || '[]');
         const item = items.find(i => i.id === id);
