@@ -4961,5 +4961,49 @@ if ('serviceWorker' in navigator) {
     console.log('🚀 Real-time sync active');
 })();
         </script>
+    <script>
+// ============================================
+// NOTIFICATION GENERATOR
+// ============================================
+(function() {
+    'use strict';
+    
+    window.createNotification = function(memberId, title, message, type = 'info') {
+        const NOTIF_KEY = 'tauNotifications';
+        const allNotifications = JSON.parse(localStorage.getItem(NOTIF_KEY) || '{}');
+        
+        if (!allNotifications[memberId]) {
+            allNotifications[memberId] = [];
+        }
+        
+        const notification = {
+            id: `NOTIF-${Date.now()}`,
+            title: title,
+            message: message,
+            timestamp: new Date().toISOString(),
+            read: false,
+            type: type
+        };
+        
+        allNotifications[memberId].unshift(notification);
+        
+        // Keep only last 50 notifications
+        if (allNotifications[memberId].length > 50) {
+            allNotifications[memberId] = allNotifications[memberId].slice(0, 50);
+        }
+        
+        localStorage.setItem(NOTIF_KEY, JSON.stringify(allNotifications));
+        console.log(`📬 Notification created for ${memberId}:`, title);
+    };
+    
+    window.notifyAllMembers = function(title, message) {
+        const members = JSON.parse(localStorage.getItem('tauAfricaDB') || '[]');
+        members.forEach(member => {
+            createNotification(member.id, title, message, 'info');
+        });
+        console.log(`📢 Broadcast notification sent to ${members.length} members`);
+    };
+})();
+</script>
 </body>
     </html>
