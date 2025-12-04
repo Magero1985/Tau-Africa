@@ -990,6 +990,341 @@ input[type="date"] {
     setTimeout(refreshPublicOpportunities, 1000);
 })();
         </script>
+            <!-- Add this button to your main sections area -->
+<div class="section">
+    <h3 class="section-title">💎 SUBMIT VALUE</h3>
+    <p>Submit products, services, skills, labour, or time</p>
+    <button class="btn" onclick="openValueSubmissionModal()">Submit Your Value</button>
+    <p style="margin-top: 15px; font-size: 0.9rem; color: #666;">
+        Earn iKb when your value is validated!
+    </p>
+</div>
+
+<script>
+// ============================================
+// VALUE SUBMISSION SYSTEM - Main App
+// ============================================
+(function() {
+    'use strict';
+    
+    window.openValueSubmissionModal = function() {
+        const currentMember = window.TauDB?.getCurrentMember();
+        
+        if (!currentMember) {
+            showNotification('Please login to submit values', 'error');
+            showRealMemberLogin();
+            return;
+        }
+        
+        const modal = document.createElement('div');
+        modal.className = 'modal';
+        modal.style.display = 'block';
+        modal.innerHTML = `
+            <div class="modal-content" style="max-width: 700px;">
+                <span class="close" onclick="this.parentElement.parentElement.remove()">&times;</span>
+                
+                <div style="background: linear-gradient(45deg, #ffd700, #ffed4e); color: #333; padding: 25px; border-radius: 15px; margin-bottom: 25px; text-align: center;">
+                    <h2 style="margin: 0;">💎 Submit Your Value</h2>
+                    <p style="margin: 10px 0 0 0;">Turn your skills, products, and services into iKb</p>
+                </div>
+                
+                <form onsubmit="submitValue(event)" id="valueSubmissionForm">
+                    <div class="form-group">
+                        <label>Value Type *</label>
+                        <select name="valueType" required onchange="updateValueTypeInfo(this.value)">
+                            <option value="">Select type</option>
+                            <option value="Product">📦 Product</option>
+                            <option value="Service">🛠️ Service</option>
+                            <option value="Skill">🎯 Skill</option>
+                            <option value="Labour">💪 Labour</option>
+                            <option value="Time">⏰ Time</option>
+                        </select>
+                    </div>
+                    
+                    <div id="valueTypeInfo" style="display: none; background: #e3f2fd; padding: 15px; border-radius: 10px; margin-bottom: 20px;">
+                        <p id="valueTypeDescription" style="margin: 0; font-size: 14px; color: #1976d2;"></p>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Value Title *</label>
+                        <input type="text" name="valueTitle" placeholder="e.g., Professional Web Design Services" required maxlength="100">
+                        <small>Clear, descriptive title (max 100 characters)</small>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Detailed Description *</label>
+                        <textarea name="valueDescription" rows="6" placeholder="Describe what you're offering, what makes it valuable, delivery time, terms, etc." required maxlength="2000"></textarea>
+                        <small><span id="charCount">0</span>/2000 characters</small>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Estimated Worth (KSH) *</label>
+                        <input type="number" name="worthKsh" placeholder="Enter value in KSH" required min="0" step="0.01" onchange="calculateIkb(this.value)">
+                        <small>This will be converted to iKb (1 iKb = 100,000 KSH)</small>
+                        <div id="ikbEquivalent" style="display: none; margin-top: 10px; padding: 10px; background: #fff3e0; border-radius: 8px; text-align: center;">
+                            <strong style="color: #e65100;">Equivalent: <span id="ikbValue">0</span> iKb</strong>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Category</label>
+                        <select name="valueCategory">
+                            <option value="">Select category (optional)</option>
+                            <option value="Technology">Technology & IT</option>
+                            <option value="Creative">Creative & Design</option>
+                            <option value="Business">Business & Finance</option>
+                            <option value="Education">Education & Training</option>
+                            <option value="Health">Health & Wellness</option>
+                            <option value="Agriculture">Agriculture & Food</option>
+                            <option value="Construction">Construction & Trade</option>
+                            <option value="Transport">Transport & Logistics</option>
+                            <option value="Other">Other</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Delivery/Availability *</label>
+                        <select name="availability" required>
+                            <option value="">When can you deliver?</option>
+                            <option value="Immediate">Immediate (within 24 hours)</option>
+                            <option value="1-3 days">1-3 days</option>
+                            <option value="1 week">Within 1 week</option>
+                            <option value="2 weeks">Within 2 weeks</option>
+                            <option value="1 month">Within 1 month</option>
+                            <option value="On demand">On demand/Flexible</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Location/Region *</label>
+                        <input type="text" name="valueLocation" placeholder="Where can you provide this value?" required>
+                        <small>e.g., "Nairobi, Kenya" or "Remote/Online"</small>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Contact Preference *</label>
+                        <select name="contactMethod" required>
+                            <option value="">How should buyers contact you?</option>
+                            <option value="Email">Email</option>
+                            <option value="Phone">Phone/WhatsApp</option>
+                            <option value="TAU Platform">Through TAU Platform</option>
+                            <option value="Any">Any method</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>
+                            <input type="checkbox" name="termsAgree" required style="width: auto; margin-right: 10px;">
+                            I certify that this value is genuine and I can deliver as described *
+                        </label>
+                    </div>
+                    
+                    <div style="background: #fff3cd; padding: 15px; border-radius: 10px; margin: 20px 0;">
+                        <strong>📋 Submission Process:</strong>
+                        <ol style="margin: 10px 0 0 20px; padding: 0;">
+                            <li>Submit your value</li>
+                            <li>Receive validation code</li>
+                            <li>Admin reviews (24-48 hours)</li>
+                            <li>Once approved, earn iKb when value is claimed</li>
+                        </ol>
+                    </div>
+                    
+                    <button type="submit" class="btn" style="width: 100%; padding: 15px; font-size: 16px;">
+                        💎 Submit Value for Validation
+                    </button>
+                </form>
+            </div>
+        `;
+        
+        document.body.appendChild(modal);
+        
+        // Add character counter
+        const textarea = modal.querySelector('textarea[name="valueDescription"]');
+        textarea.addEventListener('input', function() {
+            document.getElementById('charCount').textContent = this.value.length;
+        });
+    };
+    
+    window.updateValueTypeInfo = function(type) {
+        const info = document.getElementById('valueTypeInfo');
+        const desc = document.getElementById('valueTypeDescription');
+        
+        const descriptions = {
+            'Product': '📦 Physical or digital products you create or sell',
+            'Service': '🛠️ Professional services you provide (consulting, repair, etc.)',
+            'Skill': '🎯 Expertise or abilities you can teach or apply',
+            'Labour': '💪 Physical work or manual tasks you can perform',
+            'Time': '⏰ Your time and availability for projects or tasks'
+        };
+        
+        if (type && descriptions[type]) {
+            desc.textContent = descriptions[type];
+            info.style.display = 'block';
+        } else {
+            info.style.display = 'none';
+        }
+    };
+    
+    window.calculateIkb = function(kshValue) {
+        if (!kshValue || kshValue <= 0) {
+            document.getElementById('ikbEquivalent').style.display = 'none';
+            return;
+        }
+        
+        const ikb = (parseFloat(kshValue) / 100000).toFixed(6);
+        document.getElementById('ikbValue').textContent = ikb;
+        document.getElementById('ikbEquivalent').style.display = 'block';
+    };
+    
+    window.submitValue = function(event) {
+        event.preventDefault();
+        const currentMember = window.TauDB?.getCurrentMember();
+        if (!currentMember) return;
+        
+        const formData = new FormData(event.target);
+        const worthKsh = parseFloat(formData.get('worthKsh'));
+        const worthIkb = (worthKsh / 100000).toFixed(6);
+        
+        const value = {
+            id: 'VAL-' + Date.now(),
+            type: formData.get('valueType'),
+            title: formData.get('valueTitle'),
+            description: formData.get('valueDescription'),
+            worthKsh: worthKsh,
+            worthIkb: worthIkb,
+            category: formData.get('valueCategory') || 'Uncategorized',
+            availability: formData.get('availability'),
+            location: formData.get('valueLocation'),
+            contactMethod: formData.get('contactMethod'),
+            submittedBy: currentMember.id,
+            submittedByName: currentMember.fullName,
+            submittedByEmail: currentMember.email,
+            submittedByPhone: currentMember.phone,
+            validationCode: generateValueCode(),
+            status: 'Pending Review',
+            created: new Date().toISOString(),
+            validated: false
+        };
+        
+        // Save to values database
+        const values = JSON.parse(localStorage.getItem('tauValues') || '[]');
+        values.push(value);
+        localStorage.setItem('tauValues', JSON.stringify(values));
+        
+        // Add to validation queue
+        const validations = JSON.parse(localStorage.getItem('tauPendingValidations') || '[]');
+        validations.push({
+            id: 'VALID-' + Date.now(),
+            type: 'value',
+            data: value,
+            status: 'Pending',
+            created: new Date().toISOString()
+        });
+        localStorage.setItem('tauPendingValidations', JSON.stringify(validations));
+        
+        // Notify member
+        createNotification(currentMember.id, '💎 Value Submitted!', 
+            `Your value "${value.title}" has been submitted for review. Validation code: ${value.validationCode}`, 
+            'success');
+        
+        // Notify admins
+        const adminNotifs = JSON.parse(localStorage.getItem('tauAdminNotifications') || '[]');
+        adminNotifs.unshift({
+            id: 'ADMIN-' + Date.now(),
+            type: 'new_value_submission',
+            data: {
+                valueName: value.title,
+                submittedBy: currentMember.fullName,
+                memberId: currentMember.id,
+                worth: worthIkb + ' iKb',
+                validationCode: value.validationCode
+            },
+            timestamp: new Date().toISOString(),
+            read: false
+        });
+        localStorage.setItem('tauAdminNotifications', JSON.stringify(adminNotifs));
+        
+        // Show success modal
+        closeAllModals();
+        showValueSubmissionSuccess(value);
+    };
+    
+    function generateValueCode() {
+        const timestamp = Date.now().toString(36).toUpperCase();
+        const random = Math.random().toString(36).substring(2, 6).toUpperCase();
+        return 'VAL-' + timestamp + '-' + random;
+    }
+    
+    window.showValueSubmissionSuccess = function(value) {
+        const modal = document.createElement('div');
+        modal.className = 'modal';
+        modal.style.display = 'block';
+        modal.innerHTML = `
+            <div class="modal-content">
+                <span class="close" onclick="this.parentElement.parentElement.remove()">&times;</span>
+                
+                <div style="text-align: center;">
+                    <div style="font-size: 80px; margin-bottom: 20px;">✅</div>
+                    <h2 style="color: #2ecc71;">Value Submitted Successfully!</h2>
+                </div>
+                
+                <div style="background: linear-gradient(45deg, #ffd700, #ffed4e); padding: 25px; border-radius: 15px; margin: 25px 0; text-align: center;">
+                    <h3 style="color: #333; margin: 0 0 15px 0;">Your Validation Code</h3>
+                    <div style="background: white; padding: 15px; border-radius: 10px; font-size: 24px; font-weight: bold; letter-spacing: 3px; color: #333;">
+                        ${value.validationCode}
+                    </div>
+                    <button onclick="copyToClipboard('${value.validationCode}')" class="btn" style="margin-top: 15px; background: white; color: #333;">
+                        📋 Copy Code
+                    </button>
+                </div>
+                
+                <div style="background: #e3f2fd; padding: 20px; border-radius: 10px; margin: 20px 0;">
+                    <h4 style="margin: 0 0 10px 0; color: #1976d2;">What Happens Next?</h4>
+                    <ol style="margin: 0; padding-left: 20px; color: #666;">
+                        <li>Admins will review your value (24-48 hours)</li>
+                        <li>You'll receive a notification when approved</li>
+                        <li>Your value will be visible to all TAU Africa members</li>
+                        <li>When someone claims your value, you earn ${value.worthIkb} iKb!</li>
+                    </ol>
+                </div>
+                
+                <div style="background: #fff3cd; padding: 15px; border-radius: 10px; margin: 20px 0;">
+                    <strong>💡 Tip:</strong> Save your validation code! You can use it to check your value's status.
+                </div>
+                
+                <button onclick="this.parentElement.parentElement.remove()" class="btn" style="width: 100%;">
+                    Got it!
+                </button>
+            </div>
+        `;
+        document.body.appendChild(modal);
+    };
+    
+    window.copyToClipboard = function(text) {
+        if (navigator.clipboard) {
+            navigator.clipboard.writeText(text).then(() => {
+                showNotification('✅ Code copied to clipboard!', 'success');
+            }).catch(() => {
+                fallbackCopy(text);
+            });
+        } else {
+            fallbackCopy(text);
+        }
+    };
+    
+    function fallbackCopy(text) {
+        const temp = document.createElement('textarea');
+        temp.value = text;
+        temp.style.position = 'fixed';
+        temp.style.opacity = '0';
+        document.body.appendChild(temp);
+        temp.select();
+        document.execCommand('copy');
+        document.body.removeChild(temp);
+        showNotification('✅ Code copied!', 'success');
+    }
+})();
+</script>
 
             <!-- Activity Area -->
             <div class="section">
