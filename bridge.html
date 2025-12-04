@@ -644,38 +644,42 @@
 
         // ==========================================
         // TASKS
-        // ==========================================
-        function createTask(event) {
-            event.preventDefault();
+        // =========================================
+function createTask(event) {
+    event.preventDefault();
 
-            const code = document.getElementById('task-admin-code').value;
-            if (code !== MASTER_CODE) {
-                notify('Invalid admin code', 'error');
-                return;
-            }
+    const code = document.getElementById('task-admin-code').value;
+    if (code !== MASTER_CODE) {
+        notify('Invalid admin code', 'error');
+        return;
+    }
 
-            const task = {
-                id: 'TSK-' + Date.now(),
-                title: document.getElementById('task-title').value,
-                description: document.getElementById('task-desc').value,
-                category: document.getElementById('task-category').value,
-                reward: parseInt(document.getElementById('task-reward').value),
-                validationCode: generateCode('TASK'),
-                status: 'Active',
-                created: new Date().toISOString(),
-                validated: false
-            };
+    const task = {
+        id: 'TSK-' + Date.now(),
+        title: document.getElementById('task-title').value,
+        description: document.getElementById('task-desc').value,
+        category: document.getElementById('task-category').value,
+        reward: parseInt(document.getElementById('task-reward').value),
+        validationCode: generateCode('TASK'),
+        status: 'Active',
+        created: new Date().toISOString(),
+        validated: true // <-- SET TO TRUE SO IT SHOWS IMMEDIATELY
+    };
 
-            const tasks = JSON.parse(localStorage.getItem(DB.tasks) || '[]');
-            tasks.push(task);
-            localStorage.setItem(DB.tasks, JSON.stringify(tasks));
+    const tasks = JSON.parse(localStorage.getItem(DB.tasks) || '[]');
+    tasks.push(task);
+    localStorage.setItem(DB.tasks, JSON.stringify(tasks));
 
-            addToValidationQueue('task', task);
-            notify('Task created! Code: ' + task.validationCode, 'success');
-            event.target.reset();
-            loadTasks();
-            updateDashboard();
-        }
+    // NOTIFY ALL MEMBERS
+    if (typeof notifyAllMembers === 'function') {
+        notifyAllMembers('🎯 New Task Available!', `Complete "${task.title}" to earn ${task.reward} iKbp`);
+    }
+
+    notify('Task created! Visible to all members.', 'success');
+    event.target.reset();
+    loadTasks();
+    updateDashboard();
+}
 
         function loadTasks() {
             const tasks = JSON.parse(localStorage.getItem(DB.tasks) || '[]');
@@ -705,37 +709,41 @@
         // ==========================================
         // ACTIVITIES
         // ==========================================
-        function createActivity(event) {
-            event.preventDefault();
+function createActivity(event) {
+    event.preventDefault();
 
-            const code = document.getElementById('activity-admin-code').value;
-            if (code !== MASTER_CODE) {
-                notify('Invalid admin code', 'error');
-                return;
-            }
+    const code = document.getElementById('activity-admin-code').value;
+    if (code !== MASTER_CODE) {
+        notify('Invalid admin code', 'error');
+        return;
+    }
 
-            const activity = {
-                id: 'ACT-' + Date.now(),
-                title: document.getElementById('activity-title').value,
-                description: document.getElementById('activity-desc').value,
-                reward: parseInt(document.getElementById('activity-reward').value),
-                validationCode: generateCode('ACT'),
-                status: 'Active',
-                created: new Date().toISOString(),
-                validated: false
-            };
+    const task = {
+        id: 'ACT-' + Date.now(),
+        title: document.getElementById('activity-title').value,
+        description: document.getElementById('activity-desc').value,
+        category: document.getElementById('activity-category').value,
+        reward: parseInt(document.getElementById('activity-reward').value),
+        validationCode: generateCode('ACTIVITY),
+        status: 'Active',
+        created: new Date().toISOString(),
+        validated: true // <-- SET TO TRUE SO IT SHOWS IMMEDIATELY
+    };
 
-            const activities = JSON.parse(localStorage.getItem(DB.activities) || '[]');
-            activities.push(activity);
-            localStorage.setItem(DB.activities, JSON.stringify(activities));
+    const tasks = JSON.parse(localStorage.getItem(DB.activities) || '[]');
+    tasks.push(activity);
+    localStorage.setItem(DB.tasks, JSON.stringify(activities));
 
-            addToValidationQueue('activity', activity);
-            notify('Activity created! Code: ' + activity.validationCode, 'success');
-            event.target.reset();
-            loadActivities();
-            updateDashboard();
-        }
+    // NOTIFY ALL MEMBERS
+    if (typeof notifyAllMembers === 'function') {
+        notifyAllMembers('🎯 New Activity Available!', `Complete "${activity.title}" to earn ${activity.reward} iKbp`);
+    }
 
+    notify('Activity created! Visible to all members.', 'success');
+    event.target.reset();
+    loadTasks();
+    updateDashboard();
+}
         function loadActivities() {
             const activities = JSON.parse(localStorage.getItem(DB.activities) || '[]');
             const list = document.getElementById('activities-list');
@@ -764,42 +772,41 @@
         // ==========================================
         // VALUES
         // ==========================================
-        function createValue(event) {
-            event.preventDefault();
+function createValue(event) {
+    event.preventDefault();
 
-            const validatorCode = document.getElementById('value-validator-code').value;
-            if (!isValidCode(validatorCode)) {
-                notify('Invalid validator code', 'error');
-                return;
-            }
+    const code = document.getElementById('value-admin-code').value;
+    if (code !== MASTER_CODE) {
+        notify('Invalid admin code', 'error');
+        return;
+    }
 
-            const worthKsh = parseFloat(document.getElementById('value-worth').value) || 0;
-            const worthIkb = (worthKsh / 100000).toFixed(6);
+    const value = {
+        id: 'VAL-' + Date.now(),
+        title: document.getElementById('value-title').value,
+        description: document.getElementById('value-desc').value,
+        category: document.getElementById('value-category').value,
+        reward: parseInt(document.getElementById('value-reward').value),
+        validationCode: generateCode('VALUE'),
+        status: 'Active',
+        created: new Date().toISOString(),
+        validated: true // <-- SET TO TRUE SO IT SHOWS IMMEDIATELY
+    };
 
-            const value = {
-                id: 'VAL-' + Date.now(),
-                type: document.getElementById('value-type').value,
-                title: document.getElementById('value-title').value,
-                description: document.getElementById('value-desc').value,
-                worthKsh: worthKsh,
-                worthIkb: worthIkb,
-                submittedBy: document.getElementById('value-member').value,
-                validationCode: generateCode('VAL'),
-                status: 'Pending',
-                created: new Date().toISOString(),
-                validated: false
-            };
+    const tasks = JSON.parse(localStorage.getItem(DB.values) || '[]');
+    value.push(values);
+    localStorage.setItem(DB.values, JSON.stringify(values));
 
-            const values = JSON.parse(localStorage.getItem(DB.values) || '[]');
-            values.push(value);
-            localStorage.setItem(DB.values, JSON.stringify(values));
+    // NOTIFY ALL MEMBERS
+    if (typeof notifyAllMembers === 'function') {
+        notifyAllMembers('🎯 New Value Available!', `Complete "${value.title}" to earn ${value.reward} iKbp`);
+    }
 
-            addToValidationQueue('value', value);
-            notify('Value submitted! Code: ' + value.validationCode, 'success');
-            event.target.reset();
-            loadValues();
-            updateDashboard();
-        }
+    notify('Value created! Visible to all members.', 'success');
+    event.target.reset();
+    loadValues();
+    updateDashboard();
+}
 
         function loadValues() {
             const values = JSON.parse(localStorage.getItem(DB.values) || '[]');
