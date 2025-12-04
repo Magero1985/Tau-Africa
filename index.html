@@ -5089,7 +5089,42 @@ function openAdminDatabase() {
         showAdminAccessRequest();
     }
 }
-
+window.openAdminBridge = function() {
+    const currentMember = window.TauDB?.getCurrentMember();
+    
+    // Check admin access
+    const ADMIN_IDS = ['TSK-000000-001', 'TLK-000000-001'];
+    const ADMIN_EMAILS = ['admin@tauafrica.org', 'grouptauafrica@gmail.com'];
+    
+    const hasAccess = currentMember && (
+        ADMIN_IDS.includes(currentMember.id) ||
+        ADMIN_EMAILS.includes(currentMember.email) ||
+        currentMember.role === 'admin'
+    );
+    
+    if (!hasAccess) {
+        const code = prompt('Enter Admin Access Code:');
+        if (code !== 'TAU2025ADMIN') {
+            showNotification('❌ Invalid access code', 'error');
+            return;
+        }
+    }
+    
+    // Open bridge in new window
+    const bridgeWindow = window.open(
+        'https://magero1985.github.io/Tau-Africa/bridge.html',
+        'tauBridge',
+        'width=1200,height=800'
+    );
+    
+    if (!bridgeWindow) {
+        showNotification('⚠️ Please allow popups', 'error');
+        // Fallback: open in same tab
+        window.location.href = 'https://magero1985.github.io/Tau-Africa/bridge.html';
+    } else {
+        showNotification('✅ Opening Admin Bridge...', 'success');
+    }
+};
 function showAdminAccessRequest() {
     const modal = document.createElement('div');
     modal.className = 'modal';
