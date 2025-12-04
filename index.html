@@ -1697,6 +1697,7 @@ function processJobCreationTraining(event) {
 function processTaskSuccess(formData) {
     console.log('Processing TASK success with email...');
     sendEmailToOrganization(formData, 'NEW TASK TEAM REGISTRATION - PAYMENT CONFIRMED')
+        sendAdminNotificationEmail(member, 'TASK');
         .then(success => {
             if (success) {
                 showNotification('✅ Registration complete! Welcome to TASK team. Confirmation email sent to grouptauafrica@gmail.com', 'success');
@@ -1710,6 +1711,7 @@ function processTaskSuccess(formData) {
 function processTalkSuccess(formData) {
     console.log('Processing TALK success with email...');
     sendEmailToOrganization(formData, 'NEW TALK TEAM REGISTRATION - PAYMENT CONFIRMED')
+        sendAdminNotificationEmail(member, 'TALK');
         .then(success => {
             if (success) {
                 showNotification('✅ Registration complete! Welcome to TALK team. Confirmation email sent to grouptauafrica@gmail.com', 'success');
@@ -1723,6 +1725,7 @@ function processTalkSuccess(formData) {
 function processJobCreationSuccess(formData) {
     console.log('Processing Job Creation success with email...');
     sendEmailToOrganization(formData, 'JOB CREATION TRAINING ENROLLMENT - PAYMENT CONFIRMED')
+        sendAdminNotificationEmail(member, 'JOB_CREATION');
         .then(success => {
             if (success) {
                 showNotification('✅ Training enrollment complete! Confirmation email sent to grouptauafrica@gmail.com', 'success');
@@ -1741,7 +1744,7 @@ function processTrainingRegistration(event) {
     const data = Object.fromEntries(formData.entries());
     
     console.log('Submitting training registration...');
-    sendEmailToOrganization(data, 'TRAINING PROGRAM REGISTRATION')
+    sendEmailToOrganization(data, 'TRAINING PROGRAM
         .then(success => {
             if (success) {
                 showNotification('✅ Training registration successful! Email sent.', 'success');
@@ -1916,7 +1919,7 @@ function processTrustGraphAccess(event) {
 
 function processFoundationInquiry(event) {
     event.preventDefault();
-    const form = event.target;
+    const form = eventmember.email.target;
     const formData = new FormData(form);
     const data = Object.fromEntries(formData.entries());
     
@@ -4045,19 +4048,70 @@ function createForumModal() {
 
         // Welcome Email
     function sendWelcomeEmail(member) {
-        const templateParams = {
-            to_email:formData.email,
-            to_name: formData.fullName,
-            subject: '🎉 Welcome to TAU Africa',
-            message: `Welcome ${member.fullName}!\n\nMember ID: ${member.id}\nReferral Code: ${member.referralCode}\n\nLogin: ${window.location.origin}\n\nEarn iKbp by:\n- Referring members: 500 iKbp\n- Completing tasks: 100-500 iKbp\n- Forum posts: 50 iKbp\n\nBalance: ${member.iKbpBalance} iKbp`,
-            from_name: 'TAU Africa',
-            from_email: 'grouptauafrica@gmail.com',
-            phone: formData.phone,
-            location: formData.location
-        };
-        
-        return emailjs.send('service_xfira7g', 'template_bqxztig', templateParams);
-    }
+    const templateParams = {
+        to_email: member.email,  // ✅ FIXED
+        to_name: member.fullName, // ✅ FIXED
+        subject: '🎉 Welcome to TAU Africa',
+        message: `Welcome ${member.fullName}!
+
+Member ID: ${member.id}
+Team: ${member.team}
+Referral Code: ${member.referralCode}
+
+Login at: ${window.location.origin}
+
+🎁 Welcome Bonus: 500 iKbp already added to your account!
+
+Earn more iKbp by:
+- Referring members: 500 iKbp per referral
+- Completing tasks: 100-500 iKbp
+- Forum posts: 50 iKbp per post
+
+Your Current Balance: ${member.iKbpBalance} iKbp
+
+Thank you for joining TAU Africa!`,
+        from_name: 'TAU Africa Foundation',
+        from_email: 'grouptauafrica@gmail.com',
+        phone: member.phone,
+        location: member.location
+    };
+    
+    return emailjs.send('service_xfira7g', 'template_bqxztig', templateParams)
+        .then(() => {
+            console.log('✅ Welcome email sent to', member.email);
+            return true;
+        })
+        .catch(err => {
+            console.error('❌ Welcome email failed:', err);
+            return false;
+        });
+}
+function sendAdminNotificationEmail(member, team) {
+    const templateParams = {
+        to_email: 'grouptauafrica@gmail.com',
+        to_name: 'TAU Africa Admin',
+        subject: `🆕 New ${team} Team Registration`,
+        message: `New member registered!
+
+Member Details:
+- Name: ${member.fullName}
+- Email: ${member.email}
+- Phone: ${member.phone}
+- Member ID: ${member.id}
+- Team: ${member.team}
+- Location: ${member.location}
+- Fee Paid: KSH ${member.fee}
+- Registration Date: ${new Date().toLocaleString()}
+
+Login to database to view full details.`,
+        from_name: 'TAU Africa System',
+        from_email: 'grouptauafrica@gmail.com'
+    };
+    
+    return emailjs.send('service_xfira7g', 'template_bqxztig', templateParams)
+        .then(() => console.log('✅ Admin notification sent'))
+        .catch(err => console.error('❌ Admin notification failed:', err));
+            }
 
     // Override Success Handlers
     window.processTaskSuccess = function(formData) {
