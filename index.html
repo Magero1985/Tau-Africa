@@ -786,6 +786,21 @@ input[type="date"] {
 
     <!-- Notification -->
     <div id="notification" class="notification"></div>
+<!-- Notification Bell Icon - Add to your header -->
+<div id="tauNotificationBell" style="position: fixed; top: 20px; right: 80px; z-index: 1000;">
+    <button onclick="openTauNotifications()" style="background: #667eea; color: white; border: none; padding: 12px; border-radius: 50%; cursor: pointer; box-shadow: 0 4px 12px rgba(0,0,0,0.2); position: relative;">
+        🔔
+        <span id="tauNotifBadge" style="display: none; position: absolute; top: -5px; right: -5px; background: red; color: white; border-radius: 50%; width: 20px; height: 20px; font-size: 10px; line-height: 20px; text-align: center;">0</span>
+    </button>
+</div>
+
+<!-- Notification Panel -->
+<div id="tauNotificationPanel" style="display: none; position: fixed; top: 70px; right: 20px; width: 350px; max-height: 500px; background: white; border-radius: 15px; box-shadow: 0 10px 30px rgba(0,0,0,0.3); z-index: 1000; overflow-y: auto;">
+    <div style="padding: 20px; border-bottom: 2px solid #eee;">
+        <h3 style="margin: 0;">🔔 Notifications</h3>
+    </div>
+    <div id="tauNotificationList" style="padding: 10px;"></div>
+</div>
 
     <!-- Floating Member Access Button -->
     <div class="floating-btn" onclick="showMemberLogin()" title="Member Access">👤</div>
@@ -4750,22 +4765,6 @@ function createForumModal() {
     }
 })();
 </script>
-    <!-- Notification Bell Icon - Add to your header -->
-<div id="tauNotificationBell" style="position: fixed; top: 20px; right: 80px; z-index: 1000;">
-    <button onclick="openTauNotifications()" style="background: #667eea; color: white; border: none; padding: 12px; border-radius: 50%; cursor: pointer; box-shadow: 0 4px 12px rgba(0,0,0,0.2); position: relative;">
-        🔔
-        <span id="tauNotifBadge" style="display: none; position: absolute; top: -5px; right: -5px; background: red; color: white; border-radius: 50%; width: 20px; height: 20px; font-size: 10px; line-height: 20px; text-align: center;">0</span>
-    </button>
-</div>
-
-<!-- Notification Panel -->
-<div id="tauNotificationPanel" style="display: none; position: fixed; top: 70px; right: 20px; width: 350px; max-height: 500px; background: white; border-radius: 15px; box-shadow: 0 10px 30px rgba(0,0,0,0.3); z-index: 1000; overflow-y: auto;">
-    <div style="padding: 20px; border-bottom: 2px solid #eee;">
-        <h3 style="margin: 0;">🔔 Notifications</h3>
-    </div>
-    <div id="tauNotificationList" style="padding: 10px;"></div>
-</div>
-
 <script>
 // ============================================
 // TAU AFRICA - NOTIFICATION SOCKET
@@ -4959,7 +4958,8 @@ function createForumModal() {
     
     console.log('✅ Limits Enforcement System initialized');
 })();
-
+    </script>
+    <script>
         // ===== ADMIN DATABASE ACCESS WITH ROLE CHECKING =====
 function openAdminDatabase() {
     const currentMember = window.TauDB?.getCurrentMember();
