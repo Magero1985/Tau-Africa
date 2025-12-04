@@ -21,28 +21,5 @@
       "type": "image/png",
       "purpose": "any maskable"
     }
-  ],
-  "shortcuts": [
-    {
-      "name": "Main App",
-      "short_name": "Main",
-      "description": "Open TAU Africa Main App",
-      "url": "/Tau-Africa/",
-      "icons": [{ "src": "icon-192.png", "sizes": "192x192" }]
-    },
-    {
-      "name": "Admin Bridge",
-      "short_name": "Bridge",
-      "description": "Open Admin Bridge",
-      "url": "/Tau-Africa/bridge.html",
-      "icons": [{ "src": "icon-192.png", "sizes": "192x192" }]
-    },
-    {
-      "name": "Database",
-      "short_name": "Database",
-      "description": "Open Database",
-      "url": "/Tau-Africa/databse.html",
-      "icons": [{ "src": "icon-192.png", "sizes": "192x192" }]
-    }
   ]
 }
