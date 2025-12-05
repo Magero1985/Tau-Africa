@@ -4623,7 +4623,7 @@ Login to database to view complete member profile and manage registration.`;
                 <span class="close" onclick="this.parentElement.parentElement.remove()">&times;</span>
                 <h2 style="text-align: center;">🔐 Member Login</h2>
                 
-                <form onsubmit="processRealLogin(event)" style="margin-top: 30px;">
+                <form id="memberLoginForm" style="margin-top: 30px;">
                     <div class="form-group">
                         <label>Member ID or Email *</label>
                         <input type="text" id="loginIdentifier" required>
@@ -4634,18 +4634,8 @@ Login to database to view complete member profile and manage registration.`;
                         <input type="text" id="loginPhone" required maxlength="4" pattern="[0-9]{4}">
                     </div>
                     
-                    <button type="submit" class="btn" style="width: 100%;">Login</button>
+                    <button type="submit" class="btn" style="width: 100%; cursor: pointer;">Login</button>
                 </form>
-                
-                <div style="text-align: center; margin-top: 20px;">
-                    <p>No account?</p>
-                    <button class="btn btn-small" onclick="closeAllModals(); openModal('taskRegistration')">Join TASK</button>
-                    <button class="btn btn-small" onclick="closeAllModals(); openModal('talkRegistration')">Join TALK</button>
-                </div>
-            </div>
-        `;
-        document.body.appendChild(modal);
-    };
 
     window.processRealLogin = function(event) {
         event.preventDefault();
