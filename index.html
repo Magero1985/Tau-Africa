@@ -4116,64 +4116,62 @@ Login to database to view complete member profile and manage registration.`,
 
     // Override Success Handlers
     window.processTaskSuccess = function(formData) {
-        const referralCode = checkReferralCode();
-        const syncResult = syncToDatabase(formData, 'TASK', referralCode);
+    const referralCode = checkReferralCode();
+    const syncResult = syncToDatabase(formData, 'TASK', referralCode);
+    
+    if (syncResult.success) {
+        const member = syncResult.member;
         
-        if (syncResult.success) {
-            const member = syncResult.member;
-            sendWelcomeEmail(member);
-            if (typeof sendEmailToOrganization === 'function') {
-                sendEmailToOrganization(formData, 'NEW TASK REGISTRATION');
-            }
-            if (typeof showNotification === 'function') {
-                showNotification(`✅ Registration Complete!\nMember ID: ${member.id}\nReferral Code: ${member.referralCode}`, 'success');
-            }
-            setTimeout(() => {
-                if (typeof showSuccessModal === 'function') showSuccessModal(member);
-                if (typeof closeAllModals === 'function') closeAllModals();
-            }, 2000);
-        }
-    };
+        // Send BOTH emails
+        sendWelcomeEmail(member);  // → Goes to member
+        sendAdminNotificationEmail(member, 'TASK');  // → Goes to admin
+        
+        showNotification(`✅ Registration Complete!\nMember ID: ${member.id}`, 'success');
+        
+        setTimeout(() => {
+            if (typeof showSuccessModal === 'function') showSuccessModal(member);
+            if (typeof closeAllModals === 'function') closeAllModals();
+        }, 2000);
+    }
+};
 
-    window.processTalkSuccess = function(formData) {
-        const referralCode = checkReferralCode();
-        const syncResult = syncToDatabase(formData, 'TALK', referralCode);
+window.processTalkSuccess = function(formData) {
+    const referralCode = checkReferralCode();
+    const syncResult = syncToDatabase(formData, 'TALK', referralCode);
+    
+    if (syncResult.success) {
+        const member = syncResult.member;
         
-        if (syncResult.success) {
-            const member = syncResult.member;
-            sendWelcomeEmail(member);
-            if (typeof sendEmailToOrganization === 'function') {
-                sendEmailToOrganization(formData, 'NEW TALK REGISTRATION');
-            }
-            if (typeof showNotification === 'function') {
-                showNotification(`✅ Registration Complete!\nMember ID: ${member.id}\nReferral Code: ${member.referralCode}`, 'success');
-            }
-            setTimeout(() => {
-                if (typeof showSuccessModal === 'function') showSuccessModal(member);
-                if (typeof closeAllModals === 'function') closeAllModals();
-            }, 2000);
-        }
-    };
+        sendWelcomeEmail(member);
+        sendAdminNotificationEmail(member, 'TALK');
+        
+        showNotification(`✅ Registration Complete!\nMember ID: ${member.id}`, 'success');
+        
+        setTimeout(() => {
+            if (typeof showSuccessModal === 'function') showSuccessModal(member);
+            if (typeof closeAllModals === 'function') closeAllModals();
+        }, 2000);
+    }
+};
 
-    window.processJobCreationSuccess = function(formData) {
-        const referralCode = checkReferralCode();
-        const syncResult = syncToDatabase(formData, 'JOB_CREATION', referralCode);
+window.processJobCreationSuccess = function(formData) {
+    const referralCode = checkReferralCode();
+    const syncResult = syncToDatabase(formData, 'JOB_CREATION', referralCode);
+    
+    if (syncResult.success) {
+        const member = syncResult.member;
         
-        if (syncResult.success) {
-            const member = syncResult.member;
-            sendWelcomeEmail(member);
-            if (typeof sendEmailToOrganization === 'function') {
-                sendEmailToOrganization(formData, 'JOB CREATION ENROLLMENT');
-            }
-            if (typeof showNotification === 'function') {
-                showNotification(`✅ Enrollment Complete!\nMember ID: ${member.id}`, 'success');
-            }
-            setTimeout(() => {
-                if (typeof showSuccessModal === 'function') showSuccessModal(member);
-                if (typeof closeAllModals === 'function') closeAllModals();
-            }, 2000);
-        }
-    };
+        sendWelcomeEmail(member);
+        sendAdminNotificationEmail(member, 'JOB_CREATION');
+        
+        showNotification(`✅ Enrollment Complete!\nMember ID: ${member.id}`, 'success');
+        
+        setTimeout(() => {
+            if (typeof showSuccessModal === 'function') showSuccessModal(member);
+            if (typeof closeAllModals === 'function') closeAllModals();
+        }, 2000);
+    }
+};
 
     // Export API
     window.TauDB = {
