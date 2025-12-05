@@ -1819,17 +1819,21 @@ function processTrainingRegistration(event) {
     const form = event.target;
     const formData = new FormData(form);
     const data = Object.fromEntries(formData.entries());
+    data.team = 'TRAINING';
     
-    console.log('Submitting training registration...');
-    sendEmailToOrganization(data, 'TRAINING PROGRAM REGISTRATION')
-        .then(success => {
-            if (success) {
-                showNotification('✅ Training registration successful! Email sent.', 'success');
-                closeAllModals();
-            } else {
-                showNotification('❌ Email failed. Please contact grouptauafrica@gmail.com', 'error');
-            }
-        });
+    console.log('📧 Submitting training registration...');
+    Promise.all([
+        sendEmailToAdmin(data, 'TRAINING PROGRAM REGISTRATION'),
+        sendWelcomeEmail(data)
+    ])
+    .then(() => {
+        showNotification('✅ Training registration successful! Check your email.', 'success');
+        closeAllModals();
+    })
+    .catch(() => {
+        showNotification('⚠️ Registration saved. Contact: grouptauafrica@gmail.com', 'error');
+        closeAllModals();
+    });
 }
 
 function processWorkshopProposal(event) {
@@ -1837,53 +1841,91 @@ function processWorkshopProposal(event) {
     const form = event.target;
     const formData = new FormData(form);
     const data = Object.fromEntries(formData.entries());
+    data.team = 'WORKSHOP';
     
-    console.log('Submitting workshop proposal...');
-    sendEmailToOrganization(data, 'WORKSHOP PROPOSAL SUBMISSION')
-        .then(success => {
-            if (success) {
-                showNotification('✅ Workshop proposal submitted! Email sent.', 'success');
-                closeAllModals();
-            } else {
-                showNotification('❌ Email failed. Please contact grouptauafrica@gmail.com', 'error');
-            }
-        });
-}
+    console.log('📧 Submitting workshop proposal - sending DUAL emails...');
+    
+    Promise.all([
+        sendEmailToAdmin(data, 'WORKSHOP PROPOSAL SUBMISSION'),
+        sendWelcomeEmail(data)
+    ])
+    .then(results => {
+        const adminSent = results[0];
+        const memberSent = results[1];
+        
+        if (adminSent || memberSent) {
+            showNotification('✅ Workshop proposal submitted! Confirmation emails sent.', 'success');
+        } else {
+            showNotification('⚠️ Proposal saved but emails failed. Contact: grouptauafrica@gmail.com', 'error');
+        }
+        closeAllModals();
+    })
+    .catch(error => {
+        console.error('Email error:', error);
+        showNotification('⚠️ Proposal saved. Contact: grouptauafrica@gmail.com', 'error');
+        closeAllModals();
+    });
+    }
 
 function processResearchRequest(event) {
     event.preventDefault();
     const form = event.target;
     const formData = new FormData(form);
     const data = Object.fromEntries(formData.entries());
+    data.team = 'RESEARCH';
     
-    console.log('Submitting research request...');
-    sendEmailToOrganization(data, 'RESEARCH SERVICES REQUEST')
-        .then(success => {
-            if (success) {
-                showNotification('✅ Research request submitted! Email sent.', 'success');
-                closeAllModals();
-            } else {
-                showNotification('❌ Email failed. Please contact grouptauafrica@gmail.com', 'error');
-            }
-        });
+    console.log('📧 Submitting research request - sending DUAL emails...');
+    
+    Promise.all([
+        sendEmailToAdmin(data, 'RESEARCH SERVICES REQUEST'),
+        sendWelcomeEmail(data)
+    ])
+    .then(results => {
+        const adminSent = results[0];
+        const memberSent = results[1];
+        
+        if (adminSent || memberSent) {
+            showNotification('✅ Research request submitted! Confirmation emails sent.', 'success');
+        } else {
+            showNotification('⚠️ Request saved but emails failed. Contact: grouptauafrica@gmail.com', 'error');
+        }
+        closeAllModals();
+    })
+    .catch(error => {
+        console.error('Email error:', error);
+        showNotification('⚠️ Request saved. Contact: grouptauafrica@gmail.com', 'error');
+        closeAllModals();
+    });
 }
-
 function processJobPosting(event) {
     event.preventDefault();
     const form = event.target;
     const formData = new FormData(form);
     const data = Object.fromEntries(formData.entries());
+    data.team = 'JOB POSTING';
     
-    console.log('Submitting job posting...');
-    sendEmailToOrganization(data, 'NEW JOB POSTING')
-        .then(success => {
-            if (success) {
-                showNotification('✅ Job posting submitted! Email sent.', 'success');
-                closeAllModals();
-            } else {
-                showNotification('❌ Email failed. Please contact grouptauafrica@gmail.com', 'error');
-            }
-        });
+    console.log('📧 Submitting job posting - sending DUAL emails...');
+    
+    Promise.all([
+        sendEmailToAdmin(data, 'NEW JOB POSTING'),
+        sendWelcomeEmail(data)
+    ])
+    .then(results => {
+        const adminSent = results[0];
+        const memberSent = results[1];
+        
+        if (adminSent || memberSent) {
+            showNotification('✅ Job posting submitted! Confirmation emails sent.', 'success');
+        } else {
+            showNotification('⚠️ Posting saved but emails failed. Contact: grouptauafrica@gmail.com', 'error');
+        }
+        closeAllModals();
+    })
+    .catch(error => {
+        console.error('Email error:', error);
+        showNotification('⚠️ Posting saved. Contact: grouptauafrica@gmail.com', 'error');
+        closeAllModals();
+    });
 }
 
 function processJobSearch(event) {
@@ -1922,22 +1964,65 @@ function processJobApplication(event) {
         });
 }
 
+function processJobApplication(event) {
+    event.preventDefault();
+    const form = event.target;
+    const formData = new FormData(form);
+    const data = Object.fromEntries(formData.entries());
+    data.team = 'JOB APPLICATION';
+    
+    console.log('📧 Submitting job application - sending DUAL emails...');
+    
+    Promise.all([
+        sendEmailToAdmin(data, 'NEW JOB APPLICATION'),
+        sendWelcomeEmail(data)
+    ])
+    .then(results => {
+        const adminSent = results[0];
+        const memberSent = results[1];
+        
+        if (adminSent || memberSent) {
+            showNotification('✅ Application submitted! Confirmation emails sent.', 'success');
+        } else {
+            showNotification('⚠️ Application saved but emails failed. Contact: grouptauafrica@gmail.com', 'error');
+        }
+        closeAllModals();
+    })
+    .catch(error => {
+        console.error('Email error:', error);
+        showNotification('⚠️ Application saved. Contact: grouptauafrica@gmail.com', 'error');
+        closeAllModals();
+    });
+}
 function processCommunityRegistration(event) {
     event.preventDefault();
     const form = event.target;
     const formData = new FormData(form);
     const data = Object.fromEntries(formData.entries());
+    data.team = 'COMMUNITY';
     
-    console.log('Submitting community registration...');
-    sendEmailToOrganization(data, 'COMMUNITY PROGRAM REGISTRATION')
-        .then(success => {
-            if (success) {
-                showNotification('✅ Community registration successful! Email sent.', 'success');
-                closeAllModals();
-            } else {
-                showNotification('❌ Email failed. Please contact grouptauafrica@gmail.com', 'error');
-            }
-        });
+    console.log('📧 Submitting community registration - sending DUAL emails...');
+    
+    Promise.all([
+        sendEmailToAdmin(data, 'COMMUNITY PROGRAM REGISTRATION'),
+        sendWelcomeEmail(data)
+    ])
+    .then(results => {
+        const adminSent = results[0];
+        const memberSent = results[1];
+        
+        if (adminSent || memberSent) {
+            showNotification('✅ Community registration successful! Confirmation emails sent.', 'success');
+        } else {
+            showNotification('⚠️ Registration saved but emails failed. Contact: grouptauafrica@gmail.com', 'error');
+        }
+        closeAllModals();
+    })
+    .catch(error => {
+        console.error('Email error:', error);
+        showNotification('⚠️ Registration saved. Contact: grouptauafrica@gmail.com', 'error');
+        closeAllModals();
+    });
 }
 
 function processCorporateRegistration(event) {
@@ -1945,17 +2030,30 @@ function processCorporateRegistration(event) {
     const form = event.target;
     const formData = new FormData(form);
     const data = Object.fromEntries(formData.entries());
+    data.team = 'CORPORATE';
     
-    console.log('Submitting corporate registration...');
-    sendEmailToOrganization(data, 'CORPORATE REGISTRATION')
-        .then(success => {
-            if (success) {
-                showNotification('✅ Corporate registration submitted! Email sent.', 'success');
-                closeAllModals();
-            } else {
-                showNotification('❌ Email failed. Please contact grouptauafrica@gmail.com', 'error');
-            }
-        });
+    console.log('📧 Submitting corporate registration - sending DUAL emails...');
+    
+    Promise.all([
+        sendEmailToAdmin(data, 'CORPORATE REGISTRATION'),
+        sendWelcomeEmail(data)
+    ])
+    .then(results => {
+        const adminSent = results[0];
+        const memberSent = results[1];
+        
+        if (adminSent || memberSent) {
+            showNotification('✅ Corporate registration submitted! Confirmation emails sent.', 'success');
+        } else {
+            showNotification('⚠️ Registration saved but emails failed. Contact: grouptauafrica@gmail.com', 'error');
+        }
+        closeAllModals();
+    })
+    .catch(error => {
+        console.error('Email error:', error);
+        showNotification('⚠️ Registration saved. Contact: grouptauafrica@gmail.com', 'error');
+        closeAllModals();
+    });
 }
 
 function processParSiraiRegistration(event) {
@@ -1963,53 +2061,82 @@ function processParSiraiRegistration(event) {
     const form = event.target;
     const formData = new FormData(form);
     const data = Object.fromEntries(formData.entries());
+    data.team = 'PAR SIRAI';
     
-    console.log('Submitting Par Sirai registration...');
-    sendEmailToOrganization(data, 'PAR SIRAI CENTER REGISTRATION')
-        .then(success => {
-            if (success) {
-                showNotification('✅ Par Sirai registration successful! Email sent.', 'success');
-                closeAllModals();
-            } else {
-                showNotification('❌ Email failed. Please contact grouptauafrica@gmail.com', 'error');
-            }
-        });
+    console.log('📧 Submitting Par Sirai registration - sending DUAL emails...');
+    
+    Promise.all([
+        sendEmailToAdmin(data, 'PAR SIRAI CENTER REGISTRATION'),
+        sendWelcomeEmail(data)
+    ])
+    .then(results => {
+        if (results[0] || results[1]) {
+            showNotification('✅ Par Sirai registration successful! Confirmation emails sent.', 'success');
+        } else {
+            showNotification('⚠️ Registration saved but emails failed. Contact: grouptauafrica@gmail.com', 'error');
+        }
+        closeAllModals();
+    })
+    .catch(error => {
+        console.error('Email error:', error);
+        showNotification('⚠️ Registration saved. Contact: grouptauafrica@gmail.com', 'error');
+        closeAllModals();
+    });
 }
 
-function processTrustGraphAccess(event) {
+ffunction processTrustGraphAccess(event) {
     event.preventDefault();
     const form = event.target;
     const formData = new FormData(form);
     const data = Object.fromEntries(formData.entries());
+    data.team = 'TRUST GRAPH';
     
-    console.log('Submitting Trust Graph access...');
-    sendEmailToOrganization(data, 'TRUST GRAPH ACCESS REQUEST')
-        .then(success => {
-            if (success) {
-                showNotification('✅ Trust Graph access requested! Email sent.', 'success');
-                closeAllModals();
-            } else {
-                showNotification('❌ Email failed. Please contact grouptauafrica@gmail.com', 'error');
-            }
-        });
+    console.log('📧 Submitting Trust Graph access - sending DUAL emails...');
+    
+    Promise.all([
+        sendEmailToAdmin(data, 'TRUST GRAPH ACCESS REQUEST'),
+        sendWelcomeEmail(data)
+    ])
+    .then(results => {
+        if (results[0] || results[1]) {
+            showNotification('✅ Trust Graph access requested! Confirmation emails sent.', 'success');
+        } else {
+            showNotification('⚠️ Request saved but emails failed. Contact: grouptauafrica@gmail.com', 'error');
+        }
+        closeAllModals();
+    })
+    .catch(error => {
+        console.error('Email error:', error);
+        showNotification('⚠️ Request saved. Contact: grouptauafrica@gmail.com', 'error');
+        closeAllModals();
+    });
 }
-
 function processFoundationInquiry(event) {
     event.preventDefault();
     const form = event.target;
     const formData = new FormData(form);
     const data = Object.fromEntries(formData.entries());
+    data.team = 'FOUNDATION';
     
-    console.log('Submitting Foundation inquiry...');
-    sendEmailToOrganization(data, 'FOUNDATION INQUIRY')
-        .then(success => {
-            if (success) {
-                showNotification('✅ Foundation inquiry submitted! Email sent.', 'success');
-                closeAllModals();
-            } else {
-                showNotification('❌ Email failed. Please contact grouptauafrica@gmail.com', 'error');
-            }
-        });
+    console.log('📧 Submitting Foundation inquiry - sending DUAL emails...');
+    
+    Promise.all([
+        sendEmailToAdmin(data, 'FOUNDATION INQUIRY'),
+        sendWelcomeEmail(data)
+    ])
+    .then(results => {
+        if (results[0] || results[1]) {
+            showNotification('✅ Foundation inquiry submitted! Confirmation emails sent.', 'success');
+        } else {
+            showNotification('⚠️ Inquiry saved but emails failed. Contact: grouptauafrica@gmail.com', 'error');
+        }
+        closeAllModals();
+    })
+    .catch(error => {
+        console.error('Email error:', error);
+        showNotification('⚠️ Inquiry saved. Contact: grouptauafrica@gmail.com', 'error');
+        closeAllModals();
+    });
 }
 
 function processHoldingsInquiry(event) {
@@ -2017,19 +2144,28 @@ function processHoldingsInquiry(event) {
     const form = event.target;
     const formData = new FormData(form);
     const data = Object.fromEntries(formData.entries());
+    data.team = 'HOLDINGS';
     
-    console.log('Submitting Holdings inquiry...');
-    sendEmailToOrganization(data, 'COMPANY HOLDINGS INQUIRY')
-        .then(success => {
-            if (success) {
-                showNotification('✅ Holdings inquiry submitted! Email sent.', 'success');
-                closeAllModals();
-            } else {
-                showNotification('❌ Email failed. Please contact grouptauafrica@gmail.com', 'error');
-            }
-        });
+    console.log('📧 Submitting Holdings inquiry - sending DUAL emails...');
+    
+    Promise.all([
+        sendEmailToAdmin(data, 'COMPANY HOLDINGS INQUIRY'),
+        sendWelcomeEmail(data)
+    ])
+    .then(results => {
+        if (results[0] || results[1]) {
+            showNotification('✅ Holdings inquiry submitted! Confirmation emails sent.', 'success');
+        } else {
+            showNotification('⚠️ Inquiry saved but emails failed. Contact: grouptauafrica@gmail.com', 'error');
+        }
+        closeAllModals();
+    })
+    .catch(error => {
+        console.error('Email error:', error);
+        showNotification('⚠️ Inquiry saved. Contact: grouptauafrica@gmail.com', 'error');
+        closeAllModals();
+    });
 }
-
 // ===== AI ASSISTANT FUNCTIONS =====
 function toggleAIChat() {
     const chatWindow = document.getElementById('aiChatWindow');
