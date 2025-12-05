@@ -1447,6 +1447,123 @@ input[type="date"] {
         alert('Email system initialization failed. Please refresh the page.');
     }
 })();
+    // ============================================
+// FIREBASE MIGRATION - Main App
+// ============================================
+(function() {
+    'use strict';
+    
+    // Initialize Firebase
+    const firebaseConfig = {
+        apiKey: "YOUR_API_KEY",
+        authDomain: "tau-africa-ecosystem.firebaseapp.com",
+        projectId: "tau-africa-ecosystem",
+        storageBucket: "tau-africa-ecosystem.appspot.com",
+        messagingSenderId: "YOUR_SENDER_ID",
+        appId: "YOUR_APP_ID"
+    };
+    
+    if (!firebase.apps.length) {
+        firebase.initializeApp(firebaseConfig);
+    }
+    
+    const db = firebase.firestore();
+    const auth = firebase.auth();
+    
+    // Override TauDB.sync to use Firestore
+    const originalSync = window.TauDB.sync;
+    window.TauDB.sync = async function(formData, team, referralCode) {
+        try {
+            const memberId = generateMemberID(team, referralCode);
+            const memberData = {
+                id: memberId,
+                referralCode: generateReferralCode(memberId),
+                team: team,
+                fullName: formData.fullName || formData.name,
+                email: formData.email,
+                phone: formData.phone,
+                location: formData.location,
+                paymentStatus: 'Paid',
+                dateJoined: new Date().toISOString().split('T')[0],
+                status: 'Active',
+                fee: team === 'TASK' ? 500 : team === 'TALK' ? 2000 : 1500,
+                iKbpBalance: 500, // Welcome bonus
+                iKbBalance: 0.0000,
+                activities: [],
+                tasks: [],
+                createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+                ...formData
+            };
+            
+            // Save to Firestore
+            await db.collection('members').doc(memberId).set(memberData);
+            
+            // Also save to localStorage as backup
+            const localMembers = JSON.parse(localStorage.getItem('tauAfricaDB') || '[]');
+            localMembers.push(memberData);
+            localStorage.setItem('tauAfricaDB', JSON.stringify(localMembers));
+            
+            console.log('✅ Member synced to Firestore:', memberId);
+            return { success: true, memberId, member: memberData };
+            
+        } catch (error) {
+            console.error('❌ Firestore sync error:', error);
+            // Fallback to localStorage
+            return originalSync(formData, team, referralCode);
+        }
+    };
+    
+    // Override addActivity to sync to Firestore
+    window.TauDB.addActivity = async function(memberId, activity) {
+        try {
+            const activityRecord = {
+                id: `ACT-${Date.now()}`,
+                type: activity.type,
+                title: activity.title,
+                description: activity.description,
+                dateAdded: new Date().toISOString(),
+                status: 'Active',
+                iKbpReward: activity.reward || 100
+            };
+            
+            // Update Firestore
+            await db.collection('members').doc(memberId).update({
+                activities: firebase.firestore.FieldValue.arrayUnion(activityRecord),
+                iKbpBalance: firebase.firestore.FieldValue.increment(activityRecord.iKbpReward)
+            });
+            
+            // Update localStorage
+            const members = JSON.parse(localStorage.getItem('tauAfricaDB') || '[]');
+            const memberIndex = members.findIndex(m => m.id === memberId);
+            if (memberIndex !== -1) {
+                members[memberIndex].activities.push(activityRecord);
+                members[memberIndex].iKbpBalance += activityRecord.iKbpReward;
+                localStorage.setItem('tauAfricaDB', JSON.stringify(members));
+            }
+            
+            return { 
+                success: true, 
+                activity: activityRecord,
+                earned: activityRecord.iKbpReward
+            };
+            
+        } catch (error) {
+            console.error('❌ Activity sync error:', error);
+            return { success: false, error: error.message };
+        }
+    };
+    
+    // Real-time listener for member updates
+    window.listenToMemberUpdates = function(memberId, callback) {
+        return db.collection('members').doc(memberId).onSnapshot(doc => {
+            if (doc.exists) {
+                callback(doc.data());
+            }
+        });
+    };
+    
+    console.log('✅ Main App - Firebase initialized');
+})();
 
 // Global variables
 let currentModal = null;
