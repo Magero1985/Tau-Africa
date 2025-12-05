@@ -1699,11 +1699,13 @@ function processTaskSuccess(formData) {
     sendEmailToOrganization(formData, 'NEW TASK TEAM REGISTRATION - PAYMENT CONFIRMED')
         .then(success => {
             if (success) {
-                showNotification('✅ Registration complete!', 'success');
+                showNotification('✅ Registration complete! Welcome to TASK team. Confirmation email sent to grouptauafrica@gmail.com', 'success');
                 closeAllModals();
+            } else {
+                showNotification('⚠️ Registration saved but email notification failed. Our team will contact you.', 'error');
             }
         });
-    }
+}
 
 function processTalkSuccess(formData) {
     console.log('Processing TALK success with email...');
@@ -1739,7 +1741,7 @@ function processTrainingRegistration(event) {
     const data = Object.fromEntries(formData.entries());
     
     console.log('Submitting training registration...');
-    sendEmailToOrganization(data, 'TRAINING PROGRAM')
+    sendEmailToOrganization(data, 'TRAINING PROGRAM REGISTRATION')
         .then(success => {
             if (success) {
                 showNotification('✅ Training registration successful! Email sent.', 'success');
@@ -3734,37 +3736,23 @@ function createForumModal() {
     }
 
     function sendReferralNotification(referrer, earnings) {
-    const referralMessage = `Congratulations ${referrer.fullName}!
-
-You've earned ${earnings} iKbp (${earnings/10} KSH) from your referral.
-
-Keep sharing your referral code to earn more rewards!`;
-
-    const earningsDetails = `REFERRAL EARNINGS:
-- New Bonus: ${earnings} iKbp
-- Total Referral Earnings: ${getReferralEarnings(referrer.id)} iKbp
-- Current Balance: ${referrer.iKbpBalance || 0} iKbp
-
-Your Referral Code: ${referrer.referralCode}
-
-Thank you for building TAU Africa!`;
-
-    const templateParams = {
-        to_email: referrer.email,
-        to_name: referrer.fullName,
-        subject: '🎉 Referral Bonus Earned - TAU Africa',
-        message: referralMessage,
-        message_details: earningsDetails,
-        from_name: 'TAU Africa',
-        from_email: 'grouptauafrica@gmail.com'
-    };
-    
-    if (typeof emailjs !== 'undefined') {
-        emailjs.send('service_xfira7g', 'template_bqxztig', templateParams)
-            .then(() => console.log('✅ Referral notification sent'))
-            .catch(err => console.error('Referral email error:', err));
+        const templateParams = {
+            to_email: referrer.email,
+            to_name: referrer.fullName,
+            subject: '🎉 Referral Bonus Earned - TAU Africa',
+            message: `Congratulations ${referrer.fullName}!\n\nYou've earned ${earnings} iKbp (${earnings/10} KSH) from your referral.\n\nTotal Referral Earnings: ${getReferralEarnings(referrer.id)} iKbp\nCurrent Balance: ${referrer.iKbpBalance || 0} iKbp\n\nKeep sharing your referral code: ${referrer.referralCode}\n\nThank you for building TAU Africa!`,
+            from_name: 'TAU Africa',
+            from_email: 'grouptauafrica@gmail.com',
+            phone: referrer.phone || 'Not provided',
+            location: referrer.location || 'Not provided'
+        };
+        
+        if (typeof emailjs !== 'undefined') {
+            emailjs.send('service_xfira7g', 'template_bqxztig', templateParams)
+                .then(() => console.log('✅ Referral notification sent'))
+                .catch(err => console.error('Referral email error:', err));
+        }
     }
-}
 
     function getReferralEarnings(memberId) {
         const referrals = JSON.parse(localStorage.getItem(DB_CONFIG.referralsKey) || '{}');
@@ -4057,169 +4045,80 @@ Thank you for building TAU Africa!`;
 
         // Welcome Email
     function sendWelcomeEmail(member) {
-    const templateParams = {
-        to_email: member.email,  // ✅ MEMBER'S EMAIL
-        to_name: member.fullName,
-        subject: '🎉 Welcome to TAU Africa!',
-        message: `Welcome ${member.fullName}!
-
-Thank you for joining TAU Africa. Your account has been successfully created.
-
-🎁 Welcome Bonus: 500 iKbp has been added to your account!
-
-EARN MORE iKbp:
-• Refer members: 500 iKbp per referral
-• Complete tasks: 100-500 iKbp
-• Forum posts: 50 iKbp per post
-
-Current Balance: ${member.iKbpBalance || 500} iKbp
-
-Login at: ${window.location.origin}
-
-Share your referral code to earn rewards!`,
-        member_id: member.id,
-        team: member.team,
-        referral_code: member.referralCode,
-        from_name: 'TAU Africa Foundation',
-        from_email: 'grouptauafrica@gmail.com'
-    };
-    
-    return emailjs.send('service_xfira7g', 'template_bqxztig', templateParams)
-        .then(() => {
-            console.log('✅ Welcome email sent to', member.email);
-            return true;
-        })
-        .catch(err => {
-            console.error('❌ Welcome email failed:', err);
-            return false;
-        });
-}
-
-function sendAdminNotificationEmail(member, team) {
-    const templateParams = {
-        to_email: 'grouptauafrica@gmail.com',  // ✅ ADMIN EMAIL
-        to_name: 'TAU Africa Admin',
-        subject: `🆕 New ${team} Team Registration`,
-        message: `New member registered!
-
-MEMBER DETAILS:
-• Name: ${member.fullName}
-• Email: ${member.email}
-• Phone: ${member.phone}
-• Location: ${member.location}
-• Fee Paid: KSH ${member.fee}
-• Registration Date: ${new Date().toLocaleString()}
-
-Login to database to view complete member profile and manage registration.`,
-        member_id: member.id,
-        team: member.team,
-        from_name: 'TAU Africa System',
-        from_email: 'grouptauafrica@gmail.com'
-    };
-    
-    return emailjs.send('service_xfira7g', 'template_bqxztig', templateParams)
-        .then(() => {
-            console.log('✅ Admin notification sent');
-            return true;
-        })
-        .catch(err => {
-            console.error('❌ Admin notification failed:', err);
-            return false;
-        });
-}
+        const templateParams = {
+            to_email:formData.email,
+            to_name: formData.fullName,
+            subject: '🎉 Welcome to TAU Africa',
+            message: `Welcome ${member.fullName}!\n\nMember ID: ${member.id}\nReferral Code: ${member.referralCode}\n\nLogin: ${window.location.origin}\n\nEarn iKbp by:\n- Referring members: 500 iKbp\n- Completing tasks: 100-500 iKbp\n- Forum posts: 50 iKbp\n\nBalance: ${member.iKbpBalance} iKbp`,
+            from_name: 'TAU Africa',
+            from_email: 'grouptauafrica@gmail.com',
+            phone: formData.phone,
+            location: formData.location
+        };
+        
+        return emailjs.send('service_xfira7g', 'template_bqxztig', templateParams);
+    }
 
     // Override Success Handlers
     window.processTaskSuccess = function(formData) {
-    const referralCode = checkReferralCode();
-    const syncResult = syncToDatabase(formData, 'TASK', referralCode);
-    
-    if (syncResult.success) {
-        const member = syncResult.member;
+        const referralCode = checkReferralCode();
+        const syncResult = syncToDatabase(formData, 'TASK', referralCode);
         
-        // Send BOTH emails
-        function sendWelcomeEmail(member) {
-    const welcomeMessage = `Welcome ${member.fullName}!
-
-Thank you for joining TAU Africa. Your account has been successfully created.
-
-🎁 WELCOME BONUS: 500 iKbp has been added to your account!
-
-EARN MORE iKbp:
-• Refer members: 500 iKbp per referral
-• Complete tasks: 100-500 iKbp
-• Forum posts: 50 iKbp per post
-
-Your Current Balance: ${member.iKbpBalance || 500} iKbp
-
-Login at: ${window.location.origin}
-
-Share your referral code to earn rewards!`;
-
-    const detailsMessage = `Member ID: ${member.id}
-Team: ${member.team}
-Referral Code: ${member.referralCode}
-
-Your account has been created successfully!`;
-
-    const templateParams = {
-        to_email: member.email,  // ✅ Goes to MEMBER
-        to_name: member.fullName,
-        subject: '🎉 Welcome to TAU Africa!',
-        message: welcomeMessage,
-        message_details: detailsMessage,
-        from_name: 'TAU Africa Foundation',
-        from_email: 'grouptauafrica@gmail.com'
+        if (syncResult.success) {
+            const member = syncResult.member;
+            sendWelcomeEmail(member);
+            if (typeof sendEmailToOrganization === 'function') {
+                sendEmailToOrganization(formData, 'NEW TASK REGISTRATION');
+            }
+            if (typeof showNotification === 'function') {
+                showNotification(`✅ Registration Complete!\nMember ID: ${member.id}\nReferral Code: ${member.referralCode}`, 'success');
+            }
+            setTimeout(() => {
+                if (typeof showSuccessModal === 'function') showSuccessModal(member);
+                if (typeof closeAllModals === 'function') closeAllModals();
+            }, 2000);
+        }
     };
-    
-    return emailjs.send('service_xfira7g', 'template_bqxztig', templateParams)
-        .then(() => {
-            console.log('✅ Welcome email sent to', member.email);
-            return true;
-        })
-        .catch(err => {
-            console.error('❌ Welcome email failed:', err);
-            return false;
-        });
-}
 
-function sendAdminNotificationEmail(member, team) {
-    const adminMessage = `New member registered!
-
-A new ${team} team member has joined TAU Africa and completed payment.`;
-
-    const memberDetails = `MEMBER DETAILS:
-- Name: ${member.fullName}
-- Email: ${member.email}
-- Phone: ${member.phone}
-- Member ID: ${member.id}
-- Team: ${member.team}
-- Location: ${member.location}
-- Fee Paid: KSH ${member.fee}
-- Registration Date: ${new Date().toLocaleString()}
-- Referral Code: ${member.referralCode}
-
-Login to database to view complete member profile and manage registration.`;
-
-    const templateParams = {
-        to_email: 'grouptauafrica@gmail.com',  // ✅ Goes to ADMIN
-        to_name: 'TAU Africa Admin',
-        subject: `🆕 New ${team} Team Registration`,
-        message: adminMessage,
-        message_details: memberDetails,
-        from_name: 'TAU Africa System',
-        from_email: 'grouptauafrica@gmail.com'
+    window.processTalkSuccess = function(formData) {
+        const referralCode = checkReferralCode();
+        const syncResult = syncToDatabase(formData, 'TALK', referralCode);
+        
+        if (syncResult.success) {
+            const member = syncResult.member;
+            sendWelcomeEmail(member);
+            if (typeof sendEmailToOrganization === 'function') {
+                sendEmailToOrganization(formData, 'NEW TALK REGISTRATION');
+            }
+            if (typeof showNotification === 'function') {
+                showNotification(`✅ Registration Complete!\nMember ID: ${member.id}\nReferral Code: ${member.referralCode}`, 'success');
+            }
+            setTimeout(() => {
+                if (typeof showSuccessModal === 'function') showSuccessModal(member);
+                if (typeof closeAllModals === 'function') closeAllModals();
+            }, 2000);
+        }
     };
-    
-    return emailjs.send('service_xfira7g', 'template_bqxztig', templateParams)
-        .then(() => {
-            console.log('✅ Admin notification sent');
-            return true;
-        })
-        .catch(err => {
-            console.error('❌ Admin notification failed:', err);
-            return false;
-        });
-}
+
+    window.processJobCreationSuccess = function(formData) {
+        const referralCode = checkReferralCode();
+        const syncResult = syncToDatabase(formData, 'JOB_CREATION', referralCode);
+        
+        if (syncResult.success) {
+            const member = syncResult.member;
+            sendWelcomeEmail(member);
+            if (typeof sendEmailToOrganization === 'function') {
+                sendEmailToOrganization(formData, 'JOB CREATION ENROLLMENT');
+            }
+            if (typeof showNotification === 'function') {
+                showNotification(`✅ Enrollment Complete!\nMember ID: ${member.id}`, 'success');
+            }
+            setTimeout(() => {
+                if (typeof showSuccessModal === 'function') showSuccessModal(member);
+                if (typeof closeAllModals === 'function') closeAllModals();
+            }, 2000);
+        }
+    };
 
     // Export API
     window.TauDB = {
@@ -4623,7 +4522,7 @@ Login to database to view complete member profile and manage registration.`;
                 <span class="close" onclick="this.parentElement.parentElement.remove()">&times;</span>
                 <h2 style="text-align: center;">🔐 Member Login</h2>
                 
-                <form id="memberLoginForm" style="margin-top: 30px;">
+                <form onsubmit="processRealLogin(event)" style="margin-top: 30px;">
                     <div class="form-group">
                         <label>Member ID or Email *</label>
                         <input type="text" id="loginIdentifier" required>
@@ -4634,8 +4533,18 @@ Login to database to view complete member profile and manage registration.`;
                         <input type="text" id="loginPhone" required maxlength="4" pattern="[0-9]{4}">
                     </div>
                     
-                    <button type="submit" class="btn" style="width: 100%; cursor: pointer;">Login</button>
+                    <button type="submit" class="btn" style="width: 100%;">Login</button>
                 </form>
+                
+                <div style="text-align: center; margin-top: 20px;">
+                    <p>No account?</p>
+                    <button class="btn btn-small" onclick="closeAllModals(); openModal('taskRegistration')">Join TASK</button>
+                    <button class="btn btn-small" onclick="closeAllModals(); openModal('talkRegistration')">Join TALK</button>
+                </div>
+            </div>
+        `;
+        document.body.appendChild(modal);
+    };
 
     window.processRealLogin = function(event) {
         event.preventDefault();
