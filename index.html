@@ -3734,23 +3734,37 @@ function createForumModal() {
     }
 
     function sendReferralNotification(referrer, earnings) {
-        const templateParams = {
-            to_email: referrer.email,
-            to_name: referrer.fullName,
-            subject: '🎉 Referral Bonus Earned - TAU Africa',
-            message: `Congratulations ${referrer.fullName}!\n\nYou've earned ${earnings} iKbp (${earnings/10} KSH) from your referral.\n\nTotal Referral Earnings: ${getReferralEarnings(referrer.id)} iKbp\nCurrent Balance: ${referrer.iKbpBalance || 0} iKbp\n\nKeep sharing your referral code: ${referrer.referralCode}\n\nThank you for building TAU Africa!`,
-            from_name: 'TAU Africa',
-            from_email: 'grouptauafrica@gmail.com',
-            phone: referrer.phone || 'Not provided',
-            location: referrer.location || 'Not provided'
-        };
-        
-        if (typeof emailjs !== 'undefined') {
-            emailjs.send('service_xfira7g', 'template_bqxztig', templateParams)
-                .then(() => console.log('✅ Referral notification sent'))
-                .catch(err => console.error('Referral email error:', err));
-        }
+    const referralMessage = `Congratulations ${referrer.fullName}!
+
+You've earned ${earnings} iKbp (${earnings/10} KSH) from your referral.
+
+Keep sharing your referral code to earn more rewards!`;
+
+    const earningsDetails = `REFERRAL EARNINGS:
+- New Bonus: ${earnings} iKbp
+- Total Referral Earnings: ${getReferralEarnings(referrer.id)} iKbp
+- Current Balance: ${referrer.iKbpBalance || 0} iKbp
+
+Your Referral Code: ${referrer.referralCode}
+
+Thank you for building TAU Africa!`;
+
+    const templateParams = {
+        to_email: referrer.email,
+        to_name: referrer.fullName,
+        subject: '🎉 Referral Bonus Earned - TAU Africa',
+        message: referralMessage,
+        message_details: earningsDetails,
+        from_name: 'TAU Africa',
+        from_email: 'grouptauafrica@gmail.com'
+    };
+    
+    if (typeof emailjs !== 'undefined') {
+        emailjs.send('service_xfira7g', 'template_bqxztig', templateParams)
+            .then(() => console.log('✅ Referral notification sent'))
+            .catch(err => console.error('Referral email error:', err));
     }
+}
 
     function getReferralEarnings(memberId) {
         const referrals = JSON.parse(localStorage.getItem(DB_CONFIG.referralsKey) || '{}');
