@@ -1454,33 +1454,77 @@ let selectedLevel = '';
 let selectedCategory = '';
 
 // ===== FIXED EMAIL SENDING FUNCTION 
+(function() {
+    try {
+        emailjs.init({
+            publicKey: "GhjI14eQVGgOli0j1"
+        });
+        console.log('✅ EmailJS initialized');
+    } catch (error) {
+        console.error('❌ EmailJS init failed:', error);
+    }
+})();
+
+// CHOOSE ONE TEMPLATE 
+const TEMPLATE_ID = 'template_bqxztig'; // 
+
 function sendEmailToAdmin(formData, subject) {
-    const templateParams = {
+    const params = {
         to_email: 'grouptauafrica@gmail.com',
-        to_name: 'TAU Africa Admin',
+        to_name: 'TAU Admin',
         subject: subject,
-        message: `NEW REGISTRATION ALERT!
+        from_name: formData.fullName || formData.name,
+        from_email: formData.email,
+        phone: formData.phone,
+        location: formData.location,
+        message: `NEW REGISTRATION
 
-Member Details:
-• Name: ${formData.fullName || formData.name}
-• Email: ${formData.email}
-• Phone: ${formData.phone}
-• Location: ${formData.location}
-• Team: ${formData.team || 'N/A'}
-• Registration Date: ${new Date().toLocaleString()}
-
-Please review in admin dashboard.`,
-        from_name: 'TAU Africa System',
-        from_email: 'grouptauafrica@gmail.com'
+Name: ${formData.fullName || formData.name}
+Email: ${formData.email}
+Phone: ${formData.phone}
+Location: ${formData.location}
+Team: ${formData.team || 'N/A'}
+Date: ${new Date().toLocaleString()}`
     };
-    
+
     return emailjs.send('service_xfira7g', 'template_bqxztig', templateParams)
         .then(() => {
-            console.log('✅ Admin email sent to grouptauafrica@gmail.com');
+            console.log('✅ Admin email sent');
             return true;
         })
-        .catch(error => {
-            console.error('❌ Admin email failed:', error);
+        .catch(err => {
+            console.error('❌ Admin email failed:', err);
+            return false;
+        });
+}
+
+function sendWelcomeEmail(formData) {
+    const params = {
+        to_email: formData.email,
+        to_name: formData.fullName || formData.name,
+        subject: '🎉 Welcome to TAU Africa',
+        from_name: 'TAU Africa',
+        from_email: 'grouptauafrica@gmail.com',
+        phone: formData.phone,
+        location: formData.location,
+        message: `Welcome ${formData.fullName || formData.name}!
+
+Thank you for joining TAU Africa.
+
+Your registration: ${formData.email}
+Phone: ${formData.phone}
+Location: ${formData.location}
+
+Contact: grouptauafrica@gmail.com`
+    };
+
+    return emailjs.send('service_xfira7g', 'template_bqxztig', templateParams)
+        .then(() => {
+            console.log('✅ Welcome email sent');
+            return true;
+        })
+        .catch(err => {
+            console.error('❌ Welcome email failed:', err);
             return false;
         });
 }
@@ -5295,7 +5339,7 @@ function openAdminDatabase() {
     const adminIds = ['TSK-000000-001', 'TLK-000000-001']; // Add your admin IDs
     
     // Option 2: Check by email domain
-    const adminEmails = ['admin@tauafrica.org', 'validator@tauafrica.org'];
+    const adminEmails = [grouptauafrica@gmail.com 'validator@tauafrica.org'];
     
     if (currentMember && 
         (adminIds.includes(currentMember.id) || 
@@ -5321,7 +5365,7 @@ window.openAdminBridge = function() {
     
     // Check admin access
     const ADMIN_IDS = ['TSK-000000-001', 'TLK-000000-001'];
-    const ADMIN_EMAILS = ['admin@tauafrica.org', 'grouptauafrica@gmail.com'];
+    const ADMIN_EMAILS =div ['jonuasa@gmail.com, 'grouptauafrica@gmail.com'];
     
     const hasAccess = currentMember && (
         ADMIN_IDS.includes(currentMember.id) ||
