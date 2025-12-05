@@ -1,0 +1,781 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TAU Africa - User Guide & Manual</title>
+    <style>
+        @media print {
+            .no-print { display: none !important; }
+            .page-break { page-break-before: always; }
+            body { background: white; }
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Arial', sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            background: white;
+            padding: 40px;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+        }
+        
+        .header {
+            text-align: center;
+            padding: 30px 0;
+            border-bottom: 3px solid #667eea;
+            margin-bottom: 40px;
+        }
+        
+        .header h1 {
+            font-size: 2.5rem;
+            color: #667eea;
+            margin-bottom: 10px;
+        }
+        
+        .header p {
+            font-size: 1.2rem;
+            color: #666;
+        }
+        
+        .action-buttons {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            margin: 30px 0;
+            flex-wrap: wrap;
+        }
+        
+        .btn {
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 25px;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 16px;
+            transition: all 0.3s ease;
+        }
+        
+        .btn:hover {
+            transform: scale(1.05);
+            box-shadow: 0 5px 20px rgba(102, 126, 234, 0.4);
+        }
+        
+        .btn-success {
+            background: linear-gradient(45deg, #2ecc71, #27ae60);
+        }
+        
+        .btn-warning {
+            background: linear-gradient(45deg, #f39c12, #e67e22);
+        }
+        
+        .toc {
+            background: #f8f9fa;
+            padding: 30px;
+            border-radius: 15px;
+            margin: 30px 0;
+        }
+        
+        .toc h2 {
+            color: #667eea;
+            margin-bottom: 20px;
+        }
+        
+        .toc ul {
+            list-style: none;
+        }
+        
+        .toc li {
+            padding: 10px 0;
+            border-bottom: 1px solid #ddd;
+        }
+        
+        .toc a {
+            color: #667eea;
+            text-decoration: none;
+            font-weight: 500;
+        }
+        
+        .toc a:hover {
+            text-decoration: underline;
+        }
+        
+        .section {
+            margin: 40px 0;
+            padding: 30px;
+            border-left: 4px solid #667eea;
+            background: #f8f9fa;
+            border-radius: 10px;
+        }
+        
+        .section h2 {
+            color: #667eea;
+            font-size: 2rem;
+            margin-bottom: 20px;
+        }
+        
+        .section h3 {
+            color: #764ba2;
+            font-size: 1.5rem;
+            margin: 25px 0 15px 0;
+        }
+        
+        .section h4 {
+            color: #555;
+            font-size: 1.2rem;
+            margin: 20px 0 10px 0;
+        }
+        
+        .step-box {
+            background: white;
+            border: 2px solid #667eea;
+            border-radius: 10px;
+            padding: 20px;
+            margin: 15px 0;
+        }
+        
+        .step-number {
+            background: #667eea;
+            color: white;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            margin-right: 15px;
+            font-size: 1.2rem;
+        }
+        
+        .warning-box {
+            background: #fff3cd;
+            border-left: 4px solid #f39c12;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 5px;
+        }
+        
+        .info-box {
+            background: #d1ecf1;
+            border-left: 4px solid #0c5460;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 5px;
+        }
+        
+        .success-box {
+            background: #d4edda;
+            border-left: 4px solid #28a745;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 5px;
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+        }
+        
+        th, td {
+            padding: 12px;
+            text-align: left;
+            border: 1px solid #ddd;
+        }
+        
+        th {
+            background: #667eea;
+            color: white;
+            font-weight: bold;
+        }
+        
+        tr:nth-child(even) {
+            background: #f8f9fa;
+        }
+        
+        code {
+            background: #f4f4f4;
+            padding: 3px 8px;
+            border-radius: 4px;
+            font-family: 'Courier New', monospace;
+            color: #e83e8c;
+        }
+        
+        .feature-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin: 30px 0;
+        }
+        
+        .feature-card {
+            background: white;
+            border: 2px solid #667eea;
+            border-radius: 10px;
+            padding: 20px;
+            text-align: center;
+        }
+        
+        .feature-icon {
+            font-size: 3rem;
+            margin-bottom: 15px;
+        }
+        
+        .footer {
+            text-align: center;
+            margin-top: 60px;
+            padding-top: 30px;
+            border-top: 2px solid #ddd;
+            color: #666;
+        }
+    </style>
+</head>
+<body>
+    <div class="container" id="guideContent">
+        <!-- HEADER -->
+        <div class="header">
+            <h1>🌍 TAU AFRICA INTERNATIONAL</h1>
+            <p>Complete User Guide & Manual</p>
+            <p><strong>Version 1.0 | December 2025</strong></p>
+        </div>
+        
+        <!-- ACTION BUTTONS -->
+        <div class="action-buttons no-print">
+            <button class="btn" onclick="window.print()">🖨️ Print Guide</button>
+            <button class="btn btn-success" onclick="downloadPDF()">📥 Download PDF</button>
+            <button class="btn btn-warning" onclick="window.location.href='index.html'">🏠 Back to App</button>
+        </div>
+        
+        <!-- TABLE OF CONTENTS -->
+        <div class="toc">
+            <h2>📑 Table of Contents</h2>
+            <ul>
+                <li><a href="#introduction">1. Introduction</a></li>
+                <li><a href="#getting-started">2. Getting Started</a></li>
+                <li><a href="#registration">3. Registration Process</a></li>
+                <li><a href="#member-portal">4. Member Portal</a></li>
+                <li><a href="#earning">5. Earning iKbp & iKb</a></li>
+                <li><a href="#features">6. Platform Features</a></li>
+                <li><a href="#admin">7. Admin & Validator Guide</a></li>
+                <li><a href="#troubleshooting">8. Troubleshooting</a></li>
+                <li><a href="#faq">9. FAQ</a></li>
+                <li><a href="#contact">10. Contact & Support</a></li>
+            </ul>
+        </div>
+        
+        <!-- SECTION 1: INTRODUCTION -->
+        <div class="section page-break" id="introduction">
+            <h2>1. Introduction</h2>
+            
+            <h3>What is TAU Africa?</h3>
+            <p>TAU Africa International is a Pan-African digital ecosystem designed to unite and empower African communities through value-based economics, digital currency (Kabiru), and sustainable development programs.</p>
+            
+            <div class="feature-grid">
+                <div class="feature-card">
+                    <div class="feature-icon">🌍</div>
+                    <h4>AUFFI Wing</h4>
+                    <p>Africa Unity Freedom Fund Initiative - Community & Spiritual Unity</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">🏢</div>
+                    <h4>VALENTA Wing</h4>
+                    <p>Value Enter Africa - Corporate Holdings & Economic Development</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">💎</div>
+                    <h4>Kabiru Currency</h4>
+                    <p>Digital value currency backed by real African economic activities</p>
+                </div>
+            </div>
+            
+            <div class="info-box">
+                <strong>🎯 Mission:</strong> To restore African sovereignty through community value creation, digital currency innovation, and Pan-African unity.
+            </div>
+        </div>
+        
+        <!-- SECTION 2: GETTING STARTED -->
+        <div class="section page-break" id="getting-started">
+            <h2>2. Getting Started</h2>
+            
+            <h3>System Requirements</h3>
+            <ul style="margin-left: 30px; margin-top: 15px;">
+                <li>✅ Internet connection</li>
+                <li>✅ Modern web browser (Chrome, Firefox, Safari, Edge)</li>
+                <li>✅ M-PESA account (for payments)</li>
+                <li>✅ Valid email address</li>
+                <li>✅ Phone number (Kenyan format: 254XXXXXXXXX)</li>
+            </ul>
+            
+            <h3>Membership Types</h3>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Team</th>
+                        <th>Fee</th>
+                        <th>Purpose</th>
+                        <th>Benefits</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><strong>TASK Team</strong></td>
+                        <td>KSH 500</td>
+                        <td>Value providers, skilled professionals</td>
+                        <td>Submit values, earn iKbp, access jobs</td>
+                    </tr>
+                    <tr>
+                        <td><strong>TALK Team</strong></td>
+                        <td>KSH 2,000</td>
+                        <td>Investors, financial supporters</td>
+                        <td>Investment opportunities, higher limits</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Job Creation Training</strong></td>
+                        <td>KSH 1,500</td>
+                        <td>Aspiring entrepreneurs</td>
+                        <td>6-week program, certification, mentorship</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+        
+        <!-- SECTION 3: REGISTRATION -->
+        <div class="section page-break" id="registration">
+            <h2>3. Registration Process</h2>
+            
+            <h3>TASK Team Registration</h3>
+            <div class="step-box">
+                <span class="step-number">1</span>
+                <strong>Click "Join TASK Team"</strong> button on homepage
+            </div>
+            <div class="step-box">
+                <span class="step-number">2</span>
+                <strong>Fill registration form</strong> with accurate information
+            </div>
+            <div class="step-box">
+                <span class="step-number">3</span>
+                <strong>Select your value category</strong> (Skills, Knowledge, Service, etc.)
+            </div>
+            <div class="step-box">
+                <span class="step-number">4</span>
+                <strong>Provide proof documents</strong> (Certificate of Good Conduct, Health Records)
+            </div>
+            <div class="step-box">
+                <span class="step-number">5</span>
+                <strong>Complete M-PESA payment</strong> (KSH 500)
+            </div>
+            <div class="step-box">
+                <span class="step-number">6</span>
+                <strong>Receive Member ID & Referral Code</strong> via email
+            </div>
+            
+            <div class="success-box">
+                <strong>✅ Success!</strong> You'll receive:
+                <ul style="margin: 10px 0 0 30px;">
+                    <li>Member ID (e.g., TSK-123456-789)</li>
+                    <li>Referral Code (8 characters)</li>
+                    <li>500 iKbp welcome bonus</li>
+                    <li>Access to member portal</li>
+                </ul>
+            </div>
+            
+            <div class="warning-box">
+                <strong>⚠️ Important:</strong>
+                <ul style="margin: 10px 0 0 30px;">
+                    <li>Use correct phone format: 254XXXXXXXXX</li>
+                    <li>Save your Member ID safely</li>
+                    <li>Remember last 4 digits of phone (needed for login)</li>
+                </ul>
+            </div>
+        </div>
+        
+        <!-- SECTION 4: MEMBER PORTAL -->
+        <div class="section page-break" id="member-portal">
+            <h2>4. Member Portal</h2>
+            
+            <h3>Logging In</h3>
+            <div class="step-box">
+                <span class="step-number">1</span>
+                Click the <strong>👤 Member Access</strong> button (bottom right)
+            </div>
+            <div class="step-box">
+                <span class="step-number">2</span>
+                Enter your <strong>Member ID or Email</strong>
+            </div>
+            <div class="step-box">
+                <span class="step-number">3</span>
+                Enter <strong>last 4 digits of your phone number</strong>
+            </div>
+            <div class="step-box">
+                <span class="step-number">4</span>
+                Click <strong>Login</strong> button
+            </div>
+            
+            <h3>Dashboard Overview</h3>
+            <div class="feature-grid">
+                <div class="feature-card">
+                    <div class="feature-icon">💰</div>
+                    <h4>Balance</h4>
+                    <p>View your iKbp & iKb balance</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">✅</div>
+                    <h4>Tasks</h4>
+                    <p>Active and completed tasks</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">📚</div>
+                    <h4>Activities</h4>
+                    <p>Track your contributions</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">🎁</div>
+                    <h4>Referrals</h4>
+                    <p>Earnings from referrals</p>
+                </div>
+            </div>
+        </div>
+        
+        <!-- SECTION 5: EARNING -->
+        <div class="section page-break" id="earning">
+            <h2>5. Earning iKbp & iKb</h2>
+            
+            <h3>Currency Conversion</h3>
+            <table>
+                <tr>
+                    <th>Currency</th>
+                    <th>Conversion Rate</th>
+                    <th>Use Case</th>
+                </tr>
+                <tr>
+                    <td>iKbp</td>
+                    <td>10 iKbp = 1 KSH</td>
+                    <td>Points for activities, tasks, referrals</td>
+                </tr>
+                <tr>
+                    <td>iKb</td>
+                    <td>1 iKb = 100,000 KSH</td>
+                    <td>Validated value currency</td>
+                </tr>
+            </table>
+            
+            <h3>Ways to Earn iKbp</h3>
+            <table>
+                <tr>
+                    <th>Action</th>
+                    <th>Reward</th>
+                </tr>
+                <tr>
+                    <td>Welcome Bonus</td>
+                    <td>500 iKbp</td>
+                </tr>
+                <tr>
+                    <td>Referral (per person)</td>
+                    <td>500 iKbp</td>
+                </tr>
+                <tr>
+                    <td>Complete Task</td>
+                    <td>100-500 iKbp</td>
+                </tr>
+                <tr>
+                    <td>Add Activity</td>
+                    <td>100 iKbp</td>
+                </tr>
+                <tr>
+                    <td>Forum Post</td>
+                    <td>50 iKbp</td>
+                </tr>
+                <tr>
+                    <td>Forum Comment</td>
+                    <td>10 iKbp</td>
+                </tr>
+            </table>
+            
+            <h3>Daily Earning Limits</h3>
+            <table>
+                <tr>
+                    <th>Level</th>
+                    <th>Daily Limit</th>
+                    <th>Withdrawal Limit</th>
+                </tr>
+                <tr>
+                    <td>Level 1</td>
+                    <td>2,000 iKbp</td>
+                    <td>10,000 iKbp (KSH 1,000)</td>
+                </tr>
+                <tr>
+                    <td>Level 2</td>
+                    <td>5,000 iKbp</td>
+                    <td>25,000 iKbp (KSH 2,500)</td>
+                </tr>
+                <tr>
+                    <td>Level 3</td>
+                    <td>11,000 iKbp</td>
+                    <td>35,000 iKbp (KSH 3,500)</td>
+                </tr>
+                <tr>
+                    <td>Level 4</td>
+                    <td>23,000 iKbp</td>
+                    <td>50,000 iKbp (KSH 5,000)</td>
+                </tr>
+            </table>
+        </div>
+        
+        <!-- SECTION 6: FEATURES -->
+        <div class="section page-break" id="features">
+            <h2>6. Platform Features</h2>
+            
+            <h3>💬 Member Forum</h3>
+            <p>Connect with other members, share ideas, and collaborate.</p>
+            <ul style="margin-left: 30px;">
+                <li>Create posts (earn 50 iKbp per post)</li>
+                <li>Add comments (earn 10 iKbp per comment)</li>
+                <li>Filter by category: General, Jobs, Training, Business</li>
+            </ul>
+            
+            <h3>💎 Value Submission</h3>
+            <p>Submit your products, services, skills, labor, or time for validation.</p>
+            <div class="step-box">
+                <strong>Process:</strong>
+                <ol style="margin: 10px 0 0 30px;">
+                    <li>Click "Submit Your Value"</li>
+                    <li>Fill value details and worth</li>
+                    <li>Receive validation code</li>
+                    <li>Admin reviews (24-48 hours)</li>
+                    <li>Once approved, earn iKb when claimed</li>
+                </ol>
+            </div>
+            
+            <h3>🎯 Available Opportunities</h3>
+            <p>Browse and claim validated opportunities from other members.</p>
+            <ul style="margin-left: 30px;">
+                <li>Filter by: All, Activities, Tasks, Values</li>
+                <li>Complete tasks to earn iKbp</li>
+                <li>Claim values to earn iKb</li>
+            </ul>
+            
+            <h3>⚡ Kabiru Mining</h3>
+            <p>Access the Kabiru Mining Portal to mine digital currency.</p>
+            <div class="info-box">
+                <strong>Mining Portal:</strong> <a href="https://magero1985.github.io/Kabiru-Mining-Portal-/" target="_blank">Click to Access</a>
+            </div>
+        </div>
+        
+        <!-- SECTION 7: ADMIN GUIDE -->
+        <div class="section page-break" id="admin">
+            <h2>7. Admin & Validator Guide</h2>
+            
+            <h3>Accessing Admin Panel</h3>
+            <div class="step-box">
+                <span class="step-number">1</span>
+                Click <strong>👨‍💼 Admin Access</strong> button
+            </div>
+            <div class="step-box">
+                <span class="step-number">2</span>
+                Enter admin access code
+            </div>
+            <div class="step-box">
+                <span class="step-number">3</span>
+                Access database management system
+            </div>
+            
+            <div class="warning-box">
+                <strong>🔐 Default Admin Codes:</strong>
+                <ul style="margin: 10px 0 0 30px;">
+                    <li>Primary: <code>TAU2025ADMIN</code></li>
+                    <li>Recovery 1: <code>TAURECOVERY2025</code></li>
+                    <li>Recovery 2: <code>ADMINRESET123</code></li>
+                </ul>
+                <p style="margin-top: 10px;"><strong>⚠️ Change these codes immediately after first use!</strong></p>
+            </div>
+            
+            <h3>Admin Functions</h3>
+            <ul style="margin-left: 30px;">
+                <li>✅ View all registered members</li>
+                <li>✅ Validate pending tasks, activities, values</li>
+                <li>✅ Approve/reject submissions</li>
+                <li>✅ Manage member levels</li>
+                <li>✅ Generate reports</li>
+                <li>✅ Broadcast notifications</li>
+            </ul>
+        </div>
+        
+        <!-- SECTION 8: TROUBLESHOOTING -->
+        <div class="section page-break" id="troubleshooting">
+            <h2>8. Troubleshooting</h2>
+            
+            <h3>Login Issues</h3>
+            <div class="step-box">
+                <strong>Problem:</strong> Login button not responding<br>
+                <strong>Solution:</strong> 
+                <ul style="margin: 10px 0 0 20px;">
+                    <li>Refresh the page (F5 or Ctrl+R)</li>
+                    <li>Clear browser cache</li>
+                    <li>Try different browser</li>
+                </ul>
+            </div>
+            
+            <div class="step-box">
+                <strong>Problem:</strong> Invalid credentials<br>
+                <strong>Solution:</strong>
+                <ul style="margin: 10px 0 0 20px;">
+                    <li>Check Member ID spelling</li>
+                    <li>Verify last 4 digits of phone</li>
+                    <li>Try using email instead of Member ID</li>
+                </ul>
+            </div>
+            
+            <h3>Payment Issues</h3>
+            <div class="step-box">
+                <strong>Problem:</strong> M-PESA prompt not received<br>
+                <strong>Solution:</strong>
+                <ul style="margin: 10px 0 0 20px;">
+                    <li>Check phone number format (254XXXXXXXXX)</li>
+                    <li>Ensure M-PESA is active</li>
+                    <li>Wait 1-2 minutes and try again</li>
+                </ul>
+            </div>
+            
+            <h3>Admin Access Issues</h3>
+            <div class="step-box">
+                <strong>Problem:</strong> Forgot admin code<br>
+                <strong>Solution:</strong> Use recovery codes:
+                <ul style="margin: 10px 0 0 20px;">
+                    <li><code>TAURECOVERY2025</code></li>
+                    <li><code>ADMINRESET123</code></li>
+                </ul>
+            </div>
+        </div>
+        
+        <!-- SECTION 9: FAQ -->
+        <div class="section page-break" id="faq">
+            <h2>9. Frequently Asked Questions</h2>
+            
+            <h3>General Questions</h3>
+            
+            <h4>Q: What is the difference between iKbp and iKb?</h4>
+            <p><strong>A:</strong> iKbp are points for activities (10 iKbp = 1 KSH). iKb is validated value currency (1 iKb = 100,000 KSH).</p>
+            
+            <h4>Q: How do I get my referral code?</h4>
+            <p><strong>A:</strong> Your referral code is sent via email after registration and visible in your member dashboard.</p>
+            
+            <h4>Q: Can I change my membership level?</h4>
+            <p><strong>A:</strong> Yes, levels upgrade automatically based on activity and contributions.</p>
+            
+            <h4>Q: How long does value validation take?</h4>
+            <p><strong>A:</strong> Typically 24-48 hours. You'll receive a notification when approved.</p>
+            
+            <h4>Q: Can I withdraw my iKbp balance?</h4>
+            <p><strong>A:</strong> Yes, subject to daily withdrawal limits based on your level.</p>
+            
+            <h4>Q: Is my data secure?</h4>
+            <p><strong>A:</strong> Yes, all data is encrypted and stored securely. We never share your information.</p>
+        </div>
+        
+        <!-- SECTION 10: CONTACT -->
+        <div class="section" id="contact">
+            <h2>10. Contact & Support</h2>
+            
+            <div class="feature-grid">
+                <div class="feature-card">
+                    <div class="feature-icon">📧</div>
+                    <h4>Email</h4>
+                    <p><a href="mailto:grouptauafrica@gmail.com">grouptauafrica@gmail.com</a></p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">🐦</div>
+                    <h4>Twitter/X</h4>
+                    <p><a href="https://x.com/grouptauafrica" target="_blank">@grouptauafrica</a></p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">📺</div>
+                    <h4>YouTube</h4>
+                    <p><a href="https://youtube.com/@tauafrica8922" target="_blank">TAU Africa</a></p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">🎵</div>
+                    <h4>TikTok</h4>
+                    <p><a href="https://www.tiktok.com/@tau.africa.nairob" target="_blank">@tau.africa</a></p>
+                </div>
+            </div>
+            
+            <div class="info-box" style="margin-top: 30px;">
+                <strong>🕐 Support Hours:</strong> Monday - Friday, 8:00 AM - 6:00 PM EAT<br>
+                <strong>⚡ Emergency Support:</strong> Available 24/7 via email for critical issues
+            </div>
+        </div>
+        
+        <!-- FOOTER -->
+        <div class="footer">
+            <p><strong>TAU Africa International</strong></p>
+            <p>Building Sovereign African Communities Through Value & Unity</p>
+            <p style="margin-top: 20px;">© 2025 TAU Africa. All Rights Reserved.</p>
+            <p style="margin-top: 10px; font-size: 0.9rem;">
+                Version 1.0 | Last Updated: December 2025<br>
+                <a href="index.html" style="color: #667eea;">Return to Platform</a>
+            </p>
+        </div>
+    </div>
+    
+    <script>
+        // PDF Download Function
+        function downloadPDF() {
+            // Option 1: Simple print-to-PDF
+            window.print();
+            
+            // Option 2: Advanced (requires html2pdf library - uncomment if you add it)
+            /*
+            const element = document.getElementById('guideContent');
+            const opt = {
+                margin: 10,
+                filename: 'TAU_Africa_User_Guide.pdf',
+                image: { type: 'jpeg', quality: 0.98 },
+                html2canvas: { scale: 2 },
+                jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+            };
+            html2pdf().set(opt).from(element).save();
+            */
+        }
+        
+        // Smooth scroll for TOC links
+        document.querySelectorAll('.toc a').forEach(link => {
+            link.addEventListener('click', function(e) {
+                e.preventDefault();
+                const targetId = this.getAttribute('href');
+                const targetElement = document.querySelector(targetId);
+                if (targetElement) {
+                    targetElement.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                }
+            });
+        });
+        
+        // Print preparation
+        window.addEventListener('beforeprint', function() {
+            document.body.style.background = 'white';
+        });
+        
+        window.addEventListener('afterprint', function() {
+            document.body.style.background = 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)';
+        });
+        
+        console.log('✅ TAU Africa User Guide loaded successfully');
+    </script>
+</body>
+</html>
