@@ -1454,28 +1454,73 @@ let selectedLevel = '';
 let selectedCategory = '';
 
 // ===== FIXED EMAIL SENDING FUNCTION 
-function sendEmailToOrganization(formData, subject) {
+function sendEmailToAdmin(formData, subject) {
     const templateParams = {
-        to_email: formData.email,
-        to_name: formData.fullName || formData.name,
+        to_email: 'grouptauafrica@gmail.com',
+        to_name: 'TAU Africa Admin',
         subject: subject,
-        message: `Welcome to TAU Africa!
+        message: `NEW REGISTRATION ALERT!
 
-Member ID: ${formData.memberId || 'TBD'}
-Team: ${formData.team}
-Email: ${formData.email}
+Member Details:
+• Name: ${formData.fullName || formData.name}
+• Email: ${formData.email}
+• Phone: ${formData.phone}
+• Location: ${formData.location}
+• Team: ${formData.team || 'N/A'}
+• Registration Date: ${new Date().toLocaleString()}
 
-Your account has been created successfully!`,
-        from_name: 'TAU Africa Foundation',
-        from_email: 'grouptauafrica@gmail.com',
-        phone: formData.phone,
-        location: formData.location
+Please review in admin dashboard.`,
+        from_name: 'TAU Africa System',
+        from_email: 'grouptauafrica@gmail.com'
     };
     
     return emailjs.send('service_xfira7g', 'template_bqxztig', templateParams)
-        .then(() => true)
-        .catch(function(error) {
-            console.error('❌ FAILED! Email error:', error);
+        .then(() => {
+            console.log('✅ Admin email sent to grouptauafrica@gmail.com');
+            return true;
+        })
+        .catch(error => {
+            console.error('❌ Admin email failed:', error);
+            return false;
+        });
+}
+
+function sendWelcomeEmail(formData) {
+    const templateParams = {
+        to_email: formData.email,
+        to_name: formData.fullName || formData.name,
+        subject: '🎉 Welcome to TAU Africa!',
+        message: `Dear ${formData.fullName || formData.name},
+
+Thank you for joining TAU Africa International!
+
+Your registration has been received and is being processed.
+
+📋 Registration Details:
+• Email: ${formData.email}
+• Phone: ${formData.phone}
+• Location: ${formData.location}
+
+🎁 Welcome Bonus: 500 iKbp will be added to your account!
+🆔 Your Member ID will be sent within 24 hours.
+
+📧 Contact: grouptauafrica@gmail.com
+
+Welcome to the TAU Africa family!
+
+Best regards,
+TAU Africa Team`,
+        from_name: 'TAU Africa',
+        from_email: 'grouptauafrica@gmail.com'
+    };
+    
+    return emailjs.send('service_xfira7g', 'template_bqxztig', templateParams)
+        .then(() => {
+            console.log('✅ Welcome email sent to member');
+            return true;
+        })
+        .catch(error => {
+            console.error('❌ Welcome email failed:', error);
             return false;
         });
 }
