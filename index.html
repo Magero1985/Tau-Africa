@@ -4044,31 +4044,30 @@ function createForumModal() {
         // Welcome Email
     function sendWelcomeEmail(member) {
     const templateParams = {
-        to_email: member.email,  // ✅ FIXED
-        to_name: member.fullName, // ✅ FIXED
-        subject: '🎉 Welcome to TAU Africa',
+        to_email: member.email,  // ✅ MEMBER'S EMAIL
+        to_name: member.fullName,
+        subject: '🎉 Welcome to TAU Africa!',
         message: `Welcome ${member.fullName}!
 
-Member ID: ${member.id}
-Team: ${member.team}
-Referral Code: ${member.referralCode}
+Thank you for joining TAU Africa. Your account has been successfully created.
+
+🎁 Welcome Bonus: 500 iKbp has been added to your account!
+
+EARN MORE iKbp:
+• Refer members: 500 iKbp per referral
+• Complete tasks: 100-500 iKbp
+• Forum posts: 50 iKbp per post
+
+Current Balance: ${member.iKbpBalance || 500} iKbp
 
 Login at: ${window.location.origin}
 
-🎁 Welcome Bonus: 500 iKbp already added to your account!
-
-Earn more iKbp by:
-- Referring members: 500 iKbp per referral
-- Completing tasks: 100-500 iKbp
-- Forum posts: 50 iKbp per post
-
-Your Current Balance: ${member.iKbpBalance} iKbp
-
-Thank you for joining TAU Africa!`,
+Share your referral code to earn rewards!`,
+        member_id: member.id,
+        team: member.team,
+        referral_code: member.referralCode,
         from_name: 'TAU Africa Foundation',
-        from_email: 'grouptauafrica@gmail.com',
-        phone: member.phone,
-        location: member.location
+        from_email: 'grouptauafrica@gmail.com'
     };
     
     return emailjs.send('service_xfira7g', 'template_bqxztig', templateParams)
@@ -4081,32 +4080,39 @@ Thank you for joining TAU Africa!`,
             return false;
         });
 }
+
 function sendAdminNotificationEmail(member, team) {
     const templateParams = {
-        to_email: 'grouptauafrica@gmail.com',
+        to_email: 'grouptauafrica@gmail.com',  // ✅ ADMIN EMAIL
         to_name: 'TAU Africa Admin',
         subject: `🆕 New ${team} Team Registration`,
         message: `New member registered!
 
-Member Details:
-- Name: ${member.fullName}
-- Email: ${member.email}
-- Phone: ${member.phone}
-- Member ID: ${member.id}
-- Team: ${member.team}
-- Location: ${member.location}
-- Fee Paid: KSH ${member.fee}
-- Registration Date: ${new Date().toLocaleString()}
+MEMBER DETAILS:
+• Name: ${member.fullName}
+• Email: ${member.email}
+• Phone: ${member.phone}
+• Location: ${member.location}
+• Fee Paid: KSH ${member.fee}
+• Registration Date: ${new Date().toLocaleString()}
 
-Login to database to view full details.`,
+Login to database to view complete member profile and manage registration.`,
+        member_id: member.id,
+        team: member.team,
         from_name: 'TAU Africa System',
         from_email: 'grouptauafrica@gmail.com'
     };
     
     return emailjs.send('service_xfira7g', 'template_bqxztig', templateParams)
-        .then(() => console.log('✅ Admin notification sent'))
-        .catch(err => console.error('❌ Admin notification failed:', err));
-            }
+        .then(() => {
+            console.log('✅ Admin notification sent');
+            return true;
+        })
+        .catch(err => {
+            console.error('❌ Admin notification failed:', err);
+            return false;
+        });
+}
 
     // Override Success Handlers
     window.processTaskSuccess = function(formData) {
