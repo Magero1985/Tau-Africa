@@ -1728,44 +1728,89 @@ function processJobCreationTraining(event) {
     initiateMpesaPayment(1500, data.phone, data, 'processJobCreationSuccess');
 }
 
-// ===== SUCCESS HANDLERS WITH FIXED EMAIL =====
+// ===== DUAL EMAIL SUCCESS HANDLERS =====
 function processTaskSuccess(formData) {
-    console.log('Processing TASK success with email...');
-    sendEmailToOrganization(formData, 'NEW TASK TEAM REGISTRATION - PAYMENT CONFIRMED')
-        .then(success => {
-            if (success) {
-                showNotification('✅ Registration complete! Welcome to TASK team. Confirmation email sent to grouptauafrica@gmail.com', 'success');
-                closeAllModals();
-            } else {
-                showNotification('⚠️ Registration saved but email notification failed. Our team will contact you.', 'error');
-            }
-        });
+    formData.team = 'TASK';
+    console.log('📧 Processing TASK registration - sending DUAL emails...');
+    
+    Promise.all([
+        sendEmailToAdmin(formData, 'NEW TASK REGISTRATION - PAYMENT CONFIRMED'),
+        sendWelcomeEmail(formData)
+    ])
+    .then(results => {
+        const adminSent = results[0];
+        const memberSent = results[1];
+        
+        if (adminSent && memberSent) {
+            showNotification('✅ Registration complete! Confirmation emails sent to you and admin.', 'success');
+        } else if (adminSent || memberSent) {
+            showNotification('✅ Registration complete! One email sent successfully.', 'success');
+        } else {
+            showNotification('⚠️ Registration saved but emails failed. Contact: grouptauafrica@gmail.com', 'error');
+        }
+        closeAllModals();
+    })
+    .catch(error => {
+        console.error('Email error:', error);
+        showNotification('⚠️ Registration saved but emails failed. Contact: grouptauafrica@gmail.com', 'error');
+        closeAllModals();
+    });
 }
 
 function processTalkSuccess(formData) {
-    console.log('Processing TALK success with email...');
-    sendEmailToOrganization(formData, 'NEW TALK TEAM REGISTRATION - PAYMENT CONFIRMED')
-        .then(success => {
-            if (success) {
-                showNotification('✅ Registration complete! Welcome to TALK team. Confirmation email sent to grouptauafrica@gmail.com', 'success');
-                closeAllModals();
-            } else {
-                showNotification('⚠️ Registration saved but email notification failed. Our team will contact you.', 'error');
-            }
-        });
+    formData.team = 'TALK';
+    console.log('📧 Processing TALK registration - sending DUAL emails...');
+    
+    Promise.all([
+        sendEmailToAdmin(formData, 'NEW TALK REGISTRATION - PAYMENT CONFIRMED'),
+        sendWelcomeEmail(formData)
+    ])
+    .then(results => {
+        const adminSent = results[0];
+        const memberSent = results[1];
+        
+        if (adminSent && memberSent) {
+            showNotification('✅ Registration complete! Confirmation emails sent to you and admin.', 'success');
+        } else if (adminSent || memberSent) {
+            showNotification('✅ Registration complete! One email sent successfully.', 'success');
+        } else {
+            showNotification('⚠️ Registration saved but emails failed. Contact: grouptauafrica@gmail.com', 'error');
+        }
+        closeAllModals();
+    })
+    .catch(error => {
+        console.error('Email error:', error);
+        showNotification('⚠️ Registration saved but emails failed. Contact: grouptauafrica@gmail.com', 'error');
+        closeAllModals();
+    });
 }
 
 function processJobCreationSuccess(formData) {
-    console.log('Processing Job Creation success with email...');
-    sendEmailToOrganization(formData, 'JOB CREATION TRAINING ENROLLMENT - PAYMENT CONFIRMED')
-        .then(success => {
-            if (success) {
-                showNotification('✅ Training enrollment complete! Confirmation email sent to grouptauafrica@gmail.com', 'success');
-                closeAllModals();
-            } else {
-                showNotification('⚠️ Enrollment saved but email notification failed. Our team will contact you.', 'error');
-            }
-        });
+    formData.team = 'JOB CREATION';
+    console.log('📧 Processing Job Creation - sending DUAL emails...');
+    
+    Promise.all([
+        sendEmailToAdmin(formData, 'JOB CREATION ENROLLMENT - PAYMENT CONFIRMED'),
+        sendWelcomeEmail(formData)
+    ])
+    .then(results => {
+        const adminSent = results[0];
+        const memberSent = results[1];
+        
+        if (adminSent && memberSent) {
+            showNotification('✅ Enrollment complete! Confirmation emails sent to you and admin.', 'success');
+        } else if (adminSent || memberSent) {
+            showNotification('✅ Enrollment complete! One email sent successfully.', 'success');
+        } else {
+            showNotification('⚠️ Enrollment saved but emails failed. Contact: grouptauafrica@gmail.com', 'error');
+        }
+        closeAllModals();
+    })
+    .catch(error => {
+        console.error('Email error:', error);
+        showNotification('⚠️ Enrollment saved but emails failed. Contact: grouptauafrica@gmail.com', 'error');
+        closeAllModals();
+    });
 }
 
 // ===== OTHER FORM SUBMISSIONS WITH FIXED EMAIL =====
