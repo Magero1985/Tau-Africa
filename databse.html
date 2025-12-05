@@ -1192,7 +1192,75 @@ window.addEventListener('message', function(event) {
         let currentViewMember = null;
         const ACCESS_CODE = 'TAU2025ADMIN';
         let currentMemberSession = null;
-
+// ============================================
+// FIREBASE MIGRATION - Database App
+// ============================================
+(function() {
+    'use strict';
+    
+    const firebaseConfig = {
+        apiKey: "AIzaSyAW0vk_gg03xXEm6I1TQnU8KRiv1RhcrQ4",
+        authDomain: "tau-africa-ecosystem.firebaseapp.com",
+        projectId: "tau-africa-ecosystem",
+        storageBucket: "tau-africa-ecosystem.appspot.com",
+        messagingSenderId: "1047279398196",
+        appId: "1:1047279398196:web:06d43661650c794268c961"
+    };
+    
+    if (!firebase.apps.length) {
+        firebase.initializeApp(firebaseConfig);
+    }
+    
+    const db = firebase.firestore();
+    
+    // Override initDatabase to load from Firestore
+    const originalInitDatabase = window.initDatabase;
+    window.initDatabase = async function() {
+        try {
+            // Load members from Firestore
+            const membersSnapshot = await db.collection('members').get();
+            membersDB = [];
+            
+            membersSnapshot.forEach(doc => {
+                membersDB.push({ ...doc.data(), id: doc.id });
+            });
+            
+            // Sync to localStorage as backup
+            localStorage.setItem('tauAfricaDB', JSON.stringify(membersDB));
+            
+            console.log(`✅ Loaded ${membersDB.length} members from Firestore`);
+            updateStats();
+            renderMembers();
+            setupMessageListener();
+            
+        } catch (error) {
+            console.error('❌ Firestore load error:', error);
+            // Fallback to localStorage
+            originalInitDatabase();
+        }
+    };
+    
+    // Real-time sync listener
+    db.collection('members').onSnapshot(snapshot => {
+        snapshot.docChanges().forEach(change => {
+            if (change.type === 'added' || change.type === 'modified') {
+                const member = { ...change.doc.data(), id: change.doc.id };
+                const index = membersDB.findIndex(m => m.id === member.id);
+                
+                if (index !== -1) {
+                    membersDB[index] = member;
+                } else {
+                    membersDB.push(member);
+                }
+                
+                renderMembers();
+                updateStats();
+            }
+        });
+    });
+    
+    console.log('✅ Database App - Firebase real-time sync active');
+})();
         // Initialize database
         function initDatabase() {
             const stored = localStorage.getItem('tauAfricaDB');
