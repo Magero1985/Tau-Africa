@@ -585,7 +585,6 @@
             validations: 'tauPendingValidations',
             codes: 'tauValidatorCodes'
         };
-
         // ==========================================
         // INITIALIZATION
         // ==========================================
@@ -602,6 +601,80 @@
                 }
             });
         }
+// ============================================
+// FIREBASE MIGRATION - Bridge App
+// ============================================
+(function() {
+    'use strict';
+    
+    const firebaseConfig = {
+        apiKey: "YOUR_API_KEY",
+        authDomain: "tau-africa-ecosystem.firebaseapp.com",
+        projectId: "tau-africa-ecosystem",
+        storageBucket: "tau-africa-ecosystem.appspot.com",
+        messagingSenderId: "YOUR_SENDER_ID",
+        appId: "YOUR_APP_ID"
+    };
+    
+    if (!firebase.apps.length) {
+        firebase.initializeApp(firebaseConfig);
+    }
+    
+    const db = firebase.firestore();
+    
+    // Override createTask to sync to Firestore
+    window.createTask = async function(event) {
+        event.preventDefault();
+        
+        const code = document.getElementById('task-admin-code').value;
+        if (code !== MASTER_CODE) {
+            notify('Invalid admin code', 'error');
+            return;
+        }
+        
+        const task = {
+            id: 'TSK-' + Date.now(),
+            title: document.getElementById('task-title').value,
+            description: document.getElementById('task-desc').value,
+            category: document.getElementById('task-category').value,
+            reward: parseInt(document.getElementById('task-reward').value),
+            validationCode: generateCode('TASK'),
+            status: 'Active',
+            created: new Date().toISOString(),
+            validated: true
+        };
+        
+        try {
+            // Save to Firestore
+            await db.collection('tasks').doc(task.id).set(task);
+            
+            // Also save to localStorage
+            const tasks = JSON.parse(localStorage.getItem('tauTasks') || '[]');
+            tasks.push(task);
+            localStorage.setItem('tauTasks', JSON.stringify(tasks));
+            
+            if (typeof notifyAllMembers === 'function') {
+                notifyAllMembers('🎯 New Task Available!', `Complete "${task.title}" to earn ${task.reward} iKbp`);
+            }
+            
+            notify('Task created and synced to Firestore!', 'success');
+            event.target.reset();
+            loadTasks();
+            
+        } catch (error) {
+            console.error('❌ Task sync error:', error);
+            notify('Task saved locally but sync failed', 'error');
+        }
+    };
+    
+    // Real-time listeners
+    db.collection('tasks').onSnapshot(snapshot => {
+        console.log(`🔄 Tasks updated: ${snapshot.size} tasks`);
+        loadTasks();
+    });
+    
+    console.log('✅ Bridge App - Firebase sync active');
+})();
 
         // ==========================================
         // TAB SWITCHING
