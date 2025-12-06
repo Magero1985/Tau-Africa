@@ -1433,130 +1433,26 @@ input[type="date"] {
         showNotification('✅ Code copied!', 'success');
     }
 })();
-
 </script>
 <script>
+// Initialize EmailJS with iOS compatibility
+(function() {
+    try {
+        emailjs.init({
+            publicKey: "GhjI14eQVGgOli0j1",
+        });
+        console.log('✅ EmailJS initialized successfully');
+    } catch (error) {
+        console.error('❌ EmailJS initialization failed:', error);
+        alert('Email system initialization failed. Please refresh the page.');
+    }
+})();
+
 // Global variables
 let currentModal = null;
 let selectedLevel = '';
 let selectedCategory = '';
-
-// ===== FIXED EMAIL SENDING FUNCTION 
-(function() {
-    try {
-        emailjs.init({
-            publicKey: "GhjI14eQVGgOli0j1"
-        });
-        console.log('✅ EmailJS initialized');
-    } catch (error) {
-        console.error('❌ EmailJS init failed:', error);
-    }
-})();
-
-// CHOOSE ONE TEMPLATE 
-const TEMPLATE_ID = 'template_bqxztig'; // 
-
-function sendEmailToAdmin(formData, subject) {
-    const params = {
-        to_email: 'grouptauafrica@gmail.com',
-        to_name: 'TAU Admin',
-        subject: subject,
-        from_name: formData.fullName || formData.name,
-        from_email: formData.email,
-        phone: formData.phone,
-        location: formData.location,
-        message: `NEW REGISTRATION
-
-Name: ${formData.fullName || formData.name}
-Email: ${formData.email}
-Phone: ${formData.phone}
-Location: ${formData.location}
-Team: ${formData.team || 'N/A'}
-Date: ${new Date().toLocaleString()}`
-    };
-
-    return emailjs.send('service_xfira7g', 'template_bqxztig', templateParams)
-        .then(() => {
-            console.log('✅ Admin email sent');
-            return true;
-        })
-        .catch(err => {
-            console.error('❌ Admin email failed:', err);
-            return false;
-        });
-}
-
-function sendWelcomeEmail(formData) {
-    const params = {
-        to_email: formData.email,
-        to_name: formData.fullName || formData.name,
-        subject: '🎉 Welcome to TAU Africa',
-        from_name: 'TAU Africa',
-        from_email: 'grouptauafrica@gmail.com',
-        phone: formData.phone,
-        location: formData.location,
-        message: `Welcome ${formData.fullName || formData.name}!
-
-Thank you for joining TAU Africa.
-
-Your registration: ${formData.email}
-Phone: ${formData.phone}
-Location: ${formData.location}
-
-Contact: grouptauafrica@gmail.com`
-    };
-
-    return emailjs.send('service_xfira7g', 'template_bqxztig', templateParams)
-        .then(() => {
-            console.log('✅ Welcome email sent');
-            return true;
-        })
-        .catch(err => {
-            console.error('❌ Welcome email failed:', err);
-            return false;
-        });
-}
-
-function sendWelcomeEmail(formData) {
-    const templateParams = {
-        to_email: formData.email,
-        to_name: formData.fullName || formData.name,
-        subject: '🎉 Welcome to TAU Africa!',
-        message: `Dear ${formData.fullName || formData.name},
-
-Thank you for joining TAU Africa International!
-
-Your registration has been received and is being processed.
-
-📋 Registration Details:
-• Email: ${formData.email}
-• Phone: ${formData.phone}
-• Location: ${formData.location}
-
-🎁 Welcome Bonus: 500 iKbp will be added to your account!
-🆔 Your Member ID will be sent within 24 hours.
-
-📧 Contact: grouptauafrica@gmail.com
-
-Welcome to the TAU Africa family!
-
-Best regards,
-TAU Africa Team`,
-        from_name: 'TAU Africa',
-        from_email: 'grouptauafrica@gmail.com'
-    };
-    
-    return emailjs.send('service_xfira7g', 'template_bqxztig', templateParams)
-        .then(() => {
-            console.log('✅ Welcome email sent to member');
-            return true;
-        })
-        .catch(error => {
-            console.error('❌ Welcome email failed:', error);
-            return false;
-        });
-}
-  // ============================================
+// ============================================
 // FIREBASE MIGRATION - Main App
 // ============================================
 (function() {
@@ -1672,7 +1568,122 @@ TAU Africa Team`,
     };
     
     console.log('✅ Main App - Firebase initialized');
-})();  
+})();
+// ===== FIXED EMAIL SENDING FUNCTION 
+(function() {
+    try {
+        emailjs.init({
+            publicKey: "GhjI14eQVGgOli0j1"
+        });
+        console.log('✅ EmailJS initialized');
+    } catch (error) {
+        console.error('❌ EmailJS init failed:', error);
+    }
+})();
+
+// CHOOSE ONE TEMPLATE 
+const TEMPLATE_ID = 'template_bqxztig'; // 
+
+function sendEmailToAdmin(formData, subject) {
+    const params = {
+        to_email: 'grouptauafrica@gmail.com',
+        to_name: 'TAU Admin',
+        subject: subject,
+        from_name: formData.fullName || formData.name,
+        from_email: formData.email,
+        phone: formData.phone,
+        location: formData.location,
+        message: `NEW REGISTRATION
+
+Name: ${formData.fullName || formData.name}
+Email: ${formData.email}
+Phone: ${formData.phone}
+Location: ${formData.location}
+Team: ${formData.team || 'N/A'}
+Date: ${new Date().toLocaleString()}`
+    };
+
+    return emailjs.send('service_xfira7g', 'template_bqxztig', templateParams)
+        .then(() => {
+            console.log('✅ Admin email sent');
+            return true;
+        })
+        .catch(err => {
+            console.error('❌ Admin email failed:', err);
+            return false;
+        });
+}
+
+function sendWelcomeEmail(formData) {
+    const params = {
+        to_email: formData.email,
+        to_name: formData.fullName || formData.name,
+        subject: '🎉 Welcome to TAU Africa',
+        from_name: 'TAU Africa',
+        from_email: 'grouptauafrica@gmail.com',
+        phone: formData.phone,
+        location: formData.location,
+        message: `Welcome ${formData.fullName || formData.name}!
+
+Thank you for joining TAU Africa.
+
+Your registration: ${formData.email}
+Phone: ${formData.phone}
+Location: ${formData.location}
+
+Contact: grouptauafrica@gmail.com`
+    };
+
+    return emailjs.send('service_xfira7g', 'template_bqxztig', templateParams)
+        .then(() => {
+            console.log('✅ Welcome email sent');
+            return true;
+        })
+        .catch(err => {
+            console.error('❌ Welcome email failed:', err);
+            return false;
+        });
+}
+
+function sendWelcomeEmail(formData) {
+    const templateParams = {
+        to_email: formData.email,
+        to_name: formData.fullName || formData.name,
+        subject: '🎉 Welcome to TAU Africa!',
+        message: `Dear ${formData.fullName || formData.name},
+
+Thank you for joining TAU Africa International!
+
+Your registration has been received and is being processed.
+
+📋 Registration Details:
+• Email: ${formData.email}
+• Phone: ${formData.phone}
+• Location: ${formData.location}
+
+🎁 Welcome Bonus: 500 iKbp will be added to your account!
+🆔 Your Member ID will be sent within 24 hours.
+
+📧 Contact: grouptauafrica@gmail.com
+
+Welcome to the TAU Africa family!
+
+Best regards,
+TAU Africa Team`,
+        from_name: 'TAU Africa',
+        from_email: 'grouptauafrica@gmail.com'
+    };
+    
+    return emailjs.send('service_xfira7g', 'template_bqxztig', templateParams)
+        .then(() => {
+            console.log('✅ Welcome email sent to member');
+            return true;
+        })
+        .catch(error => {
+            console.error('❌ Welcome email failed:', error);
+            return false;
+        });
+}
 // ===== M-PESA PAYMENT INTEGRATION =====
 function initiateMpesaPayment(amount, phoneNumber, formData, successCallback) {
     showPaymentModal(amount, phoneNumber, formData, successCallback);
@@ -5800,4 +5811,4 @@ window.runIntegrationTest = function() {
 console.log('💡 Run window.runIntegrationTest() to check integration');
     </script>
 </body>
-                    </html>
+    </html>
