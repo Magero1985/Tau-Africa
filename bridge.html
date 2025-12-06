@@ -602,80 +602,7 @@
                 }
             });
         }
-// ============================================
-// FIREBASE MIGRATION - Bridge App
-// ============================================
-(function() {
-    'use strict';
-    
-    const firebaseConfig = {
-        apiKey: "AIzaSyAW0vk_gg03xXEm6I1TQnU8KRiv1RhcrQ4",
-        authDomain: "tau-africa-ecosystem.firebaseapp.com",
-        projectId: "tau-africa-ecosystem",
-        storageBucket: "tau-africa-ecosystem.appspot.com",
-        messagingSenderId: "1047279398196",
-        appId: "1:1047279398196:web:06d43661650c794268c961"
-    };
-    
-    if (!firebase.apps.length) {
-        firebase.initializeApp(firebaseConfig);
-    }
-    
-    const db = firebase.firestore();
-    
-    // Override createTask to sync to Firestore
-    window.createTask = async function(event) {
-        event.preventDefault();
-        
-        const code = document.getElementById('task-admin-code').value;
-        if (code !== MASTER_CODE) {
-            notify('Invalid admin code', 'error');
-            return;
-        }
-        
-        const task = {
-            id: 'TSK-' + Date.now(),
-            title: document.getElementById('task-title').value,
-            description: document.getElementById('task-desc').value,
-            category: document.getElementById('task-category').value,
-            reward: parseInt(document.getElementById('task-reward').value),
-            validationCode: generateCode('TASK'),
-            status: 'Active',
-            created: new Date().toISOString(),
-            validated: true
-        };
-        
-        try {
-            // Save to Firestore
-            await db.collection('tasks').doc(task.id).set(task);
-            
-            // Also save to localStorage
-            const tasks = JSON.parse(localStorage.getItem('tauTasks') || '[]');
-            tasks.push(task);
-            localStorage.setItem('tauTasks', JSON.stringify(tasks));
-            
-            if (typeof notifyAllMembers === 'function') {
-                notifyAllMembers('🎯 New Task Available!', `Complete "${task.title}" to earn ${task.reward} iKbp`);
-            }
-            
-            notify('Task created and synced to Firestore!', 'success');
-            event.target.reset();
-            loadTasks();
-            
-        } catch (error) {
-            console.error('❌ Task sync error:', error);
-            notify('Task saved locally but sync failed', 'error');
-        }
-    };
-    
-    // Real-time listeners
-    db.collection('tasks').onSnapshot(snapshot => {
-        console.log(`🔄 Tasks updated: ${snapshot.size} tasks`);
-        loadTasks();
-    });
-    
-    console.log('✅ Bridge App - Firebase sync active');
-})();
+
         // ==========================================
         // TAB SWITCHING
         // ==========================================
@@ -1298,5 +1225,142 @@
             };
         })();
     </script>
+    // ============================================
+// FIREBASE BRIDGE - Bridge App (NON-DESTRUCTIVE)
+// Add this AFTER all existing code, before </body>
+// ============================================
+<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+
+<script>
+(function() {
+    'use strict';
+    
+    const FIREBASE_CONFIG = {
+        apiKey: "AIzaSyAW0vk_gg03xXEm6I1TQnU8KRiv1RhcrQ4",
+        authDomain: "tau-africa-ecosystem.firebaseapp.com",
+        projectId: "tau-africa-ecosystem",
+        storageBucket: "tau-africa-ecosystem.appspot.com",
+        messagingSenderId: "1047279398196",
+        appId: "1:1047279398196:web:06d43661650c794268c961"
+    };
+    
+    let db;
+    try {
+        if (!firebase.apps.length) {
+            firebase.initializeApp(FIREBASE_CONFIG);
+        }
+        db = firebase.firestore();
+        console.log('✅ Firebase initialized - Bridge App');
+    } catch (error) {
+        console.error('⚠️ Firebase initialization failed:', error);
+        db = null;
+    }
+    
+    // ENHANCE createTask - Don't replace
+    if (typeof createTask !== 'undefined') {
+        const originalCreateTask = createTask;
+        window.createTask = async function(event) {
+            event.preventDefault();
+            
+            const code = document.getElementById('task-admin-code').value;
+            if (code !== MASTER_CODE) {
+                notify('Invalid admin code', 'error');
+                return;
+            }
+            
+            const task = {
+                id: 'TSK-' + Date.now(),
+                title: document.getElementById('task-title').value,
+                description: document.getElementById('task-desc').value,
+                category: document.getElementById('task-category').value,
+                reward: parseInt(document.getElementById('task-reward').value),
+                validationCode: generateCode('TASK'),
+                status: 'Active',
+                created: new Date().toISOString(),
+                validated: true
+            };
+            
+            // Save to localStorage first
+            const tasks = JSON.parse(localStorage.getItem('tauTasks') || '[]');
+            tasks.push(task);
+            localStorage.setItem('tauTasks', JSON.stringify(tasks));
+            
+            // Then sync to Firestore
+            if (db) {
+                try {
+                    await db.collection('tasks').doc(task.id).set(task);
+                    console.log('✅ Task synced to Firestore');
+                } catch (error) {
+                    console.error('⚠️ Task sync warning:', error);
+                }
+            }
+            
+            if (typeof notifyAllMembers === 'function') {
+                notifyAllMembers('🎯 New Task Available!', `Complete "${task.title}" to earn ${task.reward} iKbp`);
+            }
+            
+            notify('Task created!', 'success');
+            event.target.reset();
+            if (typeof loadTasks === 'function') loadTasks();
+            if (typeof updateDashboard === 'function') updateDashboard();
+        };
+    }
+    
+    // ENHANCE createActivity - Don't replace
+    if (typeof createActivity !== 'undefined') {
+        const originalCreateActivity = createActivity;
+        window.createActivity = async function(event) {
+            event.preventDefault();
+            
+            const code = document.getElementById('activity-admin-code').value;
+            if (code !== MASTER_CODE) {
+                notify('Invalid admin code', 'error');
+                return;
+            }
+            
+            const activity = {
+                id: 'ACT-' + Date.now(),
+                title: document.getElementById('activity-title').value,
+                description: document.getElementById('activity-desc').value,
+                category: document.getElementById('activity-category').value,
+                reward: parseInt(document.getElementById('activity-reward').value),
+                validationCode: generateCode('ACTIVITY'),
+                status: 'Active',
+                created: new Date().toISOString(),
+                validated: true
+            };
+            
+            // Save to localStorage first
+            const activities = JSON.parse(localStorage.getItem('tauActivities') || '[]');
+            activities.push(activity);
+            localStorage.setItem('tauActivities', JSON.stringify(activities));
+            
+            // Then sync to Firestore
+            if (db) {
+                try {
+                    await db.collection('activities').doc(activity.id).set(activity);
+                    console.log('✅ Activity synced to Firestore');
+                } catch (error) {
+                    console.error('⚠️ Activity sync warning:', error);
+                }
+            }
+            
+            if (typeof notifyAllMembers === 'function') {
+                notifyAllMembers('🎯 New Activity Available!', `Complete "${activity.title}" to earn ${activity.reward} iKbp`);
+            }
+            
+            notify('Activity created!', 'success');
+            event.target.reset();
+            if (typeof loadActivities === 'function') loadActivities();
+            if (typeof updateDashboard === 'function') updateDashboard();
+        };
+    }
+    
+    console.log('✅ Bridge Firebase Bridge - Enhanced (Non-destructive mode)');
+    console.log('📊 Firebase Status:', db ? 'ONLINE' : 'OFFLINE');
+    
+})();
+</script>
 </body>
-                </html>
+    </html>
