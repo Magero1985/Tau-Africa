@@ -682,9 +682,7 @@ input[type="date"] {
                     <div class="house-btn" onclick="showNotification('Galaxy 2 house - join with G2 Card!', 'success')">Galaxy 2 [Coordination Board  ]</div>
                     <div class="house-btn" onclick="showNotification('Galaxy 3 house - join with G3 Card!', 'success')">Galaxy 3 [Implementation Board]</div>
                 </div>
-                <button onclick="initiateKabiruWithdrawal()" class="btn" style="width: 100%; margin: 10px 0; background: linear-gradient(45deg, #FFD700, #FFA500);">
-    💎 Withdraw to Kabiru Mining (Min: 10,000 iKbp)
-</button>
+                
                 <div class="galaxy-banner">
                     Auffi - Pan African Trust Graph & R4<br> [REPARTRIATION - RESURRECTION-RESTORATION - RECONNECTION] (sovereignty). Our digital Ecosystem uses human & environmental values to create the Africa's Sovereign Wealth, and subsequently bring back Sovereignty to black people and humanity. join the Kabiru Mining App to mine your values in building The African digital currency (Kabiru)
                 </div>
@@ -841,42 +839,7 @@ input[type="date"] {
         <button onclick="✅ Validate()">➤</button>
     </div>
 </div>
-    <script>
-async function initiateKabiruWithdrawal() {
-    const currentMember = window.TauDB?.getCurrentMember();
-    if (!currentMember) return;
     
-    const availableIkbp = currentMember.iKbpBalance || 0;
-    const availableIkb = currentMember.iKbBalance || 0;
-    
-    if (availableIkbp < 10000 && availableIkb < 0.0001) {
-        showNotification('❌ Minimum required: 10,000 iKbp or 0.0001 iKb', 'error');
-        return;
-    }
-    
-    if (!confirm(`Withdraw ${availableIkbp.toLocaleString()} iKbp + ${availableIkb} iKb to Kabiru Mining App?`)) {
-        return;
-    }
-    
-    try {
-        await db.collection('members').doc(currentMember.id).update({
-            pendingKabiruTransfer: {
-                iKbp: availableIkbp,
-                iKb: availableIkb,
-                timestamp: new Date().toISOString()
-            },
-            iKbpBalance: 0,
-            iKbBalance: 0
-        });
-        
-        showNotification('✅ Withdrawal initiated! Open Kabiru Mining App to receive tokens.', 'success');
-        
-    } catch (error) {
-        console.error('Withdrawal error:', error);
-        showNotification('❌ Withdrawal failed', 'error');
-    }
-}
-    </script>
 <script>
 // ============================================
 // PUBLIC OPPORTUNITIES DISPLAY - Main App
@@ -1483,129 +1446,6 @@ async function initiateKabiruWithdrawal() {
         console.error('❌ EmailJS initialization failed:', error);
         alert('Email system initialization failed. Please refresh the page.');
     }
-})();
-    // ============================================
-// FIREBASE MIGRATION - Main App
-// ============================================
-(function() {
-    'use strict';
-    
-    // Initialize Firebase
-    const firebaseConfig = {
-  apiKey: "AIzaSyAW0vk_gg03xXEm6I1TQnU8KRiv1RhcrQ4",
-  authDomain: "tau-africa-ecosystem.firebaseapp.com",
-  projectId: "tau-africa-ecosystem",
-  storageBucket: "tau-africa-ecosystem.firebasestorage.app",
-  messagingSenderId: "1047279398196",
-  appId: "1:1047279398196:web:06d43661650c794268c961"
-};
-
-// Initialize Firebase
-const app = initializeApp(firebaseConfig);
-Note: This option uses the modular JavaScript SDK, which provides reduced SDK size.
-
-Learn more about Firebase for web: Get Started, Web SDK API Reference, Samples
-
-    if (!firebase.apps.length) {
-        firebase.initializeApp(firebaseConfig);
-    }
-    
-    const db = firebase.firestore();
-    const auth = firebase.auth();
-    
-    // Override TauDB.sync to use Firestore
-    const originalSync = window.TauDB.sync;
-    window.TauDB.sync = async function(formData, team, referralCode) {
-        try {
-            const memberId = generateMemberID(team, referralCode);
-            const memberData = {
-                id: memberId,
-                referralCode: generateReferralCode(memberId),
-                team: team,
-                fullName: formData.fullName || formData.name,
-                email: formData.email,
-                phone: formData.phone,
-                location: formData.location,
-                paymentStatus: 'Paid',
-                dateJoined: new Date().toISOString().split('T')[0],
-                status: 'Active',
-                fee: team === 'TASK' ? 500 : team === 'TALK' ? 2000 : 1500,
-                iKbpBalance: 500, // Welcome bonus
-                iKbBalance: 0.0000,
-                activities: [],
-                tasks: [],
-                createdAt: firebase.firestore.FieldValue.serverTimestamp(),
-                ...formData
-            };
-            
-            // Save to Firestore
-            await db.collection('members').doc(memberId).set(memberData);
-            
-            // Also save to localStorage as backup
-            const localMembers = JSON.parse(localStorage.getItem('tauAfricaDB') || '[]');
-            localMembers.push(memberData);
-            localStorage.setItem('tauAfricaDB', JSON.stringify(localMembers));
-            
-            console.log('✅ Member synced to Firestore:', memberId);
-            return { success: true, memberId, member: memberData };
-            
-        } catch (error) {
-            console.error('❌ Firestore sync error:', error);
-            // Fallback to localStorage
-            return originalSync(formData, team, referralCode);
-        }
-    };
-    
-    // Override addActivity to sync to Firestore
-    window.TauDB.addActivity = async function(memberId, activity) {
-        try {
-            const activityRecord = {
-                id: `ACT-${Date.now()}`,
-                type: activity.type,
-                title: activity.title,
-                description: activity.description,
-                dateAdded: new Date().toISOString(),
-                status: 'Active',
-                iKbpReward: activity.reward || 100
-            };
-            
-            // Update Firestore
-            await db.collection('members').doc(memberId).update({
-                activities: firebase.firestore.FieldValue.arrayUnion(activityRecord),
-                iKbpBalance: firebase.firestore.FieldValue.increment(activityRecord.iKbpReward)
-            });
-            
-            // Update localStorage
-            const members = JSON.parse(localStorage.getItem('tauAfricaDB') || '[]');
-            const memberIndex = members.findIndex(m => m.id === memberId);
-            if (memberIndex !== -1) {
-                members[memberIndex].activities.push(activityRecord);
-                members[memberIndex].iKbpBalance += activityRecord.iKbpReward;
-                localStorage.setItem('tauAfricaDB', JSON.stringify(members));
-            }
-            
-            return { 
-                success: true, 
-                activity: activityRecord,
-                earned: activityRecord.iKbpReward
-            };
-            
-        } catch (error) {
-            console.error('❌ Activity sync error:', error);
-            return { success: false, error: error.message };
-        }
-    };
-    
-    // Real-time listener for member updates
-    window.listenToMemberUpdates = function(memberId, callback) {
-        return db.collection('members').doc(memberId).onSnapshot(doc => {
-            if (doc.exists) {
-                callback(doc.data());
-            }
-        });
-    };
-    
-    console.log('✅ Main App - Firebase initialized');
 })();
 
 // Global variables
@@ -5855,4 +5695,4 @@ window.runIntegrationTest = function() {
 console.log('💡 Run window.runIntegrationTest() to check integration');
     </script>
 </body>
-    </html>
+                    </html>
