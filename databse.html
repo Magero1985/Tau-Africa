@@ -618,7 +618,6 @@
         <div style="margin-top: 20px; padding: 15px; background: #f8f9fa; border-radius: 10px;">
             <small><strong>Default Access Code:</strong>TAU2025ADMIN</small>
             <p style="margin-top: 10px; font-size: 12px; color: #666;">
-                Change this code after first login in Settings
             </p>
         </div>
     </div>
@@ -1190,7 +1189,7 @@ window.addEventListener('message', function(event) {
         let currentEditId = null;
         let parsedMemberData = null;
         let currentViewMember = null;
-        const ACCESS_CODE = 'TAU2025ADMIN';
+        const ACCESS_CODE = 'TAU2025';
         let currentMemberSession = null;
 // ============================================
 // FIREBASE MIGRATION - Database App
@@ -1453,7 +1452,7 @@ window.addEventListener('message', function(event) {
                 member_id: member.id,
                 team: member.team,
                 registration_date: member.dateJoined,
-                organization: 'TAU Africa Foundation',
+                organization: 'TAU Africa Digital Ecosystem,
                 portal_link: window.location.href
             };
             
@@ -2137,6 +2136,21 @@ window.addEventListener('message', function(event) {
             }
         }
     </script>
+    !-- Add this right after the existing EmailJS script tag (around line 34) -->
+<script type="text/javascript">
+(function() {
+    // Initialize EmailJS for Database App
+    emailjs.init('GhjI14eQVGgOli0j1');
+    console.log('✅ EmailJS initialized in Database App');
+    
+    // Service configuration
+    window.EMAIL_CONFIG = {
+        serviceId: 'service_xfira7g',
+        templateId: 'template_bqxztig',
+        publicKey: 'GhjI14eQVGgOli0j1'
+    };
+})();
+</script>
     // ============================================
 // FIREBASE BRIDGE - Database App (NON-DESTRUCTIVE)
 // Add this AFTER all existing code, before </body>
