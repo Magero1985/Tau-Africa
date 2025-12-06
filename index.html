@@ -5089,7 +5089,46 @@ function createForumModal() {
 
     console.log('✅ TAU UI COMPONENTS LOADED - COMPLETE');
 })();
-</script>
+      <button onclick="initiateKabiruWithdrawal()" class="btn" style="width: 100%; margin: 10px 0; background: linear-gradient(45deg, #FFD700, #FFA500);">
+    💎 Withdraw to Kabiru Mining (Min: 10,000 iKbp)
+</button>
+
+<script>
+async function initiateKabiruWithdrawal() {
+    const currentMember = window.TauDB?.getCurrentMember();
+    if (!currentMember) return;
+    
+    const availableIkbp = currentMember.iKbpBalance || 0;
+    const availableIkb = currentMember.iKbBalance || 0;
+    
+    if (availableIkbp < 10000 && availableIkb < 0.0001) {
+        showNotification('❌ Minimum required: 10,000 iKbp or 0.0001 iKb', 'error');
+        return;
+    }
+    
+    if (!confirm(`Withdraw ${availableIkbp.toLocaleString()} iKbp + ${availableIkb} iKb to Kabiru Mining App?`)) {
+        return;
+    }
+    
+    try {
+        await db.collection('members').doc(currentMember.id).update({
+            pendingKabiruTransfer: {
+                iKbp: availableIkbp,
+                iKb: availableIkb,
+                timestamp: new Date().toISOString()
+            },
+            iKbpBalance: 0,
+            iKbBalance: 0
+        });
+        
+        showNotification('✅ Withdrawal initiated! Open Kabiru Mining App to receive tokens.', 'success');
+        
+    } catch (error) {
+        console.error('Withdrawal error:', error);
+        showNotification('❌ Withdrawal failed', 'error');
+    }
+}
+</script>  
     <script>
 // ============================================
 // TAU AFRICA - WELCOME BONUS SOCKET
