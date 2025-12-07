@@ -644,5 +644,310 @@
             console.log('✅ All buttons and toggles working!');
         });
     </script>
+    <!-- FIREBASE SYNC BRIDGE - Add to ALL apps -->
+<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+
+<script>
+(function() {
+    'use strict';
+    
+    console.log('🔥 TAU Firebase Bridge - Starting...');
+    
+    // ============================================
+    // FIREBASE CONFIGURATION
+    // ============================================
+    const FIREBASE_CONFIG = {
+        apiKey: "AIzaSyAW0vk_gg03xXEm6I1TQnU8KRiv1RhcrQ4",
+        authDomain: "tau-africa-ecosystem.firebaseapp.com",
+        projectId: "tau-africa-ecosystem",
+        storageBucket: "tau-africa-ecosystem.firebasestorage.app",
+        messagingSenderId: "1047279398196",
+        appId: "1:1047279398196:web:06d43661650c794268c961"
+    };
+    
+    const COLLECTIONS = {
+        members: 'members',
+        tasks: 'tasks',
+        activities: 'activities',
+        values: 'values',
+        validations: 'validations',
+        notifications: 'notifications'
+    };
+    
+    // Initialize Firebase
+    let db, isOnline = false;
+    
+    try {
+        if (!firebase.apps.length) {
+            firebase.initializeApp(FIREBASE_CONFIG);
+        }
+        db = firebase.firestore();
+        
+        // Enable offline persistence
+        db.enablePersistence({ synchronizeTabs: true })
+            .then(() => console.log('✅ Offline persistence enabled'))
+            .catch(err => console.warn('Persistence warning:', err));
+        
+        isOnline = true;
+        updateSyncIndicator(true);
+        console.log('✅ Firebase connected successfully');
+    } catch (error) {
+        console.error('❌ Firebase init failed:', error);
+        isOnline = false;
+        updateSyncIndicator(false);
+    }
+    
+    // ============================================
+    // SYNC INDICATOR UPDATE
+    // ============================================
+    function updateSyncIndicator(online) {
+        const indicators = document.querySelectorAll('#syncIndicator, .sync-indicator');
+        indicators.forEach(indicator => {
+            if (indicator) {
+                indicator.className = online ? 'sync-indicator online' : 'sync-indicator offline';
+                const text = indicator.querySelector('#syncText, span');
+                if (text) text.textContent = online ? '🟢 Firebase Connected' : '🔴 Offline Mode';
+            }
+        });
+    }
+    
+    // ============================================
+    // CORE SYNC FUNCTIONS
+    // ============================================
+    
+    // Save to BOTH localStorage AND Firestore
+    async function syncSave(collection, id, data) {
+        // 1. Save to localStorage first (fast)
+        const localKey = getLocalStorageKey(collection);
+        const localData = JSON.parse(localStorage.getItem(localKey) || '[]');
+        
+        const existingIndex = localData.findIndex(item => item.id === id);
+        if (existingIndex >= 0) {
+            localData[existingIndex] = data;
+        } else {
+            localData.push(data);
+        }
+        
+        localStorage.setItem(localKey, JSON.stringify(localData));
+        console.log(`💾 Saved to localStorage: ${collection}/${id}`);
+        
+        // 2. Sync to Firestore (if online)
+        if (db && isOnline) {
+            try {
+                await db.collection(collection).doc(id).set(data, { merge: true });
+                console.log(`☁️ Synced to Firestore: ${collection}/${id}`);
+                return { success: true, source: 'firestore' };
+            } catch (error) {
+                console.error(`⚠️ Firestore sync failed for ${collection}/${id}:`, error);
+                return { success: true, source: 'localStorage' };
+            }
+        }
+        
+        return { success: true, source: 'localStorage' };
+    }
+    
+    // Load from Firestore FIRST, fallback to localStorage
+    async function syncLoad(collection) {
+        const localKey = getLocalStorageKey(collection);
+        
+        // Try Firestore first
+        if (db && isOnline) {
+            try {
+                const snapshot = await db.collection(collection).get();
+                const data = [];
+                snapshot.forEach(doc => data.push({ ...doc.data(), firestoreId: doc.id }));
+                
+                // Update localStorage with Firestore data
+                localStorage.setItem(localKey, JSON.stringify(data));
+                console.log(`☁️ Loaded ${data.length} items from Firestore: ${collection}`);
+                return data;
+            } catch (error) {
+                console.error(`⚠️ Firestore load failed for ${collection}:`, error);
+            }
+        }
+        
+        // Fallback to localStorage
+        const localData = JSON.parse(localStorage.getItem(localKey) || '[]');
+        console.log(`💾 Loaded ${localData.length} items from localStorage: ${collection}`);
+        return localData;
+    }
+    
+    // Delete from BOTH
+    async function syncDelete(collection, id) {
+        // 1. Delete from localStorage
+        const localKey = getLocalStorageKey(collection);
+        const localData = JSON.parse(localStorage.getItem(localKey) || '[]');
+        const filtered = localData.filter(item => item.id !== id);
+        localStorage.setItem(localKey, JSON.stringify(filtered));
+        
+        // 2. Delete from Firestore
+        if (db && isOnline) {
+            try {
+                await db.collection(collection).doc(id).delete();
+                console.log(`🗑️ Deleted from Firestore: ${collection}/${id}`);
+            } catch (error) {
+                console.error(`⚠️ Firestore delete failed:`, error);
+            }
+        }
+    }
+    
+    // ============================================
+    // REAL-TIME SYNC LISTENERS
+    // ============================================
+    function setupRealtimeSync() {
+        if (!db || !isOnline) return;
+        
+        Object.values(COLLECTIONS).forEach(collection => {
+            db.collection(collection).onSnapshot(snapshot => {
+                snapshot.docChanges().forEach(change => {
+                    const data = { ...change.doc.data(), firestoreId: change.doc.id };
+                    const localKey = getLocalStorageKey(collection);
+                    const localData = JSON.parse(localStorage.getItem(localKey) || '[]');
+                    
+                    if (change.type === 'added' || change.type === 'modified') {
+                        const idx = localData.findIndex(item => item.id === data.id);
+                        if (idx >= 0) {
+                            localData[idx] = data;
+                        } else {
+                            localData.push(data);
+                        }
+                    } else if (change.type === 'removed') {
+                        const filtered = localData.filter(item => item.id !== data.id);
+                        localStorage.setItem(localKey, JSON.stringify(filtered));
+                        console.log(`🔄 Real-time delete: ${collection}/${data.id}`);
+                        triggerUIRefresh(collection);
+                        return;
+                    }
+                    
+                    localStorage.setItem(localKey, JSON.stringify(localData));
+                    console.log(`🔄 Real-time update: ${collection}/${data.id}`);
+                    triggerUIRefresh(collection);
+                });
+            }, error => {
+                console.error(`Real-time sync error for ${collection}:`, error);
+            });
+        });
+        
+        console.log('👂 Real-time listeners active for all collections');
+    }
+    
+    // ============================================
+    // UTILITY FUNCTIONS
+    // ============================================
+    function getLocalStorageKey(collection) {
+        const keyMap = {
+            'members': 'tauAfricaDB',
+            'tasks': 'tauTasks',
+            'activities': 'tauActivities',
+            'values': 'tauValues',
+            'validations': 'tauPendingValidations',
+            'notifications': 'tauNotifications'
+        };
+        return keyMap[collection] || collection;
+    }
+    
+    function triggerUIRefresh(collection) {
+        // Trigger existing UI refresh functions if they exist
+        switch(collection) {
+            case 'members':
+                if (typeof renderMembers === 'function') renderMembers();
+                if (typeof updateStats === 'function') updateStats();
+                break;
+            case 'tasks':
+                if (typeof loadTasks === 'function') loadTasks();
+                if (typeof refreshPublicTasks === 'function') refreshPublicTasks();
+                break;
+            case 'activities':
+                if (typeof loadActivities === 'function') loadActivities();
+                if (typeof refreshPublicActivities === 'function') refreshPublicActivities();
+                break;
+            case 'values':
+                if (typeof loadValues === 'function') loadValues();
+                if (typeof refreshPublicValues === 'function') refreshPublicValues();
+                break;
+        }
+        
+        // Dispatch custom event
+        window.dispatchEvent(new CustomEvent('tauFirebaseSync', {
+            detail: { collection, timestamp: Date.now() }
+        }));
+    }
+    
+    // ============================================
+    // OVERRIDE EXISTING TauDB FUNCTIONS
+    // ============================================
+    if (window.TauDB) {
+        const originalSync = window.TauDB.sync;
+        window.TauDB.sync = async function(formData, team, referralCode) {
+            const result = originalSync(formData, team, referralCode);
+            if (result.success) {
+                await syncSave('members', result.memberId, result.member);
+            }
+            return result;
+        };
+        
+        const originalAddActivity = window.TauDB.addActivity;
+        window.TauDB.addActivity = async function(memberId, activity) {
+            const result = originalAddActivity(memberId, activity);
+            if (result.success) {
+                const member = JSON.parse(localStorage.getItem('tauAfricaDB') || '[]')
+                    .find(m => m.id === memberId);
+                if (member) await syncSave('members', memberId, member);
+            }
+            return result;
+        };
+        
+        const originalAddTask = window.TauDB.addTask;
+        window.TauDB.addTask = async function(memberId, task) {
+            const result = originalAddTask(memberId, task);
+            if (result.success) {
+                const member = JSON.parse(localStorage.getItem('tauAfricaDB') || '[]')
+                    .find(m => m.id === memberId);
+                if (member) await syncSave('members', memberId, member);
+            }
+            return result;
+        };
+    }
+    
+    // ============================================
+    // EXPOSE GLOBAL API
+    // ============================================
+    window.TauFirebase = {
+        save: syncSave,
+        load: syncLoad,
+        delete: syncDelete,
+        isOnline: () => isOnline,
+        db: db
+    };
+    
+    // ============================================
+    // START SYNC
+    // ============================================
+    if (isOnline) {
+        setupRealtimeSync();
+        
+        // Initial load from Firestore
+        setTimeout(async () => {
+            console.log('🔄 Loading initial data from Firestore...');
+            await Promise.all([
+                syncLoad('members'),
+                syncLoad('tasks'),
+                syncLoad('activities'),
+                syncLoad('values')
+            ]);
+            triggerUIRefresh('members');
+            triggerUIRefresh('tasks');
+            triggerUIRefresh('activities');
+            triggerUIRefresh('values');
+            console.log('✅ Initial sync complete');
+        }, 1000);
+    }
+    
+    console.log('✅ TAU Firebase Bridge initialized');
+    console.log('📊 Status:', isOnline ? 'ONLINE' : 'OFFLINE');
+    
+})();
+</script>
 </body>
                     </html>
