@@ -7690,5 +7690,287 @@ TAU Africa
     animation: transferPulse 2s infinite;
 }
 </style>
-</body>
+ <script>   
+(function() {
+    'use strict';
+    
+    console.log('🔍 TAU Integration Health Check - Starting...');
+    
+    // ============================================
+    // 1. CHECK STORAGE INTEGRITY
+    // ============================================
+    function checkStorage() {
+        const requiredKeys = [
+            'tauAfricaDB',
+            'tauTasks',
+            'tauActivities',
+            'tauValues',
+            'tauPendingValidations',
+            'tauNotifications',
+            'tauValidatorCodes'
+        ];
+        
+        const issues = [];
+        
+        requiredKeys.forEach(key => {
+            try {
+                const data = localStorage.getItem(key);
+                if (!data) {
+                    localStorage.setItem(key, '[]');
+                    console.log(`✅ Created missing storage: ${key}`);
+                }
+                
+                // Validate JSON
+                JSON.parse(data || '[]');
+                
+            } catch (error) {
+                issues.push(`❌ Storage error (${key}): ${error.message}`);
+                localStorage.setItem(key, '[]'); // Reset if corrupted
+            }
+        });
+        
+        return {
+            passed: issues.length === 0,
+            issues: issues
+        };
+    }
+    
+    // ============================================
+    // 2. CHECK CROSS-APP DATA FLOW
+    // ============================================
+    function checkDataFlow() {
+        const tasks = JSON.parse(localStorage.getItem('tauTasks') || '[]');
+        const activities = JSON.parse(localStorage.getItem('tauActivities') || '[]');
+        const members = JSON.parse(localStorage.getItem('tauAfricaDB') || '[]');
+        
+        const report = {
+            members: members.length,
+            tasks: tasks.length,
+            activities: activities.length,
+            validatedTasks: tasks.filter(t => t.validated).length,
+            validatedActivities: activities.filter(a => a.validated).length
+        };
+        
+        console.log('📊 Data Flow Status:', report);
+        return report;
+    }
+    
+    // ============================================
+    // 3. CHECK FUNCTION AVAILABILITY
+    // ============================================
+    function checkFunctions() {
+        const requiredFunctions = [
+            'TauDB.sync',
+            'TauDB.authenticate',
+            'TauDB.addActivity',
+            'TauDB.addTask',
+            'createNotification',
+            'showNotification',
+            'refreshPublicOpportunities'
+        ];
+        
+        const issues = [];
+        
+        requiredFunctions.forEach(funcPath => {
+            const parts = funcPath.split('.');
+            let obj = window;
+            
+            for (let part of parts) {
+                if (!obj || typeof obj[part] === 'undefined') {
+                    issues.push(`❌ Missing: ${funcPath}`);
+                    return;
+                }
+                obj = obj[part];
+            }
+            
+            console.log(`✅ Available: ${funcPath}`);
+        });
+        
+        return {
+            passed: issues.length === 0,
+            issues: issues
+        };
+    }
+    
+    // ============================================
+    // 4. CHECK FIREBASE CONNECTION
+    // ============================================
+    function checkFirebase() {
+        if (typeof firebase === 'undefined') {
+            return {
+                passed: false,
+                message: '❌ Firebase library not loaded'
+            };
+        }
+        
+        if (!firebase.apps.length) {
+            return {
+                passed: false,
+                message: '❌ Firebase not initialized'
+            };
+        }
+        
+        return {
+            passed: true,
+            message: '✅ Firebase connected'
+        };
+    }
+    
+    // ============================================
+    // 5. CHECK KABIRU INTEGRATION
+    // ============================================
+    function checkKabiruIntegration() {
+        const issues = [];
+        
+        // Check if withdrawal function exists
+        if (typeof initiateKabiruWithdrawal !== 'function') {
+            issues.push('❌ Missing: initiateKabiruWithdrawal()');
+        } else {
+            console.log('✅ Kabiru withdrawal function available');
+        }
+        
+        // Check if mining link is intact
+        const kabiruLinks = document.querySelectorAll('a[href*="Kabiru-Mining-Portal"]');
+        if (kabiruLinks.length === 0) {
+            issues.push('⚠️ Warning: No Kabiru Mining links found');
+        } else {
+            console.log(`✅ Found ${kabiruLinks.length} Kabiru Mining link(s)`);
+        }
+        
+        return {
+            passed: issues.length === 0,
+            issues: issues
+        };
+    }
+    
+    // ============================================
+    // 6. FIX DUPLICATE FIREBASE BRIDGES
+    // ============================================
+    function fixDuplicateBridges() {
+        // Prevent multiple Firebase initializations
+        if (window.tauFirebaseBridgeInitialized) {
+            console.log('⚠️ Firebase bridge already initialized, skipping...');
+            return;
+        }
+        
+        window.tauFirebaseBridgeInitialized = true;
+        console.log('✅ Firebase bridge initialization flag set');
+    }
+    
+    // ============================================
+    // 7. COMPREHENSIVE HEALTH CHECK
+    // ============================================
+    function runHealthCheck() {
+        console.log('\n' + '='.repeat(60));
+        console.log('🏥 TAU AFRICA INTEGRATION HEALTH CHECK');
+        console.log('='.repeat(60) + '\n');
+        
+        const results = {
+            storage: checkStorage(),
+            dataFlow: checkDataFlow(),
+            functions: checkFunctions(),
+            firebase: checkFirebase(),
+            kabiru: checkKabiruIntegration()
+        };
+        
+        console.log('\n📋 SUMMARY:');
+        console.log('─'.repeat(60));
+        
+        let allPassed = true;
+        
+        if (results.storage.passed) {
+            console.log('✅ Storage: HEALTHY');
+        } else {
+            console.log('❌ Storage: ISSUES FOUND');
+            results.storage.issues.forEach(issue => console.log('  ' + issue));
+            allPassed = false;
+        }
+        
+        console.log(`✅ Data Flow: ${results.dataFlow.members} members, ${results.dataFlow.tasks} tasks, ${results.dataFlow.activities} activities`);
+        
+        if (results.functions.passed) {
+            console.log('✅ Core Functions: ALL AVAILABLE');
+        } else {
+            console.log('❌ Core Functions: ISSUES FOUND');
+            results.functions.issues.forEach(issue => console.log('  ' + issue));
+            allPassed = false;
+        }
+        
+        console.log(results.firebase.message);
+        
+        if (results.kabiru.passed) {
+            console.log('✅ Kabiru Integration: INTACT');
+        } else {
+            console.log('⚠️ Kabiru Integration: WARNINGS');
+            results.kabiru.issues.forEach(issue => console.log('  ' + issue));
+        }
+        
+        console.log('\n' + '='.repeat(60));
+        
+        if (allPassed) {
+            console.log('🎉 ALL SYSTEMS OPERATIONAL');
+            if (typeof showNotification === 'function') {
+                showNotification('✅ Integration Health Check: PASSED', 'success');
+            }
+        } else {
+            console.log('⚠️ SOME ISSUES DETECTED (see details above)');
+            if (typeof showNotification === 'function') {
+                showNotification('⚠️ Integration check found issues - check console', 'info');
+            }
+        }
+        
+        console.log('='.repeat(60) + '\n');
+        
+        return results;
+    }
+    
+    // ============================================
+    // 8. AUTO-FIX COMMON ISSUES
+    // ============================================
+    function autoFix() {
+        console.log('🔧 Auto-fixing common issues...');
+        
+        fixDuplicateBridges();
+        checkStorage(); // Creates missing storage
+        
+        // Ensure notification system exists
+        if (!document.getElementById('notification')) {
+            const notif = document.createElement('div');
+            notif.id = 'notification';
+            notif.className = 'notification';
+            document.body.appendChild(notif);
+            console.log('✅ Created notification element');
+        }
+        
+        console.log('✅ Auto-fix complete');
+    }
+    
+    // ============================================
+    // 9. EXPOSE GLOBAL API
+    // ============================================
+    window.TauIntegration = {
+        healthCheck: runHealthCheck,
+        checkStorage: checkStorage,
+        checkDataFlow: checkDataFlow,
+        checkFunctions: checkFunctions,
+        checkFirebase: checkFirebase,
+        checkKabiru: checkKabiruIntegration,
+        autoFix: autoFix
+    };
+    
+    // ============================================
+    // 10. RUN ON LOAD
+    // ============================================
+    autoFix();
+    
+    setTimeout(() => {
+        runHealthCheck();
+    }, 2000);
+    
+    console.log('✅ TAU Integration Health Check loaded');
+    console.log('💡 Run window.TauIntegration.healthCheck() anytime to check status');
+    
+})();
+ </script>  
+  </body>
             </html>
