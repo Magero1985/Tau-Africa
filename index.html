@@ -7386,5 +7386,309 @@ TAU Africa
     
 })();
     </script>
+    <script>
+(function() {
+    'use strict';
+    
+    console.log('💎 Loading Kabiru Transfer System...');
+    
+    // ============================================
+    // 1. INITIATE KABIRU WITHDRAWAL (Missing Function)
+    // ============================================
+    window.initiateKabiruWithdrawal = async function() {
+        const currentMember = window.TauDB?.getCurrentMember();
+        
+        if (!currentMember) {
+            showNotification('❌ Please login first', 'error');
+            showRealMemberLogin();
+            return;
+        }
+        
+        const availableIkbp = currentMember.iKbpBalance || 0;
+        const availableIkb = currentMember.iKbBalance || 0;
+        
+        // Check minimum
+        if (availableIkbp < 10000 && availableIkb < 0.0001) {
+            showNotification('❌ Minimum required: 10,000 iKbp or 0.0001 iKb', 'error');
+            return;
+        }
+        
+        // Confirmation
+        const confirmMsg = `Transfer to Kabiru Mining App?\n\n` +
+                          `${availableIkbp.toLocaleString()} iKbp\n` +
+                          `${availableIkb.toFixed(4)} iKb\n\n` +
+                          `This will transfer ALL your balance to Kabiru Mining wallet.`;
+        
+        if (!confirm(confirmMsg)) return;
+        
+        try {
+            const db = firebase.firestore();
+            
+            if (db) {
+                // FIRESTORE METHOD (Online)
+                console.log('☁️ Creating Firestore transfer...');
+                
+                // Create pending transfer in member document
+                await db.collection('members').doc(currentMember.id).update({
+                    pendingKabiruTransfer: {
+                        iKbp: availableIkbp,
+                        iKb: availableIkb,
+                        timestamp: firebase.firestore.FieldValue.serverTimestamp(),
+                        status: 'pending'
+                    },
+                    iKbpBalance: 0,
+                    iKbBalance: 0,
+                    lastSync: firebase.firestore.FieldValue.serverTimestamp()
+                });
+                
+                console.log('✅ Firestore transfer created');
+                
+                // Update localStorage immediately
+                const members = JSON.parse(localStorage.getItem('tauAfricaDB') || '[]');
+                const memberIndex = members.findIndex(m => m.id === currentMember.id);
+                
+                if (memberIndex !== -1) {
+                    members[memberIndex].pendingKabiruTransfer = {
+                        iKbp: availableIkbp,
+                        iKb: availableIkb,
+                        timestamp: new Date().toISOString(),
+                        status: 'pending'
+                    };
+                    members[memberIndex].iKbpBalance = 0;
+                    members[memberIndex].iKbBalance = 0;
+                    localStorage.setItem('tauAfricaDB', JSON.stringify(members));
+                    
+                    // Update session
+                    sessionStorage.setItem('tauCurrentUser', JSON.stringify(members[memberIndex]));
+                }
+                
+                // Create notification
+                if (typeof createNotification === 'function') {
+                    createNotification(
+                        currentMember.id,
+                        '💎 Transfer Initiated',
+                        `${availableIkbp.toLocaleString()} iKbp + ${availableIkb.toFixed(4)} iKb transfer to Kabiru Mining`,
+                        'success'
+                    );
+                }
+                
+                showNotification('✅ Transfer initiated! Open Kabiru Mining App to receive tokens.', 'success');
+                
+                // Refresh dashboard
+                setTimeout(() => {
+                    closeAllModals();
+                    if (typeof showRealMemberDashboard === 'function') {
+                        showRealMemberDashboard(members[memberIndex]);
+                    }
+                }, 2000);
+                
+            } else {
+                // OFFLINE MODE (localStorage only)
+                console.warn('📴 Offline mode - saving locally');
+                
+                const members = JSON.parse(localStorage.getItem('tauAfricaDB') || '[]');
+                const memberIndex = members.findIndex(m => m.id === currentMember.id);
+                
+                if (memberIndex !== -1) {
+                    members[memberIndex].pendingKabiruTransfer = {
+                        iKbp: availableIkbp,
+                        iKb: availableIkb,
+                        timestamp: new Date().toISOString(),
+                        status: 'pending_offline'
+                    };
+                    members[memberIndex].iKbpBalance = 0;
+                    members[memberIndex].iKbBalance = 0;
+                    localStorage.setItem('tauAfricaDB', JSON.stringify(members));
+                }
+                
+                showNotification('⚠️ Offline mode: Transfer saved locally. Connect to internet to complete.', 'error');
+            }
+            
+        } catch (error) {
+            console.error('❌ Transfer error:', error);
+            showNotification('❌ Transfer failed: ' + error.message, 'error');
+        }
+    };
+    
+    // ============================================
+    // 2. ADD TRANSFER BUTTON TO DASHBOARD (Missing UI)
+    // ============================================
+    
+    // Override showRealMemberDashboard to include transfer button
+    const originalShowDashboard = window.showRealMemberDashboard;
+    
+    window.showRealMemberDashboard = function(member) {
+        // Call original function first
+        if (originalShowDashboard) {
+            originalShowDashboard(member);
+        }
+        
+        // Then add transfer section
+        setTimeout(() => {
+            const modal = document.querySelector('.modal.active, .modal[style*="display: block"]');
+            if (!modal) return;
+            
+            const modalContent = modal.querySelector('.modal-content');
+            if (!modalContent) return;
+            
+            // Check if transfer section already exists
+            if (modalContent.querySelector('#kabiruTransferSection')) return;
+            
+            const currentMember = window.TauDB?.getCurrentMember() || member;
+            
+            // Create transfer section
+            const transferSection = document.createElement('div');
+            transferSection.id = 'kabiruTransferSection';
+            transferSection.innerHTML = `
+                <div style="margin-top: 30px; padding: 20px; background: linear-gradient(45deg, #FFD700, #FFA500); border-radius: 15px; text-align: center;">
+                    <h3 style="color: #333; margin-bottom: 15px;">💎 Kabiru Mining Transfer</h3>
+                    <div style="background: rgba(0,0,0,0.1); padding: 15px; border-radius: 10px; margin-bottom: 15px;">
+                        <div style="font-size: 24px; font-weight: bold; color: #333;">
+                            ${(currentMember.iKbpBalance || 0).toLocaleString()} iKbp
+                        </div>
+                        <div style="font-size: 18px; color: #333; margin-top: 5px;">
+                            ${(currentMember.iKbBalance || 0).toFixed(4)} iKb
+                        </div>
+                    </div>
+                    <button onclick="initiateKabiruWithdrawal()" class="btn" style="width: 100%; background: #333; color: #FFD700; font-size: 16px; padding: 15px;">
+                        💸 Withdraw to Kabiru Mining
+                    </button>
+                    <p style="color: #333; font-size: 12px; margin-top: 10px;">
+                        Minimum: 10,000 iKbp or 0.0001 iKb
+                    </p>
+                </div>
+            `;
+            
+            // Insert before logout/close buttons
+            const lastDiv = modalContent.querySelector('div[style*="grid-template-columns"]');
+            if (lastDiv) {
+                lastDiv.parentNode.insertBefore(transferSection, lastDiv);
+            } else {
+                modalContent.appendChild(transferSection);
+            }
+            
+            console.log('✅ Transfer button added to dashboard');
+            
+        }, 500);
+    };
+    
+    // ============================================
+    // 3. AUTO-SYNC COMPLETED TRANSFERS (Listener)
+    // ============================================
+    function setupTransferCompletionListener() {
+        const db = firebase.firestore();
+        if (!db) return;
+        
+        const currentMember = window.TauDB?.getCurrentMember();
+        if (!currentMember) return;
+        
+        console.log('👂 Listening for transfer completions...');
+        
+        // Listen for when Kabiru Mining marks transfer as completed
+        db.collection('members').doc(currentMember.id)
+            .onSnapshot(doc => {
+                if (!doc.exists) return;
+                
+                const data = doc.data();
+                
+                if (data.pendingKabiruTransfer && 
+                    data.pendingKabiruTransfer.status === 'completed') {
+                    
+                    console.log('✅ Transfer completed by Kabiru Mining!');
+                    
+                    // Update localStorage to remove pending transfer
+                    const members = JSON.parse(localStorage.getItem('tauAfricaDB') || '[]');
+                    const memberIndex = members.findIndex(m => m.id === currentMember.id);
+                    
+                    if (memberIndex !== -1) {
+                        members[memberIndex].pendingKabiruTransfer = null;
+                        localStorage.setItem('tauAfricaDB', JSON.stringify(members));
+                    }
+                    
+                    // Notify user
+                    if (typeof createNotification === 'function') {
+                        createNotification(
+                            currentMember.id,
+                            '✅ Transfer Complete!',
+                            'Your tokens have been received in Kabiru Mining App',
+                            'success'
+                        );
+                    }
+                    
+                    showNotification('✅ Transfer received in Kabiru Mining!', 'success');
+                }
+            }, error => {
+                console.error('Transfer listener error:', error);
+            });
+    }
+    
+    // ============================================
+    // 4. AUTO-START LISTENER ON LOGIN
+    // ============================================
+    
+    // Hook into authentication
+    const originalAuth = window.TauDB?.authenticate;
+    if (originalAuth) {
+        window.TauDB.authenticate = function(identifier, phoneLastFour) {
+            const result = originalAuth.call(this, identifier, phoneLastFour);
+            
+            if (result.success) {
+                // Start transfer completion listener
+                setTimeout(() => {
+                    setupTransferCompletionListener();
+                }, 1000);
+            }
+            
+            return result;
+        };
+    }
+    
+    // ============================================
+    // 5. CHECK FOR PENDING TRANSFERS ON PAGE LOAD
+    // ============================================
+    function checkPendingTransfers() {
+        const currentMember = window.TauDB?.getCurrentMember();
+        if (!currentMember) return;
+        
+        if (currentMember.pendingKabiruTransfer && 
+            currentMember.pendingKabiruTransfer.status === 'pending') {
+            
+            console.log('⏳ Pending transfer detected:', currentMember.pendingKabiruTransfer);
+            
+            showNotification(
+                '⏳ Transfer pending: Open Kabiru Mining App to complete',
+                'info'
+            );
+        }
+    }
+    
+    // Check on load
+    setTimeout(checkPendingTransfers, 2000);
+    
+    console.log('✅ Kabiru Transfer System LOADED');
+    console.log('💡 Users can now transfer TAU → Kabiru Mining');
+    
+})();
+</script>
+
+<!-- ============================================ -->
+<!-- VISUAL INDICATOR FOR PENDING TRANSFERS -->
+<!-- ============================================ -->
+
+<style>
+/* Add pulsing indicator for pending transfers */
+@keyframes transferPulse {
+    0%, 100% { 
+        box-shadow: 0 0 0 0 rgba(255, 215, 0, 0.7);
+    }
+    50% { 
+        box-shadow: 0 0 0 10px rgba(255, 215, 0, 0);
+    }
+}
+
+.pending-transfer-indicator {
+    animation: transferPulse 2s infinite;
+}
+</style>
 </body>
             </html>
