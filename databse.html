@@ -949,5 +949,41 @@
     
 })();
 </script>
+    <script>
+        // services/realtimeService.js - DATABASE APP VERSION
+export const realtimeService = {
+  
+  // Listen to ALL members (admin view)
+  subscribeToAllMembers(callback) {
+    return db.collection('members')
+      .orderBy('dateJoined', 'desc')
+      .onSnapshot(callback);
+  },
+  
+  // Listen to pending validations
+  subscribeToPendingValidations(callback) {
+    return db.collection('pending_validations')
+      .where('status', '==', 'pending')
+      .orderBy('created', 'desc')
+      .onSnapshot(callback);
+  },
+  
+  // Listen to ALL transfers (admin monitoring)
+  subscribeToAllTransfers(callback) {
+    return db.collection('kabiru_transfers')
+      .orderBy('timestamp', 'desc')
+      .limit(100)
+      .onSnapshot(callback);
+  },
+  
+  // Listen to sync events (system health)
+  subscribeToSyncEvents(callback) {
+    return db.collection('sync_events')
+      .orderBy('timestamp', 'desc')
+      .limit(50)
+      .onSnapshot(callback);
+  }
+};
+    </script>
 </body>
                     </html>
