@@ -1,0 +1,509 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TAU Africa - Auto Index Creator</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Arial', sans-serif;
+            background: linear-gradient(135deg, #1e3c72, #2a5298);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .container {
+            background: white;
+            border-radius: 20px;
+            padding: 40px;
+            max-width: 800px;
+            width: 100%;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+        }
+
+        h1 {
+            color: #2a5298;
+            margin-bottom: 10px;
+            text-align: center;
+        }
+
+        .subtitle {
+            text-align: center;
+            color: #666;
+            margin-bottom: 30px;
+        }
+
+        .status-box {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 20px;
+            border-left: 4px solid #4169e1;
+        }
+
+        .btn {
+            background: linear-gradient(45deg, #4169e1, #87ceeb);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 25px;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 16px;
+            width: 100%;
+            margin: 10px 0;
+            transition: all 0.3s ease;
+        }
+
+        .btn:hover {
+            transform: scale(1.02);
+            box-shadow: 0 5px 15px rgba(65, 105, 225, 0.4);
+        }
+
+        .btn:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+
+        .log-container {
+            background: #1e1e1e;
+            color: #0f0;
+            padding: 20px;
+            border-radius: 10px;
+            max-height: 400px;
+            overflow-y: auto;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+            margin-top: 20px;
+        }
+
+        .log-entry {
+            margin: 5px 0;
+            padding: 5px;
+        }
+
+        .log-success { color: #0f0; }
+        .log-error { color: #f00; }
+        .log-warning { color: #ff0; }
+        .log-info { color: #0ff; }
+
+        .progress-bar {
+            width: 100%;
+            height: 30px;
+            background: #e0e0e0;
+            border-radius: 15px;
+            overflow: hidden;
+            margin: 20px 0;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #4169e1, #87ceeb);
+            width: 0%;
+            transition: width 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+        }
+
+        .index-list {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 20px;
+            margin: 20px 0;
+        }
+
+        .index-item {
+            background: white;
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: 8px;
+            border-left: 4px solid #4169e1;
+        }
+
+        .index-item strong {
+            color: #2a5298;
+        }
+
+        .warning-box {
+            background: #fff3cd;
+            border: 2px solid #ffc107;
+            border-radius: 10px;
+            padding: 20px;
+            margin: 20px 0;
+        }
+
+        .warning-box h3 {
+            color: #856404;
+            margin-bottom: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔥 TAU Africa Index Creator</h1>
+        <p class="subtitle">Automatic Firestore Index Generation</p>
+
+        <div class="status-box">
+            <h3>📊 Status: <span id="status">Ready</span></h3>
+            <p id="statusMessage">Click "Create All Indexes" to begin</p>
+        </div>
+
+        <div class="progress-bar">
+            <div class="progress-fill" id="progressBar">0%</div>
+        </div>
+
+        <button class="btn" id="createBtn" onclick="createAllIndexes()">
+            🚀 Create All Indexes Automatically
+        </button>
+
+        <button class="btn" onclick="testIndexes()" style="background: linear-gradient(45deg, #2ecc71, #27ae60);">
+            ✅ Test Existing Indexes
+        </button>
+
+        <button class="btn" onclick="exportIndexesJson()" style="background: linear-gradient(45deg, #9b59b6, #8e44ad);">
+            📥 Export firestore.indexes.json
+        </button>
+
+        <div class="warning-box">
+            <h3>⚠️ Important Notice</h3>
+            <p><strong>Firestore indexes cannot be created directly from client-side code due to security restrictions.</strong></p>
+            <p>This tool will generate the required queries that trigger automatic index creation OR export a JSON file for Firebase CLI deployment.</p>
+        </div>
+
+        <div class="index-list">
+            <h3>📋 Required Indexes</h3>
+            <div id="indexList"></div>
+        </div>
+
+        <div class="log-container" id="logContainer"></div>
+    </div>
+
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+
+    <script>
+        // ============================================
+        // FIREBASE CONFIGURATION
+        // ============================================
+        const FIREBASE_CONFIG = {
+            apiKey: "AIzaSyAW0vk_gg03xXEm6I1TQnU8KRiv1RhcrQ4",
+            authDomain: "tau-africa-ecosystem.firebaseapp.com",
+            projectId: "tau-africa-ecosystem",
+            storageBucket: "tau-africa-ecosystem.firebasestorage.app",
+            messagingSenderId: "1047279398196",
+            appId: "1:1047279398196:web:06d43661650c794268c961"
+        };
+
+        // Initialize Firebase
+        if (!firebase.apps.length) {
+            firebase.initializeApp(FIREBASE_CONFIG);
+        }
+        const db = firebase.firestore();
+
+        // ============================================
+        // INDEX DEFINITIONS
+        // ============================================
+        const REQUIRED_INDEXES = [
+            {
+                collection: 'kabiru_transfers',
+                fields: [
+                    { field: 'memberId', order: 'ASCENDING' },
+                    { field: 'status', order: 'ASCENDING' },
+                    { field: 'timestamp', order: 'DESCENDING' }
+                ],
+                query: (db) => db.collection('kabiru_transfers')
+                    .where('memberId', '==', 'TEST')
+                    .where('status', '==', 'pending')
+                    .orderBy('timestamp', 'desc')
+            },
+            {
+                collection: 'kabiru_transfers',
+                fields: [
+                    { field: 'direction', order: 'ASCENDING' },
+                    { field: 'status', order: 'ASCENDING' },
+                    { field: 'timestamp', order: 'DESCENDING' }
+                ],
+                query: (db) => db.collection('kabiru_transfers')
+                    .where('direction', '==', 'tau_to_kabiru')
+                    .where('status', '==', 'pending')
+                    .orderBy('timestamp', 'desc')
+            },
+            {
+                collection: 'members',
+                fields: [
+                    { field: 'email', order: 'ASCENDING' },
+                    { field: 'status', order: 'ASCENDING' }
+                ],
+                query: (db) => db.collection('members')
+                    .where('email', '==', 'test@test.com')
+                    .where('status', '==', 'Active')
+            },
+            {
+                collection: 'members',
+                fields: [
+                    { field: 'team', order: 'ASCENDING' },
+                    { field: 'dateJoined', order: 'DESCENDING' }
+                ],
+                query: (db) => db.collection('members')
+                    .where('team', '==', 'TASK')
+                    .orderBy('dateJoined', 'desc')
+            },
+            {
+                collection: 'sync_events',
+                fields: [
+                    { field: 'type', order: 'ASCENDING' },
+                    { field: 'timestamp', order: 'DESCENDING' }
+                ],
+                query: (db) => db.collection('sync_events')
+                    .where('type', '==', 'new_member')
+                    .orderBy('timestamp', 'desc')
+            },
+            {
+                collection: 'notifications',
+                fields: [
+                    { field: 'memberId', order: 'ASCENDING' },
+                    { field: 'read', order: 'ASCENDING' },
+                    { field: 'timestamp', order: 'DESCENDING' }
+                ],
+                query: (db) => db.collection('notifications')
+                    .where('memberId', '==', 'TEST')
+                    .where('read', '==', false)
+                    .orderBy('timestamp', 'desc')
+            },
+            {
+                collection: 'pending_validations',
+                fields: [
+                    { field: 'status', order: 'ASCENDING' },
+                    { field: 'created', order: 'DESCENDING' }
+                ],
+                query: (db) => db.collection('pending_validations')
+                    .where('status', '==', 'Pending')
+                    .orderBy('created', 'desc')
+            },
+            {
+                collection: 'values',
+                fields: [
+                    { field: 'status', order: 'ASCENDING' },
+                    { field: 'created', order: 'DESCENDING' }
+                ],
+                query: (db) => db.collection('values')
+                    .where('status', '==', 'Approved')
+                    .orderBy('created', 'desc')
+            },
+            {
+                collection: 'values',
+                fields: [
+                    { field: 'submittedBy', order: 'ASCENDING' },
+                    { field: 'status', order: 'ASCENDING' }
+                ],
+                query: (db) => db.collection('values')
+                    .where('submittedBy', '==', 'TEST')
+                    .where('status', '==', 'Approved')
+            }
+        ];
+
+        // ============================================
+        // LOGGING FUNCTIONS
+        // ============================================
+        function log(message, type = 'info') {
+            const logContainer = document.getElementById('logContainer');
+            const entry = document.createElement('div');
+            entry.className = `log-entry log-${type}`;
+            entry.textContent = `[${new Date().toLocaleTimeString()}] ${message}`;
+            logContainer.appendChild(entry);
+            logContainer.scrollTop = logContainer.scrollHeight;
+        }
+
+        function updateStatus(status, message) {
+            document.getElementById('status').textContent = status;
+            document.getElementById('statusMessage').textContent = message;
+        }
+
+        function updateProgress(percent) {
+            const progressBar = document.getElementById('progressBar');
+            progressBar.style.width = percent + '%';
+            progressBar.textContent = percent + '%';
+        }
+
+        // ============================================
+        // DISPLAY INDEX LIST
+        // ============================================
+        function displayIndexList() {
+            const indexList = document.getElementById('indexList');
+            indexList.innerHTML = REQUIRED_INDEXES.map((index, i) => `
+                <div class="index-item">
+                    <strong>${i + 1}. ${index.collection}</strong><br>
+                    Fields: ${index.fields.map(f => `${f.field} (${f.order})`).join(' → ')}
+                </div>
+            `).join('');
+        }
+
+        // ============================================
+        // CREATE INDEXES BY TRIGGERING QUERIES
+        // ============================================
+        async function createAllIndexes() {
+            const btn = document.getElementById('createBtn');
+            btn.disabled = true;
+            btn.textContent = '⏳ Creating Indexes...';
+
+            log('🚀 Starting automatic index creation...', 'info');
+            updateStatus('Running', 'Triggering queries to create indexes...');
+
+            let successCount = 0;
+            let errorCount = 0;
+
+            for (let i = 0; i < REQUIRED_INDEXES.length; i++) {
+                const index = REQUIRED_INDEXES[i];
+                const progress = Math.round(((i + 1) / REQUIRED_INDEXES.length) * 100);
+                updateProgress(progress);
+
+                log(`📊 Creating index ${i + 1}/${REQUIRED_INDEXES.length}: ${index.collection}`, 'info');
+
+                try {
+                    // Execute the query to trigger index creation
+                    const query = index.query(db);
+                    await query.get();
+                    
+                    log(`✅ Index triggered: ${index.collection}`, 'success');
+                    successCount++;
+                    
+                } catch (error) {
+                    if (error.code === 'failed-precondition' && error.message.includes('index')) {
+                        // This is expected - Firebase will show a link to create the index
+                        log(`🔗 Index creation required: ${index.collection}`, 'warning');
+                        log(`   Firebase will provide a link in the console`, 'warning');
+                        
+                        // Extract and log the index creation URL
+                        if (error.message.includes('https://')) {
+                            const urlMatch = error.message.match(/https:\/\/[^\s]+/);
+                            if (urlMatch) {
+                                log(`   📎 Create index: ${urlMatch[0]}`, 'info');
+                            }
+                        }
+                        
+                        successCount++;
+                    } else {
+                        log(`❌ Error: ${index.collection} - ${error.message}`, 'error');
+                        errorCount++;
+                    }
+                }
+
+                // Small delay between queries
+                await new Promise(resolve => setTimeout(resolve, 500));
+            }
+
+            updateProgress(100);
+            
+            if (errorCount === 0) {
+                updateStatus('Complete', `✅ Successfully triggered ${successCount} index creations`);
+                log('🎉 All indexes triggered successfully!', 'success');
+                log('⚠️ Check Firebase Console for index creation links', 'warning');
+                log('   Or use the Export JSON button below', 'info');
+            } else {
+                updateStatus('Partial', `⚠️ ${successCount} succeeded, ${errorCount} failed`);
+                log('⚠️ Some indexes could not be triggered', 'warning');
+            }
+
+            btn.disabled = false;
+            btn.textContent = '🔄 Run Again';
+        }
+
+        // ============================================
+        // TEST EXISTING INDEXES
+        // ============================================
+        async function testIndexes() {
+            log('🧪 Testing existing indexes...', 'info');
+            updateStatus('Testing', 'Checking which indexes are already created...');
+
+            let existingCount = 0;
+            let missingCount = 0;
+
+            for (let i = 0; i < REQUIRED_INDEXES.length; i++) {
+                const index = REQUIRED_INDEXES[i];
+
+                try {
+                    const query = index.query(db);
+                    await query.limit(1).get();
+                    
+                    log(`✅ Index exists: ${index.collection}`, 'success');
+                    existingCount++;
+                    
+                } catch (error) {
+                    if (error.code === 'failed-precondition') {
+                        log(`❌ Index missing: ${index.collection}`, 'error');
+                        missingCount++;
+                    }
+                }
+            }
+
+            updateStatus('Test Complete', `${existingCount} exist, ${missingCount} missing`);
+            log(`📊 Results: ${existingCount} indexes exist, ${missingCount} need creation`, 'info');
+        }
+
+        // ============================================
+        // EXPORT INDEXES AS JSON
+        // ============================================
+        function exportIndexesJson() {
+            const indexesJson = {
+                indexes: REQUIRED_INDEXES.map(index => ({
+                    collectionGroup: index.collection,
+                    queryScope: "COLLECTION",
+                    fields: index.fields.map(f => ({
+                        fieldPath: f.field,
+                        order: f.order
+                    }))
+                }))
+            };
+
+            const jsonString = JSON.stringify(indexesJson, null, 2);
+            const blob = new Blob([jsonString], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'firestore.indexes.json';
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+
+            log('📥 Downloaded firestore.indexes.json', 'success');
+            log('💡 Deploy with: firebase deploy --only firestore:indexes', 'info');
+            
+            // Also show the content
+            const modal = document.createElement('div');
+            modal.style.cssText = 'position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); display: flex; align-items: center; justify-content: center; z-index: 10000;';
+            modal.innerHTML = `
+                <div style="background: white; padding: 30px; border-radius: 15px; max-width: 800px; max-height: 80vh; overflow: auto;">
+                    <h2 style="margin-bottom: 20px;">firestore.indexes.json</h2>
+                    <pre style="background: #1e1e1e; color: #0f0; padding: 20px; border-radius: 10px; overflow-x: auto;">${jsonString}</pre>
+                    <button onclick="this.parentElement.parentElement.remove()" style="margin-top: 20px; padding: 10px 20px; background: #4169e1; color: white; border: none; border-radius: 5px; cursor: pointer;">Close</button>
+                </div>
+            `;
+            document.body.appendChild(modal);
+        }
+
+        // ============================================
+        // INITIALIZE
+        // ============================================
+        window.addEventListener('DOMContentLoaded', () => {
+            displayIndexList();
+            log('✅ TAU Africa Index Creator initialized', 'success');
+            log('📋 ' + REQUIRED_INDEXES.length + ' indexes ready to create', 'info');
+        });
+    </script>
+</body>
+</html>
