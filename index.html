@@ -8839,150 +8839,45 @@ TAU Africa
     
 })();
  </script>
-    <script>
-    {
-  "indexes": [
-    {
-      "collectionGroup": "kabiru_transfers",
-      "queryScope": "COLLECTION",
-      "fields": [
-        {
-          "fieldPath": "memberId",
-          "order": "ASCENDING"
-        },
-        {
-          "fieldPath": "status",
-          "order": "ASCENDING"
-        },
-        {
-          "fieldPath": "timestamp",
-          "order": "DESCENDING"
-        }
-      ]
-    },
-    {
-      "collectionGroup": "kabiru_transfers",
-      "queryScope": "COLLECTION",
-      "fields": [
-        {
-          "fieldPath": "direction",
-          "order": "ASCENDING"
-        },
-        {
-          "fieldPath": "status",
-          "order": "ASCENDING"
-        },
-        {
-          "fieldPath": "timestamp",
-          "order": "DESCENDING"
-        }
-      ]
-    },
-    {
-      "collectionGroup": "members",
-      "queryScope": "COLLECTION",
-      "fields": [
-        {
-          "fieldPath": "email",
-          "order": "ASCENDING"
-        },
-        {
-          "fieldPath": "status",
-          "order": "ASCENDING"
-        }
-      ]
-    },
-    {
-      "collectionGroup": "members",
-      "queryScope": "COLLECTION",
-      "fields": [
-        {
-          "fieldPath": "team",
-          "order": "ASCENDING"
-        },
-        {
-          "fieldPath": "dateJoined",
-          "order": "DESCENDING"
-        }
-      ]
-    },
-    {
-      "collectionGroup": "sync_events",
-      "queryScope": "COLLECTION",
-      "fields": [
-        {
-          "fieldPath": "type",
-          "order": "ASCENDING"
-        },
-        {
-          "fieldPath": "timestamp",
-          "order": "DESCENDING"
-        }
-      ]
-    },
-    {
-      "collectionGroup": "notifications",
-      "queryScope": "COLLECTION",
-      "fields": [
-        {
-          "fieldPath": "memberId",
-          "order": "ASCENDING"
-        },
-        {
-          "fieldPath": "read",
-          "order": "ASCENDING"
-        },
-        {
-          "fieldPath": "timestamp",
-          "order": "DESCENDING"
-        }
-      ]
-    },
-    {
-      "collectionGroup": "pending_validations",
-      "queryScope": "COLLECTION",
-      "fields": [
-        {
-          "fieldPath": "status",
-          "order": "ASCENDING"
-        },
-        {
-          "fieldPath": "created",
-          "order": "DESCENDING"
-        }
-      ]
-    },
-    {
-      "collectionGroup": "values",
-      "queryScope": "COLLECTION",
-      "fields": [
-        {
-          "fieldPath": "status",
-          "order": "ASCENDING"
-        },
-        {
-          "fieldPath": "created",
-          "order": "DESCENDING"
-        }
-      ]
-    },
-    {
-      "collectionGroup": "values",
-      "queryScope": "COLLECTION",
-      "fields": [
-        {
-          "fieldPath": "submittedBy",
-          "order": "ASCENDING"
-        },
-        {
-          "fieldPath": "status",
-          "order": "ASCENDING"
-        }
-      ]
-    }
-  ]
-}
-    </scrip>
-  </body>
+<script>    
+// services/realtimeService.js - MAIN APP VERSION
+export const realtimeService = {
+  
+  // Listen to YOUR OWN notifications
+  subscribeToMyNotifications(memberId, callback) {
+    return db.collection('notifications')
+      .where('memberId', '==', memberId)
+      .where('read', '==', false)
+      .orderBy('timestamp', 'desc')
+      .onSnapshot(callback);
+  },
+  
+  // Listen to YOUR OWN transfer status
+  subscribeToMyTransfers(memberId, callback) {
+    return db.collection('kabiru_transfers')
+      .where('memberId', '==', memberId)
+      .orderBy('timestamp', 'desc')
+      .limit(10)
+      .onSnapshot(callback);
+  },
+  
+  // Listen to YOUR OWN profile updates (from admin)
+  subscribeToMyProfile(memberId, callback) {
+    return db.collection('members').doc(memberId)
+      .onSnapshot(callback);
+  },
+  
+  // Listen to public opportunities (tasks/activities/values)
+  subscribeToOpportunities(callback) {
+    return db.collection('values')
+      .where('validated', '==', true)
+      .where('status', '==', 'Approved')
+      .orderBy('created', 'desc')
+      .limit(20)
+      .onSnapshot(callback);
+  }
+};
+</script> 
+</body>
                     
             </html>
