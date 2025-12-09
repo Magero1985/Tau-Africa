@@ -3246,7 +3246,7 @@
         }
 
         console.log('✅ KABIRU Mining App - Fully Loaded & Ready!');
-    </script>
+</script>
     <script>
     (function() {
     'use strict';
@@ -3633,6 +3633,35 @@
     console.log(`📍 App Mode: ${isKabiruApp ? 'Kabiru Mining' : 'TAU Main'}`);
     
 })();
-            </script>
+</script>
+<script>
+// services/realtimeService.js - KABIRU MINING VERSION
+export const realtimeService = {
+  
+  // Listen for INCOMING transfers from TAU
+  subscribeToIncomingTransfers(memberId, callback) {
+    return db.collection('kabiru_transfers')
+      .where('memberId', '==', memberId)
+      .where('direction', '==', 'tau_to_kabiru')
+      .where('status', '==', 'pending')
+      .onSnapshot(callback);
+  },
+  
+  // Listen to member profile (for balance sync)
+  subscribeToMemberProfile(memberId, callback) {
+    return db.collection('members').doc(memberId)
+      .onSnapshot(callback);
+  },
+  
+  // Listen to mining-specific events
+  subscribeToMiningEvents(callback) {
+    return db.collection('sync_events')
+      .where('type', '==', 'mining_update')
+      .orderBy('timestamp', 'desc')
+      .limit(20)
+      .onSnapshot(callback);
+  }
+};
+</script>
  </body>
-</html>
+    </html>
