@@ -7463,52 +7463,391 @@ TAU Africa
                 }
                 
                 // Create notification
-                if (typeof createNotification === 'function') {
-                    createNotification(
-                        currentMember.id,
-                        '💎 Transfer Initiated',
-                        `${availableIkbp.toLocaleString()} iKbp + ${availableIkb.toFixed(4)} iKb transfer to Kabiru Mining`,
-                        'success'
-                    );
+(function() {
+    'use strict';
+    
+    console.log('🌉 TAU-Kabiru Bridge - Initializing...');
+    
+    // ============================================
+    // FIREBASE CONFIG (Same for both apps)
+    // ============================================
+    const FIREBASE_CONFIG = {
+        apiKey: "AIzaSyAW0vk_gg03xXEm6I1TQnU8KRiv1RhcrQ4",
+        authDomain: "tau-africa-ecosystem.firebaseapp.com",
+        projectId: "tau-africa-ecosystem",
+        storageBucket: "tau-africa-ecosystem.firebasestorage.app",
+        messagingSenderId: "1047279398196",
+        appId: "1:1047279398196:web:06d43661650c794268c961"
+    };
+    
+    let db, isKabiruApp = false;
+    
+    // Detect which app this is
+    if (window.location.href.includes('Kabiru-Mining-Portal')) {
+        isKabiruApp = true;
+        console.log('📍 Detected: Kabiru Mining App');
+    } else {
+        console.log('📍 Detected: TAU Main App');
+    }
+    
+    // Initialize Firebase
+    try {
+        if (!firebase.apps.length) {
+            firebase.initializeApp(FIREBASE_CONFIG);
+        }
+        db = firebase.firestore();
+        console.log('✅ Firebase connected');
+    } catch (error) {
+        console.error('❌ Firebase init failed:', error);
+        db = null;
+    }
+    
+    // ============================================
+    // MAIN APP SIDE: Enhanced Withdrawal
+    // ============================================
+    if (!isKabiruApp && db) {
+        
+        window.initiateKabiruWithdrawal = async function() {
+            const currentMember = window.TauDB?.getCurrentMember();
+            
+            if (!currentMember) {
+                if (typeof showNotification === 'function') {
+                    showNotification('Please login first', 'error');
                 }
+                return;
+            }
+            
+            const availableIkbp = currentMember.iKbpBalance || 0;
+            const availableIkb = currentMember.iKbBalance || 0;
+            
+            // Minimum check
+            if (availableIkbp < 10000 && availableIkb < 0.0001) {
+                if (typeof showNotification === 'function') {
+                    showNotification('❌ Minimum: 10,000 iKbp or 0.0001 iKb', 'error');
+                }
+                return;
+            }
+            
+            const confirmMsg = `Transfer to Kabiru Mining App?\n\n` +
+                              `${availableIkbp.toLocaleString()} iKbp\n` +
+                              `${availableIkb.toFixed(6)} iKb\n\n` +
+                              `This will zero your TAU balance and credit Kabiru.`;
+            
+            if (!confirm(confirmMsg)) return;
+            
+            try {
+                // Create transfer record
+                const transferId = 'XFER-' + Date.now();
                 
-                showNotification('✅ Transfer initiated! Open Kabiru Mining App to receive tokens.', 'success');
+                await db.collection('kabiru_transfers').add({
+                    transferId: transferId,
+                    memberId: currentMember.id,
+                    memberName: currentMember.fullName,
+                    memberEmail: currentMember.email,
+                    iKbp: availableIkbp,
+                    iKb: availableIkb,
+                    timestamp: firebase.firestore.FieldValue.serverTimestamp(),
+                    status: 'pending',
+                    direction: 'tau_to_kabiru'
+                });
                 
-                // Refresh dashboard
-                setTimeout(() => {
-                    closeAllModals();
-                    if (typeof showRealMemberDashboard === 'function') {
-                        showRealMemberDashboard(members[memberIndex]);
-                    }
-                }, 2000);
-                
-            } else {
-                // OFFLINE MODE (localStorage only)
-                console.warn('📴 Offline mode - saving locally');
-                
-                const members = JSON.parse(localStorage.getItem('tauAfricaDB') || '[]');
-                const memberIndex = members.findIndex(m => m.id === currentMember.id);
-                
-                if (memberIndex !== -1) {
-                    members[memberIndex].pendingKabiruTransfer = {
+                // Update member document
+                await db.collection('members').doc(currentMember.id).update({
+                    pendingKabiruTransfer: {
+                        transferId: transferId,
                         iKbp: availableIkbp,
                         iKb: availableIkb,
                         timestamp: new Date().toISOString(),
-                        status: 'pending_offline'
-                    };
+                        status: 'pending'
+                    },
+                    lastTransferToKabiru: new Date().toISOString()
+                });
+                
+                // Zero out TAU balances locally
+                const members = JSON.parse(localStorage.getItem('tauAfricaDB') || '[]');
+                const memberIndex = members.findIndex(m => m.id === currentMember.id);
+                if (memberIndex !== -1) {
                     members[memberIndex].iKbpBalance = 0;
                     members[memberIndex].iKbBalance = 0;
+                    members[memberIndex].pendingKabiruTransfer = {
+                        transferId: transferId,
+                        iKbp: availableIkbp,
+                        iKb: availableIkb,
+                        status: 'pending'
+                    };
                     localStorage.setItem('tauAfricaDB', JSON.stringify(members));
+                    
+                    // Update session
+                    sessionStorage.setItem('tauCurrentUser', JSON.stringify(members[memberIndex]));
                 }
                 
-                showNotification('⚠️ Offline mode: Transfer saved locally. Connect to internet to complete.', 'error');
+                if (typeof showNotification === 'function') {
+                    showNotification('✅ Transfer initiated! Open Kabiru Mining App to receive.', 'success');
+                }
+                
+                // Show transfer ID
+                alert(`Transfer ID: ${transferId}\n\nOpen Kabiru Mining App and login to receive your tokens.`);
+                
+                console.log('✅ Transfer created:', transferId);
+                
+            } catch (error) {
+                console.error('❌ Transfer failed:', error);
+                if (typeof showNotification === 'function') {
+                    showNotification('❌ Transfer failed: ' + error.message, 'error');
+                }
+            }
+        };
+        
+        console.log('✅ Main App: Withdrawal function enhanced');
+    }
+    
+    // ============================================
+    // KABIRU APP SIDE: Listen for Incoming Transfers
+    // ============================================
+    if (isKabiruApp && db) {
+        
+        console.log('👂 Kabiru App: Listening for transfers...');
+        
+        // Function to get current Kabiru user
+        function getCurrentKabiruMember() {
+            // Adjust this based on your Kabiru app's storage
+            const kabiruUser = sessionStorage.getItem('kabiruCurrentUser') || 
+                               sessionStorage.getItem('tauCurrentUser');
+            
+            if (kabiruUser) {
+                return JSON.parse(kabiruUser);
             }
             
-        } catch (error) {
-            console.error('❌ Transfer error:', error);
-            showNotification('❌ Transfer failed: ' + error.message, 'error');
+            // Try localStorage as fallback
+            const allMembers = JSON.parse(localStorage.getItem('tauAfricaDB') || '[]');
+            if (allMembers.length > 0) {
+                // Return last logged in member (you may need to adjust this)
+                return allMembers[0];
+            }
+            
+            return null;
+        }
+        
+        // Listen for transfers in real-time
+        function startTransferListener() {
+            const currentMember = getCurrentKabiruMember();
+            
+            if (!currentMember) {
+                console.log('⚠️ No member logged in, waiting...');
+                // Retry after 5 seconds
+                setTimeout(startTransferListener, 5000);
+                return;
+            }
+            
+            console.log('👤 Listening for transfers to:', currentMember.id);
+            
+            // Listen to kabiru_transfers collection
+            db.collection('kabiru_transfers')
+                .where('memberId', '==', currentMember.id)
+                .where('status', '==', 'pending')
+                .onSnapshot(snapshot => {
+                    snapshot.docChanges().forEach(change => {
+                        if (change.type === 'added') {
+                            const transfer = change.doc.data();
+                            processIncomingTransfer(transfer, change.doc.id);
+                        }
+                    });
+                });
+        }
+        
+        // Process incoming transfer
+        async function processIncomingTransfer(transfer, docId) {
+            console.log('📥 Incoming transfer detected:', transfer);
+            
+            try {
+                // Get current Kabiru balances (adjust storage keys as needed)
+                const kabiruData = JSON.parse(localStorage.getItem('kabiruMiningData') || 
+                                             localStorage.getItem('tauAfricaDB') || '[]');
+                
+                const memberIndex = kabiruData.findIndex(m => m.id === transfer.memberId);
+                
+                if (memberIndex !== -1) {
+                    // Credit the balances
+                    kabiruData[memberIndex].iKbpBalance = 
+                        (kabiruData[memberIndex].iKbpBalance || 0) + (transfer.iKbp || 0);
+                    kabiruData[memberIndex].iKbBalance = 
+                        (kabiruData[memberIndex].iKbBalance || 0) + (transfer.iKb || 0);
+                    
+                    // Save to localStorage
+                    localStorage.setItem('kabiruMiningData', JSON.stringify(kabiruData));
+                    
+                    console.log('✅ Balances credited:', {
+                        iKbp: transfer.iKbp,
+                        iKb: transfer.iKb
+                    });
+                } else {
+                    // Create new member record in Kabiru
+                    kabiruData.push({
+                        id: transfer.memberId,
+                        fullName: transfer.memberName,
+                        email: transfer.memberEmail,
+                        iKbpBalance: transfer.iKbp || 0,
+                        iKbBalance: transfer.iKb || 0,
+                        importedFromTAU: true,
+                        importDate: new Date().toISOString()
+                    });
+                    
+                    localStorage.setItem('kabiruMiningData', JSON.stringify(kabiruData));
+                    console.log('✅ New member created with balances');
+                }
+                
+                // Mark transfer as completed
+                await db.collection('kabiru_transfers').doc(docId).update({
+                    status: 'completed',
+                    completedAt: firebase.firestore.FieldValue.serverTimestamp()
+                });
+                
+                // Update member document
+                await db.collection('members').doc(transfer.memberId).update({
+                    'pendingKabiruTransfer.status': 'completed',
+                    lastKabiruSync: firebase.firestore.FieldValue.serverTimestamp()
+                });
+                
+                // Show success notification
+                if (typeof showNotification === 'function') {
+                    showNotification(
+                        `✅ Received from TAU!\n${transfer.iKbp} iKbp + ${transfer.iKb} iKb`, 
+                        'success'
+                    );
+                } else {
+                    alert(`✅ Transfer Complete!\n\nReceived:\n${transfer.iKbp} iKbp\n${transfer.iKb} iKb`);
+                }
+                
+                // Trigger UI refresh if functions exist
+                if (typeof updateMiningStats === 'function') updateMiningStats();
+                if (typeof refreshBalance === 'function') refreshBalance();
+                
+            } catch (error) {
+                console.error('❌ Transfer processing error:', error);
+                
+                // Mark transfer as failed
+                await db.collection('kabiru_transfers').doc(docId).update({
+                    status: 'failed',
+                    error: error.message,
+                    failedAt: firebase.firestore.FieldValue.serverTimestamp()
+                });
+            }
+        }
+        
+        // Start listening after 2 seconds
+        setTimeout(startTransferListener, 2000);
+        
+        console.log('✅ Kabiru App: Transfer listener installed');
+    }
+    
+    // ============================================
+    // REVERSE SYNC: Kabiru → TAU (Activities/Tasks)
+    // ============================================
+    if (isKabiruApp && db) {
+        
+        // When user completes activities/tasks in Kabiru and wants to send back to TAU
+        window.sendToTAU = async function(iKbp, iKb, reason) {
+            const currentMember = getCurrentKabiruMember();
+            
+            if (!currentMember) {
+                alert('Please login first');
+                return;
+            }
+            
+            try {
+                // Create reverse transfer
+                const transferId = 'KXFER-' + Date.now();
+                
+                await db.collection('kabiru_transfers').add({
+                    transferId: transferId,
+                    memberId: currentMember.id,
+                    memberName: currentMember.fullName,
+                    iKbp: iKbp || 0,
+                    iKb: iKb || 0,
+                    reason: reason || 'Mining earnings',
+                    timestamp: firebase.firestore.FieldValue.serverTimestamp(),
+                    status: 'pending',
+                    direction: 'kabiru_to_tau'
+                });
+                
+                console.log('✅ Reverse transfer created:', transferId);
+                alert('✅ Transfer to TAU initiated!');
+                
+            } catch (error) {
+                console.error('❌ Reverse transfer failed:', error);
+                alert('❌ Transfer failed: ' + error.message);
+            }
+        };
+        
+        console.log('✅ Kabiru App: Reverse transfer function ready');
+    }
+    
+    // ============================================
+    // MAIN APP: Listen for Reverse Transfers
+    // ============================================
+    if (!isKabiruApp && db) {
+        
+        function listenForReverseTransfers() {
+            const currentMember = window.TauDB?.getCurrentMember();
+            
+            if (!currentMember) {
+                setTimeout(listenForReverseTransfers, 5000);
+                return;
+            }
+            
+            db.collection('kabiru_transfers')
+                .where('memberId', '==', currentMember.id)
+                .where('direction', '==', 'kabiru_to_tau')
+                .where('status', '==', 'pending')
+                .onSnapshot(snapshot => {
+                    snapshot.docChanges().forEach(async change => {
+                        if (change.type === 'added') {
+                            const transfer = change.doc.data();
+                            
+                            // Credit TAU balance
+                            if (window.TauDB?.updateBalance) {
+                                window.TauDB.updateBalance(currentMember.id, transfer.iKbp || 0);
+                            }
+                            
+                            // Mark as completed
+                            await db.collection('kabiru_transfers').doc(change.doc.id).update({
+                                status: 'completed',
+                                completedAt: firebase.firestore.FieldValue.serverTimestamp()
+                            });
+                            
+                            if (typeof showNotification === 'function') {
+                                showNotification(`✅ Received from Kabiru: ${transfer.iKbp} iKbp`, 'success');
+                            }
+                        }
+                    });
+                });
+        }
+        
+        setTimeout(listenForReverseTransfers, 3000);
+        console.log('✅ Main App: Reverse transfer listener ready');
+    }
+    
+    // ============================================
+    // EXPOSE GLOBAL API
+    // ============================================
+    window.TauKabiruBridge = {
+        isKabiruApp: isKabiruApp,
+        transferToKabiru: !isKabiruApp ? window.initiateKabiruWithdrawal : null,
+        transferToTAU: isKabiruApp ? window.sendToTAU : null,
+        checkPendingTransfers: async function(memberId) {
+            if (!db) return [];
+            const snapshot = await db.collection('kabiru_transfers')
+                .where('memberId', '==', memberId)
+                .where('status', '==', 'pending')
+                .get();
+            return snapshot.docs.map(doc => ({id: doc.id, ...doc.data()}));
         }
     };
+    
+    console.log('✅ TAU-Kabiru Bridge loaded successfully');
+    console.log(`📍 App Mode: ${isKabiruApp ? 'Kabiru Mining' : 'TAU Main'}`);
+    
+})();
     
     // ============================================
     // 2. ADD TRANSFER BUTTON TO DASHBOARD (Missing UI)
