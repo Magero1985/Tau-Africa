@@ -1667,5 +1667,33 @@
     
 })();
 </script>
+    <script>
+        // services/realtimeService.js - BRIDGE APP VERSION
+export const realtimeService = {
+  
+  // Listen to ALL collections (full system view)
+  subscribeToSystemStatus(callback) {
+    const listeners = [];
+    
+    listeners.push(
+      db.collection('members').onSnapshot(callback),
+      db.collection('kabiru_transfers').onSnapshot(callback),
+      db.collection('sync_events').onSnapshot(callback),
+      db.collection('pending_validations').onSnapshot(callback)
+    );
+    
+    return () => listeners.forEach(unsub => unsub());
+  },
+  
+  // Monitor cross-app communication
+  subscribeToDataFlow(callback) {
+    return db.collection('sync_events')
+      .where('type', 'in', ['new_member', 'balance_update', 'transfer'])
+      .orderBy('timestamp', 'desc')
+      .limit(100)
+      .onSnapshot(callback);
+  }
+};
+    </script>
 </body>
     </html>
