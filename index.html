@@ -843,6 +843,270 @@
         let selectedCategory = null;
         let currentModal = null;
         let currentFilter = 'all';
+        <script>
+// ============================================
+// FIRESTORE QUERY IMPLEMENTATION
+// Add this to Main App (index.html)
+// ============================================
+(function() {
+    'use strict';
+    
+    console.log('🔍 Implementing Firestore Queries...');
+    
+    const db = firebase.firestore();
+    
+    // ============================================
+    // 1. MEMBER QUERIES (Uses indexes 3 & 4)
+    // ============================================
+    
+    window.FirestoreQueries = {
+        
+        // Get member by email and status (Index 3)
+        async getMemberByEmail(email, status = 'Active') {
+            try {
+                const snapshot = await db.collection('members')
+                    .where('email', '==', email)
+                    .where('status', '==', status)
+                    .limit(1)
+                    .get();
+                
+                if (!snapshot.empty) {
+                    const doc = snapshot.docs[0];
+                    console.log('✅ Found member:', doc.id);
+                    return { id: doc.id, ...doc.data() };
+                }
+                return null;
+            } catch (error) {
+                console.error('❌ Query error:', error);
+                return null;
+            }
+        },
+        
+        // Get team members sorted by join date (Index 4)
+        async getTeamMembers(team) {
+            try {
+                const snapshot = await db.collection('members')
+                    .where('team', '==', team)
+                    .orderBy('dateJoined', 'desc')
+                    .limit(50)
+                    .get();
+                
+                console.log(`✅ Found ${snapshot.size} ${team} members`);
+                return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+            } catch (error) {
+                console.error('❌ Query error:', error);
+                return [];
+            }
+        },
+        
+        // ============================================
+        // 2. TRANSFER QUERIES (Uses indexes 1 & 2)
+        // ============================================
+        
+        // Get member transfers by status (Index 1)
+        async getMemberTransfers(memberId, status) {
+            try {
+                const snapshot = await db.collection('kabiru_transfers')
+                    .where('memberId', '==', memberId)
+                    .where('status', '==', status)
+                    .orderBy('timestamp', 'desc')
+                    .limit(20)
+                    .get();
+                
+                console.log(`✅ Found ${snapshot.size} transfers for ${memberId}`);
+                return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+            } catch (error) {
+                console.error('❌ Query error:', error);
+                return [];
+            }
+        },
+        
+        // Get transfers by direction (Index 2)
+        async getTransfersByDirection(direction, status) {
+            try {
+                const snapshot = await db.collection('kabiru_transfers')
+                    .where('direction', '==', direction)
+                    .where('status', '==', status)
+                    .orderBy('timestamp', 'desc')
+                    .limit(20)
+                    .get();
+                
+                console.log(`✅ Found ${snapshot.size} ${direction} transfers`);
+                return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+            } catch (error) {
+                console.error('❌ Query error:', error);
+                return [];
+            }
+        },
+        
+        // ============================================
+        // 3. NOTIFICATION QUERIES (Uses index 6)
+        // ============================================
+        
+        // Get unread notifications (Index 6)
+        async getUnreadNotifications(memberId) {
+            try {
+                const snapshot = await db.collection('notifications')
+                    .where('memberId', '==', memberId)
+                    .where('read', '==', false)
+                    .orderBy('timestamp', 'desc')
+                    .limit(20)
+                    .get();
+                
+                console.log(`✅ Found ${snapshot.size} unread notifications`);
+                return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+            } catch (error) {
+                console.error('❌ Query error:', error);
+                return [];
+            }
+        },
+        
+        // ============================================
+        // 4. VALUE QUERIES (Uses indexes 8 & 9)
+        // ============================================
+        
+        // Get values by status (Index 8)
+        async getValuesByStatus(status) {
+            try {
+                const snapshot = await db.collection('values')
+                    .where('status', '==', status)
+                    .orderBy('created', 'desc')
+                    .limit(20)
+                    .get();
+                
+                console.log(`✅ Found ${snapshot.size} ${status} values`);
+                return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+            } catch (error) {
+                console.error('❌ Query error:', error);
+                return [];
+            }
+        },
+        
+        // Get user's values (Index 9)
+        async getUserValues(userId, status) {
+            try {
+                const snapshot = await db.collection('values')
+                    .where('submittedBy', '==', userId)
+                    .where('status', '==', status)
+                    .get();
+                
+                console.log(`✅ Found ${snapshot.size} values for ${userId}`);
+                return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+            } catch (error) {
+                console.error('❌ Query error:', error);
+                return [];
+            }
+        },
+        
+        // ============================================
+        // 5. VALIDATION QUERIES (Uses index 7)
+        // ============================================
+        
+        // Get pending validations (Index 7)
+        async getPendingValidations(status = 'pending') {
+            try {
+                const snapshot = await db.collection('pending_validations')
+                    .where('status', '==', status)
+                    .orderBy('created', 'desc')
+                    .limit(20)
+                    .get();
+                
+                console.log(`✅ Found ${snapshot.size} pending validations`);
+                return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+            } catch (error) {
+                console.error('❌ Query error:', error);
+                return [];
+            }
+        },
+        
+        // ============================================
+        // 6. SYNC EVENT QUERIES (Uses index 5)
+        // ============================================
+        
+        // Get sync events by type (Index 5)
+        async getSyncEvents(type) {
+            try {
+                const snapshot = await db.collection('sync_events')
+                    .where('type', '==', type)
+                    .orderBy('timestamp', 'desc')
+                    .limit(50)
+                    .get();
+                
+                console.log(`✅ Found ${snapshot.size} ${type} sync events`);
+                return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+            } catch (error) {
+                console.error('❌ Query error:', error);
+                return [];
+            }
+        }
+    };
+    
+    // ============================================
+    // 7. REAL-TIME LISTENERS (Uses all indexes)
+    // ============================================
+    
+    window.FirestoreListeners = {
+        
+        // Listen to your notifications (Index 6)
+        listenToMyNotifications(memberId, callback) {
+            return db.collection('notifications')
+                .where('memberId', '==', memberId)
+                .where('read', '==', false)
+                .orderBy('timestamp', 'desc')
+                .onSnapshot(snapshot => {
+                    const notifs = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                    callback(notifs);
+                }, error => {
+                    console.error('Notification listener error:', error);
+                });
+        },
+        
+        // Listen to your transfers (Index 1)
+        listenToMyTransfers(memberId, callback) {
+            return db.collection('kabiru_transfers')
+                .where('memberId', '==', memberId)
+                .where('status', '==', 'pending')
+                .orderBy('timestamp', 'desc')
+                .onSnapshot(snapshot => {
+                    const transfers = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                    callback(transfers);
+                }, error => {
+                    console.error('Transfer listener error:', error);
+                });
+        },
+        
+        // Listen to your profile (Direct document read)
+        listenToMyProfile(memberId, callback) {
+            return db.collection('members').doc(memberId)
+                .onSnapshot(doc => {
+                    if (doc.exists) {
+                        callback({ id: doc.id, ...doc.data() });
+                    }
+                }, error => {
+                    console.error('Profile listener error:', error);
+                });
+        },
+        
+        // Listen to public values (Index 8)
+        listenToPublicValues(callback) {
+            return db.collection('values')
+                .where('status', '==', 'Approved')
+                .orderBy('created', 'desc')
+                .limit(20)
+                .onSnapshot(snapshot => {
+                    const values = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                    callback(values);
+                }, error => {
+                    console.error('Values listener error:', error);
+                });
+        }
+    };
+    
+    console.log('✅ Firestore Queries Implemented');
+    
+})();
+</script>
+    <script>
 
         // ============================================
         // NOTIFICATION SYSTEM
@@ -1188,7 +1452,13 @@
                     return { success: false, error: error.message };
                 }
             },
-            
+               window.dispatchEvent(new CustomEvent('tauMemberLoggedIn', { 
+            detail: result.member 
+        }));
+    }
+    
+    return result;
+};
             getCurrentMember: function() {
                 const sessionData = sessionStorage.getItem('tauCurrentUser');
                 if (sessionData) {
@@ -3063,6 +3333,117 @@ TAU Africa Team
     };
     </script>
 <script>
+// ============================================
+// INTEGRATE QUERIES WITH EXISTING APP
+// ============================================
+(function() {
+    'use strict';
+    
+    // Wait for login
+    window.addEventListener('tauMemberLoggedIn', function(e) {
+        const member = e.detail;
+        console.log('🔐 Member logged in, starting Firestore sync...');
+        
+        // Start real-time listeners
+        startRealtimeSync(member.id);
+    });
+    
+    function startRealtimeSync(memberId) {
+        
+        // 1. Listen to notifications
+        const unsubNotifs = window.FirestoreListeners.listenToMyNotifications(
+            memberId,
+            (notifications) => {
+                console.log('📬 Received notifications:', notifications.length);
+                
+                // Update badge
+                const badge = document.getElementById('tauNotifBadge');
+                if (badge) {
+                    badge.textContent = notifications.length;
+                    badge.style.display = notifications.length > 0 ? 'block' : 'none';
+                }
+                
+                // Show new notifications
+                notifications.forEach(notif => {
+                    if (!notif.shownToUser) {
+                        showNotification(notif.title + ': ' + notif.message, 'info');
+                    }
+                });
+            }
+        );
+        
+        // 2. Listen to transfers
+        const unsubTransfers = window.FirestoreListeners.listenToMyTransfers(
+            memberId,
+            (transfers) => {
+                console.log('💸 Pending transfers:', transfers.length);
+                
+                if (transfers.length > 0) {
+                    showNotification(`⏳ ${transfers.length} pending transfer(s)`, 'info');
+                }
+            }
+        );
+        
+        // 3. Listen to profile updates
+        const unsubProfile = window.FirestoreListeners.listenToMyProfile(
+            memberId,
+            (profile) => {
+                console.log('👤 Profile updated from Firestore');
+                
+                // Update localStorage
+                const members = JSON.parse(localStorage.getItem('tauAfricaDB') || '[]');
+                const index = members.findIndex(m => m.id === memberId);
+                if (index >= 0) {
+                    members[index] = { ...members[index], ...profile };
+                    localStorage.setItem('tauAfricaDB', JSON.stringify(members));
+                }
+                
+                // Update session
+                sessionStorage.setItem('tauCurrentUser', JSON.stringify(profile));
+                
+                // Refresh UI
+                if (typeof updateStats === 'function') updateStats();
+            }
+        );
+        
+        // 4. Listen to public values
+        const unsubValues = window.FirestoreListeners.listenToPublicValues(
+            (values) => {
+                console.log('💎 Public values updated:', values.length);
+                
+                // Save to localStorage
+                localStorage.setItem('tauValues', JSON.stringify(values));
+                
+                // Refresh opportunities display
+                if (typeof refreshPublicValues === 'function') {
+                    refreshPublicValues();
+                }
+            }
+        );
+        
+        console.log('✅ All real-time listeners active');
+        
+        // Store unsubscribe functions
+        window.tauUnsubscribeFunctions = [
+            unsubNotifs,
+            unsubTransfers,
+            unsubProfile,
+            unsubValues
+        ];
+    }
+    
+    // Cleanup on logout
+    window.addEventListener('tauMemberLoggedOut', function() {
+        console.log('🔓 Member logged out, stopping listeners...');
+        
+        if (window.tauUnsubscribeFunctions) {
+            window.tauUnsubscribeFunctions.forEach(unsub => unsub());
+        }
+    });
+    
+})();
+                        </script>
+    <script>
     // ============================================
     // INTEGRATION HEALTH CHECK
     // ============================================
