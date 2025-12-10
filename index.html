@@ -2727,32 +2727,130 @@ TAU Africa Team
     };
 </script>
 <script>
-    // ============================================
-    // FIREBASE ENHANCEMENT FOR TAUDB
-    // ============================================
-    if (window.TauDB && window.db) {
-        const originalSync = window.TauDB.sync;
+// ============================================
+// FIX: PREVENT DUPLICATE REGISTRATIONS
+// Replace your existing TauDB.sync function
+// ============================================
+(function() {
+    'use strict';
+    
+    // Track registrations in progress to prevent duplicates
+    const registrationsInProgress = new Set();
+    
+    // Store original sync function
+    const originalSync = window.TauDB.sync;
+    
+    // Replace with duplicate-prevention version
+    window.TauDB.sync = async function(formData, team, referralCode) {
         
-        window.TauDB.sync = async function(formData, team, referralCode) {
+        // Create unique key for this registration
+        const registrationKey = `${formData.email}_${formData.phone}`;
+        
+        // Check if already registering
+        if (registrationsInProgress.has(registrationKey)) {
+            console.warn('⚠️ Registration already in progress, ignoring duplicate');
+            return { 
+                success: false, 
+                error: 'Registration already in progress' 
+            };
+        }
+        
+        // Check if member already exists in localStorage
+        const existingMembers = JSON.parse(localStorage.getItem('tauAfricaDB') || '[]');
+        const alreadyExists = existingMembers.find(m => 
+            m.email === formData.email || m.phone === formData.phone
+        );
+        
+        if (alreadyExists) {
+            console.warn('⚠️ Member already registered:', alreadyExists.id);
+            return {
+                success: false,
+                error: 'Member already registered',
+                existingMember: alreadyExists
+            };
+        }
+        
+        // Mark as in progress
+        registrationsInProgress.add(registrationKey);
+        console.log('🔒 Registration locked:', registrationKey);
+        
+        try {
+            // Call original sync function
             const result = originalSync.call(this, formData, team, referralCode);
             
-            if (result.success && window.db) {
-                try {
-                    await window.db.collection('members').doc(result.memberId).set({
-                        ...result.member,
-                        lastSync: firebase.firestore.FieldValue.serverTimestamp()
-                    });
-                    console.log('✅ Member synced to Firestore:', result.memberId);
-                } catch (error) {
-                    console.error('⚠️ Firestore sync warning:', error);
+            if (!result.success) {
+                console.error('❌ Original sync failed');
+                return result;
+            }
+            
+            console.log('✅ localStorage sync successful:', result.memberId);
+            
+            // Save to Firestore ONCE
+            const db = firebase.firestore();
+            
+            if (db) {
+                // Check if member already exists in Firestore
+                const firestoreCheck = await db.collection('members')
+                    .where('email', '==', formData.email)
+                    .limit(1)
+                    .get();
+                
+                if (!firestoreCheck.empty) {
+                    console.warn('⚠️ Member already exists in Firestore');
+                    return result; // Don't create duplicate
                 }
+                
+                const memberData = {
+                    ...result.member,
+                    syncedToFirestore: true,
+                    firestoreSyncDate: new Date().toISOString(),
+                    lastModified: firebase.firestore.FieldValue.serverTimestamp(),
+                    registrationSource: 'main_app',
+                    registrationIP: 'unknown', // Add if you have IP detection
+                    userAgent: navigator.userAgent
+                };
+                
+                // Save to Firestore (ONCE)
+                await db.collection('members').doc(result.memberId).set(memberData);
+                console.log('✅ Saved to Firestore: members/' + result.memberId);
+                
+                // Create activity log
+                await db.collection('activity_log').add({
+                    type: 'new_registration',
+                    memberId: result.memberId,
+                    memberName: result.member.fullName,
+                    team: team,
+                    timestamp: firebase.firestore.FieldValue.serverTimestamp()
+                });
+                
+                result.firestoreSynced = true;
+                
+            } else {
+                console.warn('⚠️ Firestore offline, saved locally only');
+                result.firestoreSynced = false;
             }
             
             return result;
-        };
-        
-        console.log('✅ Firebase enhancement applied to TauDB');
-    }
+            
+        } catch (error) {
+            console.error('❌ Registration error:', error);
+            return { 
+                success: false, 
+                error: error.message 
+            };
+            
+        } finally {
+            // Always unlock after 3 seconds (safety timeout)
+            setTimeout(() => {
+                registrationsInProgress.delete(registrationKey);
+                console.log('🔓 Registration unlocked:', registrationKey);
+            }, 3000);
+        }
+    };
+    
+    console.log('✅ TauDB.sync enhanced with duplicate prevention');
+    
+})();
 </script>
 <script>
     // ============================================
