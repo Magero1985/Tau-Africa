@@ -7055,8 +7055,7 @@ console.log('💡 Run window.runIntegrationTest() to check integration');
 </script>
     <script>
 // ============================================
-// TAU AFRICA - COMPLETE EMAIL & NOTIFICATION FIX
-// Add this BEFORE </body></html>
+// TAU AFRICA - COMPLETE EMAIL & NOTIFICATION
 // ============================================
 (function() {
     'use strict';
@@ -7383,6 +7382,98 @@ TAU Africa
     console.log('✅ Email & Notification Fix LOADED');
     console.log('💡 Run window.testTauEmails() to test');
     console.log('📧 EmailJS Status:', emailReady ? 'READY' : 'FAILED');
+    
+})();
+    </script>
+    <script>
+// ============================================
+// FIRESTORE CLEANUP SCRIPT - RUN ONCE ONLY
+// ============================================
+(async function cleanupFirestore() {
+    'use strict';
+    
+    const db = firebase.firestore();
+    
+    console.log('🧹 Starting Firestore cleanup...');
+    
+    // Collections to clean
+    const collections = [
+        'members',
+        'tau_members', 
+        'kabiru_transfers',
+        'sync_events',
+        'pending_validations',
+        'notifications',
+        'values',
+        'activity_log'
+    ];
+    
+    // Confirm before proceeding
+    const confirmed = confirm(
+        '⚠️ WARNING: This will DELETE ALL DATA from Firestore!\n\n' +
+        'Collections to clear:\n' +
+        collections.join('\n') + '\n\n' +
+        'localStorage will NOT be affected.\n\n' +
+        'Continue?'
+    );
+    
+    if (!confirmed) {
+        console.log('❌ Cleanup cancelled');
+        return;
+    }
+    
+    let totalDeleted = 0;
+    
+    for (const collectionName of collections) {
+        try {
+            console.log(`🗑️ Clearing ${collectionName}...`);
+            
+            const snapshot = await db.collection(collectionName).get();
+            const batchSize = snapshot.size;
+            
+            if (batchSize === 0) {
+                console.log(`✅ ${collectionName}: Already empty`);
+                continue;
+            }
+            
+            // Delete in batches of 500 (Firestore limit)
+            const batches = [];
+            let batch = db.batch();
+            let count = 0;
+            
+            snapshot.docs.forEach(doc => {
+                batch.delete(doc.ref);
+                count++;
+                
+                if (count === 500) {
+                    batches.push(batch);
+                    batch = db.batch();
+                    count = 0;
+                }
+            });
+            
+            if (count > 0) {
+                batches.push(batch);
+            }
+            
+            // Commit all batches
+            for (const b of batches) {
+                await b.commit();
+            }
+            
+            totalDeleted += batchSize;
+            console.log(`✅ ${collectionName}: Deleted ${batchSize} documents`);
+            
+        } catch (error) {
+            console.error(`❌ Error clearing ${collectionName}:`, error);
+        }
+    }
+    
+    console.log(`\n✅ CLEANUP COMPLETE`);
+    console.log(`🗑️ Total deleted: ${totalDeleted} documents`);
+    console.log(`\n💡 Now refresh the page and register fresh members.`);
+    
+    alert(`✅ Firestore cleaned!\n\nDeleted: ${totalDeleted} documents\n\nRefresh page to start fresh.`);
     
 })();
     </script>
