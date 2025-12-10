@@ -843,271 +843,6 @@
         let selectedCategory = null;
         let currentModal = null;
         let currentFilter = 'all';
-    </script>
-    <script>
-// ============================================
-// FIRESTORE QUERY IMPLEMENTATION
-// Add this to Main App (index.html)
-// ============================================
-(function() {
-    'use strict';
-    
-    console.log('🔍 Implementing Firestore Queries...');
-    
-    const db = firebase.firestore();
-    
-    // ============================================
-    // 1. MEMBER QUERIES (Uses indexes 3 & 4)
-    // ============================================
-    
-    window.FirestoreQueries = {
-        
-        // Get member by email and status (Index 3)
-        async getMemberByEmail(email, status = 'Active') {
-            try {
-                const snapshot = await db.collection('members')
-                    .where('email', '==', email)
-                    .where('status', '==', status)
-                    .limit(1)
-                    .get();
-                
-                if (!snapshot.empty) {
-                    const doc = snapshot.docs[0];
-                    console.log('✅ Found member:', doc.id);
-                    return { id: doc.id, ...doc.data() };
-                }
-                return null;
-            } catch (error) {
-                console.error('❌ Query error:', error);
-                return null;
-            }
-        },
-        
-        // Get team members sorted by join date (Index 4)
-        async getTeamMembers(team) {
-            try {
-                const snapshot = await db.collection('members')
-                    .where('team', '==', team)
-                    .orderBy('dateJoined', 'desc')
-                    .limit(50)
-                    .get();
-                
-                console.log(`✅ Found ${snapshot.size} ${team} members`);
-                return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-            } catch (error) {
-                console.error('❌ Query error:', error);
-                return [];
-            }
-        },
-        
-        // ============================================
-        // 2. TRANSFER QUERIES (Uses indexes 1 & 2)
-        // ============================================
-        
-        // Get member transfers by status (Index 1)
-        async getMemberTransfers(memberId, status) {
-            try {
-                const snapshot = await db.collection('kabiru_transfers')
-                    .where('memberId', '==', memberId)
-                    .where('status', '==', status)
-                    .orderBy('timestamp', 'desc')
-                    .limit(20)
-                    .get();
-                
-                console.log(`✅ Found ${snapshot.size} transfers for ${memberId}`);
-                return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-            } catch (error) {
-                console.error('❌ Query error:', error);
-                return [];
-            }
-        },
-        
-        // Get transfers by direction (Index 2)
-        async getTransfersByDirection(direction, status) {
-            try {
-                const snapshot = await db.collection('kabiru_transfers')
-                    .where('direction', '==', direction)
-                    .where('status', '==', status)
-                    .orderBy('timestamp', 'desc')
-                    .limit(20)
-                    .get();
-                
-                console.log(`✅ Found ${snapshot.size} ${direction} transfers`);
-                return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-            } catch (error) {
-                console.error('❌ Query error:', error);
-                return [];
-            }
-        },
-        
-        // ============================================
-        // 3. NOTIFICATION QUERIES (Uses index 6)
-        // ============================================
-        
-        // Get unread notifications (Index 6)
-        async getUnreadNotifications(memberId) {
-            try {
-                const snapshot = await db.collection('notifications')
-                    .where('memberId', '==', memberId)
-                    .where('read', '==', false)
-                    .orderBy('timestamp', 'desc')
-                    .limit(20)
-                    .get();
-                
-                console.log(`✅ Found ${snapshot.size} unread notifications`);
-                return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-            } catch (error) {
-                console.error('❌ Query error:', error);
-                return [];
-            }
-        },
-        
-        // ============================================
-        // 4. VALUE QUERIES (Uses indexes 8 & 9)
-        // ============================================
-        
-        // Get values by status (Index 8)
-        async getValuesByStatus(status) {
-            try {
-                const snapshot = await db.collection('values')
-                    .where('status', '==', status)
-                    .orderBy('created', 'desc')
-                    .limit(20)
-                    .get();
-                
-                console.log(`✅ Found ${snapshot.size} ${status} values`);
-                return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-            } catch (error) {
-                console.error('❌ Query error:', error);
-                return [];
-            }
-        },
-        
-        // Get user's values (Index 9)
-        async getUserValues(userId, status) {
-            try {
-                const snapshot = await db.collection('values')
-                    .where('submittedBy', '==', userId)
-                    .where('status', '==', status)
-                    .get();
-                
-                console.log(`✅ Found ${snapshot.size} values for ${userId}`);
-                return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-            } catch (error) {
-                console.error('❌ Query error:', error);
-                return [];
-            }
-        },
-        
-        // ============================================
-        // 5. VALIDATION QUERIES (Uses index 7)
-        // ============================================
-        
-        // Get pending validations (Index 7)
-        async getPendingValidations(status = 'pending') {
-            try {
-                const snapshot = await db.collection('pending_validations')
-                    .where('status', '==', status)
-                    .orderBy('created', 'desc')
-                    .limit(20)
-                    .get();
-                
-                console.log(`✅ Found ${snapshot.size} pending validations`);
-                return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-            } catch (error) {
-                console.error('❌ Query error:', error);
-                return [];
-            }
-        },
-        
-        // ============================================
-        // 6. SYNC EVENT QUERIES (Uses index 5)
-        // ============================================
-        
-        // Get sync events by type (Index 5)
-        async getSyncEvents(type) {
-            try {
-                const snapshot = await db.collection('sync_events')
-                    .where('type', '==', type)
-                    .orderBy('timestamp', 'desc')
-                    .limit(50)
-                    .get();
-                
-                console.log(`✅ Found ${snapshot.size} ${type} sync events`);
-                return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-            } catch (error) {
-                console.error('❌ Query error:', error);
-                return [];
-            }
-        }
-    };
-    
-    // ============================================
-    // 7. REAL-TIME LISTENERS (Uses all indexes)
-    // ============================================
-    
-    window.FirestoreListeners = {
-        
-        // Listen to your notifications (Index 6)
-        listenToMyNotifications(memberId, callback) {
-            return db.collection('notifications')
-                .where('memberId', '==', memberId)
-                .where('read', '==', false)
-                .orderBy('timestamp', 'desc')
-                .onSnapshot(snapshot => {
-                    const notifs = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-                    callback(notifs);
-                }, error => {
-                    console.error('Notification listener error:', error);
-                });
-        },
-        
-        // Listen to your transfers (Index 1)
-        listenToMyTransfers(memberId, callback) {
-            return db.collection('kabiru_transfers')
-                .where('memberId', '==', memberId)
-                .where('status', '==', 'pending')
-                .orderBy('timestamp', 'desc')
-                .onSnapshot(snapshot => {
-                    const transfers = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-                    callback(transfers);
-                }, error => {
-                    console.error('Transfer listener error:', error);
-                });
-        },
-        
-        // Listen to your profile (Direct document read)
-        listenToMyProfile(memberId, callback) {
-            return db.collection('members').doc(memberId)
-                .onSnapshot(doc => {
-                    if (doc.exists) {
-                        callback({ id: doc.id, ...doc.data() });
-                    }
-                }, error => {
-                    console.error('Profile listener error:', error);
-                });
-        },
-        
-        // Listen to public values (Index 8)
-        listenToPublicValues(callback) {
-            return db.collection('values')
-                .where('status', '==', 'Approved')
-                .orderBy('created', 'desc')
-                .limit(20)
-                .onSnapshot(snapshot => {
-                    const values = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-                    callback(values);
-                }, error => {
-                    console.error('Values listener error:', error);
-                });
-        }
-    };
-    
-    console.log('✅ Firestore Queries Implemented');
-    
-})();
-</script>
-    <script>
 
         // ============================================
         // NOTIFICATION SYSTEM
@@ -1132,8 +867,7 @@
             
             console.log(`📢 Notification [${type}]: ${message}`);
         }
-    </script>
-    <script>
+
         // ============================================
         // MODAL MANAGEMENT
         // ============================================
@@ -1169,9 +903,8 @@
                 document.getElementById('aiChatWindow').style.display = 'none';
             }
         });
-    </script>
-    <script>
-    // ============================================
+
+        // ============================================
         // LEVEL & CATEGORY SELECTION
         // ============================================
         function selectLevel(level, element) {
@@ -1202,8 +935,7 @@
             const categoryInput = document.getElementById('taskCategory');
             if (categoryInput) categoryInput.value = category;
         }
-    </script>
-    <script>
+
         // ============================================
         // AI ASSISTANT FUNCTIONS
         // ============================================
@@ -1295,8 +1027,7 @@
             • Technical support<br>
             <br>Please ask a specific question, or contact <strong>grouptauafrica@gmail.com</strong> for detailed support.`;
         }
-    </script>
-    <script>
+
         // ============================================
         // CORE DATABASE FUNCTIONS
         // ============================================
@@ -1371,8 +1102,7 @@
             const urlParams = new URLSearchParams(window.location.search);
             return urlParams.get('ref');
         }
-    </script>
-    <script>
+
         // ============================================
         // TAU DATABASE CONNECTOR
         // ============================================
@@ -1458,13 +1188,7 @@
                     return { success: false, error: error.message };
                 }
             },
-               window.dispatchEvent(new CustomEvent('tauMemberLoggedIn', { 
-            detail: result.member 
-        }));
-    }
-    
-    return result;
-};
+            
             getCurrentMember: function() {
                 const sessionData = sessionStorage.getItem('tauCurrentUser');
                 if (sessionData) {
@@ -1711,8 +1435,7 @@ TAU Africa Team
 
         window.sendEmailToAdmin = sendEmailToAdmin;
         window.sendWelcomeEmail = sendWelcomeEmail;
-    </script>
-    <script>
+
         // ============================================
         // NOTIFICATION CREATION
         // ============================================
@@ -1988,8 +1711,7 @@ TAU Africa Team
 
         window.processTaskSuccess = processTaskSuccess;
         window.processTalkSuccess = processTalkSuccess;
-    </script>
-    <script>
+
         // ============================================
         // FORM SUBMISSION HANDLERS
         // ============================================
@@ -2035,8 +1757,7 @@ TAU Africa Team
 
         window.processTaskRegistration = processTaskRegistration;
         window.processTalkRegistration = processTalkRegistration;
-    </script>
-    <script>
+
         // ============================================
         // MEMBER LOGIN & DASHBOARD
         // ============================================
@@ -2197,8 +1918,7 @@ TAU Africa Team
         window.showRealMemberDashboard = showRealMemberDashboard;
         window.copyReferralLink = copyReferralLink;
         window.showSuccessModal = showSuccessModal;
-    </script>
-    <script>
+
         // ============================================
         // GET MODAL CONTENT - ALL FORMS
         // ============================================
@@ -3007,130 +2727,32 @@ TAU Africa Team
     };
 </script>
 <script>
-// ============================================
-// FIX: PREVENT DUPLICATE REGISTRATIONS
-// Replace your existing TauDB.sync function
-// ============================================
-(function() {
-    'use strict';
-    
-    // Track registrations in progress to prevent duplicates
-    const registrationsInProgress = new Set();
-    
-    // Store original sync function
-    const originalSync = window.TauDB.sync;
-    
-    // Replace with duplicate-prevention version
-    window.TauDB.sync = async function(formData, team, referralCode) {
+    // ============================================
+    // FIREBASE ENHANCEMENT FOR TAUDB
+    // ============================================
+    if (window.TauDB && window.db) {
+        const originalSync = window.TauDB.sync;
         
-        // Create unique key for this registration
-        const registrationKey = `${formData.email}_${formData.phone}`;
-        
-        // Check if already registering
-        if (registrationsInProgress.has(registrationKey)) {
-            console.warn('⚠️ Registration already in progress, ignoring duplicate');
-            return { 
-                success: false, 
-                error: 'Registration already in progress' 
-            };
-        }
-        
-        // Check if member already exists in localStorage
-        const existingMembers = JSON.parse(localStorage.getItem('tauAfricaDB') || '[]');
-        const alreadyExists = existingMembers.find(m => 
-            m.email === formData.email || m.phone === formData.phone
-        );
-        
-        if (alreadyExists) {
-            console.warn('⚠️ Member already registered:', alreadyExists.id);
-            return {
-                success: false,
-                error: 'Member already registered',
-                existingMember: alreadyExists
-            };
-        }
-        
-        // Mark as in progress
-        registrationsInProgress.add(registrationKey);
-        console.log('🔒 Registration locked:', registrationKey);
-        
-        try {
-            // Call original sync function
+        window.TauDB.sync = async function(formData, team, referralCode) {
             const result = originalSync.call(this, formData, team, referralCode);
             
-            if (!result.success) {
-                console.error('❌ Original sync failed');
-                return result;
-            }
-            
-            console.log('✅ localStorage sync successful:', result.memberId);
-            
-            // Save to Firestore ONCE
-            const db = firebase.firestore();
-            
-            if (db) {
-                // Check if member already exists in Firestore
-                const firestoreCheck = await db.collection('members')
-                    .where('email', '==', formData.email)
-                    .limit(1)
-                    .get();
-                
-                if (!firestoreCheck.empty) {
-                    console.warn('⚠️ Member already exists in Firestore');
-                    return result; // Don't create duplicate
+            if (result.success && window.db) {
+                try {
+                    await window.db.collection('members').doc(result.memberId).set({
+                        ...result.member,
+                        lastSync: firebase.firestore.FieldValue.serverTimestamp()
+                    });
+                    console.log('✅ Member synced to Firestore:', result.memberId);
+                } catch (error) {
+                    console.error('⚠️ Firestore sync warning:', error);
                 }
-                
-                const memberData = {
-                    ...result.member,
-                    syncedToFirestore: true,
-                    firestoreSyncDate: new Date().toISOString(),
-                    lastModified: firebase.firestore.FieldValue.serverTimestamp(),
-                    registrationSource: 'main_app',
-                    registrationIP: 'unknown', // Add if you have IP detection
-                    userAgent: navigator.userAgent
-                };
-                
-                // Save to Firestore (ONCE)
-                await db.collection('members').doc(result.memberId).set(memberData);
-                console.log('✅ Saved to Firestore: members/' + result.memberId);
-                
-                // Create activity log
-                await db.collection('activity_log').add({
-                    type: 'new_registration',
-                    memberId: result.memberId,
-                    memberName: result.member.fullName,
-                    team: team,
-                    timestamp: firebase.firestore.FieldValue.serverTimestamp()
-                });
-                
-                result.firestoreSynced = true;
-                
-            } else {
-                console.warn('⚠️ Firestore offline, saved locally only');
-                result.firestoreSynced = false;
             }
             
             return result;
-            
-        } catch (error) {
-            console.error('❌ Registration error:', error);
-            return { 
-                success: false, 
-                error: error.message 
-            };
-            
-        } finally {
-            // Always unlock after 3 seconds (safety timeout)
-            setTimeout(() => {
-                registrationsInProgress.delete(registrationKey);
-                console.log('🔓 Registration unlocked:', registrationKey);
-            }, 3000);
-        }
-    };
-    
-    console.log('✅ TauDB.sync enhanced with duplicate prevention');
-    
-})();
+        };
+        
+        console.log('✅ Firebase enhancement applied to TauDB');
+    }
 </script>
 <script>
     // ============================================
@@ -3343,117 +2965,6 @@ TAU Africa Team
     };
     </script>
 <script>
-// ============================================
-// INTEGRATE QUERIES WITH EXISTING APP
-// ============================================
-(function() {
-    'use strict';
-    
-    // Wait for login
-    window.addEventListener('tauMemberLoggedIn', function(e) {
-        const member = e.detail;
-        console.log('🔐 Member logged in, starting Firestore sync...');
-        
-        // Start real-time listeners
-        startRealtimeSync(member.id);
-    });
-    
-    function startRealtimeSync(memberId) {
-        
-        // 1. Listen to notifications
-        const unsubNotifs = window.FirestoreListeners.listenToMyNotifications(
-            memberId,
-            (notifications) => {
-                console.log('📬 Received notifications:', notifications.length);
-                
-                // Update badge
-                const badge = document.getElementById('tauNotifBadge');
-                if (badge) {
-                    badge.textContent = notifications.length;
-                    badge.style.display = notifications.length > 0 ? 'block' : 'none';
-                }
-                
-                // Show new notifications
-                notifications.forEach(notif => {
-                    if (!notif.shownToUser) {
-                        showNotification(notif.title + ': ' + notif.message, 'info');
-                    }
-                });
-            }
-        );
-        
-        // 2. Listen to transfers
-        const unsubTransfers = window.FirestoreListeners.listenToMyTransfers(
-            memberId,
-            (transfers) => {
-                console.log('💸 Pending transfers:', transfers.length);
-                
-                if (transfers.length > 0) {
-                    showNotification(`⏳ ${transfers.length} pending transfer(s)`, 'info');
-                }
-            }
-        );
-        
-        // 3. Listen to profile updates
-        const unsubProfile = window.FirestoreListeners.listenToMyProfile(
-            memberId,
-            (profile) => {
-                console.log('👤 Profile updated from Firestore');
-                
-                // Update localStorage
-                const members = JSON.parse(localStorage.getItem('tauAfricaDB') || '[]');
-                const index = members.findIndex(m => m.id === memberId);
-                if (index >= 0) {
-                    members[index] = { ...members[index], ...profile };
-                    localStorage.setItem('tauAfricaDB', JSON.stringify(members));
-                }
-                
-                // Update session
-                sessionStorage.setItem('tauCurrentUser', JSON.stringify(profile));
-                
-                // Refresh UI
-                if (typeof updateStats === 'function') updateStats();
-            }
-        );
-        
-        // 4. Listen to public values
-        const unsubValues = window.FirestoreListeners.listenToPublicValues(
-            (values) => {
-                console.log('💎 Public values updated:', values.length);
-                
-                // Save to localStorage
-                localStorage.setItem('tauValues', JSON.stringify(values));
-                
-                // Refresh opportunities display
-                if (typeof refreshPublicValues === 'function') {
-                    refreshPublicValues();
-                }
-            }
-        );
-        
-        console.log('✅ All real-time listeners active');
-        
-        // Store unsubscribe functions
-        window.tauUnsubscribeFunctions = [
-            unsubNotifs,
-            unsubTransfers,
-            unsubProfile,
-            unsubValues
-        ];
-    }
-    
-    // Cleanup on logout
-    window.addEventListener('tauMemberLoggedOut', function() {
-        console.log('🔓 Member logged out, stopping listeners...');
-        
-        if (window.tauUnsubscribeFunctions) {
-            window.tauUnsubscribeFunctions.forEach(unsub => unsub());
-        }
-    });
-    
-})();
-</script>
-    <script>
     // ============================================
     // INTEGRATION HEALTH CHECK
     // ============================================
@@ -3492,8 +3003,7 @@ TAU Africa Team
     window.TauIntegration = {
         healthCheck: runHealthCheck
     };
-    </script>
-    <script>
+
     // ============================================
     // AUTO-RUN ON LOAD
     // ============================================
