@@ -1049,14 +1049,15 @@ input[type="date"] {
                 description: proof,
                 reward: 0 // Pending approval
             });
-        } else {
+         
+        else {
             window.TauDB.addTask(currentMember.id, {
                 title: 'Task Completion',
                 description: proof,
                 category: 'User Submitted',
                 reward: 0 // Pending approval
             });
-        }
+        
         
         // Create notification for admins
         createAdminNotification('completion', {
@@ -2197,6 +2198,7 @@ TAU Africa Team
     
 })();
 </script>
+    
     <script>
 // ===== M-PESA PAYMENT INTEGRATION =====
 function initiateMpesaPayment(amount, phoneNumber, formData, successCallback) {
@@ -2429,7 +2431,7 @@ function processTaskSuccess(formData) {
         showNotification('⚠️ Registration saved but emails failed. Contact: grouptauafrica@gmail.com', 'error');
         closeAllModals();
     });
-}
+ }
 
 function processTalkSuccess(formData) {
     formData.team = 'TALK';
@@ -2457,7 +2459,7 @@ function processTalkSuccess(formData) {
         showNotification('⚠️ Registration saved but emails failed. Contact: grouptauafrica@gmail.com', 'error');
         closeAllModals();
     });
-}
+ }
 
 function processJobCreationSuccess(formData) {
     formData.team = 'JOB CREATION';
