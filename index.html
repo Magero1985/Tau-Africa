@@ -1455,29 +1455,34 @@ input[type="date"] {
         adminEmail: 'grouptauafrica@gmail.com'
     };
     
-    // ============================================
-    // 2. INITIALIZE EMAILJS (ONCE)
-    // ============================================
-    let emailInitialized = false;
-    
-    function initEmailJS() {
-        if (emailInitialized) return true;
-        
-        if (typeof emailjs === 'undefined') {
-            console.error('❌ EmailJS library not loaded');
-            return false;
-        }
-        
-        try {
-            emailjs.init({ publicKey: EMAIL_CONFIG.publicKey });
-            emailInitialized = true;
-            console.log('✅ EmailJS initialized');
-            return true;
-        } catch (error) {
-            console.error('❌ EmailJS init failed:', error);
-            return false;
-        }
+// ✅ FIXED EMAIL INITIALIZATION
+let emailInitialized = false;
+
+function initEmailJS() {
+    if (typeof emailjs === 'undefined') {
+        console.log('⏳ Waiting for EmailJS...');
+        setTimeout(initEmailJS, 500);
+        return false;
     }
+    
+    try {
+        emailjs.init({ publicKey: 'GhjI14eQVGgOli0j1' });
+        emailInitialized = true;
+        console.log('✅ EmailJS ready');
+        return true;
+    } catch (error) {
+        console.error('❌ EmailJS failed:', error);
+        setTimeout(initEmailJS, 500);
+        return false;
+    }
+}
+
+// Start initialization with retry
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initEmailJS);
+} else {
+    initEmailJS();
+}
     
     // Initialize immediately
     setTimeout(initEmailJS, 500);
@@ -1888,33 +1893,47 @@ TAU Africa Team
         storageBucket: "tau-africa-ecosystem.firebasestorage.app",
         messagingSenderId: "1047279398196",
         appId: "1:1047279398196:web:06d43661650c794268c961"
-    };
     
-    let db, isOnline = false;
+        function initializeFirebase() {
+    if (typeof firebase === 'undefined') {
+        console.log('⏳ Waiting for Firebase...');
+        setTimeout(initializeFirebase, 500);
+        return false;
+    }
     
     try {
         if (!firebase.apps.length) {
-            firebase.initializeApp(FIREBASE_CONFIG);
-        }
-        db = firebase.firestore();
-        
-        // Enable offline persistence (cache for offline use)
-        db.enablePersistence({ synchronizeTabs: true })
-            .then(() => {
-                console.log('✅ Offline cache enabled (fallback only)');
-            })
-            .catch(err => {
-                console.warn('⚠️ Persistence error:', err.code);
+            firebase.initializeApp({
+                apiKey: "AIzaSyAW0vk_gg03xXEm6I1TQnU8KRiv1RhcrQ4",
+                authDomain: "tau-africa-ecosystem.firebaseapp.com",
+                projectId: "tau-africa-ecosystem",
+                storageBucket: "tau-africa-ecosystem.firebasestorage.app",
+                messagingSenderId: "1047279398196",
+                appId: "1:1047279398196:web:06d43661650c794268c961"
             });
+        }
+        
+        db = firebase.firestore();
+        db.enablePersistence({ synchronizeTabs: true })
+            .catch(err => console.warn('Persistence:', err.code));
         
         isOnline = true;
-        console.log('✅ Firestore connected (PRIMARY STORAGE)');
+        console.log('✅ Firebase ready');
+        return true;
         
     } catch (error) {
-        console.error('❌ Firebase init failed:', error);
-        alert('⚠️ Cloud storage unavailable. Please check your internet connection.');
-        isOnline = false;
+        console.error('❌ Firebase failed:', error);
+        setTimeout(initializeFirebase, 500);
+        return false;
     }
+}
+
+// Start with retry
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initializeFirebase);
+} else {
+    initializeFirebase();
+}
     
     // ============================================
     // 2. CLOUD-FIRST TauDB.sync() 
