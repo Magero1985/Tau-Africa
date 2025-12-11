@@ -1876,68 +1876,41 @@ TAU Africa Team
     
     <script>
 // ============================================
-// 1. FIREBASE CONFIG & INIT
+// FIREBASE BRIDGE - Main App (NON-DESTRUCTIVE)
+// Add this AFTER all existing code,
 // ============================================
-const FIREBASE_CONFIG = {
-    apiKey: "AIzaSyAW0vk_gg03xXEm6I1TQnU8KRiv1RhcrQ4",
-    authDomain: "tau-africa-ecosystem.firebaseapp.com",
-    projectId: "tau-africa-ecosystem",
-    storageBucket: "tau-africa-ecosystem.firebasestorage.app",
-    messagingSenderId: "1047279398196",
-    appId: "1:1047279398196:web:06d43661650c794268c961"
-};
-
-let db, isOnline = false;
-
-function initializeFirebase() {
-    try {
-        // Check if Firebase library is loaded
-        if (typeof firebase === 'undefined') {
-            console.error('❌ Firebase library not loaded');
-            return false;
-        }
-        
-        // Initialize Firebase 
-// ✅ FIXED VERSION
-function initializeFirebase() {
-    if (typeof firebase === 'undefined') {
-        console.log('⏳ Firebase not loaded, retrying...');
-        setTimeout(initializeFirebase, 500);
-        return false;
-    }
+<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+<script>
+(function() {
+    'use strict';
     
+    // Firebase Configuration
+    const FIREBASE_CONFIG = {
+        apiKey: "AIzaSyAW0vk_gg03xXEm6I1TQnU8KRiv1RhcrQ4",
+        authDomain: "tau-africa-ecosystem.firebaseapp.com",
+        projectId: "tau-africa-ecosystem",
+        storageBucket: "tau-africa-ecosystem.appspot.com",
+        messagingSenderId: "1047279398196",
+        appId: "1:1047279398196:web:06d43661650c794268c961"
+    };
+    
+    // Initialize Firebase (only if not already initialized)
+    let db, auth;
     try {
         if (!firebase.apps.length) {
-            firebase.initializeApp({
-                apiKey: "AIzaSyAW0vk_gg03xXEm6I1TQnU8KRiv1RhcrQ4",
-                authDomain: "tau-africa-ecosystem.firebaseapp.com",
-                projectId: "tau-africa-ecosystem",
-                storageBucket: "tau-africa-ecosystem.firebasestorage.app",
-                messagingSenderId: "1047279398196",
-                appId: "1:1047279398196:web:06d43661650c794268c961"
-            });
-            console.log('✅ Firebase initialized');
+            firebase.initializeApp(FIREBASE_CONFIG);
         }
-        
         db = firebase.firestore();
-        
-        // Enable offline persistence
-        db.enablePersistence({ synchronizeTabs: true })
-            .then(() => console.log('✅ Offline persistence enabled'))
-            .catch(err => {
-                if (err.code === 'failed-precondition') {
-                    console.warn('⚠️ Multiple tabs - persistence in first tab only');
-                }
-            });
-        
-        isOnline = true;
-        return true;
-        
+        auth = firebase.auth();
+        console.log('✅ Firebase initialized - Main App');
     } catch (error) {
-        console.error('❌ Firebase init failed:', error);
-        return false;
+        console.error('⚠️ Firebase initialization failed:', error);
+        console.log('📴 Running in offline mode with localStorage');
+        db = null;
+        auth = null;
     }
-}
     // ============================================
     // 2. CLOUD-FIRST TauDB.sync() 
     // ============================================
