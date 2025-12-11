@@ -1897,38 +1897,7 @@ function initializeFirebase() {
             return false;
         }
         
-        // Initialize Firebase
-        if (!firebase.apps.length) {
-            firebase.initializeApp(FIREBASE_CONFIG);
-            console.log('✅ Firebase app initialized');
-        }
-        
-        // Get Firestore
-        db = firebase.firestore();
-        
-        // Enable offline persistence
-        db.enablePersistence({ synchronizeTabs: true })
-            .then(() => {
-                console.log('✅ Offline cache enabled');
-            })
-            .catch(err => {
-                if (err.code === 'failed-precondition') {
-                    console.warn('⚠️ Multiple tabs open, persistence enabled in first tab only');
-                } else if (err.code === 'unimplemented') {
-                    console.warn('⚠️ Browser does not support persistence');
-                }
-            });
-        
-        isOnline = true;
-        console.log('✅ Firestore connected (PRIMARY STORAGE)');
-        return true;
-        
-    } catch (error) {
-        console.error('❌ Firebase init failed:', error);
-        isOnline = false;
-        return false;
-    }
-}
+        // Initialize Firebase 
 // ✅ FIXED VERSION
 function initializeFirebase() {
     if (typeof firebase === 'undefined') {
@@ -1969,10 +1938,6 @@ function initializeFirebase() {
         return false;
     }
 }
-
-// Start with retry logic
-initializeFirebase();
-    
     // ============================================
     // 2. CLOUD-FIRST TauDB.sync() 
     // ============================================
