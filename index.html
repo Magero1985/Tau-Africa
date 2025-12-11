@@ -1929,10 +1929,6 @@ function initializeFirebase() {
         return false;
     }
 }
-
-// ❌ CURRENT (BROKEN)
-setTimeout(() => { initializeFirebase(); }, 1000);
-
 // ✅ FIXED VERSION
 function initializeFirebase() {
     if (typeof firebase === 'undefined') {
