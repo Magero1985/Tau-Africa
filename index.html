@@ -6662,7 +6662,7 @@ console.log('💡 Run window.runIntegrationTest() to check integration');
         }
         
         // Check if mining link is intact
-        const kabiruLinks = document.querySelectorAll('a[href*="Kabiru-Mining-Portal"]');
+        const kabiruLinks = document.querySelectorAll('a[href*="https://magero1985.github.io/Kabiru-Mining-Portal-/"]');
         if (kabiruLinks.length === 0) {
             issues.push('⚠️ Warning: No Kabiru Mining links found');
         } else {
@@ -6745,11 +6745,22 @@ console.log('💡 Run window.runIntegrationTest() to check integration');
     // ============================================
     // 8. AUTO-FIX COMMON ISSUES
     // ============================================
-    function autoFix() {
-        console.log('🔧 Auto-fixing common issues...');
-        
-        fixDuplicateBridges();
-        checkStorage(); // Creates missing storage
+    function fixDuplicateBridges() {
+    // Remove duplicate bridge links if any
+    const bridges = document.querySelectorAll('a[href*="bridge.html"], button[onclick*="openAdminBridge"]');
+    if (bridges.length > 1) {
+        console.log(`⚠️ Found ${bridges.length} bridge links - removing duplicates`);
+        for (let i = 1; i < bridges.length; i++) {
+            bridges[i].remove();
+        }
+    }
+}
+
+function autoFix() {
+    console.log('🔧 Auto-fixing common issues...');
+    
+    fixDuplicateBridges(); // Now this function exists!
+    checkStorage();
         
         // Ensure notification system exists
         if (!document.getElementById('notification')) {
@@ -6792,44 +6803,62 @@ console.log('💡 Run window.runIntegrationTest() to check integration');
  </script>
 
     <script>    
-// services/realtimeService.js - MAIN APP VERSION
-export const realtimeService = {
-  
-  // Listen to YOUR OWN notifications
-  subscribeToMyNotifications(memberId, callback) {
-    return db.collection('notifications')
-      .where('memberId', '==', memberId)
-      .where('read', '==', false)
-      .orderBy('timestamp', 'desc')
-      .onSnapshot(callback);
-  },
-  
-  // Listen to YOUR OWN transfer status
-  subscribeToMyTransfers(memberId, callback) {
-    return db.collection('kabiru_transfers')
-      .where('memberId', '==', memberId)
-      .orderBy('timestamp', 'desc')
-      .limit(10)
-      .onSnapshot(callback);
-  },
-  
-  // Listen to YOUR OWN profile updates (from admin)
-  subscribeToMyProfile(memberId, callback) {
-    return db.collection('members').doc(memberId)
-      .onSnapshot(callback);
-  },
-  
-  // Listen to public opportunities (tasks/activities/values)
-  subscribeToOpportunities(callback) {
-    return db.collection('values')
-      .where('validated', '==', true)
-      .where('status', '==', 'Approved')
-      .orderBy('created', 'desc')
-      .limit(20)
-      .onSnapshot(callback);
-  }
-};
-</script> 
+// REAL-TIME SERVICE - MAIN APP VERSION
+(function() {
+    'use strict';
+    
+    window.realtimeService = {
+        
+        // Listen to YOUR OWN notifications
+        subscribeToMyNotifications: function(memberId, callback) {
+            if (!firebase || !firebase.firestore) return null;
+            const db = firebase.firestore();
+            
+            return db.collection('notifications')
+                .where('memberId', '==', memberId)
+                .where('read', '==', false)
+                .orderBy('timestamp', 'desc')
+                .onSnapshot(callback);
+        },
+        
+        // Listen to YOUR OWN transfer status
+        subscribeToMyTransfers: function(memberId, callback) {
+            if (!firebase || !firebase.firestore) return null;
+            const db = firebase.firestore();
+            
+            return db.collection('kabiru_transfers')
+                .where('memberId', '==', memberId)
+                .orderBy('timestamp', 'desc')
+                .limit(10)
+                .onSnapshot(callback);
+        },
+        
+        // Listen to YOUR OWN profile updates
+        subscribeToMyProfile: function(memberId, callback) {
+            if (!firebase || !firebase.firestore) return null;
+            const db = firebase.firestore();
+            
+            return db.collection('members').doc(memberId)
+                .onSnapshot(callback);
+        },
+        
+        // Listen to public opportunities
+        subscribeToOpportunities: function(callback) {
+            if (!firebase || !firebase.firestore) return null;
+            const db = firebase.firestore();
+            
+            return db.collection('values')
+                .where('validated', '==', true)
+                .where('status', '==', 'Approved')
+                .orderBy('created', 'desc')
+                .limit(20)
+                .onSnapshot(callback);
+        }
+    };
+    
+    console.log('✅ Real-time Service loaded');
+})();
+</script>
 </body>
                     
             </html>
