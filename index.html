@@ -13,8 +13,6 @@
 <meta name="apple-mobile-web-app-title" content="TAU Africa">
 <link rel="apple-touch-icon" href="icon-192.png">
     <title>TAU AFRICA INTERNATIONAL</title>
-        <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
     
     <!-- EmailJS SDK -->
     <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
@@ -718,13 +716,6 @@ input[type="date"] {
                 <button class="btn btn-register" onclick="openModal('talkRegistration')">Join TALK Team</button>
                 <p style="margin-top: 15px; font-weight: bold; color: #e74c3c;">TASK Fee: KSH 500 | TALK Fee: KSH 2,000</p>
             </div>
-            <div class="section">
-    <h3 class="section-title">⚡ KABIRU MINING</h3>
-    <p>Mine Kabiru coins and manage your wallet</p>
-    <button class="btn-kabiru" onclick="window.open('https://magero1985.github.io/Kabiru-Mining-Portal-/', '_blank')">
-        Access Kabiru Mining App
-    </button>
-            </div>
             <!-- Add this button to your main sections area -->
 <div class="section">
     <h3 class="section-title">💎 SUBMIT VALUE</h3>
@@ -794,6 +785,14 @@ input[type="date"] {
             </div>
         </div>
 
+        <!-- Kabiru Mining Section -->
+        <div class="kabiru-section">
+            <h2>⚡ KABIRU MINING</h2>
+            <p>Mine Kabiru coins by proving and validating real values</p>
+            <button class="btn-kabiru" onclick="window.open('https://magero1985.github.io/Kabiru-Mining-Portal-/', '_blank')">Access Kabiru Mining App</button>
+        </div>
+    </div>
+
     <!-- Notification -->
     <div id="notification" class="notification"></div>
 <!-- Notification Bell Icon - Add to your header -->
@@ -842,7 +841,6 @@ input[type="date"] {
         <button onclick="✅ Validate()">➤</button>
     </div>
 </div>
-
     <script>
 // ============================================
 // PUBLIC OPPORTUNITIES DISPLAY - Main App
@@ -1456,28 +1454,32 @@ input[type="date"] {
         adminEmail: 'grouptauafrica@gmail.com'
     };
     
-  // ✅2. FIXED VERSION
-function initEmailJS() {
-    if (typeof emailjs === 'undefined') {
-        console.log('⏳ EmailJS not loaded, retrying...');
-        setTimeout(initEmailJS, 500);
-        return false;
+    // ============================================
+    // 2. INITIALIZE EMAILJS (ONCE)
+    // ============================================
+    let emailInitialized = false;
+    
+    function initEmailJS() {
+        if (emailInitialized) return true;
+        
+        if (typeof emailjs === 'undefined') {
+            console.error('❌ EmailJS library not loaded');
+            return false;
+        }
+        
+        try {
+            emailjs.init({ publicKey: EMAIL_CONFIG.publicKey });
+            emailInitialized = true;
+            console.log('✅ EmailJS initialized');
+            return true;
+        } catch (error) {
+            console.error('❌ EmailJS init failed:', error);
+            return false;
+        }
     }
     
-    try {
-        emailjs.init({ publicKey: 'GhjI14eQVGgOli0j1' });
-        emailInitialized = true;
-        console.log('✅ EmailJS initialized');
-        return true;
-    } catch (error) {
-        console.error('❌ EmailJS init failed:', error);
-        return false;
-    }
-}
-
-// Start initialization with retry logic
-initEmailJS();
-    
+    // Initialize immediately
+    setTimeout(initEmailJS, 500);
     
     // ============================================
     // 3. CORE EMAIL FUNCTION (Used by all)
@@ -1875,42 +1877,44 @@ TAU Africa Team
 </script>
     
     <script>
-// ============================================
-// FIREBASE BRIDGE - Main App (NON-DESTRUCTIVE)
-// Add this AFTER all existing code,
-// ============================================
-<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
-<script>
-(function() {
-    'use strict';
-    
-    // Firebase Configuration
+    // ============================================
+    // 1. FIREBASE CONFIG & INIT
+    // ============================================
     const FIREBASE_CONFIG = {
         apiKey: "AIzaSyAW0vk_gg03xXEm6I1TQnU8KRiv1RhcrQ4",
         authDomain: "tau-africa-ecosystem.firebaseapp.com",
         projectId: "tau-africa-ecosystem",
-        storageBucket: "tau-africa-ecosystem.appspot.com",
+        storageBucket: "tau-africa-ecosystem.firebasestorage.app",
         messagingSenderId: "1047279398196",
         appId: "1:1047279398196:web:06d43661650c794268c961"
     };
     
-    // Initialize Firebase (only if not already initialized)
-    let db, auth;
+    let db, isOnline = false;
+    
     try {
         if (!firebase.apps.length) {
             firebase.initializeApp(FIREBASE_CONFIG);
         }
         db = firebase.firestore();
-        auth = firebase.auth();
-        console.log('✅ Firebase initialized - Main App');
+        
+        // Enable offline persistence (cache for offline use)
+        db.enablePersistence({ synchronizeTabs: true })
+            .then(() => {
+                console.log('✅ Offline cache enabled (fallback only)');
+            })
+            .catch(err => {
+                console.warn('⚠️ Persistence error:', err.code);
+            });
+        
+        isOnline = true;
+        console.log('✅ Firestore connected (PRIMARY STORAGE)');
+        
     } catch (error) {
-        console.error('⚠️ Firebase initialization failed:', error);
-        console.log('📴 Running in offline mode with localStorage');
-        db = null;
-        auth = null;
+        console.error('❌ Firebase init failed:', error);
+        alert('⚠️ Cloud storage unavailable. Please check your internet connection.');
+        isOnline = false;
     }
+    
     // ============================================
     // 2. CLOUD-FIRST TauDB.sync() 
     // ============================================
@@ -2399,47 +2403,6 @@ function processJobCreationTraining(event) {
 }
 
 // ===== DUAL EMAIL SUCCESS HANDLERS =====
-        function sanitizeFormData(formData) {
-    const sanitized = {};
-    
-    for (let [key, value] of formData.entries()) {
-        if (typeof value === 'string') {
-            // Remove HTML tags
-            value = value.replace(/<[^>]*>/g, '');
-            // Trim whitespace
-            value = value.trim();
-            // Limit length
-            value = value.substring(0, 2000);
-        }
-        sanitized[key] = value;
-    }
-    
-    return sanitized;
-}
-
-// Validate email format
-function isValidEmail(email) {
-    return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
-}
-
-// Validate phone format (Kenya)
-function isValidPhone(phone) {
-    return /^254[0-9]{9}$/.test(phone);
-}
-
-// Use in form handlers:
-const rawData = new FormData(event.target);
-const data = sanitizeFormData(rawData);
-
-if (!isValidEmail(data.email)) {
-    showNotification('❌ Invalid email format', 'error');
-    return;
-}
-
-if (!isValidPhone(data.phone)) {
-    showNotification('❌ Phone must be: 254XXXXXXXXX', 'error');
-    return;
-}
 function processTaskSuccess(formData) {
     formData.team = 'TASK';
     console.log('📧 Processing TASK registration - sending DUAL emails...');
@@ -6277,51 +6240,7 @@ if ('serviceWorker' in navigator) {
             checkForChanges();
         }
     });
-    // Add storage quota check
-function checkStorageQuota() {
-    if (!navigator.storage || !navigator.storage.estimate) {
-        console.warn('⚠️ Storage API not supported');
-        return { hasSpace: true, warning: false };
-    }
     
-    return navigator.storage.estimate().then(estimate => {
-        const percentUsed = (estimate.usage / estimate.quota) * 100;
-        
-        console.log(`💾 Storage: ${(estimate.usage / 1024 / 1024).toFixed(2)}MB / ${(estimate.quota / 1024 / 1024).toFixed(2)}MB (${percentUsed.toFixed(1)}%)`);
-        
-        return {
-            hasSpace: percentUsed < 90,
-            warning: percentUsed > 80,
-            percentUsed: percentUsed
-        };
-    });
-}
-
-// Use before large writes
-async function safeLocalStorageSet(key, value) {
-    const quota = await checkStorageQuota();
-    
-    if (!quota.hasSpace) {
-        console.error('❌ Storage quota exceeded');
-        showNotification('⚠️ Storage full - some data may not save', 'error');
-        return false;
-    }
-    
-    if (quota.warning) {
-        console.warn('⚠️ Storage 80% full');
-    }
-    
-    try {
-        localStorage.setItem(key, value);
-        return true;
-    } catch (e) {
-        if (e.name === 'QuotaExceededError') {
-            showNotification('❌ Storage full - clearing old data', 'error');
-            // Implement cleanup logic here
-        }
-        return false;
-    }
- }
     console.log('🚀 Real-time sync active');
 })();
         </script>
@@ -6421,107 +6340,7 @@ window.runIntegrationTest = function() {
 console.log('💡 Run window.runIntegrationTest() to check integration');
     </script>   
    
-    <script>
-// ============================================
-// 1. KABIRU WITHDRAWAL FUNCTION
-// ============================================
-window.initiateKabiruWithdrawal = function() {
-    const currentMember = window.TauDB?.getCurrentMember();
-    
-    if (!currentMember) {
-        showNotification('❌ Please login first', 'error');
-        return;
-    }
-    
-    // Check balances
-    const iKbpBalance = currentMember.iKbpBalance || 0;
-    const iKbBalance = currentMember.iKbBalance || 0;
-    
-    // Minimum withdrawal: 10,000 iKbp OR 0.0001 iKb
-    if (iKbpBalance < 10000 && iKbBalance < 0.0001) {
-        showNotification('❌ Insufficient balance. Minimum: 10,000 iKbp or 0.0001 iKb', 'error');
-        return;
-    }
-    
-    // Create withdrawal modal
-    const modal = document.createElement('div');
-    modal.className = 'modal';
-    modal.style.display = 'block';
-    modal.innerHTML = 
-        '<div class="modal-content">' +
-            '<span class="close" onclick="this.parentElement.parentElement.remove()">&times;</span>' +
-            '<h2 style="text-align: center;">💸 Withdraw to Kabiru Mining</h2>' +
-            '<div style="background: #f8f9fa; padding: 20px; border-radius: 10px; margin: 20px 0;">' +
-                '<h3>Your Balances:</h3>' +
-                '<p><strong>iKbp:</strong> ' + iKbpBalance.toLocaleString() + '</p>' +
-                '<p><strong>iKb:</strong> ' + iKbBalance.toFixed(6) + '</p>' +
-            '</div>' +
-            '<form onsubmit="processKabiruWithdrawal(event)">' +
-                '<div class="form-group">' +
-                    '<label>Withdrawal Type *</label>' +
-                    '<select name="withdrawalType" required>' +
-                        '<option value="">Select type</option>' +
-                        '<option value="iKbp">iKbp (Points)</option>' +
-                        '<option value="iKb">iKb (Currency)</option>' +
-                    '</select>' +
-                '</div>' +
-                '<div class="form-group">' +
-                    '<label>Amount *</label>' +
-                    '<input type="number" name="amount" step="0.0001" required>' +
-                '</div>' +
-                '<button type="submit" class="btn" style="width: 100%;">Confirm Withdrawal</button>' +
-            '</form>' +
-        '</div>';
-    
-    document.body.appendChild(modal);
-};
-
-window.processKabiruWithdrawal = function(event) {
-    event.preventDefault();
-    
-    const formData = new FormData(event.target);
-    const type = formData.get('withdrawalType');
-    const amount = parseFloat(formData.get('amount'));
-    
-    const currentMember = window.TauDB?.getCurrentMember();
-    if (!currentMember) return;
-    
-    // Validate amount
-    if (type === 'iKbp' && amount > (currentMember.iKbpBalance || 0)) {
-        showNotification('❌ Insufficient iKbp balance', 'error');
-        return;
-    }
-    
-    if (type === 'iKb' && amount > (currentMember.iKbBalance || 0)) {
-        showNotification('❌ Insufficient iKb balance', 'error');
-        return;
-    }
-    
-    // Create transfer record in Firebase
-    if (firebase && firebase.firestore) {
-        const db = firebase.firestore();
-        
-        db.collection('kabiru_transfers').add({
-            memberId: currentMember.id,
-            memberName: currentMember.fullName,
-            type: type,
-            amount: amount,
-            status: 'pending',
-            timestamp: firebase.firestore.FieldValue.serverTimestamp(),
-            fromApp: 'TAU_AFRICA'
-        })
-        .then(() => {
-            showNotification('✅ Withdrawal request sent! Open Kabiru Mining to complete.', 'success');
-            closeAllModals();
-        })
-        .catch(error => {
-            console.error('Transfer error:', error);
-            showNotification('❌ Transfer failed: ' + error.message, 'error');
-        });
-    } else {
-        showNotification('⚠️ Firebase not available. Please try again.', 'error');
-    }
-};
+    <script>       
     // ============================================
     // 2. ADD TRANSFER BUTTON TO DASHBOARD (Missing UI)
     // ============================================
@@ -6551,25 +6370,25 @@ window.processKabiruWithdrawal = function(event) {
             // Create transfer section
             const transferSection = document.createElement('div');
             transferSection.id = 'kabiruTransferSection';
-            transferSection.innerHTML = 
-    '<div style="margin-top: 30px; padding: 20px; background: linear-gradient(45deg, #FFD700, #FFA500); border-radius: 15px; text-align: center;">' +
-        '<h3 style="color: #333; margin-bottom: 15px;">💎 Kabiru Mining Transfer</h3>' +
-        '<div style="background: rgba(0,0,0,0.1); padding: 15px; border-radius: 10px; margin-bottom: 15px;">' +
-            '<div style="font-size: 24px; font-weight: bold; color: #333;">' +
-                ((currentMember.iKbpBalance || 0).toLocaleString()) + ' iKbp' +
-            '</div>' +
-            '<div style="font-size: 18px; color: #333; margin-top: 5px;">' +
-                ((currentMember.iKbBalance || 0).toFixed(4)) + ' iKb' +
-            '</div>' +
-        '</div>' +
-        '<button onclick="initiateKabiruWithdrawal()" class="btn" style="width: 100%; background: #333; color: #FFD700; font-size: 16px; padding: 15px;">' +
-            '💸 Withdraw to Kabiru Mining' +
-        '</button>' +
-        '<p style="color: #333; font-size: 12px; margin-top: 10px;">' +
-            'Minimum: 10,000 iKbp or 0.0001 iKb' +
-        '</p>' +
-    '</div>';
-            
+            transferSection.innerHTML = `
+                <div style="margin-top: 30px; padding: 20px; background: linear-gradient(45deg, #FFD700, #FFA500); border-radius: 15px; text-align: center;">
+                    <h3 style="color: #333; margin-bottom: 15px;">💎 Kabiru Mining Transfer</h3>
+                    <div style="background: rgba(0,0,0,0.1); padding: 15px; border-radius: 10px; margin-bottom: 15px;">
+                        <div style="font-size: 24px; font-weight: bold; color: #333;">
+                            ${(currentMember.iKbpBalance || 0).toLocaleString()} iKbp
+                        </div>
+                        <div style="font-size: 18px; color: #333; margin-top: 5px;">
+                            ${(currentMember.iKbBalance || 0).toFixed(4)} iKb
+                        </div>
+                    </div>
+                    <button onclick="initiateKabiruWithdrawal()" class="btn" style="width: 100%; background: #333; color: #FFD700; font-size: 16px; padding: 15px;">
+                        💸 Withdraw to Kabiru Mining
+                    </button>
+                    <p style="color: #333; font-size: 12px; margin-top: 10px;">
+                        Minimum: 10,000 iKbp or 0.0001 iKb
+                    </p>
+                </div>
+            `;
             
             // Insert before logout/close buttons
             const lastDiv = modalContent.querySelector('div[style*="grid-template-columns"]');
@@ -6682,7 +6501,7 @@ window.processKabiruWithdrawal = function(event) {
     
 })();
 </script>
-<script>
+
 <!-- ============================================ -->
 <!-- VISUAL INDICATOR FOR PENDING TRANSFERS -->
 <!-- ============================================ -->
@@ -6702,7 +6521,7 @@ window.processKabiruWithdrawal = function(event) {
     animation: transferPulse 2s infinite;
 }
 </style>
-</script>
+
     <script>
      (function() {
     'use strict';
@@ -6843,7 +6662,7 @@ window.processKabiruWithdrawal = function(event) {
         }
         
         // Check if mining link is intact
-        const kabiruLinks = document.querySelectorAll('a[href*="https://magero1985.github.io/Kabiru-Mining-Portal-/"]');
+        const kabiruLinks = document.querySelectorAll('a[href*="Kabiru-Mining-Portal"]');
         if (kabiruLinks.length === 0) {
             issues.push('⚠️ Warning: No Kabiru Mining links found');
         } else {
@@ -6926,22 +6745,11 @@ window.processKabiruWithdrawal = function(event) {
     // ============================================
     // 8. AUTO-FIX COMMON ISSUES
     // ============================================
-    function fixDuplicateBridges() {
-    // Remove duplicate bridge links if any
-    const bridges = document.querySelectorAll('a[href*="bridge.html"], button[onclick*="openAdminBridge"]');
-    if (bridges.length > 1) {
-        console.log(`⚠️ Found ${bridges.length} bridge links - removing duplicates`);
-        for (let i = 1; i < bridges.length; i++) {
-            bridges[i].remove();
-        }
-    }
-}
-
-function autoFix() {
-    console.log('🔧 Auto-fixing common issues...');
-    
-    fixDuplicateBridges(); // Now this function exists!
-    checkStorage();
+    function autoFix() {
+        console.log('🔧 Auto-fixing common issues...');
+        
+        fixDuplicateBridges();
+        checkStorage(); // Creates missing storage
         
         // Ensure notification system exists
         if (!document.getElementById('notification')) {
@@ -6984,273 +6792,44 @@ function autoFix() {
  </script>
 
     <script>    
-// REAL-TIME SERVICE - MAIN APP VERSION
-(function() {
-    'use strict';
-    
-    window.realtimeService = {
-        
-        // Listen to YOUR OWN notifications
-        subscribeToMyNotifications: function(memberId, callback) {
-            if (!firebase || !firebase.firestore) return null;
-            const db = firebase.firestore();
-            
-            return db.collection('notifications')
-                .where('memberId', '==', memberId)
-                .where('read', '==', false)
-                .orderBy('timestamp', 'desc')
-                .onSnapshot(callback);
-        },
-        
-        // Listen to YOUR OWN transfer status
-        subscribeToMyTransfers: function(memberId, callback) {
-            if (!firebase || !firebase.firestore) return null;
-            const db = firebase.firestore();
-            
-            return db.collection('kabiru_transfers')
-                .where('memberId', '==', memberId)
-                .orderBy('timestamp', 'desc')
-                .limit(10)
-                .onSnapshot(callback);
-        },
-        
-        // Listen to YOUR OWN profile updates
-        subscribeToMyProfile: function(memberId, callback) {
-            if (!firebase || !firebase.firestore) return null;
-            const db = firebase.firestore();
-            
-            return db.collection('members').doc(memberId)
-                .onSnapshot(callback);
-        },
-        
-        // Listen to public opportunities
-        subscribeToOpportunities: function(callback) {
-            if (!firebase || !firebase.firestore) return null;
-            const db = firebase.firestore();
-            
-            return db.collection('values')
-                .where('validated', '==', true)
-                .where('status', '==', 'Approved')
-                .orderBy('created', 'desc')
-                .limit(20)
-                .onSnapshot(callback);
-        }
-    };
-    
-    console.log('✅ Real-time Service loaded');
-})();
-</script>
-    <script>
-// ============================================
-// FIRESTORE QUERY IMPLEMENTATION - FINAL
-// Add this to Main App (index.html)
-// ============================================
-(function() {
-    'use strict';
-    
-    console.log('🔥 Initializing Firestore Integration...');
-    
-    const db = firebase.firestore();
-    
-    // ============================================
-    // REAL-TIME LISTENERS FOR MAIN APP
-    // ============================================
-    
-    window.TauFirestoreSync = {
-        
-        // Start all listeners when user logs in
-        startSync(memberId) {
-            console.log('🎯 Starting Firestore sync for:', memberId);
-            
-            const listeners = [];
-            
-            // 1. Listen to YOUR notifications (Index 6)
-            const unsubNotifs = db.collection('notifications')
-                .where('memberId', '==', memberId)
-                .where('read', '==', false)
-                .orderBy('timestamp', 'desc')
-                .onSnapshot(
-                    snapshot => {
-                        console.log('📬 Notifications update:', snapshot.size);
-                        
-                        const notifications = [];
-                        snapshot.forEach(doc => {
-                            notifications.push({ id: doc.id, ...doc.data() });
-                        });
-                        
-                        // Update badge
-                        const badge = document.getElementById('tauNotifBadge');
-                        if (badge) {
-                            badge.textContent = notifications.length;
-                            badge.style.display = notifications.length > 0 ? 'block' : 'none';
-                        }
-                        
-                        // Save to localStorage
-                        const allNotifs = JSON.parse(localStorage.getItem('tauNotifications') || '{}');
-                        allNotifs[memberId] = notifications;
-                        localStorage.setItem('tauNotifications', JSON.stringify(allNotifs));
-                        
-                        // Show new notifications
-                        if (notifications.length > 0 && typeof showNotification === 'function') {
-                            const latest = notifications[0];
-                            if (!latest.shown) {
-                                showNotification(`${latest.title}: ${latest.message}`, 'info');
-                            }
-                        }
-                    },
-                    error => console.error('Notification listener error:', error)
-                );
-            
-            listeners.push(unsubNotifs);
-            
-            // 2. Listen to YOUR pending transfers (Index 1)
-            const unsubTransfers = db.collection('kabiru_transfers')
-                .where('memberId', '==', memberId)
-                .where('status', '==', 'pending')
-                .orderBy('timestamp', 'desc')
-                .onSnapshot(
-                    snapshot => {
-                        console.log('💸 Pending transfers:', snapshot.size);
-                        
-                        if (snapshot.size > 0 && typeof showNotification === 'function') {
-                            showNotification(`⏳ ${snapshot.size} pending transfer(s) to Kabiru Mining`, 'info');
-                        }
-                        
-                        const transfers = [];
-                        snapshot.forEach(doc => {
-                            transfers.push({ id: doc.id, ...doc.data() });
-                        });
-                        
-                        localStorage.setItem('tauPendingTransfers', JSON.stringify(transfers));
-                    },
-                    error => console.error('Transfer listener error:', error)
-                );
-            
-            listeners.push(unsubTransfers);
-            
-            // 3. Listen to YOUR profile updates (Direct doc)
-            const unsubProfile = db.collection('members').doc(memberId)
-                .onSnapshot(
-                    doc => {
-                        if (doc.exists) {
-                            console.log('👤 Profile updated from Firestore');
-                            
-                            const profileData = { id: doc.id, ...doc.data() };
-                            
-                            // Update localStorage
-                            const members = JSON.parse(localStorage.getItem('tauAfricaDB') || '[]');
-                            const index = members.findIndex(m => m.id === memberId);
-                            
-                            if (index >= 0) {
-                                members[index] = { ...members[index], ...profileData };
-                                localStorage.setItem('tauAfricaDB', JSON.stringify(members));
-                            }
-                            
-                            // Update session
-                            sessionStorage.setItem('tauCurrentUser', JSON.stringify(profileData));
-                            
-                            // Trigger UI refresh
-                            if (typeof updateStats === 'function') updateStats();
-                        }
-                    },
-                    error => console.error('Profile listener error:', error)
-                );
-            
-            listeners.push(unsubProfile);
-            
-            // 4. Listen to validated public values (Index 8)
-            const unsubValues = db.collection('values')
-                .where('status', '==', 'Approved')
-                .orderBy('created', 'desc')
-                .limit(20)
-                .onSnapshot(
-                    snapshot => {
-                        console.log('💎 Public values:', snapshot.size);
-                        
-                        const values = [];
-                        snapshot.forEach(doc => {
-                            values.push({ id: doc.id, ...doc.data() });
-                        });
-                        
-                        localStorage.setItem('tauPublicValues', JSON.stringify(values));
-                        
-                        // Refresh opportunities display
-                        if (typeof refreshPublicValues === 'function') {
-                            refreshPublicValues();
-                        }
-                    },
-                    error => console.error('Values listener error:', error)
-                );
-            
-            listeners.push(unsubValues);
-            
-            console.log('✅ All Firestore listeners active');
-            
-            // Store unsubscribe functions
-            window.tauFirestoreListeners = listeners;
-            
-            return listeners;
-        },
-        
-        // Stop all listeners on logout
-        stopSync() {
-            console.log('🛑 Stopping Firestore listeners...');
-            
-            if (window.tauFirestoreListeners) {
-                window.tauFirestoreListeners.forEach(unsub => unsub());
-                window.tauFirestoreListeners = null;
-            }
-        }
-    };
-    
-    // ============================================
-    // AUTO-START ON LOGIN
-    // ============================================
-    
-    // Hook into existing authentication
-    if (window.TauDB && window.TauDB.authenticate) {
-        const originalAuth = window.TauDB.authenticate;
-        
-        window.TauDB.authenticate = function(identifier, phoneLastFour) {
-            const result = originalAuth.call(this, identifier, phoneLastFour);
-            
-            if (result.success && result.member) {
-                // Start Firestore sync
-                setTimeout(() => {
-                    window.TauFirestoreSync.startSync(result.member.id);
-                }, 1000);
-            }
-            
-            return result;
-        };
-    }
-    
-    // Hook into logout
-    if (window.TauDB && window.TauDB.logout) {
-        const originalLogout = window.TauDB.logout;
-        
-        window.TauDB.logout = function() {
-            window.TauFirestoreSync.stopSync();
-            return originalLogout.call(this);
-        };
-    }
-    
-    // ============================================
-    // AUTO-START IF ALREADY LOGGED IN
-    // ============================================
-    
-    setTimeout(() => {
-        const currentMember = window.TauDB?.getCurrentMember();
-        if (currentMember) {
-            console.log('🔄 Detected existing session, starting sync...');
-            window.TauFirestoreSync.startSync(currentMember.id);
-        }
-    }, 2000);
-    
-    console.log('✅ Firestore Integration Loaded');
-    
-})();
-</script>
+// services/realtimeService.js - MAIN APP VERSION
+export const realtimeService = {
+  
+  // Listen to YOUR OWN notifications
+  subscribeToMyNotifications(memberId, callback) {
+    return db.collection('notifications')
+      .where('memberId', '==', memberId)
+      .where('read', '==', false)
+      .orderBy('timestamp', 'desc')
+      .onSnapshot(callback);
+  },
+  
+  // Listen to YOUR OWN transfer status
+  subscribeToMyTransfers(memberId, callback) {
+    return db.collection('kabiru_transfers')
+      .where('memberId', '==', memberId)
+      .orderBy('timestamp', 'desc')
+      .limit(10)
+      .onSnapshot(callback);
+  },
+  
+  // Listen to YOUR OWN profile updates (from admin)
+  subscribeToMyProfile(memberId, callback) {
+    return db.collection('members').doc(memberId)
+      .onSnapshot(callback);
+  },
+  
+  // Listen to public opportunities (tasks/activities/values)
+  subscribeToOpportunities(callback) {
+    return db.collection('values')
+      .where('validated', '==', true)
+      .where('status', '==', 'Approved')
+      .orderBy('created', 'desc')
+      .limit(20)
+      .onSnapshot(callback);
+  }
+};
+</script> 
 </body>
                     
             </html>
