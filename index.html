@@ -716,6 +716,13 @@ input[type="date"] {
                 <button class="btn btn-register" onclick="openModal('talkRegistration')">Join TALK Team</button>
                 <p style="margin-top: 15px; font-weight: bold; color: #e74c3c;">TASK Fee: KSH 500 | TALK Fee: KSH 2,000</p>
             </div>
+            <div class="section">
+    <h3 class="section-title">⚡ KABIRU MINING</h3>
+    <p>Mine Kabiru coins and manage your wallet</p>
+    <button class="btn-kabiru" onclick="window.open('https://magero1985.github.io/Kabiru-Mining-Portal-/', '_blank')">
+        Access Kabiru Mining App
+    </button>
+            </div>
             <!-- Add this button to your main sections area -->
 <div class="section">
     <h3 class="section-title">💎 SUBMIT VALUE</h3>
@@ -785,14 +792,6 @@ input[type="date"] {
             </div>
         </div>
 
-        <!-- Kabiru Mining Section -->
-        <div class="kabiru-section">
-            <h2>⚡ KABIRU MINING</h2>
-            <p>Mine Kabiru coins by proving and validating real values</p>
-            <button class="btn-kabiru" onclick="window.open('https://magero1985.github.io/Kabiru-Mining-Portal-/', '_blank')">Access Kabiru Mining App</button>
-        </div>
-    </div>
-
     <!-- Notification -->
     <div id="notification" class="notification"></div>
 <!-- Notification Bell Icon - Add to your header -->
@@ -841,6 +840,11 @@ input[type="date"] {
         <button onclick="✅ Validate()">➤</button>
     </div>
 </div>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+    
+    <!-- EmailJS SDK -->
+    <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
     <script>
 // ============================================
 // PUBLIC OPPORTUNITIES DISPLAY - Main App
@@ -6340,7 +6344,107 @@ window.runIntegrationTest = function() {
 console.log('💡 Run window.runIntegrationTest() to check integration');
     </script>   
    
-    <script>       
+    <script>
+// ============================================
+// 1. KABIRU WITHDRAWAL FUNCTION
+// ============================================
+window.initiateKabiruWithdrawal = function() {
+    const currentMember = window.TauDB?.getCurrentMember();
+    
+    if (!currentMember) {
+        showNotification('❌ Please login first', 'error');
+        return;
+    }
+    
+    // Check balances
+    const iKbpBalance = currentMember.iKbpBalance || 0;
+    const iKbBalance = currentMember.iKbBalance || 0;
+    
+    // Minimum withdrawal: 10,000 iKbp OR 0.0001 iKb
+    if (iKbpBalance < 10000 && iKbBalance < 0.0001) {
+        showNotification('❌ Insufficient balance. Minimum: 10,000 iKbp or 0.0001 iKb', 'error');
+        return;
+    }
+    
+    // Create withdrawal modal
+    const modal = document.createElement('div');
+    modal.className = 'modal';
+    modal.style.display = 'block';
+    modal.innerHTML = 
+        '<div class="modal-content">' +
+            '<span class="close" onclick="this.parentElement.parentElement.remove()">&times;</span>' +
+            '<h2 style="text-align: center;">💸 Withdraw to Kabiru Mining</h2>' +
+            '<div style="background: #f8f9fa; padding: 20px; border-radius: 10px; margin: 20px 0;">' +
+                '<h3>Your Balances:</h3>' +
+                '<p><strong>iKbp:</strong> ' + iKbpBalance.toLocaleString() + '</p>' +
+                '<p><strong>iKb:</strong> ' + iKbBalance.toFixed(6) + '</p>' +
+            '</div>' +
+            '<form onsubmit="processKabiruWithdrawal(event)">' +
+                '<div class="form-group">' +
+                    '<label>Withdrawal Type *</label>' +
+                    '<select name="withdrawalType" required>' +
+                        '<option value="">Select type</option>' +
+                        '<option value="iKbp">iKbp (Points)</option>' +
+                        '<option value="iKb">iKb (Currency)</option>' +
+                    '</select>' +
+                '</div>' +
+                '<div class="form-group">' +
+                    '<label>Amount *</label>' +
+                    '<input type="number" name="amount" step="0.0001" required>' +
+                '</div>' +
+                '<button type="submit" class="btn" style="width: 100%;">Confirm Withdrawal</button>' +
+            '</form>' +
+        '</div>';
+    
+    document.body.appendChild(modal);
+};
+
+window.processKabiruWithdrawal = function(event) {
+    event.preventDefault();
+    
+    const formData = new FormData(event.target);
+    const type = formData.get('withdrawalType');
+    const amount = parseFloat(formData.get('amount'));
+    
+    const currentMember = window.TauDB?.getCurrentMember();
+    if (!currentMember) return;
+    
+    // Validate amount
+    if (type === 'iKbp' && amount > (currentMember.iKbpBalance || 0)) {
+        showNotification('❌ Insufficient iKbp balance', 'error');
+        return;
+    }
+    
+    if (type === 'iKb' && amount > (currentMember.iKbBalance || 0)) {
+        showNotification('❌ Insufficient iKb balance', 'error');
+        return;
+    }
+    
+    // Create transfer record in Firebase
+    if (firebase && firebase.firestore) {
+        const db = firebase.firestore();
+        
+        db.collection('kabiru_transfers').add({
+            memberId: currentMember.id,
+            memberName: currentMember.fullName,
+            type: type,
+            amount: amount,
+            status: 'pending',
+            timestamp: firebase.firestore.FieldValue.serverTimestamp(),
+            fromApp: 'TAU_AFRICA'
+        })
+        .then(() => {
+            showNotification('✅ Withdrawal request sent! Open Kabiru Mining to complete.', 'success');
+            closeAllModals();
+        })
+        .catch(error => {
+            console.error('Transfer error:', error);
+            showNotification('❌ Transfer failed: ' + error.message, 'error');
+        });
+    } else {
+        showNotification('⚠️ Firebase not available. Please try again.', 'error');
+    }
+};
     // ============================================
     // 2. ADD TRANSFER BUTTON TO DASHBOARD (Missing UI)
     // ============================================
@@ -6370,25 +6474,25 @@ console.log('💡 Run window.runIntegrationTest() to check integration');
             // Create transfer section
             const transferSection = document.createElement('div');
             transferSection.id = 'kabiruTransferSection';
-            transferSection.innerHTML = `
-                <div style="margin-top: 30px; padding: 20px; background: linear-gradient(45deg, #FFD700, #FFA500); border-radius: 15px; text-align: center;">
-                    <h3 style="color: #333; margin-bottom: 15px;">💎 Kabiru Mining Transfer</h3>
-                    <div style="background: rgba(0,0,0,0.1); padding: 15px; border-radius: 10px; margin-bottom: 15px;">
-                        <div style="font-size: 24px; font-weight: bold; color: #333;">
-                            ${(currentMember.iKbpBalance || 0).toLocaleString()} iKbp
-                        </div>
-                        <div style="font-size: 18px; color: #333; margin-top: 5px;">
-                            ${(currentMember.iKbBalance || 0).toFixed(4)} iKb
-                        </div>
-                    </div>
-                    <button onclick="initiateKabiruWithdrawal()" class="btn" style="width: 100%; background: #333; color: #FFD700; font-size: 16px; padding: 15px;">
-                        💸 Withdraw to Kabiru Mining
-                    </button>
-                    <p style="color: #333; font-size: 12px; margin-top: 10px;">
-                        Minimum: 10,000 iKbp or 0.0001 iKb
-                    </p>
-                </div>
-            `;
+            transferSection.innerHTML = 
+    '<div style="margin-top: 30px; padding: 20px; background: linear-gradient(45deg, #FFD700, #FFA500); border-radius: 15px; text-align: center;">' +
+        '<h3 style="color: #333; margin-bottom: 15px;">💎 Kabiru Mining Transfer</h3>' +
+        '<div style="background: rgba(0,0,0,0.1); padding: 15px; border-radius: 10px; margin-bottom: 15px;">' +
+            '<div style="font-size: 24px; font-weight: bold; color: #333;">' +
+                ((currentMember.iKbpBalance || 0).toLocaleString()) + ' iKbp' +
+            '</div>' +
+            '<div style="font-size: 18px; color: #333; margin-top: 5px;">' +
+                ((currentMember.iKbBalance || 0).toFixed(4)) + ' iKb' +
+            '</div>' +
+        '</div>' +
+        '<button onclick="initiateKabiruWithdrawal()" class="btn" style="width: 100%; background: #333; color: #FFD700; font-size: 16px; padding: 15px;">' +
+            '💸 Withdraw to Kabiru Mining' +
+        '</button>' +
+        '<p style="color: #333; font-size: 12px; margin-top: 10px;">' +
+            'Minimum: 10,000 iKbp or 0.0001 iKb' +
+        '</p>' +
+    '</div>';
+            
             
             // Insert before logout/close buttons
             const lastDiv = modalContent.querySelector('div[style*="grid-template-columns"]');
