@@ -6983,6 +6983,217 @@ function autoFix() {
     console.log('✅ Real-time Service loaded');
 })();
 </script>
+    <script>
+// ============================================
+// FIRESTORE QUERY IMPLEMENTATION - FINAL
+// Add this to Main App (index.html)
+// ============================================
+(function() {
+    'use strict';
+    
+    console.log('🔥 Initializing Firestore Integration...');
+    
+    const db = firebase.firestore();
+    
+    // ============================================
+    // REAL-TIME LISTENERS FOR MAIN APP
+    // ============================================
+    
+    window.TauFirestoreSync = {
+        
+        // Start all listeners when user logs in
+        startSync(memberId) {
+            console.log('🎯 Starting Firestore sync for:', memberId);
+            
+            const listeners = [];
+            
+            // 1. Listen to YOUR notifications (Index 6)
+            const unsubNotifs = db.collection('notifications')
+                .where('memberId', '==', memberId)
+                .where('read', '==', false)
+                .orderBy('timestamp', 'desc')
+                .onSnapshot(
+                    snapshot => {
+                        console.log('📬 Notifications update:', snapshot.size);
+                        
+                        const notifications = [];
+                        snapshot.forEach(doc => {
+                            notifications.push({ id: doc.id, ...doc.data() });
+                        });
+                        
+                        // Update badge
+                        const badge = document.getElementById('tauNotifBadge');
+                        if (badge) {
+                            badge.textContent = notifications.length;
+                            badge.style.display = notifications.length > 0 ? 'block' : 'none';
+                        }
+                        
+                        // Save to localStorage
+                        const allNotifs = JSON.parse(localStorage.getItem('tauNotifications') || '{}');
+                        allNotifs[memberId] = notifications;
+                        localStorage.setItem('tauNotifications', JSON.stringify(allNotifs));
+                        
+                        // Show new notifications
+                        if (notifications.length > 0 && typeof showNotification === 'function') {
+                            const latest = notifications[0];
+                            if (!latest.shown) {
+                                showNotification(`${latest.title}: ${latest.message}`, 'info');
+                            }
+                        }
+                    },
+                    error => console.error('Notification listener error:', error)
+                );
+            
+            listeners.push(unsubNotifs);
+            
+            // 2. Listen to YOUR pending transfers (Index 1)
+            const unsubTransfers = db.collection('kabiru_transfers')
+                .where('memberId', '==', memberId)
+                .where('status', '==', 'pending')
+                .orderBy('timestamp', 'desc')
+                .onSnapshot(
+                    snapshot => {
+                        console.log('💸 Pending transfers:', snapshot.size);
+                        
+                        if (snapshot.size > 0 && typeof showNotification === 'function') {
+                            showNotification(`⏳ ${snapshot.size} pending transfer(s) to Kabiru Mining`, 'info');
+                        }
+                        
+                        const transfers = [];
+                        snapshot.forEach(doc => {
+                            transfers.push({ id: doc.id, ...doc.data() });
+                        });
+                        
+                        localStorage.setItem('tauPendingTransfers', JSON.stringify(transfers));
+                    },
+                    error => console.error('Transfer listener error:', error)
+                );
+            
+            listeners.push(unsubTransfers);
+            
+            // 3. Listen to YOUR profile updates (Direct doc)
+            const unsubProfile = db.collection('members').doc(memberId)
+                .onSnapshot(
+                    doc => {
+                        if (doc.exists) {
+                            console.log('👤 Profile updated from Firestore');
+                            
+                            const profileData = { id: doc.id, ...doc.data() };
+                            
+                            // Update localStorage
+                            const members = JSON.parse(localStorage.getItem('tauAfricaDB') || '[]');
+                            const index = members.findIndex(m => m.id === memberId);
+                            
+                            if (index >= 0) {
+                                members[index] = { ...members[index], ...profileData };
+                                localStorage.setItem('tauAfricaDB', JSON.stringify(members));
+                            }
+                            
+                            // Update session
+                            sessionStorage.setItem('tauCurrentUser', JSON.stringify(profileData));
+                            
+                            // Trigger UI refresh
+                            if (typeof updateStats === 'function') updateStats();
+                        }
+                    },
+                    error => console.error('Profile listener error:', error)
+                );
+            
+            listeners.push(unsubProfile);
+            
+            // 4. Listen to validated public values (Index 8)
+            const unsubValues = db.collection('values')
+                .where('status', '==', 'Approved')
+                .orderBy('created', 'desc')
+                .limit(20)
+                .onSnapshot(
+                    snapshot => {
+                        console.log('💎 Public values:', snapshot.size);
+                        
+                        const values = [];
+                        snapshot.forEach(doc => {
+                            values.push({ id: doc.id, ...doc.data() });
+                        });
+                        
+                        localStorage.setItem('tauPublicValues', JSON.stringify(values));
+                        
+                        // Refresh opportunities display
+                        if (typeof refreshPublicValues === 'function') {
+                            refreshPublicValues();
+                        }
+                    },
+                    error => console.error('Values listener error:', error)
+                );
+            
+            listeners.push(unsubValues);
+            
+            console.log('✅ All Firestore listeners active');
+            
+            // Store unsubscribe functions
+            window.tauFirestoreListeners = listeners;
+            
+            return listeners;
+        },
+        
+        // Stop all listeners on logout
+        stopSync() {
+            console.log('🛑 Stopping Firestore listeners...');
+            
+            if (window.tauFirestoreListeners) {
+                window.tauFirestoreListeners.forEach(unsub => unsub());
+                window.tauFirestoreListeners = null;
+            }
+        }
+    };
+    
+    // ============================================
+    // AUTO-START ON LOGIN
+    // ============================================
+    
+    // Hook into existing authentication
+    if (window.TauDB && window.TauDB.authenticate) {
+        const originalAuth = window.TauDB.authenticate;
+        
+        window.TauDB.authenticate = function(identifier, phoneLastFour) {
+            const result = originalAuth.call(this, identifier, phoneLastFour);
+            
+            if (result.success && result.member) {
+                // Start Firestore sync
+                setTimeout(() => {
+                    window.TauFirestoreSync.startSync(result.member.id);
+                }, 1000);
+            }
+            
+            return result;
+        };
+    }
+    
+    // Hook into logout
+    if (window.TauDB && window.TauDB.logout) {
+        const originalLogout = window.TauDB.logout;
+        
+        window.TauDB.logout = function() {
+            window.TauFirestoreSync.stopSync();
+            return originalLogout.call(this);
+        };
+    }
+    
+    // ============================================
+    // AUTO-START IF ALREADY LOGGED IN
+    // ============================================
+    
+    setTimeout(() => {
+        const currentMember = window.TauDB?.getCurrentMember();
+        if (currentMember) {
+            console.log('🔄 Detected existing session, starting sync...');
+            window.TauFirestoreSync.startSync(currentMember.id);
+        }
+    }, 2000);
+    
+    console.log('✅ Firestore Integration Loaded');
+    
+})();
+</script>
 </body>
                     
             </html>
