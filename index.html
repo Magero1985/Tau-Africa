@@ -1562,7 +1562,7 @@ NEXT STEPS
 4. Explore the Kabiru Mining App
 
 🌐 Access your dashboard:
-   ${window.https://magero1985.github.io/Tau-Africa/.origin}
+    ${window.location.origin}
 
 📧 Need help? Contact:
    grouptauafrica@gmail.com
@@ -6742,26 +6742,22 @@ console.log('💡 Run window.runIntegrationTest() to check integration');
         return results;
     }
     
-    // ============================================
-    // 8. AUTO-FIX COMMON ISSUES
-    // ============================================
     function autoFix() {
-        console.log('🔧 Auto-fixing common issues...');
-        
-        fixDuplicateBridges();
-        checkStorage(); // Creates missing storage
-        
-        // Ensure notification system exists
-        if (!document.getElementById('notification')) {
-            const notif = document.createElement('div');
-            notif.id = 'notification';
-            notif.className = 'notification';
-            document.body.appendChild(notif);
-            console.log('✅ Created notification element');
-        }
-        
-        console.log('✅ Auto-fix complete');
+    console.log('🔧 Auto-fixing common issues...');
+    
+    checkStorage(); // Creates missing storage
+    
+    // Ensure notification system exists
+    if (!document.getElementById('notification')) {
+        const notif = document.createElement('div');
+        notif.id = 'notification';
+        notif.className = 'notification';
+        document.body.appendChild(notif);
+        console.log('✅ Created notification element');
     }
+    
+    console.log('✅ Auto-fix complete');
+}
     
     // ============================================
     // 9. EXPOSE GLOBAL API
