@@ -2029,7 +2029,51 @@ if (document.readyState === 'loading') {
         
         console.log('✅ TauDB.sync enhanced (CLOUD-FIRST)');
     }
+    // Add storage quota check
+function checkStorageQuota() {
+    if (!navigator.storage || !navigator.storage.estimate) {
+        console.warn('⚠️ Storage API not supported');
+        return { hasSpace: true, warning: false };
+    }
     
+    return navigator.storage.estimate().then(estimate => {
+        const percentUsed = (estimate.usage / estimate.quota) * 100;
+        
+        console.log(`💾 Storage: ${(estimate.usage / 1024 / 1024).toFixed(2)}MB / ${(estimate.quota / 1024 / 1024).toFixed(2)}MB (${percentUsed.toFixed(1)}%)`);
+        
+        return {
+            hasSpace: percentUsed < 90,
+            warning: percentUsed > 80,
+            percentUsed: percentUsed
+        };
+    });
+}
+
+// Use before large writes
+async function safeLocalStorageSet(key, value) {
+    const quota = await checkStorageQuota();
+    
+    if (!quota.hasSpace) {
+        console.error('❌ Storage quota exceeded');
+        showNotification('⚠️ Storage full - some data may not save', 'error');
+        return false;
+    }
+    
+    if (quota.warning) {
+        console.warn('⚠️ Storage 80% full');
+    }
+    
+    try {
+        localStorage.setItem(key, value);
+        return true;
+    } catch (e) {
+        if (e.name === 'QuotaExceededError') {
+            showNotification('❌ Storage full - clearing old data', 'error');
+            // Implement cleanup logic here
+        }
+        return false;
+    }
+}
     // ============================================
     // 3. CLOUD-FIRST AUTHENTICATE
     // ============================================
