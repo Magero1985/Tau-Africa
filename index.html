@@ -8676,43 +8676,61 @@ TAU Africa
 })();
  </script>
 <script>    
-// services/realtimeService.js - MAIN APP VERSION
-export const realtimeService = {
-  
-  // Listen to YOUR OWN notifications
-  subscribeToMyNotifications(memberId, callback) {
-    return db.collection('notifications')
-      .where('memberId', '==', memberId)
-      .where('read', '==', false)
-      .orderBy('timestamp', 'desc')
-      .onSnapshot(callback);
-  },
-  
-  // Listen to YOUR OWN transfer status
-  subscribeToMyTransfers(memberId, callback) {
-    return db.collection('kabiru_transfers')
-      .where('memberId', '==', memberId)
-      .orderBy('timestamp', 'desc')
-      .limit(10)
-      .onSnapshot(callback);
-  },
-  
-  // Listen to YOUR OWN profile updates (from admin)
-  subscribeToMyProfile(memberId, callback) {
-    return db.collection('members').doc(memberId)
-      .onSnapshot(callback);
-  },
-  
-  // Listen to public opportunities (tasks/activities/values)
-  subscribeToOpportunities(callback) {
-    return db.collection('values')
-      .where('validated', '==', true)
-      .where('status', '==', 'Approved')
-      .orderBy('created', 'desc')
-      .limit(20)
-      .onSnapshot(callback);
-  }
-};
+// REAL-TIME SERVICE - MAIN APP VERSION
+(function() {
+    'use strict';
+    
+    window.realtimeService = {
+        
+        // Listen to YOUR OWN notifications
+        subscribeToMyNotifications: function(memberId, callback) {
+            if (!firebase || !firebase.firestore) return null;
+            const db = firebase.firestore();
+            
+            return db.collection('notifications')
+                .where('memberId', '==', memberId)
+                .where('read', '==', false)
+                .orderBy('timestamp', 'desc')
+                .onSnapshot(callback);
+        },
+        
+        // Listen to YOUR OWN transfer status
+        subscribeToMyTransfers: function(memberId, callback) {
+            if (!firebase || !firebase.firestore) return null;
+            const db = firebase.firestore();
+            
+            return db.collection('kabiru_transfers')
+                .where('memberId', '==', memberId)
+                .orderBy('timestamp', 'desc')
+                .limit(10)
+                .onSnapshot(callback);
+        },
+        
+        // Listen to YOUR OWN profile updates
+        subscribeToMyProfile: function(memberId, callback) {
+            if (!firebase || !firebase.firestore) return null;
+            const db = firebase.firestore();
+            
+            return db.collection('members').doc(memberId)
+                .onSnapshot(callback);
+        },
+        
+        // Listen to public opportunities
+        subscribeToOpportunities: function(callback) {
+            if (!firebase || !firebase.firestore) return null;
+            const db = firebase.firestore();
+            
+            return db.collection('values')
+                .where('validated', '==', true)
+                .where('status', '==', 'Approved')
+                .orderBy('created', 'desc')
+                .limit(20)
+                .onSnapshot(callback);
+        }
+    };
+    
+    console.log('✅ Real-time Service loaded');
+})();
 </script>
     <script>
     // ============================================
