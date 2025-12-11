@@ -1688,9 +1688,9 @@ TAU Africa Team
             
             // 2. Award welcome bonus
             if (window.TauDB?.updateBalance) {
-                window.TauDB.updateBalance(member.id, 500);
-                console.log('🎁 Welcome bonus: 500 iKbp');
-            }
+    window.TauDB.updateBalance(member.id, 500);
+    console.log('🎁 Welcome bonus: 500 iKbp');
+}
             
             // 3. Create notification
             if (typeof createNotification === 'function') {
@@ -1886,14 +1886,16 @@ TAU Africa Team
     // ============================================
     // 1. FIREBASE CONFIG & INIT
     // ============================================
-    const FIREBASE_CONFIG = {
-        apiKey: "AIzaSyAW0vk_gg03xXEm6I1TQnU8KRiv1RhcrQ4",
-        authDomain: "tau-africa-ecosystem.firebaseapp.com",
-        projectId: "tau-africa-ecosystem",
-        storageBucket: "tau-africa-ecosystem.firebasestorage.app",
-        messagingSenderId: "1047279398196",
-        appId: "1:1047279398196:web:06d43661650c794268c961"
-    
+   const FIREBASE_CONFIG = {
+    apiKey: "AIzaSyAW0vk_gg03xXEm6I1TQnU8KRiv1RhcrQ4",
+    authDomain: "tau-africa-ecosystem.firebaseapp.com",
+    projectId: "tau-africa-ecosystem",
+    storageBucket: "tau-africa-ecosystem.firebasestorage.app",
+    messagingSenderId: "1047279398196",
+    appId: "1:1047279398196:web:06d43661650c794268c961"
+}; 
+
+function initializeFirebase() {
         function initializeFirebase() {
     if (typeof firebase === 'undefined') {
         console.log('⏳ Waiting for Firebase...');
