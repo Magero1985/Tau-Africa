@@ -1879,43 +1879,65 @@ TAU Africa Team
 </script>
     
     <script>
-    // ============================================
-    // 1. FIREBASE CONFIG & INIT
-    // ============================================
-    const FIREBASE_CONFIG = {
-        apiKey: "AIzaSyAW0vk_gg03xXEm6I1TQnU8KRiv1RhcrQ4",
-        authDomain: "tau-africa-ecosystem.firebaseapp.com",
-        projectId: "tau-africa-ecosystem",
-        storageBucket: "tau-africa-ecosystem.firebasestorage.app",
-        messagingSenderId: "1047279398196",
-        appId: "1:1047279398196:web:06d43661650c794268c961"
-    };
-    
-    let db, isOnline = false;
-    
+// ============================================
+// 1. FIREBASE CONFIG & INIT
+// ============================================
+const FIREBASE_CONFIG = {
+    apiKey: "AIzaSyAW0vk_gg03xXEm6I1TQnU8KRiv1RhcrQ4",
+    authDomain: "tau-africa-ecosystem.firebaseapp.com",
+    projectId: "tau-africa-ecosystem",
+    storageBucket: "tau-africa-ecosystem.firebasestorage.app",
+    messagingSenderId: "1047279398196",
+    appId: "1:1047279398196:web:06d43661650c794268c961"
+};
+
+let db, isOnline = false;
+
+function initializeFirebase() {
     try {
+        // Check if Firebase library is loaded
+        if (typeof firebase === 'undefined') {
+            console.error('❌ Firebase library not loaded');
+            return false;
+        }
+        
+        // Initialize Firebase
         if (!firebase.apps.length) {
             firebase.initializeApp(FIREBASE_CONFIG);
+            console.log('✅ Firebase app initialized');
         }
+        
+        // Get Firestore
         db = firebase.firestore();
         
-        // Enable offline persistence (cache for offline use)
+        // Enable offline persistence
         db.enablePersistence({ synchronizeTabs: true })
             .then(() => {
-                console.log('✅ Offline cache enabled (fallback only)');
+                console.log('✅ Offline cache enabled');
             })
             .catch(err => {
-                console.warn('⚠️ Persistence error:', err.code);
+                if (err.code === 'failed-precondition') {
+                    console.warn('⚠️ Multiple tabs open, persistence enabled in first tab only');
+                } else if (err.code === 'unimplemented') {
+                    console.warn('⚠️ Browser does not support persistence');
+                }
             });
         
         isOnline = true;
         console.log('✅ Firestore connected (PRIMARY STORAGE)');
+        return true;
         
     } catch (error) {
         console.error('❌ Firebase init failed:', error);
-        alert('⚠️ Cloud storage unavailable. Please check your internet connection.');
         isOnline = false;
+        return false;
     }
+}
+
+// Initialize Firebase when scripts are loaded
+setTimeout(() => {
+    initializeFirebase();
+}, 1000);
     
     // ============================================
     // 2. CLOUD-FIRST TauDB.sync() 
