@@ -879,7 +879,27 @@ input[type="date"] {
     window.refreshPublicValues = function() {
         displayOpportunities();
     };
+    window.refreshPublicOpportunities = function() {
+    console.log('🔄 Refreshing public opportunities...');
     
+    // Refresh all three types
+    if (typeof refreshPublicTasks === 'function') {
+        refreshPublicTasks();
+    }
+    if (typeof refreshPublicActivities === 'function') {
+        refreshPublicActivities();
+    }
+    if (typeof refreshPublicValues === 'function') {
+        refreshPublicValues();
+    }
+    
+    // Also trigger display update
+    if (typeof displayOpportunities === 'function') {
+        displayOpportunities();
+    }
+    
+    console.log('✅ Opportunities refreshed');
+};
     function displayOpportunities() {
         const container = document.getElementById('publicOpportunitiesContainer');
         if (!container) return;
@@ -6469,7 +6489,152 @@ console.log('💡 Run window.runIntegrationTest() to check integration');
             
         }, 500);
     };
+    window.initiateKabiruWithdrawal = function() {
+    const currentMember = window.TauDB?.getCurrentMember();
     
+    if (!currentMember) {
+        showNotification('❌ Please login first', 'error');
+        showRealMemberLogin();
+        return;
+    }
+    
+    const MIN_IKBP = 10000;
+    const MIN_IKB = 0.0001;
+    
+    // Check minimum balance
+    if ((currentMember.iKbpBalance || 0) < MIN_IKBP && 
+        (currentMember.iKbBalance || 0) < MIN_IKB) {
+        showNotification(
+            `❌ Minimum withdrawal: ${MIN_IKBP} iKbp or ${MIN_IKB} iKb`, 
+            'error'
+        );
+        return;
+    }
+    
+    // Show withdrawal modal
+    const modal = document.createElement('div');
+    modal.className = 'modal';
+    modal.style.display = 'block';
+    modal.innerHTML = `
+        <div class="modal-content">
+            <span class="close" onclick="this.parentElement.parentElement.remove()">&times;</span>
+            <h2>💎 Withdraw to Kabiru Mining</h2>
+            
+            <div style="background: #f8f9fa; padding: 20px; border-radius: 10px; margin: 20px 0;">
+                <h3>Available Balance:</h3>
+                <p><strong>${(currentMember.iKbpBalance || 0).toLocaleString()} iKbp</strong></p>
+                <p><strong>${(currentMember.iKbBalance || 0).toFixed(4)} iKb</strong></p>
+            </div>
+            
+            <form onsubmit="processKabiruWithdrawal(event)">
+                <div class="form-group">
+                    <label>Withdrawal Type *</label>
+                    <select name="withdrawalType" id="withdrawalType" required onchange="updateWithdrawalLimits()">
+                        <option value="">Select type</option>
+                        <option value="iKbp">iKbp (Points)</option>
+                        <option value="iKb">iKb (Coins)</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label>Amount *</label>
+                    <input type="number" name="amount" id="withdrawalAmount" 
+                           step="0.0001" min="0" required>
+                    <small id="withdrawalLimit"></small>
+                </div>
+                
+                <button type="submit" class="btn" style="width: 100%;">
+                    Confirm Withdrawal
+                </button>
+            </form>
+        </div>
+    `;
+    document.body.appendChild(modal);
+};
+
+window.updateWithdrawalLimits = function() {
+    const type = document.getElementById('withdrawalType').value;
+    const amountInput = document.getElementById('withdrawalAmount');
+    const limitText = document.getElementById('withdrawalLimit');
+    const currentMember = window.TauDB?.getCurrentMember();
+    
+    if (type === 'iKbp') {
+        amountInput.min = 10000;
+        amountInput.max = currentMember?.iKbpBalance || 0;
+        amountInput.step = 100;
+        limitText.textContent = `Min: 10,000 • Max: ${(currentMember?.iKbpBalance || 0).toLocaleString()}`;
+    } else if (type === 'iKb') {
+        amountInput.min = 0.0001;
+        amountInput.max = currentMember?.iKbBalance || 0;
+        amountInput.step = 0.0001;
+        limitText.textContent = `Min: 0.0001 • Max: ${(currentMember?.iKbBalance || 0).toFixed(4)}`;
+    }
+};
+
+window.processKabiruWithdrawal = function(event) {
+    event.preventDefault();
+    const currentMember = window.TauDB?.getCurrentMember();
+    if (!currentMember) return;
+    
+    const formData = new FormData(event.target);
+    const type = formData.get('withdrawalType');
+    const amount = parseFloat(formData.get('amount'));
+    
+    // Check if Firebase is available
+    if (!firebase || !firebase.firestore) {
+        showNotification('❌ Cloud storage unavailable. Please try again.', 'error');
+        return;
+    }
+    
+    const db = firebase.firestore();
+    
+    // Create transfer record in Firestore
+    const transfer = {
+        memberId: currentMember.id,
+        memberName: currentMember.fullName,
+        memberEmail: currentMember.email,
+        type: type,
+        amount: amount,
+        status: 'pending',
+        timestamp: firebase.firestore.FieldValue.serverTimestamp(),
+        created: new Date().toISOString()
+    };
+    
+    // Save to Firestore
+    db.collection('kabiru_transfers').add(transfer)
+        .then(() => {
+            // Update member's pending transfer
+            return db.collection('members').doc(currentMember.id).update({
+                pendingKabiruTransfer: transfer
+            });
+        })
+        .then(() => {
+            // Update localStorage
+            const members = JSON.parse(localStorage.getItem('tauAfricaDB') || '[]');
+            const memberIndex = members.findIndex(m => m.id === currentMember.id);
+            if (memberIndex !== -1) {
+                members[memberIndex].pendingKabiruTransfer = transfer;
+                localStorage.setItem('tauAfricaDB', JSON.stringify(members));
+            }
+            
+            closeAllModals();
+            showNotification(
+                `✅ Transfer initiated! Open Kabiru Mining App to complete.\nAmount: ${amount} ${type}`,
+                'success'
+            );
+            
+            // Notify user to open Kabiru Mining
+            setTimeout(() => {
+                if (confirm('Open Kabiru Mining App now?')) {
+                    window.open('https://magero1985.github.io/Kabiru-Mining-Portal-/', '_blank');
+                }
+            }, 2000);
+        })
+        .catch(error => {
+            console.error('❌ Withdrawal failed:', error);
+            showNotification('❌ Withdrawal failed: ' + error.message, 'error');
+        });
+};
     // ============================================
     // 3. AUTO-SYNC COMPLETED TRANSFERS (Listener)
     // ============================================
