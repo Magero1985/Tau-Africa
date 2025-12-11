@@ -7194,6 +7194,40 @@ function autoFix() {
     
 })();
 </script>
+    <script>
+        // Test rules are working
+async function testRules() {
+    console.log('🧪 Testing Firestore Rules...');
+    
+    const db = firebase.firestore();
+    
+    try {
+        // Test 1: Read members (should work if authenticated)
+        const snapshot = await db.collection('members').limit(1).get();
+        console.log('✅ Read members: OK');
+        
+        // Test 2: Write test doc (should work if authenticated)
+        await db.collection('_test_').doc('test').set({ test: true });
+        console.log('✅ Write test: OK');
+        
+        // Test 3: Query with index (should work)
+        const query = await db.collection('members')
+            .where('team', '==', 'TASK')
+            .orderBy('dateJoined', 'desc')
+            .limit(1)
+            .get();
+        console.log('✅ Index query: OK');
+        
+        alert('✅ All rules tests passed!');
+        
+    } catch (error) {
+        console.error('❌ Rules test failed:', error);
+        alert('❌ Rules test failed: ' + error.message);
+    }
+}
+
+testRules();
+    </script>
 </body>
                     
             </html>
