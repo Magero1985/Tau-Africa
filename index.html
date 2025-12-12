@@ -643,6 +643,13 @@ input[type="date"] {
     </style>
   </head>
 <body>
+    <script>
+// Force fresh load
+if (performance.navigation.type === 1) {
+    console.log('🔄 Page reloaded - clearing cache');
+    sessionStorage.clear();
+}
+    </script>
     <div class="container">
         <!-- Header -->
         <div class="header">
@@ -9524,6 +9531,219 @@ console.log('💡 Run window.runIntegrationTest() to check integration');
     setTimeout(syncAcrossApps, 1000);
     
     console.log('✅ Universal sync heartbeat active');
+})();
+    </script>
+    <script>
+// ============================================
+// FIX REAL LOGIN SYSTEM
+// ============================================
+(function() {
+    'use strict';
+    
+    console.log('🔐 Fixing login system...');
+    
+    // Override the showMemberLogin function completely
+    window.showMemberLogin = function() {
+        showRealMemberLogin(); // Always use real login
+    };
+    
+    // Remove any demo login references
+    window.simulateLogin = function(event) {
+        event.preventDefault();
+        showNotification('❌ Demo login disabled. Use real member login.', 'error');
+        showRealMemberLogin();
+    };
+    
+    // Ensure processRealLogin is working
+    window.processRealLogin = function(event) {
+        event.preventDefault();
+        
+        const identifier = document.getElementById('loginIdentifier').value.trim();
+        const phoneLastFour = document.getElementById('loginPhone').value.trim();
+        
+        console.log('🔐 Login attempt:', { identifier, phoneLastFour });
+        
+        if (!identifier || !phoneLastFour) {
+            showNotification('❌ Please fill all fields', 'error');
+            return;
+        }
+        
+        // Try localStorage first
+        const members = JSON.parse(localStorage.getItem('tauAfricaDB') || '[]');
+        let member = members.find(m => 
+            (m.id === identifier || m.email === identifier) && 
+            m.phone.slice(-4) === phoneLastFour
+        );
+        
+        if (member) {
+            console.log('✅ Found in localStorage:', member.id);
+            
+            // Save session
+            sessionStorage.setItem('tauCurrentUser', JSON.stringify(member));
+            
+            showNotification('✅ Login successful!', 'success');
+            
+            setTimeout(() => {
+                closeAllModals();
+                showRealMemberDashboard(member);
+            }, 1000);
+            
+            return;
+        }
+        
+        // Try Firestore if available
+        if (typeof firebase !== 'undefined' && firebase.apps.length > 0) {
+            const db = firebase.firestore();
+            
+            showNotification('🔍 Checking online database...', 'info');
+            
+            // Try by ID
+            db.collection('members').doc(identifier).get()
+                .then(doc => {
+                    if (doc.exists) {
+                        member = doc.data();
+                        if (member.phone.slice(-4) === phoneLastFour) {
+                            // Save to localStorage
+                            members.push(member);
+                            localStorage.setItem('tauAfricaDB', JSON.stringify(members));
+                            
+                            // Save session
+                            sessionStorage.setItem('tauCurrentUser', JSON.stringify(member));
+                            
+                            showNotification('✅ Login successful!', 'success');
+                            
+                            setTimeout(() => {
+                                closeAllModals();
+                                showRealMemberDashboard(member);
+                            }, 1000);
+                            
+                            return;
+                        }
+                    }
+                    
+                    // Try by email
+                    return db.collection('members')
+                        .where('email', '==', identifier)
+                        .limit(1)
+                        .get();
+                })
+                .then(querySnapshot => {
+                    if (querySnapshot && !querySnapshot.empty) {
+                        member = querySnapshot.docs[0].data();
+                        if (member.phone.slice(-4) === phoneLastFour) {
+                            // Save to localStorage
+                            members.push(member);
+                            localStorage.setItem('tauAfricaDB', JSON.stringify(members));
+                            
+                            // Save session
+                            sessionStorage.setItem('tauCurrentUser', JSON.stringify(member));
+                            
+                            showNotification('✅ Login successful!', 'success');
+                            
+                            setTimeout(() => {
+                                closeAllModals();
+                                showRealMemberDashboard(member);
+                            }, 1000);
+                            
+                            return;
+                        }
+                    }
+                    
+                    showNotification('❌ Invalid credentials', 'error');
+                })
+                .catch(error => {
+                    console.error('Login error:', error);
+                    showNotification('❌ Login failed: ' + error.message, 'error');
+                });
+        } else {
+            showNotification('❌ Invalid credentials', 'error');
+        }
+    };
+    
+    // Auto-check if user is already logged in
+    const currentUser = sessionStorage.getItem('tauCurrentUser');
+    if (currentUser) {
+        const member = JSON.parse(currentUser);
+        console.log('👤 User already logged in:', member.id);
+    }
+    
+    console.log('✅ Real login system activated');
+})();
+    </script>
+    <script>
+// ============================================
+// PREVENT DUPLICATE REGISTRATIONS
+// ============================================
+(function() {
+    'use strict';
+    
+    // Enhance TauDB.sync to check for duplicates
+    if (window.TauDB && window.TauDB.sync) {
+        const originalSync = window.TauDB.sync;
+        
+        window.TauDB.sync = async function(formData, team, referralCode) {
+            console.log('🔍 Checking for duplicate registration...');
+            
+            const email = formData.email;
+            const phone = formData.phone;
+            
+            // Check localStorage first
+            const localMembers = JSON.parse(localStorage.getItem('tauAfricaDB') || '[]');
+            const localDuplicate = localMembers.find(m => 
+                m.email === email || m.phone === phone
+            );
+            
+            if (localDuplicate) {
+                showNotification('❌ Email or phone already registered!', 'error');
+                return { 
+                    success: false, 
+                    error: 'Duplicate registration',
+                    existingMember: localDuplicate
+                };
+            }
+            
+            // Check Firestore if available
+            if (typeof firebase !== 'undefined' && firebase.apps.length > 0) {
+                try {
+                    const db = firebase.firestore();
+                    
+                    const emailQuery = await db.collection('members')
+                        .where('email', '==', email)
+                        .limit(1)
+                        .get();
+                    
+                    if (!emailQuery.empty) {
+                        showNotification('❌ Email already registered!', 'error');
+                        return { 
+                            success: false, 
+                            error: 'Email already exists'
+                        };
+                    }
+                    
+                    const phoneQuery = await db.collection('members')
+                        .where('phone', '==', phone)
+                        .limit(1)
+                        .get();
+                    
+                    if (!phoneQuery.empty) {
+                        showNotification('❌ Phone already registered!', 'error');
+                        return { 
+                            success: false, 
+                            error: 'Phone already exists'
+                        };
+                    }
+                    
+                } catch (error) {
+                    console.warn('Firestore duplicate check failed:', error);
+                }
+            }
+            
+            // No duplicates found, proceed with registration
+            return originalSync.call(this, formData, team, referralCode);
+        };
+        
+        console.log('✅ Duplicate prevention enabled');
+    }
 })();
     </script>
 </body>
