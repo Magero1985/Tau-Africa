@@ -841,11 +841,7 @@ input[type="date"] {
         <button onclick="✅ Validate()">➤</button>
     </div>
 </div>
-<!-- ============================================ -->
-<!-- STEP 1: FIND THIS SECTION IN YOUR CODE -->
-<!-- It's near the bottom, before </body> -->
-<!-- ============================================ -->
-
+<script>
 <!-- EmailJS SDK (YOU ALREADY HAVE THIS) -->
 <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
 
@@ -1292,7 +1288,8 @@ TAU Africa Team
     console.log('✅ Unified Email System loaded');
     
 })();
-</script>    <script>
+</script>    
+    <script>
     
     // ============================================
     // 1. FIREBASE CONFIG & INIT
@@ -2094,7 +2091,8 @@ function showNotification(message, type = 'success') {
         notification.style.display = 'none';
     }, 6000);
 }
-
+</script>
+    <script> 
 // ===== MODAL MANAGEMENT =====
 function openModal(type) {
     closeAllModals();
@@ -2113,7 +2111,8 @@ function closeAllModals() {
     modals.forEach(modal => modal.remove());
     currentModal = null;
 }
-
+    </script>
+    <script>
 // ===== SELECTION FUNCTIONS =====
 function selectLevel(level, element) {
     const buttons = document.querySelectorAll('.level-btn');
@@ -2143,7 +2142,8 @@ function selectCategory(category, element) {
     const categoryInput = document.getElementById('taskCategory');
     if (categoryInput) categoryInput.value = category;
 }
-
+    </script>
+    <script>
 // ===== FORM SUBMISSION HANDLERS =====
 function processTaskRegistration(event) {
     event.preventDefault();
@@ -2204,14 +2204,7 @@ function processJobCreationTraining(event) {
     initiateMpesaPayment(1500, data.phone, data, 'processJobCreationSuccess');
 }
 </script>
-  
-<!-- ============================================ -->
-<!-- STEP 3: REPLACE WITH THIS SINGLE SCRIPT -->
-<!-- Place this AFTER Firebase libraries -->
-<!-- Place this BEFORE your other app scripts -->
-<!-- ============================================ -->
-
-<script>
+  <script>
 // ============================================
 // TAU AFRICA - COMPLETE FIX (ALL-IN-ONE)
 // ============================================
@@ -3362,6 +3355,7 @@ function showNotification(message, type = 'success') {
     setTimeout(refreshPublicOpportunities, 1000);
 })();
   </script>
+    <script>
   // ===== MODAL MANAGEMENT =====
 function openModal(type) {
     closeAllModals();
@@ -4172,7 +4166,6 @@ function getModalContent(type) {
             return '<div class="modal-content"><span class="close" onclick="closeAllModals()">&times;</span><h2>Feature Coming Soon</h2><p>This feature is under development.</p></div>';
     }
 }
-
 // ===== COMPREHENSIVE TASK REGISTRATION MODAL =====
 function createTaskRegistrationModal() {
     return `
@@ -4627,7 +4620,6 @@ function createJobCreationModal() {
         </div>
     `;
 }
-        // TAU AFRICA INTERNATIONAL - PART 4: REMAINING MODALS 
 
 // ===== TRAINING MODAL =====
 function createTrainingModal() {
@@ -5762,7 +5754,8 @@ function createForumModal() {
         };
         localStorage.setItem(DB_CONFIG.credentialsKey, JSON.stringify(credentials));
     }
-
+    </script>
+     <script>
     // Authentication
     function authenticateMember(identifier, phoneLastFour) {
         try {
@@ -5899,8 +5892,9 @@ function createForumModal() {
             return { success: false, error: error.message };
         }
     }
-
-    // Forum Management
+</script>
+    <script>
+        // Forum Management
     function createForumPost(memberId, post) {
         try {
             const forums = JSON.parse(localStorage.getItem(DB_CONFIG.forumsKey) || '[]');
@@ -6450,7 +6444,8 @@ function createForumModal() {
             setTimeout(() => openModal('tasks'), 500);
         }
     };
-
+</script>
+    <script>
     // MEMBER LOGIN - COMPLETE
     window.showRealMemberLogin = function() {
         const modal = document.createElement('div');
@@ -8546,11 +8541,6 @@ console.log('💡 Run window.runIntegrationTest() to check integration');
 <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
 
     <script>
-    // ============================================
-// TAU AFRICA - COMPLETE FIREBASE SYNC FIX
-// Add this to BOTH Main App (index.html) AND Database (databse.html)
-// Place BEFORE closing </body> tag
-// ============================================
 
 (function() {
     'use strict';
