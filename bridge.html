@@ -1699,5 +1699,76 @@ export const realtimeService = {
   }
 };
     </script>
+    
+    <script> 
+    // UNIVERSAL SYNC HEARTBEAT - Add to ALL apps
+// ============================================
+
+(function() {
+    'use strict';
+    
+    let lastSyncTime = Date.now();
+    const SYNC_INTERVAL = 3000; // Every 3 seconds
+    
+    function syncAcrossApps() {
+        try {
+            // Read from localStorage
+            const members = JSON.parse(localStorage.getItem('tauAfricaDB') || '[]');
+            const tasks = JSON.parse(localStorage.getItem('tauTasks') || '[]');
+            const activities = JSON.parse(localStorage.getItem('tauActivities') || '[]');
+            const values = JSON.parse(localStorage.getItem('tauValues') || '[]');
+            
+            // If Firestore is available, sync there too
+            if (typeof firebase !== 'undefined' && firebase.apps.length > 0) {
+                const db = firebase.firestore();
+                
+                // Batch write (efficient)
+                const batch = db.batch();
+                let writeCount = 0;
+                
+                members.slice(0, 10).forEach(member => { // Limit to 10 per sync
+                    const ref = db.collection('members').doc(member.id);
+                    batch.set(ref, {
+                        ...member,
+                        lastSync: firebase.firestore.FieldValue.serverTimestamp()
+                    }, { merge: true });
+                    writeCount++;
+                });
+                
+                if (writeCount > 0) {
+                    batch.commit()
+                        .then(() => console.log(`🔄 Synced ${writeCount} members to Firestore`))
+                        .catch(err => console.warn('Sync warning:', err));
+                }
+            }
+            
+            // Trigger UI refresh
+            if (typeof updateStats === 'function') updateStats();
+            if (typeof renderMembers === 'function') renderMembers();
+            
+            lastSyncTime = Date.now();
+            
+        } catch (error) {
+            console.error('Sync error:', error);
+        }
+    }
+    
+    // Run sync every 3 seconds
+    setInterval(syncAcrossApps, SYNC_INTERVAL);
+    
+    // Listen for storage changes from other tabs/windows
+    window.addEventListener('storage', (e) => {
+        if (e.key && (e.key.includes('tau') || e.key.includes('Tau'))) {
+            console.log('🔄 Cross-tab sync detected:', e.key);
+            syncAcrossApps();
+        }
+    });
+    
+    // Initial sync
+    setTimeout(syncAcrossApps, 1000);
+    
+    console.log('✅ Universal sync heartbeat active');
+})();
+</script>
 </body>
     </html>
