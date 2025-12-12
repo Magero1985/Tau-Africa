@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>TAU Africa - With ALL Fixes</title>
+    <title>TAU Africa Global</title>
     <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -1656,11 +1656,12 @@ console.log('✅ Authentication fixed');
     
 })();
 </script>
-  <script>
+  
 // ============================================
 // TAU AFRICA - COMPLETE EMAIL & NOTIFICATION FIX
 // ============================================
-(function() {
+<script>
+    (function() {
     'use strict';
     
     console.log('📧 Loading Email & Notification System...');
@@ -2041,9 +2042,10 @@ TAU Africa Registration System
     
 })();
   </script>
-<script>
+
 // ===== M-PESA PAYMENT INTEGRATION =====
-function initiateMpesaPayment(amount, phoneNumber, formData, successCallback) {
+<script>
+    function initiateMpesaPayment(amount, phoneNumber, formData, successCallback) {
     showPaymentModal(amount, phoneNumber, formData, successCallback);
 }
 
@@ -2137,9 +2139,10 @@ function showNotification(message, type = 'success') {
     }, 6000);
 }
 </script>
-    <script> 
+    
 // ===== MODAL MANAGEMENT =====
-function openModal(type) {
+<script> 
+    function openModal(type) {
     closeAllModals();
     
     const modalContent = getModalContent(type);
@@ -2157,9 +2160,10 @@ function closeAllModals() {
     currentModal = null;
 }
     </script>
-    <script>
+    
 // ===== SELECTION FUNCTIONS =====
-function selectLevel(level, element) {
+<script>
+    function selectLevel(level, element) {
     const buttons = document.querySelectorAll('.level-btn');
     buttons.forEach(btn => btn.classList.remove('selected'));
     const target = element || (window.event && window.event.target);
@@ -2189,7 +2193,7 @@ function selectCategory(category, element) {
 }
     </script>
     <script>
-// ===== FORM SUBMISSION HANDLERS =====
+ SUBMISSION HANDLERS =====
 function processTaskRegistration(event) {
     event.preventDefault();
     const form = event.target;
@@ -2249,11 +2253,12 @@ function processJobCreationTraining(event) {
     initiateMpesaPayment(1500, data.phone, data, 'processJobCreationSuccess');
 }
 </script>
-  <script>
-// ============================================
-// TAU AFRICA - COMPLETE FIX (ALL-IN-ONE)
-// ============================================
-(function() {
+  
+ ============================================
+TAU AFRICA - COMPLETE FIX (ALL-IN-ONE)
+ ============================================
+<script>
+    (function() {
     'use strict';
     
     console.log('🚀 TAU Complete Fix - Starting...');
@@ -2805,9 +2810,10 @@ Fee: KSH 500 ✅ PAID
     
 })();
 </script>
-    <script>
-// ===== M-PESA PAYMENT INTEGRATION =====
-function initiateMpesaPayment(amount, phoneNumber, formData, successCallback) {
+    
+===== M-PESA PAYMENT INTEGRATION =====
+<script>
+    function initiateMpesaPayment(amount, phoneNumber, formData, successCallback) {
     showPaymentModal(amount, phoneNumber, formData, successCallback);
 }
 
@@ -2901,11 +2907,12 @@ function showNotification(message, type = 'success') {
     }, 6000);
 }
     </script>
-  <script>
+  
 // ============================================
 // VALUE SUBMISSION SYSTEM - Main App
 // ============================================
-(function() {
+<script>
+    (function() {
     'use strict';
     
     window.openValueSubmissionModal = function() {
@@ -3226,11 +3233,12 @@ function showNotification(message, type = 'success') {
     }
 })();
 </script>
-  <script>
+
 // ============================================
 // PUBLIC OPPORTUNITIES DISPLAY - Main App
 // ============================================
-(function() {
+  <script>
+    (function() {
     'use strict';
     
     let currentFilter = 'all';
@@ -3495,9 +3503,10 @@ function showNotification(message, type = 'success') {
     setTimeout(refreshPublicOpportunities, 1000);
 })();
   </script>
-    <script>
+    
   // ===== MODAL MANAGEMENT =====
-function openModal(type) {
+<script>
+    function openModal(type) {
     closeAllModals();
     
     const modalContent = getModalContent(type);
