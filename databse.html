@@ -366,45 +366,88 @@
         }
 
         async function initDatabase() {
-            try {
-                const snap = await db.collection('members').get();
-                membersDB = [];
-                snap.forEach(doc => membersDB.push({ firestoreId: doc.id, ...doc.data() }));
-                localStorage.setItem('tauAfricaDB', JSON.stringify(membersDB));
-                console.log(`✅ Loaded ${membersDB.length} members from Firebase`);
+    console.log('📥 Loading database...');
+    membersDB = [];
+    
+    try {
+        // 1. Load from localStorage FIRST (immediate)
+        const localMembers = JSON.parse(localStorage.getItem('tauAfricaDB') || '[]');
+        if (localMembers.length > 0) {
+            membersDB = localMembers;
+            console.log(`💾 Loaded ${localMembers.length} members from localStorage`);
+            updateStats();
+            renderMembers();
+        }
+        
+        // 2. Then try Firestore (background sync)
+        if (typeof firebase !== 'undefined' && firebase.apps.length > 0 && db) {
+            const snapshot = await db.collection('members').get();
+            
+            if (!snapshot.empty) {
+                const firestoreMembers = [];
+                snapshot.forEach(doc => {
+                    firestoreMembers.push({ 
+                        ...doc.data(), 
+                        firestoreId: doc.id 
+                    });
+                });
+                
+                // Merge with localStorage (Firestore is source of truth)
+                membersDB = firestoreMembers;
+                localStorage.setItem('tauAfricaDB', JSON.stringify(firestoreMembers));
+                
+                console.log(`☁️ Loaded ${firestoreMembers.length} members from Firestore`);
                 updateStats();
                 renderMembers();
-                setupRealtimeSync();
-            } catch (e) {
-                console.error('Load error:', e);
-                const stored = localStorage.getItem('tauAfricaDB');
-                if (stored) {
-                    membersDB = JSON.parse(stored);
-                    updateStats();
-                    renderMembers();
-                }
-                showNotification('⚠️ Offline mode', 'info');
             }
+            
+            // Setup real-time sync
+            setupRealtimeSync();
+        } else {
+            console.warn('⚠️ Firestore not available, using localStorage only');
+            showNotification('Running in offline mode', 'info');
         }
+        
+    } catch (error) {
+        console.error('❌ Database load error:', error);
+        
+        // Fallback to localStorage if Firestore fails
+        const fallback = localStorage.getItem('tauAfricaDB');
+        if (fallback) {
+            membersDB = JSON.parse(fallback);
+            updateStats();
+            renderMembers();
+            showNotification('Loaded from local cache', 'info');
+        } else {
+            showNotification('No members found', 'error');
+        }
+    }
+}
 
-        function setupRealtimeSync() {
-            db.collection('members').onSnapshot(snap => {
-                snap.docChanges().forEach(change => {
-                    const data = { firestoreId: change.doc.id, ...change.doc.data() };
-                    if (change.type === 'added' || change.type === 'modified') {
-                        const idx = membersDB.findIndex(m => m.id === data.id);
-                        idx !== -1 ? membersDB[idx] = data : membersDB.push(data);
-                    } else if (change.type === 'removed') {
-                        membersDB = membersDB.filter(m => m.firestoreId !== change.doc.id);
-                    }
-                });
-                localStorage.setItem('tauAfricaDB', JSON.stringify(membersDB));
-                if (document.getElementById('dashboard').style.display === 'block') {
-                    renderMembers();
-                    updateStats();
-                }
-            });
+// Call this on page load
+document.addEventListener('DOMContentLoaded', () => {
+    // ... existing code ...
+    
+    // After admin login
+    document.getElementById('loginForm').addEventListener('submit', (e) => {
+        e.preventDefault();
+        const code = document.getElementById('accessCode').value;
+        
+        if (code === (localStorage.getItem('tauAccessCode') || 'TAU2025ADMIN')) {
+            document.getElementById('loginScreen').style.display = 'none';
+            document.getElementById('dashboard').style.display = 'block';
+            
+            // IMPORTANT: Load database
+            initDatabase();
+            
+            showNotification('✅ Admin logged in', 'success');
+        } else {
+            showNotification('❌ Invalid code', 'error');
         }
+    });
+});
+
+console.log('✅ Database initialization fixed');
 
         function generateMemberID(team) {
             const pre = team === 'TASK' ? 'TSK' : 'TLK';
