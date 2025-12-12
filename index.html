@@ -8402,10 +8402,11 @@ console.log('💡 Run window.runIntegrationTest() to check integration');
     animation: transferPulse 2s infinite;
 }
 </style>
- <script>   
-      // 1. CHECK STORAGE INTEGRITY
-    // ============================================
-    function checkStorage() {
+   
+// 1. CHECK STORAGE INTEGRITY
+// ============================================
+    <script>
+     function checkStorage() {
         const requiredKeys = [
             'tauAfricaDB',
             'tauTasks',
@@ -8677,11 +8678,12 @@ console.log('💡 Run window.runIntegrationTest() to check integration');
     
 })();
    </script>
+    <script>
 <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
 
-    <script>
-
+    </script>
+<script>
 (function() {
     'use strict';
     
@@ -9149,12 +9151,11 @@ console.log('💡 Run window.runIntegrationTest() to check integration');
     
 })();
 </script>
-    <script>
+    
    // ============================================
-// PUBLIC REGISTRATION (Non-Task/Talk Members)
-// Add to Main App
+// PUBLIC REGISTRATION (Non-Task/Talk Member
 // ============================================
-
+<script>
 (function() {
     'use strict';
     
@@ -9386,10 +9387,9 @@ console.log('💡 Run window.runIntegrationTest() to check integration');
 })();
 </script>
     
-    <script>
-    // UNIVERSAL SYNC HEARTBEAT - Add to ALL apps
+// UNIVERSAL SYNC HEARTBEAT - Add to ALL apps
 // ============================================
-
+<script>
 (function() {
     'use strict';
     
@@ -9456,11 +9456,11 @@ console.log('💡 Run window.runIntegrationTest() to check integration');
     console.log('✅ Universal sync heartbeat active');
 })();
 </script>
-    <script>
-    // UNIVERSAL SYNC HEARTBEAT - Add to ALL apps
-// ============================================
 
-(function() {
+// UNIVERSAL SYNC HEARTBEAT - Add to ALL apps
+// ============================================
+<script>
+    (function() {
     'use strict';
     
     let lastSyncTime = Date.now();
@@ -9525,12 +9525,13 @@ console.log('💡 Run window.runIntegrationTest() to check integration');
     
     console.log('✅ Universal sync heartbeat active');
 })();
-    </script>
-    <script>
+ </script>
+    
 // ============================================
 // FIX REAL LOGIN SYSTEM
 // ============================================
-(function() {
+<script>
+        (function() {
     'use strict';
     
     console.log('🔐 Fixing login system...');
@@ -9662,12 +9663,13 @@ console.log('💡 Run window.runIntegrationTest() to check integration');
     
     console.log('✅ Real login system activated');
 })();
-    </script>
-    <script>
+ </script>
+    
 // ============================================
 // PREVENT DUPLICATE REGISTRATIONS
-// ============================================
-(function() {
+// =========================================
+<script>
+    (function() {
     'use strict';
     
     // Enhance TauDB.sync to check for duplicates
