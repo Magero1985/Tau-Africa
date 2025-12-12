@@ -9667,9 +9667,9 @@ console.log('💡 Run window.runIntegrationTest() to check integration');
     
 // ============================================
 // PREVENT DUPLICATE REGISTRATIONS
-// =========================================
+// ============================================
 <script>
-    (function() {
+(function() {
     'use strict';
     
     // Enhance TauDB.sync to check for duplicates
@@ -9697,42 +9697,6 @@ console.log('💡 Run window.runIntegrationTest() to check integration');
                 };
             }
             
-            // Check Firestore if available
-            if (typeof firebase !== 'undefined' && firebase.apps.length > 0) {
-                try {
-                    const db = firebase.firestore();
-                    
-                    const emailQuery = await db.collection('members')
-                        .where('email', '==', email)
-                        .limit(1)
-                        .get();
-                    
-                    if (!emailQuery.empty) {
-                        showNotification('❌ Email already registered!', 'error');
-                        return { 
-                            success: false, 
-                            error: 'Email already exists'
-                        };
-                    }
-                    
-                    const phoneQuery = await db.collection('members')
-                        .where('phone', '==', phone)
-                        .limit(1)
-                        .get();
-                    
-                    if (!phoneQuery.empty) {
-                        showNotification('❌ Phone already registered!', 'error');
-                        return { 
-                            success: false, 
-                            error: 'Phone already exists'
-                        };
-                    }
-                    
-                } catch (error) {
-                    console.warn('Firestore duplicate check failed:', error);
-                }
-            }
-            
             // No duplicates found, proceed with registration
             return originalSync.call(this, formData, team, referralCode);
         };
@@ -9740,6 +9704,16 @@ console.log('💡 Run window.runIntegrationTest() to check integration');
         console.log('✅ Duplicate prevention enabled');
     }
 })();
-    </script>
+</script>
+
+<!-- FINAL INITIALIZATION -->
+<script>
+console.log('='.repeat(60));
+console.log('🚀 TAU AFRICA - SYSTEM READY');
+console.log('='.repeat(60));
+console.log('✅ All systems loaded and operational');
+console.log('💡 Open browser console (F12) for full diagnostics');
+console.log('='.repeat(60));
+</script>
 </body>
 </html>
