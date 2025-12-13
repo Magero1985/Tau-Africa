@@ -9057,6 +9057,352 @@ console.log('='.repeat(60));
     console.log('✅ Public Registration System COMPLETE');
 })();
 </script> 
+    // ============================================
+// TAU AFRICA - COMPLETE REGISTRATION FIX
+// Add this BEFORE closing tag
+// Remove ALL other registration code first
+// ============================================
+
+    <script>
+(function() {
+    'use strict';
     
+    console.log('🔧 Loading Fixed Registration System...');
+    
+    // ============================================
+    // 1. FIREBASE INITIALIZATION
+    // ============================================
+    const FIREBASE_CONFIG = {
+        apiKey: "AIzaSyAW0vk_gg03xXEm6I1TQnU8KRiv1RhcrQ4",
+        authDomain: "tau-africa-ecosystem.firebaseapp.com",
+        projectId: "tau-africa-ecosystem",
+        storageBucket: "tau-africa-ecosystem.firebasestorage.app",
+        messagingSenderId: "1047279398196",
+        appId: "1:1047279398196:web:06d43661650c794268c961"
+    };
+    
+    let db = null;
+    let isOnline = false;
+    
+    function initFirebase() {
+        if (typeof firebase === 'undefined') {
+            console.error('❌ Firebase not loaded');
+            setTimeout(initFirebase, 1000);
+            return;
+        }
+        
+        try {
+            if (!firebase.apps.length) {
+                firebase.initializeApp(FIREBASE_CONFIG);
+            }
+            db = firebase.firestore();
+            isOnline = true;
+            console.log('✅ Firebase initialized');
+        } catch (error) {
+            console.error('❌ Firebase init failed:', error);
+        }
+    }
+    
+    // ============================================
+    // 2. HELPER FUNCTIONS
+    // ============================================
+    function generateMemberID(team, referralCode) {
+        const prefix = team === 'TASK' ? 'TSK' : 
+                      team === 'TALK' ? 'TLK' : 
+                      team === 'PUBLIC' ? 'PUB' : 
+                      'JOB';
+        
+        const timestamp = Date.now().toString().slice(-6);
+        const random = Math.floor(Math.random() * 1000).toString().padStart(3, '0');
+        return `${prefix}-${timestamp}-${random}`;
+    }
+    
+    function generateReferralCode(memberId) {
+        return btoa(memberId).substring(0, 8).toUpperCase();
+    }
+    
+    // ============================================
+    // 3. CORE REGISTRATION FUNCTION
+    // ============================================
+    window.registerMember = async function(formData, team, referralCode = null) {
+        console.log('🎯 Starting registration:', { team, referralCode });
+        
+        try {
+            // 1. Generate IDs
+            const memberId = generateMemberID(team, referralCode);
+            const memberReferralCode = generateReferralCode(memberId);
+            
+            console.log('📝 Generated IDs:', { memberId, memberReferralCode });
+            
+            // 2. Create member object
+            const member = {
+                id: memberId,
+                referralCode: memberReferralCode,
+                team: team,
+                fullName: formData.fullName || formData.name,
+                email: formData.email,
+                phone: formData.phone,
+                location: formData.location,
+                paymentStatus: formData.paymentStatus || 'Paid',
+                dateJoined: new Date().toISOString().split('T')[0],
+                status: 'Active',
+                fee: team === 'TASK' ? 500 : 
+                     team === 'TALK' ? 2000 : 
+                     team === 'PUBLIC' ? 0 : 1500,
+                accountCreated: new Date().toISOString(),
+                lastLogin: null,
+                iKbpBalance: 500,
+                iKbBalance: 0,
+                referredBy: referralCode || null,
+                activities: [],
+                tasks: [],
+                ...formData
+            };
+            
+            console.log('👤 Member object created:', member);
+            
+            // 3. SAVE TO LOCALSTORAGE
+            const localMembers = JSON.parse(localStorage.getItem('tauAfricaDB') || '[]');
+            
+            // Check duplicates
+            const existingIndex = localMembers.findIndex(m => 
+                m.email === member.email || m.phone === member.phone
+            );
+            
+            if (existingIndex >= 0) {
+                console.error('❌ Duplicate found');
+                return { 
+                    success: false, 
+                    error: 'Email or phone already registered'
+                };
+            }
+            
+            localMembers.push(member);
+            localStorage.setItem('tauAfricaDB', JSON.stringify(localMembers));
+            console.log('✅ Saved to localStorage');
+            
+            // 4. Save credentials
+            const credentials = JSON.parse(localStorage.getItem('tauCredentials') || '{}');
+            credentials[memberId] = {
+                email: member.email,
+                phone: member.phone.slice(-4),
+                fullName: member.fullName
+            };
+            localStorage.setItem('tauCredentials', JSON.stringify(credentials));
+            console.log('🔑 Credentials saved');
+            
+            // 5. SAVE TO FIRESTORE
+            if (db && isOnline) {
+                try {
+                    await db.collection('members').doc(memberId).set({
+                        ...member,
+                        createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+                        lastSync: firebase.firestore.FieldValue.serverTimestamp()
+                    });
+                    console.log('☁️ Saved to Firestore');
+                } catch (firestoreError) {
+                    console.warn('⚠️ Firestore save failed:', firestoreError);
+                }
+            }
+            
+            // 6. Track referral
+            if (referralCode) {
+                trackReferral(referralCode, memberId);
+            }
+            
+            // 7. Create notification
+            if (typeof createNotification === 'function') {
+                createNotification(
+                    memberId,
+                    '🎉 Welcome to TAU Africa!',
+                    `Welcome bonus: 500 iKbp\nReferral Code: ${memberReferralCode}`,
+                    'success'
+                );
+            }
+            
+            console.log('✅ Registration complete:', memberId);
+            
+            return {
+                success: true,
+                memberId: memberId,
+                member: member
+            };
+            
+        } catch (error) {
+            console.error('❌ Registration error:', error);
+            return {
+                success: false,
+                error: error.message
+            };
+        }
+    };
+    
+    function trackReferral(referralCode, newMemberId) {
+        try {
+            const members = JSON.parse(localStorage.getItem('tauAfricaDB') || '[]');
+            const referrer = members.find(m => m.referralCode === referralCode);
+            
+            if (referrer) {
+                referrer.iKbpBalance = (referrer.iKbpBalance || 0) + 500;
+                
+                const index = members.findIndex(m => m.id === referrer.id);
+                if (index >= 0) {
+                    members[index] = referrer;
+                    localStorage.setItem('tauAfricaDB', JSON.stringify(members));
+                }
+                
+                if (db && isOnline) {
+                    db.collection('members').doc(referrer.id).update({
+                        iKbpBalance: firebase.firestore.FieldValue.increment(500)
+                    }).catch(err => console.warn('Referral warning:', err));
+                }
+                
+                console.log('🎁 Referral bonus awarded:', referrer.id);
+            }
+        } catch (error) {
+            console.error('Referral error:', error);
+        }
+    }
+    
+    // ============================================
+    // 4. SUCCESS HANDLERS
+    // ============================================
+    window.processTaskSuccess = async function(formData) {
+        console.log('🎯 TASK registration...');
+        
+        const referralCode = window.TauDB?.checkReferralCode();
+        const result = await registerMember(formData, 'TASK', referralCode);
+        
+        if (result.success) {
+            const member = result.member;
+            
+            if (typeof showNotification === 'function') {
+                showNotification('📧 Sending emails...', 'info');
+            }
+            
+            const emailPromises = [];
+            
+            if (typeof sendWelcomeEmail === 'function') {
+                emailPromises.push(sendWelcomeEmail(member));
+            }
+            
+            if (typeof sendEmailToAdmin === 'function') {
+                emailPromises.push(sendEmailToAdmin(member, 'NEW TASK REGISTRATION'));
+            }
+            
+            await Promise.allSettled(emailPromises);
+            
+            if (typeof showNotification === 'function') {
+                showNotification('✅ Registration complete!', 'success');
+            }
+            
+            setTimeout(() => {
+                if (typeof closeAllModals === 'function') closeAllModals();
+                if (typeof showSuccessModal === 'function') showSuccessModal(member);
+            }, 2000);
+        } else {
+            if (typeof showNotification === 'function') {
+                showNotification('❌ Failed: ' + result.error, 'error');
+            }
+        }
+    };
+    
+    window.processTalkSuccess = async function(formData) {
+        console.log('🎯 TALK registration...');
+        
+        const referralCode = window.TauDB?.checkReferralCode();
+        const result = await registerMember(formData, 'TALK', referralCode);
+        
+        if (result.success) {
+            const member = result.member;
+            
+            if (typeof showNotification === 'function') {
+                showNotification('📧 Sending emails...', 'info');
+            }
+            
+            const emailPromises = [];
+            if (typeof sendWelcomeEmail === 'function') {
+                emailPromises.push(sendWelcomeEmail(member));
+            }
+            if (typeof sendEmailToAdmin === 'function') {
+                emailPromises.push(sendEmailToAdmin(member, 'NEW TALK REGISTRATION'));
+            }
+            
+            await Promise.allSettled(emailPromises);
+            
+            if (typeof showNotification === 'function') {
+                showNotification('✅ Registration complete!', 'success');
+            }
+            
+            setTimeout(() => {
+                if (typeof closeAllModals === 'function') closeAllModals();
+                if (typeof showSuccessModal === 'function') showSuccessModal(member);
+            }, 2000);
+        } else {
+            if (typeof showNotification === 'function') {
+                showNotification('❌ Failed: ' + result.error, 'error');
+            }
+        }
+    };
+    
+    window.processJobCreationSuccess = async function(formData) {
+        console.log('🎯 Job Creation registration...');
+        
+        const referralCode = window.TauDB?.checkReferralCode();
+        const result = await registerMember(formData, 'JOB_CREATION', referralCode);
+        
+        if (result.success) {
+            const member = result.member;
+            
+            const emailPromises = [];
+            if (typeof sendWelcomeEmail === 'function') {
+                emailPromises.push(sendWelcomeEmail(member));
+            }
+            if (typeof sendEmailToAdmin === 'function') {
+                emailPromises.push(sendEmailToAdmin(member, 'JOB CREATION ENROLLMENT'));
+            }
+            
+            await Promise.allSettled(emailPromises);
+            
+            if (typeof showNotification === 'function') {
+                showNotification('✅ Enrollment complete!', 'success');
+            }
+            
+            setTimeout(() => {
+                if (typeof closeAllModals === 'function') closeAllModals();
+                if (typeof showSuccessModal === 'function') showSuccessModal(member);
+            }, 2000);
+        } else {
+            if (typeof showNotification === 'function') {
+                showNotification('❌ Failed: ' + result.error, 'error');
+            }
+        }
+    };
+    
+    // ============================================
+    // 5. OVERRIDE TauDB
+    // ============================================
+    if (typeof window.TauDB === 'undefined') {
+        window.TauDB = {};
+    }
+    
+    window.TauDB.sync = async function(formData, team, referralCode) {
+        return await registerMember(formData, team, referralCode);
+    };
+    
+    window.TauDB.checkReferralCode = function() {
+        const urlParams = new URLSearchParams(window.location.search);
+        return urlParams.get('ref');
+    };
+    
+    // ============================================
+    // 6. INITIALIZE
+    // ============================================
+    initFirebase();
+    
+    console.log('✅ Fixed Registration System Loaded');
+    
+})();
+</script>
 </body>
 </html>
