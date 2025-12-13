@@ -9841,145 +9841,473 @@ console.log('✅ All systems loaded and operational');
 console.log('💡 Open browser console (F12) for full diagnostics');
 console.log('='.repeat(60));
 </script>
-    <script>
-        // ============================================
-// ENHANCED PUBLIC REGISTRATION
-// Replace window.verifyOTPAndRegister in Main App
+    
+    // ============================================
+// COMPLETE PUBLIC REGISTRATION SYSTEM - FIXED
+// Add this to Main App (index.html)
 // ============================================
-
-window.verifyOTPAndRegister = async function(event, email) {
-    event.preventDefault();
+<script>
+(function() {
+    'use strict';
     
-    const formData = new FormData(event.target);
-    const enteredOTP = formData.get('otp');
-    const stored = otpCodes[email];
+    console.log('🌍 Loading Public Registration System...');
     
-    if (!stored) {
-        showNotification('❌ Verification expired. Please try again.', 'error');
-        return;
+    // Store OTP codes temporarily (in-memory only, expires on page reload)
+    const otpCodes = {};
+    
+    // ==========================================
+    // 1. GENERATE OTP
+    // ==========================================
+    function generateOTP() {
+        return Math.floor(100000 + Math.random() * 900000).toString();
     }
     
-    if (Date.now() - stored.timestamp > 600000) {
-        delete otpCodes[email];
-        showNotification('❌ Verification code expired. Please request a new one.', 'error');
-        return;
+    // ==========================================
+    // 2. SEND OTP VIA EMAIL
+    // ==========================================
+    async function sendOTP(email, otp) {
+        if (typeof emailjs === 'undefined') {
+            console.error('❌ EmailJS not loaded');
+            return false;
+        }
+        
+        const templateParams = {
+            to_email: email,
+            to_name: 'New User',
+            subject: 'TAU Africa - Email Verification Code',
+            message: `Your verification code is: ${otp}\n\nThis code expires in 10 minutes.\n\nIf you didn't request this, please ignore this email.`,
+            from_name: 'TAU Africa',
+            from_email: 'grouptauafrica@gmail.com'
+        };
+        
+        try {
+            await emailjs.send('service_xfira7g', 'template_bqxztig', templateParams);
+            console.log('✅ OTP sent to:', email);
+            return true;
+        } catch (error) {
+            console.error('❌ OTP send failed:', error);
+            return false;
+        }
     }
     
-    if (enteredOTP !== stored.code) {
-        showNotification('❌ Invalid verification code', 'error');
-        return;
-    }
-    
-    const originalData = stored.formData;
-    delete otpCodes[email];
-    
-    // ============================================
-    // CREATE PUBLIC MEMBER WITH PROPER FIELDS
-    // ============================================
-    const publicMember = {
-        id: 'PUB-' + Date.now(),
-        type: 'public',  // CRITICAL: Identifies as public user
-        team: 'PUBLIC',
-        fullName: originalData.fullName,
-        email: originalData.email,
-        phone: originalData.phone,
-        location: originalData.location,
-        password: btoa(originalData.password),
-        accountCreated: new Date().toISOString(),
-        dateJoined: new Date().toISOString().split('T')[0],
-        status: 'Active',
-        verified: true,
+    // ==========================================
+    // 3. SHOW PUBLIC REGISTRATION MODAL
+    // ==========================================
+    window.showPublicRegistration = function() {
+        if (typeof closeAllModals === 'function') {
+            closeAllModals();
+        }
         
-        // Permissions
-        canSubmitValues: true,
-        canClaimValues: true,
-        canViewOpportunities: true,
+        const modal = document.createElement('div');
+        modal.className = 'modal';
+        modal.style.display = 'block';
+        modal.innerHTML = `
+            <div class="modal-content">
+                <span class="close" onclick="this.parentElement.parentElement.remove()">&times;</span>
+                
+                <h2 style="text-align: center; color: #27ae60;">🌍 TAU Africa Public Access</h2>
+                <p style="text-align: center; margin-bottom: 30px; color: #666;">
+                    Free access to submit and claim values
+                </p>
+                
+                <div style="display: flex; gap: 10px; margin-bottom: 20px; justify-content: center;">
+                    <button class="btn btn-small" onclick="switchPublicTab('register')" id="pubRegTab" style="background: #27ae60;">Register</button>
+                    <button class="btn btn-small" onclick="switchPublicTab('login')" id="pubLoginTab" style="background: #95a5a6;">Login</button>
+                </div>
+                
+                <!-- REGISTER FORM -->
+                <div id="publicRegisterTab">
+                    <form onsubmit="startPublicRegistration(event)" id="publicRegForm">
+                        <div class="form-group">
+                            <label>Full Name *</label>
+                            <input type="text" name="fullName" required placeholder="John Doe">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label>Email *</label>
+                            <input type="email" name="email" required placeholder="you@example.com" id="publicEmail">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label>Phone *</label>
+                            <input type="tel" name="phone" required placeholder="254XXXXXXXXX" pattern="254[0-9]{9}">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label>Location *</label>
+                            <input type="text" name="location" required placeholder="City, Country">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label>Password *</label>
+                            <div style="position: relative;">
+                                <input type="password" name="password" required minlength="6" placeholder="Minimum 6 characters" id="publicPassword">
+                                <span onclick="togglePasswordVisibility('publicPassword')" style="position: absolute; right: 10px; top: 50%; transform: translateY(-50%); cursor: pointer; font-size: 20px;">👁️</span>
+                            </div>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label>Confirm Password *</label>
+                            <div style="position: relative;">
+                                <input type="password" name="confirmPassword" required minlength="6" id="publicConfirmPassword">
+                                <span onclick="togglePasswordVisibility('publicConfirmPassword')" style="position: absolute; right: 10px; top: 50%; transform: translateY(-50%); cursor: pointer; font-size: 20px;">👁️</span>
+                            </div>
+                        </div>
+                        
+                        <button type="submit" class="btn" style="width: 100%; background: #27ae60;">Create Free Account</button>
+                    </form>
+                </div>
+                
+                <!-- LOGIN FORM -->
+                <div id="publicLoginTab" style="display: none;">
+                    <form onsubmit="processPublicLogin(event)">
+                        <div class="form-group">
+                            <label>Email or Member ID *</label>
+                            <input type="text" name="identifier" required placeholder="your@email.com or PUB-XXX">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label>Password *</label>
+                            <div style="position: relative;">
+                                <input type="password" name="password" required id="publicLoginPassword">
+                                <span onclick="togglePasswordVisibility('publicLoginPassword')" style="position: absolute; right: 10px; top: 50%; transform: translateY(-50%); cursor: pointer; font-size: 20px;">👁️</span>
+                            </div>
+                        </div>
+                        
+                        <button type="submit" class="btn" style="width: 100%; background: #27ae60;">Login</button>
+                    </form>
+                </div>
+            </div>
+        `;
         
-        // Balances (start at 0)
-        iKbpBalance: 0,
-        iKbBalance: 0,
-        
-        // Referral system
-        referralCode: generateReferralCode('PUB-' + Date.now()),
-        referredBy: null,
-        
-        // Membership info
-        membership: 'Public',
-        fee: 0,
-        paymentStatus: 'N/A',
-        
-        // Activity tracking
-        activities: [],
-        tasks: [],
-        values: [],
-        
-        // Stats
-        valuesSubmitted: 0,
-        valuesClaimed: 0
+        document.body.appendChild(modal);
     };
     
-    try {
-        // 1. Save to localStorage (guaranteed)
+    // ==========================================
+    // 4. SWITCH TABS
+    // ==========================================
+    window.switchPublicTab = function(tab) {
+        document.getElementById('publicRegisterTab').style.display = tab === 'register' ? 'block' : 'none';
+        document.getElementById('publicLoginTab').style.display = tab === 'login' ? 'block' : 'none';
+        
+        document.getElementById('pubRegTab').style.background = tab === 'register' ? '#27ae60' : '#95a5a6';
+        document.getElementById('pubLoginTab').style.background = tab === 'login' ? '#27ae60' : '#95a5a6';
+    };
+    
+    // ==========================================
+    // 5. TOGGLE PASSWORD VISIBILITY
+    // ==========================================
+    window.togglePasswordVisibility = function(inputId) {
+        const input = document.getElementById(inputId);
+        if (input) {
+            input.type = input.type === 'password' ? 'text' : 'password';
+        }
+    };
+    
+    // ==========================================
+    // 6. START REGISTRATION (SEND OTP)
+    // ==========================================
+    window.startPublicRegistration = async function(event) {
+        event.preventDefault();
+        
+        const formData = new FormData(event.target);
+        const email = formData.get('email');
+        const password = formData.get('password');
+        const confirmPassword = formData.get('confirmPassword');
+        
+        // Validate passwords match
+        if (password !== confirmPassword) {
+            if (typeof showNotification === 'function') {
+                showNotification('❌ Passwords do not match', 'error');
+            } else {
+                alert('Passwords do not match');
+            }
+            return;
+        }
+        
+        // Check for existing email
+        const members = JSON.parse(localStorage.getItem('tauAfricaDB') || '[]');
+        const exists = members.find(m => m.email === email);
+        
+        if (exists) {
+            if (typeof showNotification === 'function') {
+                showNotification('❌ Email already registered', 'error');
+            } else {
+                alert('Email already registered');
+            }
+            return;
+        }
+        
+        // Generate and store OTP
+        const otp = generateOTP();
+        otpCodes[email] = {
+            code: otp,
+            formData: Object.fromEntries(formData.entries()),
+            timestamp: Date.now()
+        };
+        
+        console.log('🔐 OTP generated for', email, ':', otp);
+        
+        if (typeof showNotification === 'function') {
+            showNotification('📧 Sending verification code...', 'info');
+        }
+        
+        // Send OTP
+        const sent = await sendOTP(email, otp);
+        
+        if (sent) {
+            if (typeof showNotification === 'function') {
+                showNotification('✅ Verification code sent! Check your email.', 'success');
+            }
+            showOTPVerification(email);
+        } else {
+            if (typeof showNotification === 'function') {
+                showNotification('❌ Failed to send verification code', 'error');
+            } else {
+                alert('Failed to send verification code');
+            }
+        }
+    };
+    
+    // ==========================================
+    // 7. SHOW OTP VERIFICATION SCREEN
+    // ==========================================
+    function showOTPVerification(email) {
+        if (typeof closeAllModals === 'function') {
+            closeAllModals();
+        }
+        
+        const modal = document.createElement('div');
+        modal.className = 'modal';
+        modal.style.display = 'block';
+        modal.innerHTML = `
+            <div class="modal-content">
+                <span class="close" onclick="this.parentElement.parentElement.remove()">&times;</span>
+                
+                <h2 style="text-align: center;">📧 Email Verification</h2>
+                <p style="text-align: center; margin-bottom: 30px;">
+                    Enter the 6-digit code sent to<br>
+                    <strong>${email}</strong>
+                </p>
+                
+                <form id="otpForm">
+                    <div class="form-group">
+                        <label>Verification Code *</label>
+                        <input type="text" name="otp" required maxlength="6" pattern="[0-9]{6}" placeholder="000000" style="text-align: center; font-size: 24px; letter-spacing: 5px;">
+                    </div>
+                    
+                    <button type="submit" class="btn" style="width: 100%; background: #27ae60;">Verify & Create Account</button>
+                    
+                    <div style="text-align: center; margin-top: 15px;">
+                        <a href="#" onclick="resendOTP('${email}'); return false;" style="color: #27ae60;">Didn't receive code? Resend</a>
+                    </div>
+                </form>
+            </div>
+        `;
+        
+        document.body.appendChild(modal);
+        
+        // ⚠️ CRITICAL: Add submit handler IMMEDIATELY after modal is added to DOM
+        const form = document.getElementById('otpForm');
+        if (form) {
+            form.addEventListener('submit', function(e) {
+                e.preventDefault();
+                verifyOTPAndRegister(e, email);
+            });
+            console.log('✅ OTP form submit handler attached');
+        } else {
+            console.error('❌ OTP form not found!');
+        }
+    }
+    
+    // ==========================================
+    // 8. VERIFY OTP AND COMPLETE REGISTRATION
+    // ==========================================
+    function verifyOTPAndRegister(event, email) {
+        event.preventDefault();
+        console.log('🔐 Verifying OTP for:', email);
+        
+        const formData = new FormData(event.target);
+        const enteredOTP = formData.get('otp').trim();
+        const stored = otpCodes[email];
+        
+        console.log('Entered OTP:', enteredOTP);
+        console.log('Stored data:', stored);
+        
+        if (!stored) {
+            if (typeof showNotification === 'function') {
+                showNotification('❌ Verification expired. Please try again.', 'error');
+            } else {
+                alert('Verification expired');
+            }
+            return;
+        }
+        
+        // Check expiration (10 minutes)
+        if (Date.now() - stored.timestamp > 600000) {
+            delete otpCodes[email];
+            if (typeof showNotification === 'function') {
+                showNotification('❌ Verification code expired. Please request a new one.', 'error');
+            } else {
+                alert('Code expired');
+            }
+            return;
+        }
+        
+        // Verify OTP
+        if (enteredOTP !== stored.code) {
+            if (typeof showNotification === 'function') {
+                showNotification('❌ Invalid verification code', 'error');
+            } else {
+                alert('Invalid code');
+            }
+            return;
+        }
+        
+        // OTP is valid - create account
+        const originalData = stored.formData;
+        delete otpCodes[email];
+        
+        console.log('✅ OTP verified, creating account...');
+        
+        // Generate member ID and referral code
+        const memberId = 'PUB-' + Date.now();
+        const referralCode = btoa(memberId).substring(0, 8).toUpperCase();
+        
+        const publicMember = {
+            id: memberId,
+            type: 'public',
+            team: 'PUBLIC',
+            fullName: originalData.fullName,
+            email: originalData.email,
+            phone: originalData.phone,
+            location: originalData.location,
+            password: btoa(originalData.password),
+            referralCode: referralCode,
+            accountCreated: new Date().toISOString(),
+            dateJoined: new Date().toISOString().split('T')[0],
+            status: 'Active',
+            verified: true,
+            canSubmitValues: true,
+            canClaimValues: true,
+            iKbpBalance: 0,
+            iKbBalance: 0,
+            membership: 'Public',
+            fee: 0,
+            paymentStatus: 'N/A'
+        };
+        
+        console.log('💾 Saving member:', publicMember);
+        
+        // Save to localStorage
         const members = JSON.parse(localStorage.getItem('tauAfricaDB') || '[]');
         members.push(publicMember);
         localStorage.setItem('tauAfricaDB', JSON.stringify(members));
-        console.log('✅ Public member saved to localStorage:', publicMember.id);
+        console.log('✅ Saved to localStorage');
         
-        // 2. Save to Firestore (if available)
+        // Save to Firestore if available
         if (typeof firebase !== 'undefined' && firebase.apps.length > 0) {
-            try {
-                const db = firebase.firestore();
-                await db.collection('members').doc(publicMember.id).set({
-                    ...publicMember,
-                    createdAt: firebase.firestore.FieldValue.serverTimestamp(),
-                    lastSync: firebase.firestore.FieldValue.serverTimestamp()
-                });
-                console.log('☁️ Public member synced to Firestore:', publicMember.id);
-            } catch (firestoreError) {
-                console.warn('⚠️ Firestore save warning (but localStorage worked):', firestoreError);
-                // Don't fail registration if Firestore fails
-            }
+            const db = firebase.firestore();
+            db.collection('members').doc(publicMember.id).set(publicMember)
+                .then(() => console.log('☁️ Saved to Firestore'))
+                .catch(err => console.warn('⚠️ Firestore save warning:', err));
         }
         
-        // 3. Send welcome email (optional for public users)
-        if (typeof sendWelcomeEmail === 'function') {
-            const welcomeResult = await sendWelcomeEmail(publicMember);
-            if (welcomeResult.success) {
-                console.log('✅ Welcome email sent to public user');
-            }
+        if (typeof showNotification === 'function') {
+            showNotification('✅ Account created successfully!', 'success');
+        } else {
+            alert('Account created successfully!');
         }
         
-        // 4. Create notification
-        if (typeof createNotification === 'function') {
-            createNotification(
-                publicMember.id,
-                '🌍 Welcome to TAU Africa!',
-                'You can now submit and claim values. Upgrade to TASK/TALK for more benefits!',
-                'success'
-            );
-        }
-        
-        showNotification('✅ Account created successfully!', 'success');
-        
-        // 5. Auto-login and show dashboard
         setTimeout(() => {
-            closeAllModals();
+            if (typeof closeAllModals === 'function') {
+                closeAllModals();
+            }
             sessionStorage.setItem('tauCurrentUser', JSON.stringify(publicMember));
-            showPublicDashboard(publicMember);
+            if (typeof showPublicDashboard === 'function') {
+                showPublicDashboard(publicMember);
+            }
         }, 2000);
-        
-    } catch (error) {
-        console.error('❌ Registration error:', error);
-        showNotification('❌ Registration failed: ' + error.message, 'error');
     }
-};
-
-// Helper function for public referral codes
-function generateReferralCode(memberId) {
-    return btoa(memberId).substring(0, 8).toUpperCase();
-}
-
-console.log('✅ Enhanced public registration with Firebase sync');
-    </script>
+    
+    // ==========================================
+    // 9. RESEND OTP
+    // ==========================================
+    window.resendOTP = async function(email) {
+        const stored = otpCodes[email];
+        if (!stored) {
+            if (typeof showNotification === 'function') {
+                showNotification('❌ Session expired. Please start again.', 'error');
+            }
+            return;
+        }
+        
+        const newOTP = generateOTP();
+        otpCodes[email].code = newOTP;
+        otpCodes[email].timestamp = Date.now();
+        
+        console.log('🔄 Resending OTP:', newOTP);
+        
+        const sent = await sendOTP(email, newOTP);
+        
+        if (sent) {
+            if (typeof showNotification === 'function') {
+                showNotification('✅ New verification code sent!', 'success');
+            } else {
+                alert('New code sent!');
+            }
+        } else {
+            if (typeof showNotification === 'function') {
+                showNotification('❌ Failed to send code', 'error');
+            } else {
+                alert('Failed to send code');
+            }
+        }
+    };
+    
+    // ==========================================
+    // 10. PUBLIC LOGIN
+    // ==========================================
+    window.processPublicLogin = function(event) {
+        event.preventDefault();
+        
+        const formData = new FormData(event.target);
+        const identifier = formData.get('identifier').trim();
+        const password = formData.get('password');
+        const hashedPassword = btoa(password);
+        
+        const members = JSON.parse(localStorage.getItem('tauAfricaDB') || '[]');
+        const member = members.find(m => 
+            (m.email === identifier || m.id === identifier) && 
+            m.password === hashedPassword &&
+            m.type === 'public'
+        );
+        
+        if (member) {
+            sessionStorage.setItem('tauCurrentUser', JSON.stringify(member));
+            if (typeof showNotification === 'function') {
+                showNotification('✅ Login successful!', 'success');
+            }
+            
+            setTimeout(() => {
+                if (typeof closeAllModals === 'function') {
+                    closeAllModals();
+                }
+                if (typeof showPublicDashboard === 'function') {
+                    showPublicDashboard(member);
+                }
+            }, 1000);
+        } else {
+            if (typeof showNotification === 'function') {
+                showNotification('❌ Invalid credentials', 'error');
+            } else {
+                alert('Invalid credentials');
+            }
+        }
+    };
+    
+    console.log('✅ Public Registration System COMPLETE');
+})();
+</script>  
 </body>
 </html>
