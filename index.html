@@ -1670,11 +1670,11 @@ console.log('✅ Authentication fixed');
     
 })();
 </script>
-  
+  <script>
 // ============================================
 // TAU AFRICA - COMPLETE EMAIL & NOTIFICATION FIX
 // ============================================
-<script>
+
     (function() {
     'use strict';
     
@@ -2056,9 +2056,9 @@ TAU Africa Registration System
     
 })();
   </script>
-
-// ===== M-PESA PAYMENT INTEGRATION =====
 <script>
+// ===== M-PESA PAYMENT INTEGRATION =====
+
     function initiateMpesaPayment(amount, phoneNumber, formData, successCallback) {
     showPaymentModal(amount, phoneNumber, formData, successCallback);
 }
@@ -2173,10 +2173,11 @@ function closeAllModals() {
     modals.forEach(modal => modal.remove());
     currentModal = null;
 }
-    </script>
     
+</script>
+    <script>
 // ===== SELECTION FUNCTIONS =====
-<script>
+
     function selectLevel(level, element) {
     const buttons = document.querySelectorAll('.level-btn');
     buttons.forEach(btn => btn.classList.remove('selected'));
@@ -2266,13 +2267,12 @@ function processJobCreationTraining(event) {
     
     initiateMpesaPayment(1500, data.phone, data, 'processJobCreationSuccess');
 }
-</script>
-  
- ============================================
+  </script>
+ <script>
+
 TAU AFRICA - COMPLETE FIX (ALL-IN-ONE)
- ============================================
-<script>
-    (function() {
+ 
+ (function() {
     'use strict';
     
     console.log('🚀 TAU Complete Fix - Starting...');
@@ -2362,7 +2362,8 @@ TAU AFRICA - COMPLETE FIX (ALL-IN-ONE)
             }
         });
     }
-    
+   </script>
+        <script>
     // ========================================
     // PART 2: EMAIL SYSTEM
     // ========================================
@@ -2824,9 +2825,9 @@ Fee: KSH 500 ✅ PAID
     
 })();
 </script>
-    
-===== M-PESA PAYMENT INTEGRATION =====
-<script>
+    <script> 
+ M-PESA PAYMENT INTEGRATION
+
     function initiateMpesaPayment(amount, phoneNumber, formData, successCallback) {
     showPaymentModal(amount, phoneNumber, formData, successCallback);
 }
@@ -2921,11 +2922,11 @@ function showNotification(message, type = 'success') {
     }, 6000);
 }
     </script>
-  
-// ============================================
-// VALUE SUBMISSION SYSTEM - Main App
-// ============================================
-<script>
+  <script>
+
+ VALUE SUBMISSION SYSTEM - Main App
+ ============================================
+
     (function() {
     'use strict';
     
@@ -3247,11 +3248,11 @@ function showNotification(message, type = 'success') {
     }
 })();
 </script>
+<script>
 
-// ============================================
 // PUBLIC OPPORTUNITIES DISPLAY - Main App
 // ============================================
-  <script>
+  
     (function() {
     'use strict';
     
@@ -3517,9 +3518,9 @@ function showNotification(message, type = 'success') {
     setTimeout(refreshPublicOpportunities, 1000);
 })();
   </script>
-    
+    <script>
   // ===== MODAL MANAGEMENT =====
-<script>
+
     function openModal(type) {
     closeAllModals();
     
@@ -5917,8 +5918,7 @@ function createForumModal() {
         };
         localStorage.setItem(DB_CONFIG.credentialsKey, JSON.stringify(credentials));
     }
-    </script>
-     <script>
+     
     // Authentication
     function authenticateMember(identifier, phoneLastFour) {
         try {
@@ -6055,8 +6055,7 @@ function createForumModal() {
             return { success: false, error: error.message };
         }
     }
-</script>
-    <script>
+    
         // Forum Management
     function createForumPost(memberId, post) {
         try {
@@ -6244,7 +6243,6 @@ function createForumModal() {
     </script>
 
     <script>
-    // =====================================================
 // TAU AFRICA UI COMPONENTS - COMPLETE
 // =====================================================
 
@@ -7290,7 +7288,7 @@ function requestAdminAccess(event) {
     // ============================================
 // PWA UPDATE SYSTEM
 // ============================================
-<script>
+
 (function() {
     'use strict';
     
@@ -7895,7 +7893,10 @@ console.log('💡 Run window.runIntegrationTest() to check integration');
                 }
                 
                 // Create notification
-  (function() {
+   </script>
+        
+    <script>   
+    (function() {
     'use strict';
     
     console.log('🌉 TAU-Kabiru Bridge - Initializing...');
@@ -8445,11 +8446,11 @@ console.log('💡 Run window.runIntegrationTest() to check integration');
 })();
 </script>
 
+        <style>
 <!-- ============================================ -->
 <!-- VISUAL INDICATOR FOR PENDING TRANSFERS -->
 <!-- ============================================ -->
 
-<style>
 /* Add pulsing indicator for pending transfers */
 @keyframes transferPulse {
     0%, 100% { 
@@ -8464,10 +8465,9 @@ console.log('💡 Run window.runIntegrationTest() to check integration');
     animation: transferPulse 2s infinite;
 }
 </style>
-   
+   <script>
 // 1. CHECK STORAGE INTEGRITY
 // ============================================
-    <script>
      function checkStorage() {
         const requiredKeys = [
             'tauAfricaDB',
@@ -9213,11 +9213,12 @@ console.log('💡 Run window.runIntegrationTest() to check integration');
     
 })();
 </script>
+        <script>
   // ============================================
 // COMPLETE PUBLIC REGISTRATION SYSTEM
 // With OTP, Password Toggle, Forgot Password
 // ============================================
-<script>
+
 (function() {
     'use strict';
     
@@ -9640,10 +9641,11 @@ console.log('💡 Run window.runIntegrationTest() to check integration');
     
     console.log('✅ Public Registration System COMPLETE');
 })();
-</script>    
+</script>
+        <script>
 // UNIVERSAL SYNC HEARTBEAT - Add to ALL apps
 // ============================================
-<script>
+
 (function() {
     'use strict';
     
@@ -9710,11 +9712,10 @@ console.log('💡 Run window.runIntegrationTest() to check integration');
     console.log('✅ Universal sync heartbeat active');
 })();
 </script>
-
+<script>
 // ============================================
 // FIX REAL LOGIN SYSTEM - CONSOLIDATED
 // ============================================
-<script>
 (function() {
     'use strict';
     
@@ -9802,10 +9803,11 @@ console.log('💡 Run window.runIntegrationTest() to check integration');
     }, 1000);
 })();
 </script>
+        <script>
 // ============================================
 // PREVENT DUPLICATE REGISTRATIONS
 // ============================================
-<script>
+
 (function() {
     'use strict';
     
@@ -9842,13 +9844,13 @@ console.log('💡 Run window.runIntegrationTest() to check integration');
     }
 })();
 </script>
-    
+    <script>
 // ============================================
 // TAU AFRICA - COMPLETE REGISTRATION FIX
 // Add this BEFORE closing tag
 // Remove ALL other registration code first
 // ============================================
-  <script>
+  
 (function() {
     'use strict';
     
@@ -10188,10 +10190,9 @@ console.log('💡 Run window.runIntegrationTest() to check integration');
     console.log('✅ Fixed Registration System Loaded');
     
 })();
-     </scrip>
-
+     </script>
+ <script>
 <!-- FINAL INITIALIZATION -->
-<script>
 console.log('='.repeat(60));
 console.log('🚀 TAU AFRICA - SYSTEM READY');
 console.log('='.repeat(60));
