@@ -9841,5 +9841,145 @@ console.log('✅ All systems loaded and operational');
 console.log('💡 Open browser console (F12) for full diagnostics');
 console.log('='.repeat(60));
 </script>
+    <script>
+        // ============================================
+// ENHANCED PUBLIC REGISTRATION
+// Replace window.verifyOTPAndRegister in Main App
+// ============================================
+
+window.verifyOTPAndRegister = async function(event, email) {
+    event.preventDefault();
+    
+    const formData = new FormData(event.target);
+    const enteredOTP = formData.get('otp');
+    const stored = otpCodes[email];
+    
+    if (!stored) {
+        showNotification('❌ Verification expired. Please try again.', 'error');
+        return;
+    }
+    
+    if (Date.now() - stored.timestamp > 600000) {
+        delete otpCodes[email];
+        showNotification('❌ Verification code expired. Please request a new one.', 'error');
+        return;
+    }
+    
+    if (enteredOTP !== stored.code) {
+        showNotification('❌ Invalid verification code', 'error');
+        return;
+    }
+    
+    const originalData = stored.formData;
+    delete otpCodes[email];
+    
+    // ============================================
+    // CREATE PUBLIC MEMBER WITH PROPER FIELDS
+    // ============================================
+    const publicMember = {
+        id: 'PUB-' + Date.now(),
+        type: 'public',  // CRITICAL: Identifies as public user
+        team: 'PUBLIC',
+        fullName: originalData.fullName,
+        email: originalData.email,
+        phone: originalData.phone,
+        location: originalData.location,
+        password: btoa(originalData.password),
+        accountCreated: new Date().toISOString(),
+        dateJoined: new Date().toISOString().split('T')[0],
+        status: 'Active',
+        verified: true,
+        
+        // Permissions
+        canSubmitValues: true,
+        canClaimValues: true,
+        canViewOpportunities: true,
+        
+        // Balances (start at 0)
+        iKbpBalance: 0,
+        iKbBalance: 0,
+        
+        // Referral system
+        referralCode: generateReferralCode('PUB-' + Date.now()),
+        referredBy: null,
+        
+        // Membership info
+        membership: 'Public',
+        fee: 0,
+        paymentStatus: 'N/A',
+        
+        // Activity tracking
+        activities: [],
+        tasks: [],
+        values: [],
+        
+        // Stats
+        valuesSubmitted: 0,
+        valuesClaimed: 0
+    };
+    
+    try {
+        // 1. Save to localStorage (guaranteed)
+        const members = JSON.parse(localStorage.getItem('tauAfricaDB') || '[]');
+        members.push(publicMember);
+        localStorage.setItem('tauAfricaDB', JSON.stringify(members));
+        console.log('✅ Public member saved to localStorage:', publicMember.id);
+        
+        // 2. Save to Firestore (if available)
+        if (typeof firebase !== 'undefined' && firebase.apps.length > 0) {
+            try {
+                const db = firebase.firestore();
+                await db.collection('members').doc(publicMember.id).set({
+                    ...publicMember,
+                    createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+                    lastSync: firebase.firestore.FieldValue.serverTimestamp()
+                });
+                console.log('☁️ Public member synced to Firestore:', publicMember.id);
+            } catch (firestoreError) {
+                console.warn('⚠️ Firestore save warning (but localStorage worked):', firestoreError);
+                // Don't fail registration if Firestore fails
+            }
+        }
+        
+        // 3. Send welcome email (optional for public users)
+        if (typeof sendWelcomeEmail === 'function') {
+            const welcomeResult = await sendWelcomeEmail(publicMember);
+            if (welcomeResult.success) {
+                console.log('✅ Welcome email sent to public user');
+            }
+        }
+        
+        // 4. Create notification
+        if (typeof createNotification === 'function') {
+            createNotification(
+                publicMember.id,
+                '🌍 Welcome to TAU Africa!',
+                'You can now submit and claim values. Upgrade to TASK/TALK for more benefits!',
+                'success'
+            );
+        }
+        
+        showNotification('✅ Account created successfully!', 'success');
+        
+        // 5. Auto-login and show dashboard
+        setTimeout(() => {
+            closeAllModals();
+            sessionStorage.setItem('tauCurrentUser', JSON.stringify(publicMember));
+            showPublicDashboard(publicMember);
+        }, 2000);
+        
+    } catch (error) {
+        console.error('❌ Registration error:', error);
+        showNotification('❌ Registration failed: ' + error.message, 'error');
+    }
+};
+
+// Helper function for public referral codes
+function generateReferralCode(memberId) {
+    return btoa(memberId).substring(0, 8).toUpperCase();
+}
+
+console.log('✅ Enhanced public registration with Firebase sync');
+    </script>
 </body>
 </html>
