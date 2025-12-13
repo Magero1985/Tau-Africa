@@ -812,8 +812,7 @@ input[type="date"] {
 </div>
 
     <!-- Floating Member Access Button -->
-    <div class="floating-btn" onclick="showMemberLogin()" title="Member Access">👤</div>
-
+    <div class="floating-btn" onclick="showRealMemberLogin()" title="Member Access">👤</div>
     <!-- AI Assistant -->
     <div class="ai-assistant" onclick="toggleAIChat()" title="AI Assistant - Get Help">🤖</div>
 
@@ -9466,98 +9465,52 @@ console.log('💡 Run window.runIntegrationTest() to check integration');
 })();
 </script>
 
-// UNIVERSAL SYNC HEARTBEAT - Add to ALL apps
+// ============================================
+// FIX REAL LOGIN SYSTEM - CONSOLIDATED
 // ============================================
 <script>
-    (function() {
-    'use strict';
-    
-    let lastSyncTime = Date.now();
-    const SYNC_INTERVAL = 3000; // Every 3 seconds
-    
-    function syncAcrossApps() {
-        try {
-            // Read from localStorage
-            const members = JSON.parse(localStorage.getItem('tauAfricaDB') || '[]');
-            const tasks = JSON.parse(localStorage.getItem('tauTasks') || '[]');
-            const activities = JSON.parse(localStorage.getItem('tauActivities') || '[]');
-            const values = JSON.parse(localStorage.getItem('tauValues') || '[]');
-            
-            // If Firestore is available, sync there too
-            if (typeof firebase !== 'undefined' && firebase.apps.length > 0) {
-                const db = firebase.firestore();
-                
-                // Batch write (efficient)
-                const batch = db.batch();
-                let writeCount = 0;
-                
-                members.slice(0, 10).forEach(member => { // Limit to 10 per sync
-                    const ref = db.collection('members').doc(member.id);
-                    batch.set(ref, {
-                        ...member,
-                        lastSync: firebase.firestore.FieldValue.serverTimestamp()
-                    }, { merge: true });
-                    writeCount++;
-                });
-                
-                if (writeCount > 0) {
-                    batch.commit()
-                        .then(() => console.log(`🔄 Synced ${writeCount} members to Firestore`))
-                        .catch(err => console.warn('Sync warning:', err));
-                }
-            }
-            
-            // Trigger UI refresh
-            if (typeof updateStats === 'function') updateStats();
-            if (typeof renderMembers === 'function') renderMembers();
-            
-            lastSyncTime = Date.now();
-            
-        } catch (error) {
-            console.error('Sync error:', error);
-        }
-    }
-    
-    // Run sync every 3 seconds
-    setInterval(syncAcrossApps, SYNC_INTERVAL);
-    
-    // Listen for storage changes from other tabs/windows
-    window.addEventListener('storage', (e) => {
-        if (e.key && (e.key.includes('tau') || e.key.includes('Tau'))) {
-            console.log('🔄 Cross-tab sync detected:', e.key);
-            syncAcrossApps();
-        }
-    });
-    
-    // Initial sync
-    setTimeout(syncAcrossApps, 1000);
-    
-    console.log('✅ Universal sync heartbeat active');
-})();
- </script>
-    
-// ============================================
-// FIX REAL LOGIN SYSTEM
-// ============================================
-<script>
-        (function() {
+(function() {
     'use strict';
     
     console.log('🔐 Fixing login system...');
     
-    // Override the showMemberLogin function completely
-    window.showMemberLogin = function() {
-        showRealMemberLogin(); // Always use real login
+    // Single unified login function
+    window.showMemberLogin = window.showRealMemberLogin = function() {
+        closeAllModals(); // Close any existing modals first
+        
+        const modal = document.createElement('div');
+        modal.className = 'modal';
+        modal.style.display = 'block';
+        modal.innerHTML = `
+            <div class="modal-content">
+                <span class="close" onclick="this.parentElement.parentElement.remove()">&times;</span>
+                <h2 style="text-align: center;">🔐 Member Login</h2>
+                
+                <form onsubmit="processRealLogin(event)" style="margin-top: 30px;">
+                    <div class="form-group">
+                        <label>Member ID or Email *</label>
+                        <input type="text" id="loginIdentifier" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Phone (Last 4 digits) *</label>
+                        <input type="text" id="loginPhone" required maxlength="4" pattern="[0-9]{4}">
+                    </div>
+                    
+                    <button type="submit" class="btn" style="width: 100%;">Login</button>
+                </form>
+                
+                <div style="text-align: center; margin-top: 20px;">
+                    <p>No account?</p>
+                    <button class="btn btn-small" onclick="closeAllModals(); openModal('taskRegistration')">Join TASK</button>
+                    <button class="btn btn-small" onclick="closeAllModals(); openModal('talkRegistration')">Join TALK</button>
+                </div>
+            </div>
+        `;
+        document.body.appendChild(modal);
     };
     
-    // Remove any demo login references
-    window.simulateLogin = function(event) {
-        event.preventDefault();
-        showNotification('❌ Demo login disabled. Use real member login.', 'error');
-        showRealMemberLogin();
-    };
-    
-    // Ensure processRealLogin is working
+    // Ensure processRealLogin works correctly
     window.processRealLogin = function(event) {
         event.preventDefault();
         
@@ -9571,109 +9524,38 @@ console.log('💡 Run window.runIntegrationTest() to check integration');
             return;
         }
         
-        // Try localStorage first
-        const members = JSON.parse(localStorage.getItem('tauAfricaDB') || '[]');
-        let member = members.find(m => 
-            (m.id === identifier || m.email === identifier) && 
-            m.phone.slice(-4) === phoneLastFour
-        );
+        // Use TauDB authentication
+        const result = window.TauDB?.authenticate(identifier, phoneLastFour);
         
-        if (member) {
-            console.log('✅ Found in localStorage:', member.id);
-            
-            // Save session
-            sessionStorage.setItem('tauCurrentUser', JSON.stringify(member));
-            
+        if (result && result.success) {
+            console.log('✅ Login successful:', result.member.id);
             showNotification('✅ Login successful!', 'success');
             
             setTimeout(() => {
                 closeAllModals();
-                showRealMemberDashboard(member);
+                showRealMemberDashboard(result.member);
             }, 1000);
-            
-            return;
-        }
-        
-        // Try Firestore if available
-        if (typeof firebase !== 'undefined' && firebase.apps.length > 0) {
-            const db = firebase.firestore();
-            
-            showNotification('🔍 Checking online database...', 'info');
-            
-            // Try by ID
-            db.collection('members').doc(identifier).get()
-                .then(doc => {
-                    if (doc.exists) {
-                        member = doc.data();
-                        if (member.phone.slice(-4) === phoneLastFour) {
-                            // Save to localStorage
-                            members.push(member);
-                            localStorage.setItem('tauAfricaDB', JSON.stringify(members));
-                            
-                            // Save session
-                            sessionStorage.setItem('tauCurrentUser', JSON.stringify(member));
-                            
-                            showNotification('✅ Login successful!', 'success');
-                            
-                            setTimeout(() => {
-                                closeAllModals();
-                                showRealMemberDashboard(member);
-                            }, 1000);
-                            
-                            return;
-                        }
-                    }
-                    
-                    // Try by email
-                    return db.collection('members')
-                        .where('email', '==', identifier)
-                        .limit(1)
-                        .get();
-                })
-                .then(querySnapshot => {
-                    if (querySnapshot && !querySnapshot.empty) {
-                        member = querySnapshot.docs[0].data();
-                        if (member.phone.slice(-4) === phoneLastFour) {
-                            // Save to localStorage
-                            members.push(member);
-                            localStorage.setItem('tauAfricaDB', JSON.stringify(members));
-                            
-                            // Save session
-                            sessionStorage.setItem('tauCurrentUser', JSON.stringify(member));
-                            
-                            showNotification('✅ Login successful!', 'success');
-                            
-                            setTimeout(() => {
-                                closeAllModals();
-                                showRealMemberDashboard(member);
-                            }, 1000);
-                            
-                            return;
-                        }
-                    }
-                    
-                    showNotification('❌ Invalid credentials', 'error');
-                })
-                .catch(error => {
-                    console.error('Login error:', error);
-                    showNotification('❌ Login failed: ' + error.message, 'error');
-                });
         } else {
+            console.error('❌ Login failed');
             showNotification('❌ Invalid credentials', 'error');
         }
     };
     
-    // Auto-check if user is already logged in
-    const currentUser = sessionStorage.getItem('tauCurrentUser');
-    if (currentUser) {
-        const member = JSON.parse(currentUser);
-        console.log('👤 User already logged in:', member.id);
-    }
+    console.log('✅ Unified login system ready');
     
-    console.log('✅ Real login system activated');
+    // Debug: Check if floating button exists
+    setTimeout(() => {
+        const floatingBtn = document.querySelector('.floating-btn');
+        if (floatingBtn) {
+            console.log('✅ Floating login button found');
+            // Ensure it has the click handler
+            floatingBtn.onclick = showRealMemberLogin;
+        } else {
+            console.error('❌ Floating login button not found!');
+        }
+    }, 1000);
 })();
- </script>
-    
+</script>
 // ============================================
 // PREVENT DUPLICATE REGISTRATIONS
 // ============================================
