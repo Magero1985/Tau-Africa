@@ -138,6 +138,12 @@
     </style>
 </head>
 <body>
+    <!-- Add this to your Database app, inside the dashboard div -->
+<div style="position: fixed; bottom: 80px; right: 20px; z-index: 1000;">
+    <button onclick="showCleanupModal()" class="btn" style="background: #e74c3c; box-shadow: 0 4px 12px rgba(0,0,0,0.3);">
+        🧹 Cleanup Database
+    </button>
+</div>
     <!-- Sync Indicator -->
     <div id="syncIndicator" class="sync-indicator offline">
         <span id="syncText">🔴 Connecting to Firebase...</span>
@@ -1031,7 +1037,7 @@ export const realtimeService = {
     
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
-
+</script>
     <script>
     // ============================================
 // TAU AFRICA - COMPLETE FIREBASE SYNC FIX
@@ -1505,6 +1511,175 @@ export const realtimeService = {
     console.log('✅ TAU Firebase Sync Fix loaded');
     
 })();
+    </script>
     <script>
+// ============================================
+// ONE-CLICK CLEANUP - Add to Database App
+// ============================================
+
+function showCleanupModal() {
+    const modal = document.createElement('div');
+    modal.className = 'modal';
+    modal.style.display = 'block';
+    modal.innerHTML = `
+        <div class="modal-content">
+            <span class="close" onclick="this.parentElement.parentElement.remove()">&times;</span>
+            
+            <h2 style="color: #e74c3c;">🧹 Database Cleanup</h2>
+            
+            <div style="background: #fff3cd; padding: 15px; border-radius: 10px; margin: 20px 0;">
+                <strong>⚠️ Warning:</strong> This will remove:
+                <ul style="text-align: left; margin: 10px 0;">
+                    <li>Duplicate entries</li>
+                    <li>Test data (emails with "test" or "example.com")</li>
+                    <li>Invalid entries (missing required fields)</li>
+                </ul>
+            </div>
+            
+            <div id="cleanupStatus" style="background: #f8f9fa; padding: 15px; border-radius: 10px; margin: 20px 0; max-height: 300px; overflow-y: auto; font-family: monospace; font-size: 12px; display: none;"></div>
+            
+            <button onclick="runCleanup()" class="btn" style="background: #e74c3c; width: 100%;">
+                Start Cleanup
+            </button>
+            
+            <button onclick="this.parentElement.parentElement.remove()" class="btn" style="background: #95a5a6; width: 100%; margin-top: 10px;">
+                Cancel
+            </button>
+        </div>
+    `;
+    
+    document.body.appendChild(modal);
+}
+
+async function runCleanup() {
+    const statusDiv = document.getElementById('cleanupStatus');
+    statusDiv.style.display = 'block';
+    
+    function log(msg) {
+        statusDiv.innerHTML += msg + '<br>';
+        statusDiv.scrollTop = statusDiv.scrollHeight;
+    }
+    
+    log('🧹 Starting cleanup...');
+    
+    try {
+        const db = firebase.firestore();
+        
+        // Get all members
+        log('📥 Loading members from Firestore...');
+        const snapshot = await db.collection('members').get();
+        log(`📊 Found ${snapshot.size} total documents`);
+        
+        // Categorize
+        const valid = [];
+        const duplicates = new Map();
+        const testData = [];
+        const invalid = [];
+        
+        snapshot.forEach(doc => {
+            const data = doc.data();
+            
+            // Check for invalid (missing required fields)
+            if (!data.id || !data.email || !data.team) {
+                invalid.push({ docId: doc.id, reason: 'Missing required fields' });
+                return;
+            }
+            
+            // Check for test data
+            if (
+                data.email?.includes('test') || 
+                data.email?.includes('example.com') ||
+                data.fullName?.toLowerCase().includes('test')
+            ) {
+                testData.push({ docId: doc.id, email: data.email });
+                return;
+            }
+            
+            // Check for duplicates by email
+            if (duplicates.has(data.email)) {
+                duplicates.get(data.email).push({ docId: doc.id, id: data.id });
+            } else {
+                duplicates.set(data.email, [{ docId: doc.id, id: data.id }]);
+                valid.push({ docId: doc.id, ...data });
+            }
+        });
+        
+        // Find actual duplicates (more than 1 entry per email)
+        const dupsToDelete = [];
+        duplicates.forEach((entries, email) => {
+            if (entries.length > 1) {
+                // Keep the first one, delete the rest
+                dupsToDelete.push(...entries.slice(1));
+                log(`🔄 Found ${entries.length} duplicates for: ${email}`);
+            }
+        });
+        
+        log(`<br>✅ Valid members: ${valid.length}`);
+        log(`🔄 Duplicates: ${dupsToDelete.length}`);
+        log(`🧪 Test data: ${testData.length}`);
+        log(`❌ Invalid: ${invalid.length}`);
+        
+        const totalToDelete = dupsToDelete.length + testData.length + invalid.length;
+        
+        if (totalToDelete === 0) {
+            log('<br>✨ Database is already clean!');
+            setTimeout(() => {
+                if (typeof updateStats === 'function') updateStats();
+            }, 1000);
+            return;
+        }
+        
+        log(`<br>🗑️ Will delete ${totalToDelete} entries`);
+        
+        if (!confirm(`Delete ${totalToDelete} entries?\n\nThis will keep ${valid.length} valid members.`)) {
+            log('❌ Cleanup cancelled');
+            return;
+        }
+        
+        // Delete in batches
+        const toDelete = [
+            ...dupsToDelete.map(d => d.docId),
+            ...testData.map(t => t.docId),
+            ...invalid.map(i => i.docId)
+        ];
+        
+        const batchSize = 500;
+        let deleted = 0;
+        
+        for (let i = 0; i < toDelete.length; i += batchSize) {
+            const batch = db.batch();
+            const chunk = toDelete.slice(i, i + batchSize);
+            
+            chunk.forEach(docId => {
+                batch.delete(db.collection('members').doc(docId));
+            });
+            
+            await batch.commit();
+            deleted += chunk.length;
+            
+            log(`🗑️ Deleted ${deleted}/${toDelete.length}...`);
+        }
+        
+        log(`<br>✅ Cleanup complete!`);
+        log(`📊 Remaining: ${valid.length} valid members`);
+        
+        // Update localStorage
+        localStorage.setItem('tauAfricaDB', JSON.stringify(valid));
+        
+        // Refresh UI
+        setTimeout(() => {
+            if (typeof updateStats === 'function') updateStats();
+            if (typeof renderMembers === 'function') renderMembers();
+            alert(`✅ Database cleaned!\n\nDeleted: ${totalToDelete}\nRemaining: ${valid.length}`);
+        }, 1000);
+        
+    } catch (error) {
+        log(`<br>❌ Error: ${error.message}`);
+        console.error('Cleanup error:', error);
+    }
+}
+
+console.log('✅ Cleanup button added - Look for 🧹 button in bottom-right corner');
+    </script>
 </body>
                     </html>
