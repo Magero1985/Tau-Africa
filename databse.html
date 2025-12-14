@@ -365,65 +365,82 @@
 
     <div id="notification" class="notification"></div>
 
-    <script>
-        // ==========================================
-        // SINGLE FIREBASE INITIALIZATION
-        // ==========================================
-        const FIREBASE_CONFIG = {
-            apiKey: "AIzaSyAW0vk_gg03xXEm6I1TQnU8KRiv1RhcrQ4",
-            authDomain: "tau-africa-ecosystem.firebaseapp.com",
-            projectId: "tau-africa-ecosystem",
-            storageBucket: "tau-africa-ecosystem.appspot.com",
-            messagingSenderId: "1047279398196",
-            appId: "1:1047279398196:web:06d43661650c794268c961"
-        };
+    <script><!-- Firebase v9+ SDK -->
+<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>===========================
+        <script>
+    // ============================================
+    // NEW FIREBASE CONFIGURATION
+    // ============================================
+    const FIREBASE_CONFIG = {
+        apiKey: "AIzaSyBcTzvl5lwpojRQM5lwyWe3hwp4upogUWw",
+        authDomain: "tau-main-app.firebaseapp.com",
+        projectId: "tau-main-app",
+        storageBucket: "tau-main-app.firebasestorage.app",
+        messagingSenderId: "69734421488",
+        appId: "1:69734421488:web:d13ae38f1c7d79cc854335"
+    };
 
-        let db = null;
-        let isFirebaseReady = false;
-        let membersDB = [];
-        const ACCESS_CODE = 'TAU2025ADMIN';
-        let currentMemberSession = null;
+        let db, auth, isOnline = false;
 
-        // Initialize Firebase ONCE
-        async function initFirebase() {
-            try {
-                if (!firebase.apps.length) {
-                    firebase.initializeApp(FIREBASE_CONFIG);
-                }
+    // ============================================
+    // INITIALIZE FIREBASE (ONCE)
+    // ============================================
+    (function initFirebase() {
+        try {
+            // Prevent duplicate initialization
+            if (firebase.apps.length > 0) {
+                console.log('⚠️ Firebase already initialized');
                 db = firebase.firestore();
+                auth = firebase.auth();
+                isOnline = true;
+                return;
+            }
+
+            firebase.initializeApp(FIREBASE_CONFIG);
+            db = firebase.firestore();
+            auth = firebase.auth();
+            
+            // Test connection
+            db.collection('_system').doc('connection_test').set({
+                timestamp: firebase.firestore.FieldValue.serverTimestamp(),
+                app: 'database' // or 'bridge' depending on which app
+            })
+            .then(() => {
+                console.log('✅ New Firebase connected');
+                isOnline = true;
                 
                 // Enable persistence
-                await db.enablePersistence({ synchronizeTabs: true });
-                
-                isFirebaseReady = true;
-                updateSyncStatus(true);
-                console.log('✅ Firebase initialized');
-                
-                // Setup real-time listener
-                setupRealtimeSync();
-                
-            } catch (error) {
-                console.error('Firebase init error:', error);
-                updateSyncStatus(false);
-            }
-        }
-
-        function updateSyncStatus(connected) {
-            const indicator = document.getElementById('syncIndicator');
-            const text = document.getElementById('syncText');
-            const status = document.getElementById('firebaseStatus');
+                return db.enablePersistence({ synchronizeTabs: true });
+            })
+            .catch(error => {
+                if (error.code !== 'failed-precondition') {
+                    console.error('Firebase error:', error);
+                }
+                isOnline = true; // Still online, just no persistence
+            });
             
-            if (connected) {
-                indicator.className = 'sync-indicator online';
-                text.textContent = '🟢 Firebase Connected';
-                if (status) status.textContent = 'Connected';
-            } else {
-                indicator.className = 'sync-indicator offline';
-                text.textContent = '🔴 Offline Mode';
-                if (status) status.textContent = 'Offline';
-            }
+        } catch (error) {
+            console.error('❌ Firebase init failed:', error);
+            isOnline = false;
         }
+    })();
 
+    // ============================================
+    // EXPOSE GLOBALLY
+    // ============================================
+    window.TauFirebase = {
+        db: () => db,
+        auth: () => auth,
+        isOnline: () => isOnline,
+        config: FIREBASE_CONFIG
+    };
+
+    console.log('✅ Firebase ready for', window.location.pathname);
+</script>
+
+<script>
         // ==========================================
         // DATABASE OPERATIONS
         // ==========================================
