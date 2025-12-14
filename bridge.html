@@ -1225,26 +1225,27 @@
             };
         })();
     </script>
-    <script>
-    // ============================================
+      <script>
+// ============================================
 // FIREBASE BRIDGE - Bridge App (NON-DESTRUCTIVE)
 // Add this AFTER all existing code, before </body>
 // ============================================
 <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
 </script>
-    <script>
-
+ <script>
 (function() {
     'use strict';
-    
+    // ============================================
+    // NEW FIREBASE CONFIGURATION
+    // ============================================
     const FIREBASE_CONFIG = {
-        apiKey: "AIzaSyAW0vk_gg03xXEm6I1TQnU8KRiv1RhcrQ4",
-        authDomain: "tau-africa-ecosystem.firebaseapp.com",
-        projectId: "tau-africa-ecosystem",
-        storageBucket: "tau-africa-ecosystem.appspot.com",
-        messagingSenderId: "1047279398196",
-        appId: "1:1047279398196:web:06d43661650c794268c961"
+        apiKey: "AIzaSyBcTzvl5lwpojRQM5lwyWe3hwp4upogUWw",
+        authDomain: "tau-main-app.firebaseapp.com",
+        projectId: "tau-main-app",
+        storageBucket: "tau-main-app.firebasestorage.app",
+        messagingSenderId: "69734421488",
+        appId: "1:69734421488:web:d13ae38f1c7d79cc854335"
     };
     
     let db;
@@ -1365,27 +1366,27 @@
 })();
 </script>
     <script>
-    <!-- FIREBASE SYNC BRIDGE - Add to ALL apps -->
-<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
-
-</script>
-    <script>
 (function() {
     'use strict';
     
     console.log('🔥 TAU Firebase Bridge - Starting...');
     
+    <script><!-- Firebase v9+ SDK -->
+<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+       
+    <script>
     // ============================================
-    // FIREBASE CONFIGURATION
+    // NEW FIREBASE CONFIGURATION
     // ============================================
     const FIREBASE_CONFIG = {
-        apiKey: "AIzaSyAW0vk_gg03xXEm6I1TQnU8KRiv1RhcrQ4",
-        authDomain: "tau-africa-ecosystem.firebaseapp.com",
-        projectId: "tau-africa-ecosystem",
-        storageBucket: "tau-africa-ecosystem.firebasestorage.app",
-        messagingSenderId: "1047279398196",
-        appId: "1:1047279398196:web:06d43661650c794268c961"
+        apiKey: "AIzaSyBcTzvl5lwpojRQM5lwyWe3hwp4upogUWw",
+        authDomain: "tau-main-app.firebaseapp.com",
+        projectId: "tau-main-app",
+        storageBucket: "tau-main-app.firebasestorage.app",
+        messagingSenderId: "69734421488",
+        appId: "1:69734421488:web:d13ae38f1c7d79cc854335"
     };
     
     const COLLECTIONS = {
