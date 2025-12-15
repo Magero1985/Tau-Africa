@@ -570,8 +570,97 @@
     </div>
 
     <!-- Notification -->
-    <div id="notification" class="notification"></div>
-src="tau_critical_fixes.js"></script>
+    <div id="notification" class="notification">
+    <!-- Firebase SDK -->
+<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+    </script>
+<script>
+// ============================================
+// TAU AFRICA BRIDGE - CONSOLIDATED SCRIPT
+// ============================================
+(function() {
+    'use strict';
+    
+    console.log('🌉 Bridge App Initializing...');
+    
+    const MASTER_CODE = 'TAU2025ADMIN';
+    const FIREBASE_CONFIG = {
+        apiKey: "AIzaSyBcTzvl5lwpojRQM5lwyWe3hwp4upogUWw",
+        authDomain: "tau-main-app.firebaseapp.com",
+        projectId: "tau-main-app",
+        storageBucket: "tau-main-app.firebasestorage.app",
+        messagingSenderId: "69734421488",
+        appId: "1:69734421488:web:d13ae38f1c7d79cc854335"
+    };
+    
+    let db, isOnline = false;
+    
+    try {
+        if (!firebase.apps.length) {
+            firebase.initializeApp(FIREBASE_CONFIG);
+        }
+        db = firebase.firestore();
+        isOnline = true;
+        console.log('✅ Firebase connected');
+    } catch (error) {
+        console.error('❌ Firebase error:', error);
+    }
+    
+    function showTab(tabName) {
+        document.querySelectorAll('.content-box').forEach(b => b.classList.remove('active'));
+        document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+        document.getElementById(tabName).classList.add('active');
+        event.target.classList.add('active');
+    }
+    
+    window.showTab = showTab;
+    
+    window.createTask = async function(event) {
+        event.preventDefault();
+        const code = document.getElementById('task-admin-code').value;
+        if (code !== MASTER_CODE) {
+            alert('Invalid code');
+            return;
+        }
+        
+        const task = {
+            id: 'TSK-' + Date.now(),
+            title: document.getElementById('task-title').value,
+            description: document.getElementById('task-desc').value,
+            reward: parseInt(document.getElementById('task-reward').value),
+            validated: true,
+            created: new Date().toISOString()
+        };
+        
+        const tasks = JSON.parse(localStorage.getItem('tauTasks') || '[]');
+        tasks.push(task);
+        localStorage.setItem('tauTasks', JSON.stringify(tasks));
+        
+        if (db && isOnline) {
+            try {
+                await db.collection('tasks').doc(task.id).set(task);
+                console.log('☁️ Task synced');
+            } catch (error) {
+                console.warn('Sync warning:', error);
+            }
+        }
+        
+        alert('✅ Task created!');
+        event.target.reset();
+    };
+    
+    window.updateDashboard = function() {
+        const members = JSON.parse(localStorage.getItem('tauAfricaDB') || '[]');
+        document.getElementById('stat-members').textContent = members.length;
+    };
+    
+    document.addEventListener('DOMContentLoaded', () => {
+        updateDashboard();
+    });
+    
+    console.log('✅ Bridge App Ready');
+})();
 </script>
     <script>
         // ==========================================
@@ -1184,832 +1273,6 @@ src="tau_critical_fixes.js"></script>
     </script>
 
     <script>
-        // ============================================
-        // NOTIFICATION GENERATOR
-        // ============================================
-        (function() {
-            'use strict';
-            
-            window.createNotification = function(memberId, title, message, type = 'info') {
-                const NOTIF_KEY = 'tauNotifications';
-                const allNotifications = JSON.parse(localStorage.getItem(NOTIF_KEY) || '{}');
-                
-                if (!allNotifications[memberId]) {
-                    allNotifications[memberId] = [];
-                }
-                
-                const notification = {
-                    id: `NOTIF-${Date.now()}`,
-                    title: title,
-                    message: message,
-                    timestamp: new Date().toISOString(),
-                    read: false,
-                    type: type
-                };
-                
-                allNotifications[memberId].unshift(notification);
-                
-                if (allNotifications[memberId].length > 50) {
-                    allNotifications[memberId] = allNotifications[memberId].slice(0, 50);
-                }
-                
-                localStorage.setItem(NOTIF_KEY, JSON.stringify(allNotifications));
-                console.log(`📬 Notification created for ${memberId}:`, title);
-            };
-            
-            window.notifyAllMembers = function(title, message) {
-                const members = JSON.parse(localStorage.getItem('tauAfricaDB') || '[]');
-                members.forEach(member => {
-                    createNotification(member.id, title, message, 'info');
-                });
-                console.log(`📢 Broadcast notification sent to ${members.length} members`);
-            };
-        })();
-    </script>
-      <script>
-// ============================================
-// FIREBASE BRIDGE - Bridge App (NON-DESTRUCTIVE)
-// Add this AFTER all existing code, before </body>
-// ============================================
-<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
-</script>
- <script>
-(function() {
-    'use strict';
-    // ============================================
-    // NEW FIREBASE CONFIGURATION
-    // ============================================
-    const FIREBASE_CONFIG = {
-        apiKey: "AIzaSyBcTzvl5lwpojRQM5lwyWe3hwp4upogUWw",
-        authDomain: "tau-main-app.firebaseapp.com",
-        projectId: "tau-main-app",
-        storageBucket: "tau-main-app.firebasestorage.app",
-        messagingSenderId: "69734421488",
-        appId: "1:69734421488:web:d13ae38f1c7d79cc854335"
-    };
-    
-    let db;
-    try {
-        if (!firebase.apps.length) {
-            firebase.initializeApp(FIREBASE_CONFIG);
-        }
-        db = firebase.firestore();
-        console.log('✅ Firebase initialized - Bridge App');
-    } catch (error) {
-        console.error('⚠️ Firebase initialization failed:', error);
-        db = null;
-    }
-    
-    // ENHANCE createTask - Don't replace
-    if (typeof createTask !== 'undefined') {
-        const originalCreateTask = createTask;
-        window.createTask = async function(event) {
-            event.preventDefault();
-            
-            const code = document.getElementById('task-admin-code').value;
-            if (code !== MASTER_CODE) {
-                notify('Invalid admin code', 'error');
-                return;
-            }
-            
-            const task = {
-                id: 'TSK-' + Date.now(),
-                title: document.getElementById('task-title').value,
-                description: document.getElementById('task-desc').value,
-                category: document.getElementById('task-category').value,
-                reward: parseInt(document.getElementById('task-reward').value),
-                validationCode: generateCode('TASK'),
-                status: 'Active',
-                created: new Date().toISOString(),
-                validated: true
-            };
-            
-            // Save to localStorage first
-            const tasks = JSON.parse(localStorage.getItem('tauTasks') || '[]');
-            tasks.push(task);
-            localStorage.setItem('tauTasks', JSON.stringify(tasks));
-            
-            // Then sync to Firestore
-            if (db) {
-                try {
-                    await db.collection('tasks').doc(task.id).set(task);
-                    console.log('✅ Task synced to Firestore');
-                } catch (error) {
-                    console.error('⚠️ Task sync warning:', error);
-                }
-            }
-            
-            if (typeof notifyAllMembers === 'function') {
-                notifyAllMembers('🎯 New Task Available!', `Complete "${task.title}" to earn ${task.reward} iKbp`);
-            }
-            
-            notify('Task created!', 'success');
-            event.target.reset();
-            if (typeof loadTasks === 'function') loadTasks();
-            if (typeof updateDashboard === 'function') updateDashboard();
-        };
-    }
-    
-    // ENHANCE createActivity - Don't replace
-    if (typeof createActivity !== 'undefined') {
-        const originalCreateActivity = createActivity;
-        window.createActivity = async function(event) {
-            event.preventDefault();
-            
-            const code = document.getElementById('activity-admin-code').value;
-            if (code !== MASTER_CODE) {
-                notify('Invalid admin code', 'error');
-                return;
-            }
-            
-            const activity = {
-                id: 'ACT-' + Date.now(),
-                title: document.getElementById('activity-title').value,
-                description: document.getElementById('activity-desc').value,
-                category: document.getElementById('activity-category').value,
-                reward: parseInt(document.getElementById('activity-reward').value),
-                validationCode: generateCode('ACTIVITY'),
-                status: 'Active',
-                created: new Date().toISOString(),
-                validated: true
-            };
-            
-            // Save to localStorage first
-            const activities = JSON.parse(localStorage.getItem('tauActivities') || '[]');
-            activities.push(activity);
-            localStorage.setItem('tauActivities', JSON.stringify(activities));
-            
-            // Then sync to Firestore
-            if (db) {
-                try {
-                    await db.collection('activities').doc(activity.id).set(activity);
-                    console.log('✅ Activity synced to Firestore');
-                } catch (error) {
-                    console.error('⚠️ Activity sync warning:', error);
-                }
-            }
-            
-            if (typeof notifyAllMembers === 'function') {
-                notifyAllMembers('🎯 New Activity Available!', `Complete "${activity.title}" to earn ${activity.reward} iKbp`);
-            }
-            
-            notify('Activity created!', 'success');
-            event.target.reset();
-            if (typeof loadActivities === 'function') loadActivities();
-            if (typeof updateDashboard === 'function') updateDashboard();
-        };
-    }
-    
-    console.log('✅ Bridge Firebase Bridge - Enhanced (Non-destructive mode)');
-    console.log('📊 Firebase Status:', db ? 'ONLINE' : 'OFFLINE');
-    
-})();
-</script>
-    <script>
-(function() {
-    'use strict';
-    
-    console.log('🔥 TAU Firebase Bridge - Starting...');
-    
-    <script><!-- Firebase v9+ SDK -->
-<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
-       
-    <script>
-    // ============================================
-    // NEW FIREBASE CONFIGURATION
-    // ============================================
-    const FIREBASE_CONFIG = {
-        apiKey: "AIzaSyBcTzvl5lwpojRQM5lwyWe3hwp4upogUWw",
-        authDomain: "tau-main-app.firebaseapp.com",
-        projectId: "tau-main-app",
-        storageBucket: "tau-main-app.firebasestorage.app",
-        messagingSenderId: "69734421488",
-        appId: "1:69734421488:web:d13ae38f1c7d79cc854335"
-    };
-    
-    const COLLECTIONS = {
-        members: 'members',
-        tasks: 'tasks',
-        activities: 'activities',
-        values: 'values',
-        validations: 'validations',
-        notifications: 'notifications'
-    };
-    
-    // Initialize Firebase
-    let db, isOnline = false;
-    
-    try {
-        if (!firebase.apps.length) {
-            firebase.initializeApp(FIREBASE_CONFIG);
-        }
-        db = firebase.firestore();
-        
-        // Enable offline persistence
-        db.enablePersistence({ synchronizeTabs: true })
-            .then(() => console.log('✅ Offline persistence enabled'))
-            .catch(err => console.warn('Persistence warning:', err));
-        
-        isOnline = true;
-        updateSyncIndicator(true);
-        console.log('✅ Firebase connected successfully');
-    } catch (error) {
-        console.error('❌ Firebase init failed:', error);
-        isOnline = false;
-        updateSyncIndicator(false);
-    }
-    
-    // ============================================
-    // SYNC INDICATOR UPDATE
-    // ============================================
-    function updateSyncIndicator(online) {
-        const indicators = document.querySelectorAll('#syncIndicator, .sync-indicator');
-        indicators.forEach(indicator => {
-            if (indicator) {
-                indicator.className = online ? 'sync-indicator online' : 'sync-indicator offline';
-                const text = indicator.querySelector('#syncText, span');
-                if (text) text.textContent = online ? '🟢 Firebase Connected' : '🔴 Offline Mode';
-            }
-        });
-    }
-    
-    // ============================================
-    // CORE SYNC FUNCTIONS
-    // ============================================
-    
-    // Save to BOTH localStorage AND Firestore
-    async function syncSave(collection, id, data) {
-        // 1. Save to localStorage first (fast)
-        const localKey = getLocalStorageKey(collection);
-        const localData = JSON.parse(localStorage.getItem(localKey) || '[]');
-        
-        const existingIndex = localData.findIndex(item => item.id === id);
-        if (existingIndex >= 0) {
-            localData[existingIndex] = data;
-        } else {
-            localData.push(data);
-        }
-        
-        localStorage.setItem(localKey, JSON.stringify(localData));
-        console.log(`💾 Saved to localStorage: ${collection}/${id}`);
-        
-        // 2. Sync to Firestore (if online)
-        if (db && isOnline) {
-            try {
-                await db.collection(collection).doc(id).set(data, { merge: true });
-                console.log(`☁️ Synced to Firestore: ${collection}/${id}`);
-                return { success: true, source: 'firestore' };
-            } catch (error) {
-                console.error(`⚠️ Firestore sync failed for ${collection}/${id}:`, error);
-                return { success: true, source: 'localStorage' };
-            }
-        }
-        
-        return { success: true, source: 'localStorage' };
-    }
-    
-    // Load from Firestore FIRST, fallback to localStorage
-    async function syncLoad(collection) {
-        const localKey = getLocalStorageKey(collection);
-        
-        // Try Firestore first
-        if (db && isOnline) {
-            try {
-                const snapshot = await db.collection(collection).get();
-                const data = [];
-                snapshot.forEach(doc => data.push({ ...doc.data(), firestoreId: doc.id }));
-                
-                // Update localStorage with Firestore data
-                localStorage.setItem(localKey, JSON.stringify(data));
-                console.log(`☁️ Loaded ${data.length} items from Firestore: ${collection}`);
-                return data;
-            } catch (error) {
-                console.error(`⚠️ Firestore load failed for ${collection}:`, error);
-            }
-        }
-        
-        // Fallback to localStorage
-        const localData = JSON.parse(localStorage.getItem(localKey) || '[]');
-        console.log(`💾 Loaded ${localData.length} items from localStorage: ${collection}`);
-        return localData;
-    }
-    
-    // Delete from BOTH
-    async function syncDelete(collection, id) {
-        // 1. Delete from localStorage
-        const localKey = getLocalStorageKey(collection);
-        const localData = JSON.parse(localStorage.getItem(localKey) || '[]');
-        const filtered = localData.filter(item => item.id !== id);
-        localStorage.setItem(localKey, JSON.stringify(filtered));
-        
-        // 2. Delete from Firestore
-        if (db && isOnline) {
-            try {
-                await db.collection(collection).doc(id).delete();
-                console.log(`🗑️ Deleted from Firestore: ${collection}/${id}`);
-            } catch (error) {
-                console.error(`⚠️ Firestore delete failed:`, error);
-            }
-        }
-    }
-    
-    // ============================================
-    // REAL-TIME SYNC LISTENERS
-    // ============================================
-    function setupRealtimeSync() {
-        if (!db || !isOnline) return;
-        
-        Object.values(COLLECTIONS).forEach(collection => {
-            db.collection(collection).onSnapshot(snapshot => {
-                snapshot.docChanges().forEach(change => {
-                    const data = { ...change.doc.data(), firestoreId: change.doc.id };
-                    const localKey = getLocalStorageKey(collection);
-                    const localData = JSON.parse(localStorage.getItem(localKey) || '[]');
-                    
-                    if (change.type === 'added' || change.type === 'modified') {
-                        const idx = localData.findIndex(item => item.id === data.id);
-                        if (idx >= 0) {
-                            localData[idx] = data;
-                        } else {
-                            localData.push(data);
-                        }
-                    } else if (change.type === 'removed') {
-                        const filtered = localData.filter(item => item.id !== data.id);
-                        localStorage.setItem(localKey, JSON.stringify(filtered));
-                        console.log(`🔄 Real-time delete: ${collection}/${data.id}`);
-                        triggerUIRefresh(collection);
-                        return;
-                    }
-                    
-                    localStorage.setItem(localKey, JSON.stringify(localData));
-                    console.log(`🔄 Real-time update: ${collection}/${data.id}`);
-                    triggerUIRefresh(collection);
-                });
-            }, error => {
-                console.error(`Real-time sync error for ${collection}:`, error);
-            });
-        });
-        
-        console.log('👂 Real-time listeners active for all collections');
-    }
-    
-    // ============================================
-    // UTILITY FUNCTIONS
-    // ============================================
-    function getLocalStorageKey(collection) {
-        const keyMap = {
-            'members': 'tauAfricaDB',
-            'tasks': 'tauTasks',
-            'activities': 'tauActivities',
-            'values': 'tauValues',
-            'validations': 'tauPendingValidations',
-            'notifications': 'tauNotifications'
-        };
-        return keyMap[collection] || collection;
-    }
-    
-    function triggerUIRefresh(collection) {
-        // Trigger existing UI refresh functions if they exist
-        switch(collection) {
-            case 'members':
-                if (typeof renderMembers === 'function') renderMembers();
-                if (typeof updateStats === 'function') updateStats();
-                break;
-            case 'tasks':
-                if (typeof loadTasks === 'function') loadTasks();
-                if (typeof refreshPublicTasks === 'function') refreshPublicTasks();
-                break;
-            case 'activities':
-                if (typeof loadActivities === 'function') loadActivities();
-                if (typeof refreshPublicActivities === 'function') refreshPublicActivities();
-                break;
-            case 'values':
-                if (typeof loadValues === 'function') loadValues();
-                if (typeof refreshPublicValues === 'function') refreshPublicValues();
-                break;
-        }
-        
-        // Dispatch custom event
-        window.dispatchEvent(new CustomEvent('tauFirebaseSync', {
-            detail: { collection, timestamp: Date.now() }
-        }));
-    }
-    
-    // ============================================
-    // OVERRIDE EXISTING TauDB FUNCTIONS
-    // ============================================
-    if (window.TauDB) {
-        const originalSync = window.TauDB.sync;
-        window.TauDB.sync = async function(formData, team, referralCode) {
-            const result = originalSync(formData, team, referralCode);
-            if (result.success) {
-                await syncSave('members', result.memberId, result.member);
-            }
-            return result;
-        };
-        
-        const originalAddActivity = window.TauDB.addActivity;
-        window.TauDB.addActivity = async function(memberId, activity) {
-            const result = originalAddActivity(memberId, activity);
-            if (result.success) {
-                const member = JSON.parse(localStorage.getItem('tauAfricaDB') || '[]')
-                    .find(m => m.id === memberId);
-                if (member) await syncSave('members', memberId, member);
-            }
-            return result;
-        };
-        
-        const originalAddTask = window.TauDB.addTask;
-        window.TauDB.addTask = async function(memberId, task) {
-            const result = originalAddTask(memberId, task);
-            if (result.success) {
-                const member = JSON.parse(localStorage.getItem('tauAfricaDB') || '[]')
-                    .find(m => m.id === memberId);
-                if (member) await syncSave('members', memberId, member);
-            }
-            return result;
-        };
-    }
-    
-    // ============================================
-    // EXPOSE GLOBAL API
-    // ============================================
-    window.TauFirebase = {
-        save: syncSave,
-        load: syncLoad,
-        delete: syncDelete,
-        isOnline: () => isOnline,
-        db: db
-    };
-    
-    // ============================================
-    // START SYNC
-    // ============================================
-    if (isOnline) {
-        setupRealtimeSync();
-        
-        // Initial load from Firestore
-        setTimeout(async () => {
-            console.log('🔄 Loading initial data from Firestore...');
-            await Promise.all([
-                syncLoad('members'),
-                syncLoad('tasks'),
-                syncLoad('activities'),
-                syncLoad('values')
-            ]);
-            triggerUIRefresh('members');
-            triggerUIRefresh('tasks');
-            triggerUIRefresh('activities');
-            triggerUIRefresh('values');
-            console.log('✅ Initial sync complete');
-        }, 1000);
-    }
-    
-    console.log('✅ TAU Firebase Bridge initialized');
-    console.log('📊 Status:', isOnline ? 'ONLINE' : 'OFFLINE');
-    
-})();
-</script>
-    <script>
-        // services/realtimeService.js - BRIDGE APP VERSION
-export const realtimeService = {
-  
-  // Listen to ALL collections (full system view)
-  subscribeToSystemStatus(callback) {
-    const listeners = [];
-    
-    listeners.push(
-      db.collection('members').onSnapshot(callback),
-      db.collection('kabiru_transfers').onSnapshot(callback),
-      db.collection('sync_events').onSnapshot(callback),
-      db.collection('pending_validations').onSnapshot(callback)
-    );
-    
-    return () => listeners.forEach(unsub => unsub());
-  },
-  
-  // Monitor cross-app communication
-  subscribeToDataFlow(callback) {
-    return db.collection('sync_events')
-      .where('type', 'in', ['new_member', 'balance_update', 'transfer'])
-      .orderBy('timestamp', 'desc')
-      .limit(100)
-      .onSnapshot(callback);
-  }
-};
-    </script>
-    
-    <script> 
-    // UNIVERSAL SYNC HEARTBEAT - Add to ALL apps
-// ============================================
-
-(function() {
-    'use strict';
-    
-    let lastSyncTime = Date.now();
-    const SYNC_INTERVAL = 3000; // Every 3 seconds
-    
-    function syncAcrossApps() {
-        try {
-            // Read from localStorage
-            const members = JSON.parse(localStorage.getItem('tauAfricaDB') || '[]');
-            const tasks = JSON.parse(localStorage.getItem('tauTasks') || '[]');
-            const activities = JSON.parse(localStorage.getItem('tauActivities') || '[]');
-            const values = JSON.parse(localStorage.getItem('tauValues') || '[]');
-            
-            // If Firestore is available, sync there too
-            if (typeof firebase !== 'undefined' && firebase.apps.length > 0) {
-                const db = firebase.firestore();
-                
-                // Batch write (efficient)
-                const batch = db.batch();
-                let writeCount = 0;
-                
-                members.slice(0, 10).forEach(member => { // Limit to 10 per sync
-                    const ref = db.collection('members').doc(member.id);
-                    batch.set(ref, {
-                        ...member,
-                        lastSync: firebase.firestore.FieldValue.serverTimestamp()
-                    }, { merge: true });
-                    writeCount++;
-                });
-                
-                if (writeCount > 0) {
-                    batch.commit()
-                        .then(() => console.log(`🔄 Synced ${writeCount} members to Firestore`))
-                        .catch(err => console.warn('Sync warning:', err));
-                }
-            }
-            
-            // Trigger UI refresh
-            if (typeof updateStats === 'function') updateStats();
-            if (typeof renderMembers === 'function') renderMembers();
-            
-            lastSyncTime = Date.now();
-            
-        } catch (error) {
-            console.error('Sync error:', error);
-        }
-    }
-    
-    // Run sync every 3 seconds
-    setInterval(syncAcrossApps, SYNC_INTERVAL);
-    
-    // Listen for storage changes from other tabs/windows
-    window.addEventListener('storage', (e) => {
-        if (e.key && (e.key.includes('tau') || e.key.includes('Tau'))) {
-            console.log('🔄 Cross-tab sync detected:', e.key);
-            syncAcrossApps();
-        }
-    });
-    
-    // Initial sync
-    setTimeout(syncAcrossApps, 1000);
-    
-    console.log('✅ Universal sync heartbeat active');
-})();
-</script>
-    <script>
-        // ============================================
-// TAU AFRICA - CRITICAL FIXES
-// Place this BEFORE </body> in ALL three apps
-// ============================================
-
-(function() {
-    'use strict';
-    
-    console.log('🔧 TAU Critical Fixes Loading...');
-    
-    // ============================================
-    // FIX 1: FIREBASE INITIALIZATION (SINGLETON)
-    // ============================================
-    if (!window.TauFirebaseInitialized) {
-        const FIREBASE_CONFIG = {
-            apiKey: "AIzaSyBcTzvl5lwpojRQM5lwyWe3hwp4upogUWw",
-            authDomain: "tau-main-app.firebaseapp.com",
-            projectId: "tau-main-app",
-            storageBucket: "tau-main-app.firebasestorage.app",
-            messagingSenderId: "69734421488",
-            appId: "1:69734421488:web:d13ae38f1c7d79cc854335"
-        };
-        
-        try {
-            if (!firebase.apps.length) {
-                firebase.initializeApp(FIREBASE_CONFIG);
-            }
-            window.db = firebase.firestore();
-            window.auth = firebase.auth();
-            window.TauFirebaseInitialized = true;
-            console.log('✅ Firebase initialized once');
-        } catch (error) {
-            console.error('❌ Firebase init error:', error);
-        }
-    }
-    
-    // ============================================
-    // FIX 2: ENSURE MODAL FUNCTIONS EXIST
-    // ============================================
-    if (!window.openModal) {
-        window.openModal = function(type) {
-            console.log('📂 Opening modal:', type);
-            
-            // Close existing modals
-            document.querySelectorAll('.modal').forEach(m => m.remove());
-            
-            const modal = document.createElement('div');
-            modal.className = 'modal';
-            modal.style.display = 'block';
-            
-            // Get modal content
-            const content = typeof getModalContent === 'function' 
-                ? getModalContent(type) 
-                : '<div class="modal-content"><span class="close" onclick="this.parentElement.parentElement.remove()">×</span><h2>Loading...</h2></div>';
-            
-            modal.innerHTML = content;
-            document.body.appendChild(modal);
-        };
-    }
-    
-    if (!window.closeAllModals) {
-        window.closeAllModals = function() {
-            document.querySelectorAll('.modal').forEach(m => m.remove());
-        };
-    }
-    
-    // ============================================
-    // FIX 3: ENSURE NOTIFICATION FUNCTION EXISTS
-    // ============================================
-    if (!window.showNotification) {
-        window.showNotification = function(message, type) {
-            let notif = document.getElementById('notification');
-            if (!notif) {
-                notif = document.createElement('div');
-                notif.id = 'notification';
-                notif.className = 'notification';
-                document.body.appendChild(notif);
-            }
-            
-            notif.textContent = message;
-            notif.className = 'notification ' + type;
-            notif.style.display = 'block';
-            
-            setTimeout(() => {
-                notif.style.display = 'none';
-            }, 5000);
-        };
-    }
-    
-    // ============================================
-    // FIX 4: MEMBER LOGIN BUTTON FIX
-    // ============================================
-    setTimeout(() => {
-        const floatingBtn = document.querySelector('.floating-btn');
-        if (floatingBtn && !floatingBtn.onclick) {
-            floatingBtn.onclick = function() {
-                console.log('🔐 Member login clicked');
-                if (typeof showRealMemberLogin === 'function') {
-                    showRealMemberLogin();
-                } else if (typeof showMemberLogin === 'function') {
-                    showMemberLogin();
-                } else {
-                    window.openModal('memberLogin');
-                }
-            };
-            console.log('✅ Fixed floating login button');
-        }
-    }, 1000);
-    
-    // ============================================
-    // FIX 5: PUBLIC ACCESS BUTTON FIX
-    // ============================================
-    setTimeout(() => {
-        const publicBtn = document.querySelector('[onclick*="showPublicRegistration"]');
-        if (publicBtn && !publicBtn.onclick) {
-            publicBtn.onclick = function() {
-                console.log('🌍 Public access clicked');
-                if (typeof showPublicRegistration === 'function') {
-                    showPublicRegistration();
-                } else {
-                    window.openModal('publicRegistration');
-                }
-            };
-            console.log('✅ Fixed public access button');
-        }
-    }, 1000);
-    
-    // ============================================
-    // FIX 6: ENSURE TauDB EXISTS
-    // ============================================
-    if (!window.TauDB) {
-        window.TauDB = {
-            sync: function(formData, team, referralCode) {
-                console.log('🔄 TauDB.sync called');
-                // Fallback implementation
-                const member = {
-                    id: team + '-' + Date.now(),
-                    ...formData,
-                    team: team,
-                    created: new Date().toISOString()
-                };
-                
-                const members = JSON.parse(localStorage.getItem('tauAfricaDB') || '[]');
-                members.push(member);
-                localStorage.setItem('tauAfricaDB', JSON.stringify(members));
-                
-                return { success: true, member, memberId: member.id };
-            },
-            authenticate: function(identifier, phoneLastFour) {
-                const members = JSON.parse(localStorage.getItem('tauAfricaDB') || '[]');
-                const member = members.find(m => 
-                    (m.id === identifier || m.email === identifier) && 
-                    m.phone.slice(-4) === phoneLastFour
-                );
-                
-                if (member) {
-                    sessionStorage.setItem('tauCurrentUser', JSON.stringify(member));
-                    return { success: true, member };
-                }
-                return { success: false };
-            },
-            getCurrentMember: function() {
-                const session = sessionStorage.getItem('tauCurrentUser');
-                return session ? JSON.parse(session) : null;
-            }
-        };
-        console.log('✅ TauDB created');
-    }
-    
-    // ============================================
-    // FIX 7: CLICK EVENT DEBUGGING
-    // ============================================
-    document.addEventListener('click', function(e) {
-        const target = e.target;
-        
-        // Log all button clicks
-        if (target.tagName === 'BUTTON' || target.classList.contains('btn')) {
-            console.log('🖱️ Button clicked:', target.textContent.trim(), target);
-        }
-        
-        // Log modal triggers
-        if (target.hasAttribute('onclick')) {
-            console.log('⚡ Element with onclick:', target.getAttribute('onclick'));
-        }
-    }, true);
-    
-    // ============================================
-    // FIX 8: CHECK CRITICAL ELEMENTS
-    // ============================================
-    setTimeout(() => {
-        const checks = {
-            'Floating login button': document.querySelector('.floating-btn'),
-            'Public access button': document.querySelector('[title="Public Access"]'),
-            'Notification element': document.getElementById('notification'),
-            'Firebase': window.firebase,
-            'TauDB': window.TauDB,
-            'openModal': window.openModal,
-            'showNotification': window.showNotification
-        };
-        
-        console.log('\n🔍 SYSTEM CHECK:');
-        console.log('═'.repeat(50));
-        Object.keys(checks).forEach(key => {
-            const exists = !!checks[key];
-            console.log(`${exists ? '✅' : '❌'} ${key}`);
-        });
-        console.log('═'.repeat(50) + '\n');
-        
-        // Alert if critical issues
-        const missing = Object.keys(checks).filter(k => !checks[k]);
-        if (missing.length > 0) {
-            console.warn('⚠️ Missing:', missing.join(', '));
-        }
-    }, 2000);
-    
-    // ============================================
-    // FIX 9: FORCE BUTTON CLICK HANDLERS
-    // ============================================
-    window.addEventListener('load', () => {
-        // Fix all buttons with onclick attributes
-        document.querySelectorAll('[onclick]').forEach(el => {
-            const onclickAttr = el.getAttribute('onclick');
-            el.removeAttribute('onclick');
-            el.addEventListener('click', function(e) {
-                try {
-                    eval(onclickAttr);
-                } catch (error) {
-                    console.error('onclick error:', error, onclickAttr);
-                }
-            });
-        });
-        console.log('✅ All onclick attributes converted to event listeners');
-    });
-    
-    console.log('✅ TAU Critical Fixes Loaded');
-    
-})();
 
 // ============================================
 // DIAGNOSTIC HELPER FUNCTIONS
