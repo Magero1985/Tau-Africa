@@ -934,5 +934,62 @@
     
 })();
 </script>
+    <script>
+// ============================================
+// ENHANCED MEMBER DELETION
+// ============================================
+window.deleteMember = async function(memberId) {
+    if (!confirm(`⚠️ Delete member ${memberId}? This cannot be undone!`)) {
+        return;
+    }
+    
+    if (!confirm('Are you absolutely sure? This will delete all member data!')) {
+        return;
+    }
+    
+    try {
+        // Delete from localStorage
+        const members = JSON.parse(localStorage.getItem('tauAfricaDB') || '[]');
+        const filtered = members.filter(m => m.id !== memberId);
+        localStorage.setItem('tauAfricaDB', JSON.stringify(filtered));
+        
+        // Delete from Firestore
+        if (typeof firebase !== 'undefined' && firebase.apps.length > 0) {
+            const db = firebase.firestore();
+            
+            await db.collection('members').doc(memberId).delete();
+            await db.collection('memberVerification').doc(memberId).delete();
+            
+            // Delete related data
+            const notifDoc = await db.collection('notifications').doc(memberId).get();
+            if (notifDoc.exists) {
+                await notifDoc.ref.delete();
+            }
+        }
+        
+        // Delete from credentials
+        const creds = JSON.parse(localStorage.getItem('tauCredentials') || '{}');
+        delete creds[memberId];
+        localStorage.setItem('tauCredentials', JSON.stringify(creds));
+        
+        // Delete from notifications
+        const notifs = JSON.parse(localStorage.getItem('tauNotifications') || '{}');
+        delete notifs[memberId];
+        localStorage.setItem('tauNotifications', JSON.stringify(notifs));
+        
+        showNotification(`✅ Member ${memberId} deleted successfully!`, 'success');
+        
+        // Refresh display
+        if (typeof renderMembers === 'function') renderMembers();
+        if (typeof updateStats === 'function') updateStats();
+        
+        console.log('✅ Member deleted:', memberId);
+        
+    } catch (error) {
+        console.error('Delete error:', error);
+        showNotification('❌ Deletion failed: ' + error.message, 'error');
+    }
+};
+    </script>
 </body>
 </html>
