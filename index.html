@@ -6635,5 +6635,177 @@ function requestAdminAccess(event) {
     console.log('✅ Enhanced Firebase Sync loaded');
 })();
 </script>
+    <script>
+// ============================================
+// ADMIN AUTHENTICATION SYSTEM
+// ============================================
+(function() {
+    'use strict';
+    
+    const ADMIN_ROLES = ['admin', 'validator', 'moderator'];
+    const ADMIN_CODE = 'TAU2025ADMIN';
+    
+    // Admin login modal
+    window.showAdminLogin = function() {
+        closeAllModals();
+        
+        const modal = document.createElement('div');
+        modal.className = 'modal';
+        modal.style.display = 'block';
+        modal.innerHTML = `
+            <div class="modal-content">
+                <span class="close" onclick="this.parentElement.parentElement.remove()">&times;</span>
+                
+                <h2 style="text-align: center; color: #e74c3c;">🔐 Admin Login</h2>
+                
+                <div style="display: flex; gap: 10px; margin: 20px 0; justify-content: center;">
+                    <button class="btn btn-small" onclick="switchAdminTab('code')" id="adminCodeTab" style="background: #e74c3c;">Access Code</button>
+                    <button class="btn btn-small" onclick="switchAdminTab('credentials')" id="adminCredTab" style="background: #95a5a6;">Admin Credentials</button>
+                </div>
+                
+                <!-- CODE LOGIN -->
+                <div id="adminCodeLogin">
+                    <form onsubmit="processAdminCodeLogin(event)">
+                        <div class="form-group">
+                            <label>Admin Access Code *</label>
+                            <input type="password" name="code" required placeholder="Enter admin code">
+                        </div>
+                        <button type="submit" class="btn" style="width: 100%; background: #e74c3c;">Access Admin Panel</button>
+                    </form>
+                </div>
+                
+                <!-- CREDENTIALS LOGIN -->
+                <div id="adminCredLogin" style="display: none;">
+                    <form onsubmit="processAdminCredLogin(event)">
+                        <div class="form-group">
+                            <label>Admin Email *</label>
+                            <input type="email" name="email" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Password *</label>
+                            <input type="password" name="password" required>
+                        </div>
+                        <button type="submit" class="btn" style="width: 100%; background: #e74c3c;">Login as Admin</button>
+                    </form>
+                </div>
+                
+                <div style="background: #fff3cd; padding: 15px; border-radius: 10px; margin-top: 20px;">
+                    <small>Contact: grouptauafrica@gmail.com for admin access</small>
+                </div>
+            </div>
+        `;
+        
+        document.body.appendChild(modal);
+    };
+    
+    window.switchAdminTab = function(tab) {
+        document.getElementById('adminCodeLogin').style.display = tab === 'code' ? 'block' : 'none';
+        document.getElementById('adminCredLogin').style.display = tab === 'credentials' ? 'block' : 'none';
+        
+        document.getElementById('adminCodeTab').style.background = tab === 'code' ? '#e74c3c' : '#95a5a6';
+        document.getElementById('adminCredTab').style.background = tab === 'credentials' ? '#e74c3c' : '#95a5a6';
+    };
+    
+    // Admin code login
+    window.processAdminCodeLogin = function(event) {
+        event.preventDefault();
+        const formData = new FormData(event.target);
+        const code = formData.get('code');
+        
+        if (code === ADMIN_CODE) {
+            sessionStorage.setItem('tauAdminSession', JSON.stringify({
+                type: 'code',
+                authenticated: true,
+                timestamp: Date.now()
+            }));
+            
+            showNotification('✅ Admin access granted!', 'success');
+            closeAllModals();
+            
+            setTimeout(() => {
+                window.open('databse.html', '_blank', 'width=1400,height=900');
+            }, 1000);
+        } else {
+            showNotification('❌ Invalid admin code', 'error');
+        }
+    };
+    
+    // Admin credentials login
+    window.processAdminCredLogin = async function(event) {
+        event.preventDefault();
+        const formData = new FormData(event.target);
+        const email = formData.get('email');
+        const password = formData.get('password');
+        
+        if (typeof firebase === 'undefined' || !firebase.apps.length) {
+            showNotification('❌ Firebase not available', 'error');
+            return;
+        }
+        
+        try {
+            const db = firebase.firestore();
+            
+            // Check if admin exists in Firestore
+            const adminDoc = await db.collection('admins').doc(email).get();
+            
+            if (adminDoc.exists) {
+                const adminData = adminDoc.data();
+                const hashedPassword = btoa(password);
+                
+                if (adminData.password === hashedPassword && adminData.status === 'active') {
+                    sessionStorage.setItem('tauAdminSession', JSON.stringify({
+                        type: 'credentials',
+                        email: email,
+                        role: adminData.role,
+                        authenticated: true,
+                        timestamp: Date.now()
+                    }));
+                    
+                    showNotification(`✅ Welcome ${adminData.name}!`, 'success');
+                    closeAllModals();
+                    
+                    setTimeout(() => {
+                        window.open('databse.html', '_blank', 'width=1400,height=900');
+                    }, 1000);
+                } else {
+                    showNotification('❌ Invalid credentials', 'error');
+                }
+            } else {
+                showNotification('❌ Admin not found', 'error');
+            }
+            
+        } catch (error) {
+            console.error('Admin login error:', error);
+            showNotification('❌ Login failed', 'error');
+        }
+    };
+    
+    // Check admin session
+    window.isAdminAuthenticated = function() {
+        const session = sessionStorage.getItem('tauAdminSession');
+        if (!session) return false;
+        
+        try {
+            const data = JSON.parse(session);
+            const hoursSince = (Date.now() - data.timestamp) / (1000 * 60 * 60);
+            
+            return data.authenticated && hoursSince < 8; // 8 hour session
+        } catch {
+            return false;
+        }
+    };
+    
+    // Override openAdminDatabase
+    window.openAdminDatabase = function() {
+        if (isAdminAuthenticated()) {
+            window.open('databse.html', '_blank', 'width=1400,height=900');
+        } else {
+            showAdminLogin();
+        }
+    };
+    
+    console.log('✅ Admin Authentication System loaded');
+})();
+            </script>
      </body>
         </html>
