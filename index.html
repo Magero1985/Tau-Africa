@@ -912,7 +912,103 @@ To join in these categories, please use KABIRU SERVICE CENTER portal</p>
             console.log('✅ EmailJS ready');
         }
     }, 1000);
+    <script>
+// ============================================
+// ENHANCED EMAIL & NOTIFICATION SYSTEM
+// ============================================
+(function() {
+    'use strict';
     
+    // Ensure EmailJS is properly initialized
+    function ensureEmailJS() {
+        return new Promise((resolve, reject) => {
+            if (typeof emailjs !== 'undefined') {
+                emailjs.init({ publicKey: "GhjI14eQVGgOli0j1" });
+                resolve(true);
+            } else {
+                setTimeout(() => {
+                    if (typeof emailjs !== 'undefined') {
+                        emailjs.init({ publicKey: "GhjI14eQVGgOli0j1" });
+                        resolve(true);
+                    } else {
+                        reject('EmailJS not loaded');
+                    }
+                }, 2000);
+            }
+        });
+    }
+    
+    // Enhanced email sending with retry
+    window.sendTauEmail = async function(templateParams, retries = 3) {
+        try {
+            await ensureEmailJS();
+            
+            const response = await emailjs.send('service_xfira7g', 'template_bqxztig', templateParams);
+            console.log('✅ Email sent:', response);
+            return { success: true, response };
+            
+        } catch (error) {
+            console.error('❌ Email send error:', error);
+            
+            if (retries > 0) {
+                console.log(`🔄 Retrying... (${retries} attempts left)`);
+                await new Promise(resolve => setTimeout(resolve, 2000));
+                return sendTauEmail(templateParams, retries - 1);
+            }
+            
+            return { success: false, error: error.message };
+        }
+    };
+    
+    // Enhanced notification with database storage
+    window.createNotification = function(memberId, title, message, type = 'info') {
+        const NOTIF_KEY = 'tauNotifications';
+        const allNotifications = JSON.parse(localStorage.getItem(NOTIF_KEY) || '{}');
+        
+        if (!allNotifications[memberId]) {
+            allNotifications[memberId] = [];
+        }
+        
+        const notification = {
+            id: `NOTIF-${Date.now()}`,
+            title: title,
+            message: message,
+            timestamp: new Date().toISOString(),
+            read: false,
+            type: type
+        };
+        
+        allNotifications[memberId].unshift(notification);
+        
+        if (allNotifications[memberId].length > 50) {
+            allNotifications[memberId] = allNotifications[memberId].slice(0, 50);
+        }
+        
+        localStorage.setItem(NOTIF_KEY, JSON.stringify(allNotifications));
+        
+        // Also save to Firestore if available
+        if (typeof firebase !== 'undefined' && firebase.apps.length > 0) {
+            const db = firebase.firestore();
+            db.collection('notifications').doc(memberId).set({
+                notifications: allNotifications[memberId]
+            }, { merge: true }).catch(err => console.warn('Firestore notification warning:', err));
+        }
+        
+        console.log(`📬 Notification created for ${memberId}:`, title);
+        
+        // Show visual notification if it's for current user
+        const currentMember = window.TauDB?.getCurrentMember();
+        if (currentMember && currentMember.id === memberId) {
+            if (typeof showNotification === 'function') {
+                showNotification(`${title}: ${message}`, type);
+            }
+        }
+    };
+    
+    console.log('✅ Enhanced Email & Notification System loaded');
+})();
+</script>
+    <script>
     // ============================================
     // CORE HELPER FUNCTIONS
     // ============================================
