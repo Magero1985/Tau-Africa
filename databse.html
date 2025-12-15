@@ -991,5 +991,202 @@ window.deleteMember = async function(memberId) {
     }
 };
     </script>
+    <script>
+// ============================================
+// ADMIN VALIDATION DASHBOARD
+// Add this to your database page (databse.html)
+// ============================================
+(function() {
+    'use strict';
+    
+    window.showValidationDashboard = function() {
+        const values = JSON.parse(localStorage.getItem('tauValues') || '[]');
+        const jobs = JSON.parse(localStorage.getItem('tauJobsPortal') || '[]');
+        const codes = JSON.parse(localStorage.getItem('tauValidatorCodes') || '[]');
+        
+        // Filter pending validations
+        const pendingValues = values.filter(v => !v.validated || !v.validationStages?.stage3?.validated);
+        const pendingJobs = jobs.filter(j => !j.validated || !j.validationStages?.stage3?.validated);
+        
+        const modal = document.createElement('div');
+        modal.className = 'modal';
+        modal.style.display = 'block';
+        modal.innerHTML = `
+            <div class="modal-content" style="max-width: 1200px;">
+                <span class="close" onclick="this.parentElement.parentElement.remove()">&times;</span>
+                
+                <h2>🔐 Validation Dashboard</h2>
+                
+                <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 15px; margin-bottom: 30px;">
+                    <div style="background: #3498db; color: white; padding: 20px; border-radius: 10px; text-align: center;">
+                        <h3>${pendingValues.length}</h3>
+                        <p>Pending Values</p>
+                    </div>
+                    <div style="background: #f39c12; color: white; padding: 20px; border-radius: 10px; text-align: center;">
+                        <h3>${pendingJobs.length}</h3>
+                        <p>Pending Jobs</p>
+                    </div>
+                    <div style="background: #2ecc71; color: white; padding: 20px; border-radius: 10px; text-align: center;">
+                        <h3>${codes.filter(c => c.status === 'used').length}</h3>
+                        <p>Codes Used</p>
+                    </div>
+                    <div style="background: #95a5a6; color: white; padding: 20px; border-radius: 10px; text-align: center;">
+                        <h3>${codes.filter(c => c.status === 'pending').length}</h3>
+                        <p>Codes Pending</p>
+                    </div>
+                </div>
+                
+                <h3>Pending Values (3-Stage Validation)</h3>
+                <div style="max-height: 300px; overflow-y: auto; margin-bottom: 30px;">
+                    ${pendingValues.length > 0 ? pendingValues.map(v => `
+                        <div style="background: white; border: 2px solid #ddd; border-radius: 10px; padding: 20px; margin-bottom: 15px;">
+                            <h4>${v.title}</h4>
+                            <p>${v.description}</p>
+                            <p><strong>Worth:</strong> ${v.worthKsh} KSH (${v.worthIkb} iKb)</p>
+                            <p><strong>Submitted by:</strong> ${v.submittedByName} (${v.submittedBy})</p>
+                            
+                            <div style="display: flex; gap: 10px; margin-top: 15px;">
+                                ${v.validationStages?.stage1?.validated ? 
+                                    `<span style="background: #2ecc71; color: white; padding: 5px 10px; border-radius: 5px;">✓ Stage 1</span>` :
+                                    `<button class="btn btn-small" onclick="generateValidationCodes('value', '${v.id}')">Generate Codes</button>`
+                                }
+                                ${v.validationStages?.stage2?.validated ? 
+                                    `<span style="background: #2ecc71; color: white; padding: 5px 10px; border-radius: 5px;">✓ Stage 2</span>` : ''
+                                }
+                                ${v.validationStages?.stage3?.validated ? 
+                                    `<span style="background: #2ecc71; color: white; padding: 5px 10px; border-radius: 5px;">✓ Stage 3</span>` : ''
+                                }
+                            </div>
+                            
+                            ${v.validationStages ? `
+                                <div style="background: #f8f9fa; padding: 10px; border-radius: 5px; margin-top: 10px; font-size: 12px;">
+                                    <strong>Current Stage:</strong> ${v.status}
+                                </div>
+                            ` : ''}
+                        </div>
+                    `).join('') : '<p style="text-align: center; padding: 40px;">No pending values</p>'}
+                </div>
+                
+                <h3>Recent Validation Codes</h3>
+                <div style="max-height: 200px; overflow-y: auto;">
+                    ${codes.slice(0, 10).map(c => `
+                        <div style="background: ${c.status === 'used' ? '#d4edda' : '#fff3cd'}; padding: 15px; border-radius: 8px; margin-bottom: 10px;">
+                            <div style="display: flex; justify-content: space-between; align-items: center;">
+                                <div>
+                                    <strong style="font-size: 16px; letter-spacing: 2px;">${c.code}</strong>
+                                    <p style="margin: 5px 0 0 0; font-size: 12px; color: #666;">
+                                        Stage ${c.stage} | ${c.itemType} | ${c.status}
+                                    </p>
+                                </div>
+                                <span style="background: ${c.status === 'used' ? '#2ecc71' : '#f39c12'}; color: white; padding: 5px 10px; border-radius: 5px; font-size: 12px;">
+                                    ${c.status === 'used' ? '✓ USED' : '⏳ PENDING'}
+                                </span>
+                            </div>
+                        </div>
+                    `).join('')}
+                </div>
+            </div>
+        `;
+        
+        document.body.appendChild(modal);
+    };
+    
+    console.log('✅ Validation Dashboard loaded');
+})();
+</script>
+
+<script>
+// ============================================
+// SYSTEM BALANCE & FEE TRACKING
+// ============================================
+(function() {
+    'use strict';
+    
+    window.getSystemBalance = function() {
+        return parseFloat(localStorage.getItem('systemBalance') || '0');
+    };
+    
+    window.getSystemStats = function() {
+        const values = JSON.parse(localStorage.getItem('tauValues') || '[]');
+        const tasks = JSON.parse(localStorage.getItem('tauTasks') || '[]');
+        const activities = JSON.parse(localStorage.getItem('tauActivities') || '[]');
+        
+        const validatedValues = values.filter(v => v.validated);
+        const validatedTasks = tasks.filter(t => t.validated);
+        const validatedActivities = activities.filter(a => a.validated);
+        
+        // Calculate total fees earned
+        let totalValueFees = 0;
+        validatedValues.forEach(v => {
+            const worthKsh = parseFloat(v.worthKsh || 0);
+            totalValueFees += worthKsh * 0.15; // 15% system fee
+        });
+        
+        let totalTaskActivityFees = 0;
+        [...validatedTasks, ...validatedActivities].forEach(item => {
+            const reward = parseFloat(item.reward || 0);
+            totalTaskActivityFees += reward * 0.00001; // 0.001% transaction fee
+        });
+        
+        return {
+            balance: getSystemBalance(),
+            valueFees: totalValueFees * 10, // Convert to iKbp
+            taskActivityFees: totalTaskActivityFees,
+            totalFees: (totalValueFees * 10) + totalTaskActivityFees,
+            validatedValues: validatedValues.length,
+            validatedTasks: validatedTasks.length,
+            validatedActivities: validatedActivities.length
+        };
+    };
+    
+    window.showSystemStats = function() {
+        const stats = getSystemStats();
+        
+        const modal = document.createElement('div');
+        modal.className = 'modal';
+        modal.style.display = 'block';
+        modal.innerHTML = `
+            <div class="modal-content">
+                <span class="close" onclick="this.parentElement.parentElement.remove()">&times;</span>
+                
+                <h2>💰 System Balance & Stats</h2>
+                
+                <div style="background: linear-gradient(45deg, #667eea, #764ba2); color: white; padding: 30px; border-radius: 15px; margin: 20px 0; text-align: center;">
+                    <h3>Total System Balance</h3>
+                    <h1 style="font-size: 3rem; margin: 20px 0;">${stats.balance.toFixed(2)} iKbp</h1>
+                    <p style="font-size: 1.2rem;">KSH ${(stats.balance / 10).toFixed(2)}</p>
+                </div>
+                
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 20px;">
+                    <div style="background: #3498db; color: white; padding: 20px; border-radius: 10px; text-align: center;">
+                        <h4>Value Validation Fees</h4>
+                        <h2>${stats.valueFees.toFixed(2)} iKbp</h2>
+                        <p>${stats.validatedValues} values</p>
+                    </div>
+                    <div style="background: #f39c12; color: white; padding: 20px; border-radius: 10px; text-align: center;">
+                        <h4>Task/Activity Fees</h4>
+                        <h2>${stats.taskActivityFees.toFixed(4)} iKbp</h2>
+                        <p>${stats.validatedTasks + stats.validatedActivities} items</p>
+                    </div>
+                </div>
+                
+                <div style="background: #f8f9fa; padding: 20px; border-radius: 10px;">
+                    <h4>Fee Structure:</h4>
+                    <ul style="margin: 10px 0 0 20px;">
+                        <li>Values/Jobs: 30% total (15% system, 5% each validator)</li>
+                        <li>Tasks/Activities: 0.001% transaction fee</li>
+                    </ul>
+                </div>
+                
+                <button onclick="this.parentElement.parentElement.remove()" class="btn" style="width: 100%; margin-top: 20px;">Close</button>
+            </div>
+        `;
+        
+        document.body.appendChild(modal);
+    };
+    
+    console.log('✅ System Balance Tracking loaded');
+})();
+</script>
 </body>
 </html>
