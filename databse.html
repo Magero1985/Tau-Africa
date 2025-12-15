@@ -4,10 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>TAU Africa Foundation - Database System</title>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.0/papaparse.min.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
-    <style>
+        <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
@@ -365,17 +362,22 @@
 
     <div id="notification" class="notification"></div>
 
-src="tau_critical_fixes.js"></script>
-<script src="tau_admin_fixes.js"></script>
-    
-    <script><!-- Firebase v9+ SDK -->
+</script>
+</script>
+    <!-- Firebase SDK -->
 <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>===========================
-        <script>
-    // ============================================
-    // NEW FIREBASE CONFIGURATION
-    // ============================================
+<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+
+<script>
+// ============================================
+// TAU AFRICA DATABASE - CONSOLIDATED SCRIPT
+// ============================================
+(function() {
+    'use strict';
+    
+    console.log('💾 Database App Initializing...');
+    
+    const ACCESS_CODE = 'TAU2025ADMIN';
     const FIREBASE_CONFIG = {
         apiKey: "AIzaSyBcTzvl5lwpojRQM5lwyWe3hwp4upogUWw",
         authDomain: "tau-main-app.firebaseapp.com",
@@ -384,66 +386,95 @@ src="tau_critical_fixes.js"></script>
         messagingSenderId: "69734421488",
         appId: "1:69734421488:web:d13ae38f1c7d79cc854335"
     };
-
-        let db, auth, isOnline = false;
-
-    // ============================================
-    // INITIALIZE FIREBASE (ONCE)
-    // ============================================
-    (function initFirebase() {
-        try {
-            // Prevent duplicate initialization
-            if (firebase.apps.length > 0) {
-                console.log('⚠️ Firebase already initialized');
-                db = firebase.firestore();
-                auth = firebase.auth();
-                isOnline = true;
-                return;
-            }
-
+    
+    let db, membersDB = [], isOnline = false;
+    
+    // Initialize Firebase
+    try {
+        if (!firebase.apps.length) {
             firebase.initializeApp(FIREBASE_CONFIG);
-            db = firebase.firestore();
-            auth = firebase.auth();
-            
-            // Test connection
-            db.collection('_system').doc('connection_test').set({
-                timestamp: firebase.firestore.FieldValue.serverTimestamp(),
-                app: 'database' // or 'bridge' depending on which app
-            })
-            .then(() => {
-                console.log('✅ New Firebase connected');
-                isOnline = true;
-                
-                // Enable persistence
-                return db.enablePersistence({ synchronizeTabs: true });
-            })
-            .catch(error => {
-                if (error.code !== 'failed-precondition') {
-                    console.error('Firebase error:', error);
-                }
-                isOnline = true; // Still online, just no persistence
-            });
-            
-        } catch (error) {
-            console.error('❌ Firebase init failed:', error);
-            isOnline = false;
         }
-    })();
-
-    // ============================================
-    // EXPOSE GLOBALLY
-    // ============================================
-    window.TauFirebase = {
-        db: () => db,
-        auth: () => auth,
-        isOnline: () => isOnline,
-        config: FIREBASE_CONFIG
+        db = firebase.firestore();
+        db.enablePersistence({ synchronizeTabs: true })
+            .catch(err => console.warn('Persistence:', err));
+        isOnline = true;
+        console.log('✅ Firebase connected');
+    } catch (error) {
+        console.error('❌ Firebase error:', error);
+    }
+    
+    // Load database
+    window.loadDatabase = async function() {
+        const local = localStorage.getItem('tauAfricaDB');
+        if (local) {
+            membersDB = JSON.parse(local);
+            updateStats();
+            renderMembers();
+            console.log(`💾 Loaded ${membersDB.length} from localStorage`);
+        }
+        
+        if (db && isOnline) {
+            try {
+                const snapshot = await db.collection('members').get();
+                if (!snapshot.empty) {
+                    membersDB = [];
+                    snapshot.forEach(doc => membersDB.push(doc.data()));
+                    localStorage.setItem('tauAfricaDB', JSON.stringify(membersDB));
+                    updateStats();
+                    renderMembers();
+                    console.log(`☁️ Synced ${membersDB.length} from Firestore`);
+                }
+            } catch (error) {
+                console.error('Load error:', error);
+            }
+        }
     };
-
-    console.log('✅ Firebase ready for', window.location.pathname);
+    
+    window.updateStats = function() {
+        document.getElementById('totalMembers').textContent = membersDB.length;
+        document.getElementById('taskMembers').textContent = membersDB.filter(m => m.team === 'TASK').length;
+        document.getElementById('talkMembers').textContent = membersDB.filter(m => m.team === 'TALK').length;
+        const revenue = membersDB.reduce((s, m) => s + (m.fee || 0), 0);
+        document.getElementById('revenueTotal').textContent = `KSH ${revenue.toLocaleString()}`;
+    };
+    
+    window.renderMembers = function() {
+        const tbody = document.getElementById('membersTableBody');
+        if (!tbody) return;
+        
+        tbody.innerHTML = membersDB.map(m => `
+            <tr>
+                <td><strong>${m.id}</strong></td>
+                <td>${m.fullName}</td>
+                <td>${m.email}</td>
+                <td>${m.phone}</td>
+                <td><span class="badge badge-${(m.team || '').toLowerCase()}">${m.team}</span></td>
+                <td><span class="badge badge-paid">Paid</span></td>
+                <td><button class="btn-icon btn-view" onclick="alert('${m.id}')">View</button></td>
+            </tr>
+        `).join('');
+    };
+    
+    // Login handler
+    document.addEventListener('DOMContentLoaded', () => {
+        document.getElementById('loginForm').addEventListener('submit', (e) => {
+            e.preventDefault();
+            const code = document.getElementById('accessCode').value;
+            if (code === ACCESS_CODE) {
+                document.getElementById('loginScreen').style.display = 'none';
+                document.getElementById('dashboard').style.display = 'block';
+                loadDatabase();
+            } else {
+                alert('Invalid code');
+            }
+        });
+    });
+    
+    console.log('✅ Database App Ready');
+})();
 </script>
-
-<script>
+    
+    <script>
         // ==========================================
         // DATABASE OPERATIONS
         // ==========================================
@@ -937,609 +968,6 @@ src="tau_critical_fixes.js"></script>
                 closeCleanupModal();
             }
         }
-    </script>
-    <script>
-    // ============================================
-// TAU AFRICA - CRITICAL FIXES
-// Place this BEFORE </body> in ALL three apps
-// ============================================
-
-(function() {
-    'use strict';
-    
-    console.log('🔧 TAU Critical Fixes Loading...');
-    
-    // ============================================
-    // FIX 1: FIREBASE INITIALIZATION (SINGLETON)
-    // ============================================
-    if (!window.TauFirebaseInitialized) {
-        const FIREBASE_CONFIG = {
-            apiKey: "AIzaSyBcTzvl5lwpojRQM5lwyWe3hwp4upogUWw",
-            authDomain: "tau-main-app.firebaseapp.com",
-            projectId: "tau-main-app",
-            storageBucket: "tau-main-app.firebasestorage.app",
-            messagingSenderId: "69734421488",
-            appId: "1:69734421488:web:d13ae38f1c7d79cc854335"
-        };
-        
-        try {
-            if (!firebase.apps.length) {
-                firebase.initializeApp(FIREBASE_CONFIG);
-            }
-            window.db = firebase.firestore();
-            window.auth = firebase.auth();
-            window.TauFirebaseInitialized = true;
-            console.log('✅ Firebase initialized once');
-        } catch (error) {
-            console.error('❌ Firebase init error:', error);
-        }
-    }
-    
-    // ============================================
-    // FIX 2: ENSURE MODAL FUNCTIONS EXIST
-    // ============================================
-    if (!window.openModal) {
-        window.openModal = function(type) {
-            console.log('📂 Opening modal:', type);
-            
-            // Close existing modals
-            document.querySelectorAll('.modal').forEach(m => m.remove());
-            
-            const modal = document.createElement('div');
-            modal.className = 'modal';
-            modal.style.display = 'block';
-            
-            // Get modal content
-            const content = typeof getModalContent === 'function' 
-                ? getModalContent(type) 
-                : '<div class="modal-content"><span class="close" onclick="this.parentElement.parentElement.remove()">×</span><h2>Loading...</h2></div>';
-            
-            modal.innerHTML = content;
-            document.body.appendChild(modal);
-        };
-    }
-    
-    if (!window.closeAllModals) {
-        window.closeAllModals = function() {
-            document.querySelectorAll('.modal').forEach(m => m.remove());
-        };
-    }
-    
-    // ============================================
-    // FIX 3: ENSURE NOTIFICATION FUNCTION EXISTS
-    // ============================================
-    if (!window.showNotification) {
-        window.showNotification = function(message, type) {
-            let notif = document.getElementById('notification');
-            if (!notif) {
-                notif = document.createElement('div');
-                notif.id = 'notification';
-                notif.className = 'notification';
-                document.body.appendChild(notif);
-            }
-            
-            notif.textContent = message;
-            notif.className = 'notification ' + type;
-            notif.style.display = 'block';
-            
-            setTimeout(() => {
-                notif.style.display = 'none';
-            }, 5000);
-        };
-    }
-    
-    // ============================================
-    // FIX 4: MEMBER LOGIN BUTTON FIX
-    // ============================================
-    setTimeout(() => {
-        const floatingBtn = document.querySelector('.floating-btn');
-        if (floatingBtn && !floatingBtn.onclick) {
-            floatingBtn.onclick = function() {
-                console.log('🔐 Member login clicked');
-                if (typeof showRealMemberLogin === 'function') {
-                    showRealMemberLogin();
-                } else if (typeof showMemberLogin === 'function') {
-                    showMemberLogin();
-                } else {
-                    window.openModal('memberLogin');
-                }
-            };
-            console.log('✅ Fixed floating login button');
-        }
-    }, 1000);
-    
-    // ============================================
-    // FIX 5: PUBLIC ACCESS BUTTON FIX
-    // ============================================
-    setTimeout(() => {
-        const publicBtn = document.querySelector('[onclick*="showPublicRegistration"]');
-        if (publicBtn && !publicBtn.onclick) {
-            publicBtn.onclick = function() {
-                console.log('🌍 Public access clicked');
-                if (typeof showPublicRegistration === 'function') {
-                    showPublicRegistration();
-                } else {
-                    window.openModal('publicRegistration');
-                }
-            };
-            console.log('✅ Fixed public access button');
-        }
-    }, 1000);
-    
-    // ============================================
-    // FIX 6: ENSURE TauDB EXISTS
-    // ============================================
-    if (!window.TauDB) {
-        window.TauDB = {
-            sync: function(formData, team, referralCode) {
-                console.log('🔄 TauDB.sync called');
-                // Fallback implementation
-                const member = {
-                    id: team + '-' + Date.now(),
-                    ...formData,
-                    team: team,
-                    created: new Date().toISOString()
-                };
-                
-                const members = JSON.parse(localStorage.getItem('tauAfricaDB') || '[]');
-                members.push(member);
-                localStorage.setItem('tauAfricaDB', JSON.stringify(members));
-                
-                return { success: true, member, memberId: member.id };
-            },
-            authenticate: function(identifier, phoneLastFour) {
-                const members = JSON.parse(localStorage.getItem('tauAfricaDB') || '[]');
-                const member = members.find(m => 
-                    (m.id === identifier || m.email === identifier) && 
-                    m.phone.slice(-4) === phoneLastFour
-                );
-                
-                if (member) {
-                    sessionStorage.setItem('tauCurrentUser', JSON.stringify(member));
-                    return { success: true, member };
-                }
-                return { success: false };
-            },
-            getCurrentMember: function() {
-                const session = sessionStorage.getItem('tauCurrentUser');
-                return session ? JSON.parse(session) : null;
-            }
-        };
-        console.log('✅ TauDB created');
-    }
-    
-    // ============================================
-    // FIX 7: CLICK EVENT DEBUGGING
-    // ============================================
-    document.addEventListener('click', function(e) {
-        const target = e.target;
-        
-        // Log all button clicks
-        if (target.tagName === 'BUTTON' || target.classList.contains('btn')) {
-            console.log('🖱️ Button clicked:', target.textContent.trim(), target);
-        }
-        
-        // Log modal triggers
-        if (target.hasAttribute('onclick')) {
-            console.log('⚡ Element with onclick:', target.getAttribute('onclick'));
-        }
-    }, true);
-    
-    // ============================================
-    // FIX 8: CHECK CRITICAL ELEMENTS
-    // ============================================
-    setTimeout(() => {
-        const checks = {
-            'Floating login button': document.querySelector('.floating-btn'),
-            'Public access button': document.querySelector('[title="Public Access"]'),
-            'Notification element': document.getElementById('notification'),
-            'Firebase': window.firebase,
-            'TauDB': window.TauDB,
-            'openModal': window.openModal,
-            'showNotification': window.showNotification
-        };
-        
-        console.log('\n🔍 SYSTEM CHECK:');
-        console.log('═'.repeat(50));
-        Object.keys(checks).forEach(key => {
-            const exists = !!checks[key];
-            console.log(`${exists ? '✅' : '❌'} ${key}`);
-        });
-        console.log('═'.repeat(50) + '\n');
-        
-        // Alert if critical issues
-        const missing = Object.keys(checks).filter(k => !checks[k]);
-        if (missing.length > 0) {
-            console.warn('⚠️ Missing:', missing.join(', '));
-        }
-    }, 2000);
-    
-    // ============================================
-    // FIX 9: FORCE BUTTON CLICK HANDLERS
-    // ============================================
-    window.addEventListener('load', () => {
-        // Fix all buttons with onclick attributes
-        document.querySelectorAll('[onclick]').forEach(el => {
-            const onclickAttr = el.getAttribute('onclick');
-            el.removeAttribute('onclick');
-            el.addEventListener('click', function(e) {
-                try {
-                    eval(onclickAttr);
-                } catch (error) {
-                    console.error('onclick error:', error, onclickAttr);
-                }
-            });
-        });
-        console.log('✅ All onclick attributes converted to event listeners');
-    });
-    
-    console.log('✅ TAU Critical Fixes Loaded');
-    
-})();
-
-// ============================================
-// DIAGNOSTIC HELPER FUNCTIONS
-// ============================================
-window.TauDiagnostics = {
-    testFirebase: function() {
-        if (!window.db) {
-            console.error('❌ Firebase not initialized');
-            return;
-        }
-        
-        window.db.collection('_test').doc('connection').set({
-            timestamp: new Date().toISOString(),
-            test: true
-        })
-        .then(() => console.log('✅ Firebase connection works'))
-        .catch(err => console.error('❌ Firebase test failed:', err));
-    },
-    
-    testRegistration: function() {
-        const testData = {
-            fullName: 'Test User',
-            email: 'test@example.com',
-            phone: '254700000000',
-            location: 'Nairobi, Kenya'
-        };
-        
-        if (window.TauDB && window.TauDB.sync) {
-            const result = window.TauDB.sync(testData, 'TASK', null);
-            console.log('📝 Test registration:', result);
-        } else {
-            console.error('❌ TauDB.sync not available');
-        }
-    },
-    
-    testLogin: function() {
-        const members = JSON.parse(localStorage.getItem('tauAfricaDB') || '[]');
-        if (members.length === 0) {
-            console.warn('⚠️ No members to test login');
-            return;
-        }
-        
-        const member = members[0];
-        const result = window.TauDB.authenticate(member.email, member.phone.slice(-4));
-        console.log('🔐 Test login:', result);
-    },
-    
-    testButtons: function() {
-        console.log('\n🔘 BUTTON TEST:');
-        const buttons = document.querySelectorAll('button, .btn, [onclick]');
-        console.log(`Found ${buttons.length} clickable elements`);
-        
-        buttons.forEach((btn, i) => {
-            console.log(`${i+1}. ${btn.textContent.trim()} - onclick: ${!!btn.onclick}`);
-        });
-    },
-    
-    clearAll: function() {
-        if (confirm('⚠️ Clear ALL data? This cannot be undone!')) {
-            localStorage.clear();
-            sessionStorage.clear();
-            console.log('🗑️ All storage cleared');
-            window.location.reload();
-        }
-    }
-};
-
-console.log('💡 Run TauDiagnostics.testFirebase() to test connection');
-console.log('💡 Run TauDiagnostics.testButtons() to check buttons');
-console.log('💡 Run TauDiagnostics.testRegistration() to test signup');
-</script>
-    <script>
-        // ============================================
-// TAU AFRICA - ADMIN & DATABASE FIXES
-// Add to databse.html BEFORE </body>
-// ============================================
-
-(function() {
-    'use strict';
-    
-    console.log('👨‍💼 Admin Fixes Loading...');
-    
-    // ============================================
-    // GLOBAL VARIABLES
-    // ============================================
-    const ACCESS_CODE = 'TAU2025ADMIN';
-    let membersDB = [];
-    let currentMemberSession = null;
-    let isFirebaseReady = false;
-    
-    // ============================================
-    // FIREBASE INITIALIZATION
-    // ============================================
-    async function initFirebase() {
-        if (window.TauFirebaseInitialized) {
-            isFirebaseReady = true;
-            return;
-        }
-        
-        const FIREBASE_CONFIG = {
-            apiKey: "AIzaSyBcTzvl5lwpojRQM5lwyWe3hwp4upogUWw",
-            authDomain: "tau-main-app.firebaseapp.com",
-            projectId: "tau-main-app",
-            storageBucket: "tau-main-app.firebasestorage.app",
-            messagingSenderId: "69734421488",
-            appId: "1:69734421488:web:d13ae38f1c7d79cc854335"
-        };
-        
-        try {
-            if (!firebase.apps.length) {
-                firebase.initializeApp(FIREBASE_CONFIG);
-            }
-            
-            window.db = firebase.firestore();
-            window.auth = firebase.auth();
-            
-            // Enable offline persistence
-            await window.db.enablePersistence({ synchronizeTabs: true })
-                .catch(err => {
-                    if (err.code !== 'failed-precondition') {
-                        console.warn('Persistence warning:', err);
-                    }
-                });
-            
-            // Test connection
-            await window.db.collection('_test').doc('connection').set({
-                timestamp: new Date().toISOString(),
-                source: 'database_app'
-            });
-            
-            isFirebaseReady = true;
-            updateSyncIndicator(true);
-            console.log('✅ Firebase connected - Database');
-            
-            // Setup realtime sync
-            setupRealtimeSync();
-            
-        } catch (error) {
-            console.error('❌ Firebase init failed:', error);
-            isFirebaseReady = false;
-            updateSyncIndicator(false);
-        }
-    }
-    
-    function updateSyncIndicator(online) {
-        const indicator = document.getElementById('syncIndicator');
-        const text = document.getElementById('syncText');
-        if (indicator && text) {
-            indicator.className = online ? 'sync-indicator online' : 'sync-indicator offline';
-            text.textContent = online ? '🟢 Firebase Connected' : '🔴 Offline Mode';
-        }
-        
-        const status = document.getElementById('firebaseStatus');
-        if (status) {
-            status.textContent = online ? '✅ Connected' : '❌ Offline';
-            status.style.color = online ? '#2ecc71' : '#e74c3c';
-        }
-    }
-    
-    // ============================================
-    // DATABASE OPERATIONS
-    // ============================================
-    async function loadDatabase() {
-        console.log('📥 Loading database...');
-        
-        // Load from localStorage first (instant)
-        const local = localStorage.getItem('tauAfricaDB');
-        if (local) {
-            membersDB = JSON.parse(local);
-            updateStats();
-            renderMembers();
-            console.log(`💾 Loaded ${membersDB.length} from localStorage`);
-        }
-        
-        // Then sync with Firestore
-        if (isFirebaseReady && window.db) {
-            try {
-                const snapshot = await window.db.collection('members').get();
-                if (!snapshot.empty) {
-                    membersDB = [];
-                    snapshot.forEach(doc => {
-                        membersDB.push({ ...doc.data(), firestoreId: doc.id });
-                    });
-                    localStorage.setItem('tauAfricaDB', JSON.stringify(membersDB));
-                    updateStats();
-                    renderMembers();
-                    console.log(`☁️ Synced ${membersDB.length} from Firestore`);
-                }
-            } catch (error) {
-                console.error('Firestore load error:', error);
-            }
-        }
-    }
-    
-    function setupRealtimeSync() {
-        if (!window.db) return;
-        
-        window.db.collection('members').onSnapshot(snapshot => {
-            snapshot.docChanges().forEach(change => {
-                const data = { ...change.doc.data(), firestoreId: change.doc.id };
-                
-                if (change.type === 'added' || change.type === 'modified') {
-                    const idx = membersDB.findIndex(m => m.id === data.id);
-                    if (idx >= 0) {
-                        membersDB[idx] = data;
-                    } else {
-                        membersDB.push(data);
-                    }
-                } else if (change.type === 'removed') {
-                    membersDB = membersDB.filter(m => m.id !== data.id);
-                }
-                
-                localStorage.setItem('tauAfricaDB', JSON.stringify(membersDB));
-                updateStats();
-                renderMembers();
-            });
-        }, error => {
-            console.error('Real-time sync error:', error);
-        });
-        
-        console.log('👂 Real-time sync active');
-    }
-    
-    async function saveMember(member) {
-        // Save to localStorage
-        const idx = membersDB.findIndex(m => m.id === member.id);
-        if (idx >= 0) {
-            membersDB[idx] = member;
-        } else {
-            membersDB.push(member);
-        }
-        localStorage.setItem('tauAfricaDB', JSON.stringify(membersDB));
-        
-        // Save to Firestore
-        if (isFirebaseReady && window.db) {
-            try {
-                await window.db.collection('members').doc(member.id).set(member);
-                console.log(`☁️ Saved to Firestore: ${member.id}`);
-            } catch (error) {
-                console.error('Firestore save error:', error);
-            }
-        }
-        
-        return true;
-    }
-    
-    async function deleteMember(id) {
-        if (!confirm('Delete this member? This cannot be undone.')) return;
-        
-        try {
-            const member = membersDB.find(m => m.id === id);
-            
-            // Delete from Firestore
-            if (member?.firestoreId && window.db) {
-                await window.db.collection('members').doc(member.firestoreId).delete();
-            }
-            
-            // Delete from local
-            membersDB = membersDB.filter(m => m.id !== id);
-            localStorage.setItem('tauAfricaDB', JSON.stringify(membersDB));
-            
-            updateStats();
-            renderMembers();
-            showNotification('✅ Member deleted', 'success');
-        } catch (error) {
-            console.error('Delete error:', error);
-            showNotification('❌ Delete failed', 'error');
-        }
-    }
-    
-    // ============================================
-    // UI FUNCTIONS
-    // ============================================
-    function generateMemberID(team) {
-        const prefix = team === 'TASK' ? 'TSK' : 'TLK';
-        const timestamp = Date.now().toString().slice(-6);
-        const random = Math.floor(Math.random() * 1000).toString().padStart(3, '0');
-        return `${prefix}-${timestamp}-${random}`;
-    }
-    
-    function updateStats() {
-        const total = membersDB.length;
-        const task = membersDB.filter(m => m.team === 'TASK').length;
-        const talk = membersDB.filter(m => m.team === 'TALK').length;
-        const revenue = membersDB.reduce((sum, m) => 
-            m.paymentStatus === 'Paid' ? sum + (m.fee || 0) : sum, 0
-        );
-        
-        document.getElementById('totalMembers').textContent = total;
-        document.getElementById('taskMembers').textContent = task;
-        document.getElementById('talkMembers').textContent = talk;
-        document.getElementById('revenueTotal').textContent = `KSH ${revenue.toLocaleString()}`;
-    }
-    
-    function renderMembers(filtered = null) {
-        const data = filtered || membersDB;
-        const tbody = document.getElementById('membersTableBody');
-        
-        if (!tbody) return;
-        
-        tbody.innerHTML = data.map(m => `
-            <tr>
-                <td><strong>${m.id}</strong></td>
-                <td>${m.fullName}</td>
-                <td>${m.email}</td>
-                <td>${m.phone}</td>
-                <td><span class="badge badge-${(m.team || '').toLowerCase()}">${m.team}</span></td>
-                <td><span class="badge badge-${(m.paymentStatus || 'pending').toLowerCase()}">${m.paymentStatus || 'Pending'}</span></td>
-                <td>
-                    <div class="actions">
-                        <button class="btn-icon btn-view" onclick="viewMember('${m.id}')">View</button>
-                        <button class="btn-icon btn-delete" onclick="window.deleteMember('${m.id}')">Delete</button>
-                    </div>
-                </td>
-            </tr>
-        `).join('');
-    }
-    
-    function filterMembers() {
-        const search = document.getElementById('searchInput').value.toLowerCase();
-        const team = document.getElementById('teamFilter').value;
-        
-        const filtered = membersDB.filter(m => {
-            const matchSearch = !search || 
-                m.fullName.toLowerCase().includes(search) ||
-                m.email.toLowerCase().includes(search) ||
-                m.phone.includes(search) ||
-                m.id.toLowerCase().includes(search);
-            
-            const matchTeam = !team || m.team === team;
-            
-            return matchSearch && matchTeam;
-        });
-        
-        renderMembers(filtered);
-    }
-    
-    function viewMember(id) {
-        const member = membersDB.find(m => m.id === id);
-        if (!member) return;
-        
-        let details = '';
-        Object.keys(member).forEach(key => {
-            if (key !== 'firestoreId') {
-                details += `${key}: ${member[key]}\n`;
-            }
-        });
-        
-        alert(details);
-    }
-    
-    function showNotification(message, type) {
-        const notif = document.getElementById('notification');
-        if (!notif) return;
-        
-        notif.textContent = message;
-        notif.className = `notification ${type}`;
-        notif.style.display = 'block';
-        
-        setTimeout(() => {
-            notif.style.display = 'none';
-        }, 4000);
-    }
-    
     // ============================================
     // EXPOSE GLOBALLY
     // ============================================
