@@ -366,7 +366,7 @@
     <!-- Firebase SDK -->
 <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
-</script>
+
 <script>
 // ============================================
 // TAU AFRICA DATABASE - CONSOLIDATED SCRIPT
@@ -967,21 +967,6 @@
                 closeCleanupModal();
             }
         }
-    // ============================================
-    // EXPOSE GLOBALLY
-    // ============================================
-    window.initFirebase = initFirebase;
-    window.loadDatabase = loadDatabase;
-    window.saveMember = saveMember;
-    window.deleteMember = deleteMember;
-    window.updateStats = updateStats;
-    window.renderMembers = renderMembers;
-    window.filterMembers = filterMembers;
-    window.viewMember = viewMember;
-    window.showNotification = showNotification;
-    window.membersDB = membersDB;
-    
-    console.log('✅ Admin Functions Ready');
     
     // ============================================
     // AUTO-INITIALIZE
