@@ -935,5 +935,314 @@
             }
         }
     </script>
+    <script>
+    // ============================================
+// TAU AFRICA - CRITICAL FIXES
+// Place this BEFORE </body> in ALL three apps
+// ============================================
+
+(function() {
+    'use strict';
+    
+    console.log('🔧 TAU Critical Fixes Loading...');
+    
+    // ============================================
+    // FIX 1: FIREBASE INITIALIZATION (SINGLETON)
+    // ============================================
+    if (!window.TauFirebaseInitialized) {
+        const FIREBASE_CONFIG = {
+            apiKey: "AIzaSyBcTzvl5lwpojRQM5lwyWe3hwp4upogUWw",
+            authDomain: "tau-main-app.firebaseapp.com",
+            projectId: "tau-main-app",
+            storageBucket: "tau-main-app.firebasestorage.app",
+            messagingSenderId: "69734421488",
+            appId: "1:69734421488:web:d13ae38f1c7d79cc854335"
+        };
+        
+        try {
+            if (!firebase.apps.length) {
+                firebase.initializeApp(FIREBASE_CONFIG);
+            }
+            window.db = firebase.firestore();
+            window.auth = firebase.auth();
+            window.TauFirebaseInitialized = true;
+            console.log('✅ Firebase initialized once');
+        } catch (error) {
+            console.error('❌ Firebase init error:', error);
+        }
+    }
+    
+    // ============================================
+    // FIX 2: ENSURE MODAL FUNCTIONS EXIST
+    // ============================================
+    if (!window.openModal) {
+        window.openModal = function(type) {
+            console.log('📂 Opening modal:', type);
+            
+            // Close existing modals
+            document.querySelectorAll('.modal').forEach(m => m.remove());
+            
+            const modal = document.createElement('div');
+            modal.className = 'modal';
+            modal.style.display = 'block';
+            
+            // Get modal content
+            const content = typeof getModalContent === 'function' 
+                ? getModalContent(type) 
+                : '<div class="modal-content"><span class="close" onclick="this.parentElement.parentElement.remove()">×</span><h2>Loading...</h2></div>';
+            
+            modal.innerHTML = content;
+            document.body.appendChild(modal);
+        };
+    }
+    
+    if (!window.closeAllModals) {
+        window.closeAllModals = function() {
+            document.querySelectorAll('.modal').forEach(m => m.remove());
+        };
+    }
+    
+    // ============================================
+    // FIX 3: ENSURE NOTIFICATION FUNCTION EXISTS
+    // ============================================
+    if (!window.showNotification) {
+        window.showNotification = function(message, type) {
+            let notif = document.getElementById('notification');
+            if (!notif) {
+                notif = document.createElement('div');
+                notif.id = 'notification';
+                notif.className = 'notification';
+                document.body.appendChild(notif);
+            }
+            
+            notif.textContent = message;
+            notif.className = 'notification ' + type;
+            notif.style.display = 'block';
+            
+            setTimeout(() => {
+                notif.style.display = 'none';
+            }, 5000);
+        };
+    }
+    
+    // ============================================
+    // FIX 4: MEMBER LOGIN BUTTON FIX
+    // ============================================
+    setTimeout(() => {
+        const floatingBtn = document.querySelector('.floating-btn');
+        if (floatingBtn && !floatingBtn.onclick) {
+            floatingBtn.onclick = function() {
+                console.log('🔐 Member login clicked');
+                if (typeof showRealMemberLogin === 'function') {
+                    showRealMemberLogin();
+                } else if (typeof showMemberLogin === 'function') {
+                    showMemberLogin();
+                } else {
+                    window.openModal('memberLogin');
+                }
+            };
+            console.log('✅ Fixed floating login button');
+        }
+    }, 1000);
+    
+    // ============================================
+    // FIX 5: PUBLIC ACCESS BUTTON FIX
+    // ============================================
+    setTimeout(() => {
+        const publicBtn = document.querySelector('[onclick*="showPublicRegistration"]');
+        if (publicBtn && !publicBtn.onclick) {
+            publicBtn.onclick = function() {
+                console.log('🌍 Public access clicked');
+                if (typeof showPublicRegistration === 'function') {
+                    showPublicRegistration();
+                } else {
+                    window.openModal('publicRegistration');
+                }
+            };
+            console.log('✅ Fixed public access button');
+        }
+    }, 1000);
+    
+    // ============================================
+    // FIX 6: ENSURE TauDB EXISTS
+    // ============================================
+    if (!window.TauDB) {
+        window.TauDB = {
+            sync: function(formData, team, referralCode) {
+                console.log('🔄 TauDB.sync called');
+                // Fallback implementation
+                const member = {
+                    id: team + '-' + Date.now(),
+                    ...formData,
+                    team: team,
+                    created: new Date().toISOString()
+                };
+                
+                const members = JSON.parse(localStorage.getItem('tauAfricaDB') || '[]');
+                members.push(member);
+                localStorage.setItem('tauAfricaDB', JSON.stringify(members));
+                
+                return { success: true, member, memberId: member.id };
+            },
+            authenticate: function(identifier, phoneLastFour) {
+                const members = JSON.parse(localStorage.getItem('tauAfricaDB') || '[]');
+                const member = members.find(m => 
+                    (m.id === identifier || m.email === identifier) && 
+                    m.phone.slice(-4) === phoneLastFour
+                );
+                
+                if (member) {
+                    sessionStorage.setItem('tauCurrentUser', JSON.stringify(member));
+                    return { success: true, member };
+                }
+                return { success: false };
+            },
+            getCurrentMember: function() {
+                const session = sessionStorage.getItem('tauCurrentUser');
+                return session ? JSON.parse(session) : null;
+            }
+        };
+        console.log('✅ TauDB created');
+    }
+    
+    // ============================================
+    // FIX 7: CLICK EVENT DEBUGGING
+    // ============================================
+    document.addEventListener('click', function(e) {
+        const target = e.target;
+        
+        // Log all button clicks
+        if (target.tagName === 'BUTTON' || target.classList.contains('btn')) {
+            console.log('🖱️ Button clicked:', target.textContent.trim(), target);
+        }
+        
+        // Log modal triggers
+        if (target.hasAttribute('onclick')) {
+            console.log('⚡ Element with onclick:', target.getAttribute('onclick'));
+        }
+    }, true);
+    
+    // ============================================
+    // FIX 8: CHECK CRITICAL ELEMENTS
+    // ============================================
+    setTimeout(() => {
+        const checks = {
+            'Floating login button': document.querySelector('.floating-btn'),
+            'Public access button': document.querySelector('[title="Public Access"]'),
+            'Notification element': document.getElementById('notification'),
+            'Firebase': window.firebase,
+            'TauDB': window.TauDB,
+            'openModal': window.openModal,
+            'showNotification': window.showNotification
+        };
+        
+        console.log('\n🔍 SYSTEM CHECK:');
+        console.log('═'.repeat(50));
+        Object.keys(checks).forEach(key => {
+            const exists = !!checks[key];
+            console.log(`${exists ? '✅' : '❌'} ${key}`);
+        });
+        console.log('═'.repeat(50) + '\n');
+        
+        // Alert if critical issues
+        const missing = Object.keys(checks).filter(k => !checks[k]);
+        if (missing.length > 0) {
+            console.warn('⚠️ Missing:', missing.join(', '));
+        }
+    }, 2000);
+    
+    // ============================================
+    // FIX 9: FORCE BUTTON CLICK HANDLERS
+    // ============================================
+    window.addEventListener('load', () => {
+        // Fix all buttons with onclick attributes
+        document.querySelectorAll('[onclick]').forEach(el => {
+            const onclickAttr = el.getAttribute('onclick');
+            el.removeAttribute('onclick');
+            el.addEventListener('click', function(e) {
+                try {
+                    eval(onclickAttr);
+                } catch (error) {
+                    console.error('onclick error:', error, onclickAttr);
+                }
+            });
+        });
+        console.log('✅ All onclick attributes converted to event listeners');
+    });
+    
+    console.log('✅ TAU Critical Fixes Loaded');
+    
+})();
+
+// ============================================
+// DIAGNOSTIC HELPER FUNCTIONS
+// ============================================
+window.TauDiagnostics = {
+    testFirebase: function() {
+        if (!window.db) {
+            console.error('❌ Firebase not initialized');
+            return;
+        }
+        
+        window.db.collection('_test').doc('connection').set({
+            timestamp: new Date().toISOString(),
+            test: true
+        })
+        .then(() => console.log('✅ Firebase connection works'))
+        .catch(err => console.error('❌ Firebase test failed:', err));
+    },
+    
+    testRegistration: function() {
+        const testData = {
+            fullName: 'Test User',
+            email: 'test@example.com',
+            phone: '254700000000',
+            location: 'Nairobi, Kenya'
+        };
+        
+        if (window.TauDB && window.TauDB.sync) {
+            const result = window.TauDB.sync(testData, 'TASK', null);
+            console.log('📝 Test registration:', result);
+        } else {
+            console.error('❌ TauDB.sync not available');
+        }
+    },
+    
+    testLogin: function() {
+        const members = JSON.parse(localStorage.getItem('tauAfricaDB') || '[]');
+        if (members.length === 0) {
+            console.warn('⚠️ No members to test login');
+            return;
+        }
+        
+        const member = members[0];
+        const result = window.TauDB.authenticate(member.email, member.phone.slice(-4));
+        console.log('🔐 Test login:', result);
+    },
+    
+    testButtons: function() {
+        console.log('\n🔘 BUTTON TEST:');
+        const buttons = document.querySelectorAll('button, .btn, [onclick]');
+        console.log(`Found ${buttons.length} clickable elements`);
+        
+        buttons.forEach((btn, i) => {
+            console.log(`${i+1}. ${btn.textContent.trim()} - onclick: ${!!btn.onclick}`);
+        });
+    },
+    
+    clearAll: function() {
+        if (confirm('⚠️ Clear ALL data? This cannot be undone!')) {
+            localStorage.clear();
+            sessionStorage.clear();
+            console.log('🗑️ All storage cleared');
+            window.location.reload();
+        }
+    }
+};
+
+console.log('💡 Run TauDiagnostics.testFirebase() to test connection');
+console.log('💡 Run TauDiagnostics.testButtons() to check buttons');
+console.log('💡 Run TauDiagnostics.testRegistration() to test signup');
+</script>
 </body>
 </html>
