@@ -6436,5 +6436,204 @@ function requestAdminAccess(event) {
     console.log('✅ Public Registration System COMPLETE');
 })();
 </script>
+    <script>
+// ============================================
+// ENHANCED FIREBASE SYNC WITH RETRY
+// ============================================
+(function() {
+    'use strict';
+    
+    window.saveToFirestore = async function(member, retries = 3) {
+        if (typeof firebase === 'undefined' || !firebase.apps.length) {
+            console.warn('⚠️ Firebase not available');
+            return { success: false, reason: 'Firebase not initialized' };
+        }
+        
+        try {
+            const db = firebase.firestore();
+            
+            // Save member
+            await db.collection('members').doc(member.id).set(member, { merge: true });
+            console.log('✅ Member saved to Firestore:', member.id);
+            
+            // Also save to verification collection for easy admin access
+            await db.collection('memberVerification').doc(member.id).set({
+                id: member.id,
+                fullName: member.fullName,
+                email: member.email,
+                phone: member.phone,
+                team: member.team || member.type,
+                status: member.status,
+                created: member.accountCreated || member.created,
+                verified: true
+            }, { merge: true });
+            
+            return { success: true };
+            
+        } catch (error) {
+            console.error('❌ Firestore save error:', error);
+            
+            if (retries > 0) {
+                console.log(`🔄 Retrying Firestore save... (${retries} left)`);
+                await new Promise(resolve => setTimeout(resolve, 2000));
+                return saveToFirestore(member, retries - 1);
+            }
+            
+            return { success: false, error: error.message };
+        }
+    };
+    
+    // Override existing success handlers to use enhanced save
+    const originalTaskSuccess = window.processTaskSuccess;
+    window.processTaskSuccess = async function(formData) {
+        const referralCode = window.TauDB?.checkReferralCode();
+        const syncResult = window.TauDB.sync(formData, 'TASK', referralCode);
+        
+        if (syncResult.success) {
+            const member = syncResult.member;
+            
+            // Save to Firestore with retry
+            await saveToFirestore(member);
+            
+            // Send welcome email
+            const emailParams = {
+                to_email: member.email,
+                to_name: member.fullName,
+                subject: '🎉 Welcome to TAU Africa - TASK Team',
+                message: `Welcome ${member.fullName}!\n\nYour registration is complete!\n\nMember ID: ${member.id}\nReferral Code: ${member.referralCode}\nTeam: TASK\n\nLogin at: ${window.location.origin}\n\nStart earning iKbp today!\n\nTAU Africa Team`,
+                from_name: 'TAU Africa',
+                from_email: 'grouptauafrica@gmail.com',
+                phone: member.phone,
+                location: member.location
+            };
+            
+            await sendTauEmail(emailParams);
+            createNotification(member.id, '🎉 Welcome to TAU Africa!', 'Your account is ready. Start earning today!', 'success');
+            
+            if (typeof showNotification === 'function') {
+                showNotification(`✅ Registration Complete! Member ID: ${member.id}`, 'success');
+            }
+            
+            setTimeout(() => {
+                if (typeof showSuccessModal === 'function') showSuccessModal(member);
+                if (typeof closeAllModals === 'function') closeAllModals();
+            }, 2000);
+        }
+    };
+    
+    const originalTalkSuccess = window.processTalkSuccess;
+    window.processTalkSuccess = async function(formData) {
+        const referralCode = window.TauDB?.checkReferralCode();
+        const syncResult = window.TauDB.sync(formData, 'TALK', referralCode);
+        
+        if (syncResult.success) {
+            const member = syncResult.member;
+            
+            await saveToFirestore(member);
+            
+            const emailParams = {
+                to_email: member.email,
+                to_name: member.fullName,
+                subject: '🎉 Welcome to TAU Africa - TALK Team',
+                message: `Welcome ${member.fullName}!\n\nYour registration is complete!\n\nMember ID: ${member.id}\nReferral Code: ${member.referralCode}\nTeam: TALK\n\nLogin at: ${window.location.origin}\n\nTAU Africa Team`,
+                from_name: 'TAU Africa',
+                from_email: 'grouptauafrica@gmail.com',
+                phone: member.phone,
+                location: member.location
+            };
+            
+            await sendTauEmail(emailParams);
+            createNotification(member.id, '🎉 Welcome to TAU Africa!', 'Your account is ready!', 'success');
+            
+            if (typeof showNotification === 'function') {
+                showNotification(`✅ Registration Complete! Member ID: ${member.id}`, 'success');
+            }
+            
+            setTimeout(() => {
+                if (typeof showSuccessModal === 'function') showSuccessModal(member);
+                if (typeof closeAllModals === 'function') closeAllModals();
+            }, 2000);
+        }
+    };
+    
+    // Fix public registration
+    window.verifyOTPAndRegister = async function(event, email) {
+        event.preventDefault();
+        
+        const formData = new FormData(event.target);
+        const enteredOTP = formData.get('otp');
+        const stored = window.otpCodes?.[email];
+        
+        if (!stored) {
+            showNotification('❌ Verification expired', 'error');
+            return;
+        }
+        
+        if (Date.now() - stored.timestamp > 600000) {
+            delete window.otpCodes[email];
+            showNotification('❌ Code expired', 'error');
+            return;
+        }
+        
+        if (enteredOTP !== stored.code) {
+            showNotification('❌ Invalid code', 'error');
+            return;
+        }
+        
+        const originalData = stored.formData;
+        delete window.otpCodes[email];
+        
+        const publicMember = {
+            id: 'PUB-' + Date.now(),
+            type: 'public',
+            fullName: originalData.fullName,
+            email: originalData.email,
+            phone: originalData.phone,
+            location: originalData.location,
+            password: btoa(originalData.password),
+            accountCreated: new Date().toISOString(),
+            status: 'Active',
+            verified: true,
+            iKbpBalance: 0,
+            iKbBalance: 0,
+            membership: 'Public'
+        };
+        
+        // Save to localStorage
+        const members = JSON.parse(localStorage.getItem('tauAfricaDB') || '[]');
+        members.push(publicMember);
+        localStorage.setItem('tauAfricaDB', JSON.stringify(members));
+        
+        // Save to Firestore
+        await saveToFirestore(publicMember);
+        
+        // Send welcome email
+        const emailParams = {
+            to_email: publicMember.email,
+            to_name: publicMember.fullName,
+            subject: '🎉 Welcome to TAU Africa - Public Access',
+            message: `Welcome ${publicMember.fullName}!\n\nYour free account is ready!\n\nMember ID: ${publicMember.id}\n\nYou can now:\n- Submit values\n- Claim values\n- Browse opportunities\n\nUpgrade anytime to earn iKbp!\n\nTAU Africa Team`,
+            from_name: 'TAU Africa',
+            from_email: 'grouptauafrica@gmail.com',
+            phone: publicMember.phone,
+            location: publicMember.location
+        };
+        
+        await sendTauEmail(emailParams);
+        createNotification(publicMember.id, '🎉 Welcome!', 'Your account is active!', 'success');
+        
+        showNotification('✅ Account created successfully!', 'success');
+        
+        setTimeout(() => {
+            closeAllModals();
+            if (typeof showPublicDashboard === 'function') {
+                showPublicDashboard(publicMember);
+            }
+        }, 2000);
+    };
+    
+    console.log('✅ Enhanced Firebase Sync loaded');
+})();
+</script>
      </body>
         </html>
