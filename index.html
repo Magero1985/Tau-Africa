@@ -923,98 +923,90 @@ To join in these categories, please use KABIRU SERVICE CENTER portal</p>
     }, 1000);
     <script>
 // ============================================
-// ENHANCED EMAIL & NOTIFICATION SYSTEM
+// WORKING EMAIL SYSTEM (Replace existing)
 // ============================================
 (function() {
     'use strict';
     
-    // Ensure EmailJS is properly initialized
-    function ensureEmailJS() {
-        return new Promise((resolve, reject) => {
-            if (typeof emailjs !== 'undefined') {
-                emailjs.init({ publicKey: "GhjI14eQVGgOli0j1" });
-                resolve(true);
-            } else {
-                setTimeout(() => {
-                    if (typeof emailjs !== 'undefined') {
-                        emailjs.init({ publicKey: "GhjI14eQVGgOli0j1" });
-                        resolve(true);
-                    } else {
-                        reject('EmailJS not loaded');
-                    }
-                }, 2000);
-            }
-        });
+    // Initialize EmailJS ONCE on page load
+    function initEmailJS() {
+        if (typeof emailjs === 'undefined') {
+            console.error('❌ EmailJS library not loaded');
+            return false;
+        }
+        
+        try {
+            emailjs.init("GhjI14eQVGgOli0j1");
+            console.log('✅ EmailJS initialized');
+            return true;
+        } catch (error) {
+            console.error('❌ EmailJS init failed:', error);
+            return false;
+        }
     }
     
-    // Enhanced email sending with retry
-    window.sendTauEmail = async function(templateParams, retries = 3) {
+    // Wait for page load
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', initEmailJS);
+    } else {
+        initEmailJS();
+    }
+    
+    // Simple, working send function
+    window.sendTauEmail = async function(toEmail, toName, subject, message) {
+        if (typeof emailjs === 'undefined') {
+            console.error('❌ EmailJS not available');
+            return false;
+        }
+        
         try {
-            await ensureEmailJS();
+            const response = await emailjs.send(
+                'service_xfira7g',
+                'template_bqxztig',
+                {
+                    to_email: toEmail,
+                    to_name: toName,
+                    subject: subject,
+                    message: message,
+                    from_name: 'TAU Africa',
+                    from_email: 'grouptauafrica@gmail.com'
+                }
+            );
             
-            const response = await emailjs.send('service_xfira7g', 'template_bqxztig', templateParams);
-            console.log('✅ Email sent:', response);
-            return { success: true, response };
+            console.log('✅ Email sent:', toEmail);
+            return true;
             
         } catch (error) {
-            console.error('❌ Email send error:', error);
-            
-            if (retries > 0) {
-                console.log(`🔄 Retrying... (${retries} attempts left)`);
-                await new Promise(resolve => setTimeout(resolve, 2000));
-                return sendTauEmail(templateParams, retries - 1);
-            }
-            
-            return { success: false, error: error.message };
+            console.error('❌ Email failed:', error);
+            return false;
         }
     };
     
-    // Enhanced notification with database storage
-    window.createNotification = function(memberId, title, message, type = 'info') {
-        const NOTIF_KEY = 'tauNotifications';
-        const allNotifications = JSON.parse(localStorage.getItem(NOTIF_KEY) || '{}');
-        
-        if (!allNotifications[memberId]) {
-            allNotifications[memberId] = [];
-        }
-        
-        const notification = {
-            id: `NOTIF-${Date.now()}`,
-            title: title,
-            message: message,
-            timestamp: new Date().toISOString(),
-            read: false,
-            type: type
-        };
-        
-        allNotifications[memberId].unshift(notification);
-        
-        if (allNotifications[memberId].length > 50) {
-            allNotifications[memberId] = allNotifications[memberId].slice(0, 50);
-        }
-        
-        localStorage.setItem(NOTIF_KEY, JSON.stringify(allNotifications));
-        
-        // Also save to Firestore if available
-        if (typeof firebase !== 'undefined' && firebase.apps.length > 0) {
-            const db = firebase.firestore();
-            db.collection('notifications').doc(memberId).set({
-                notifications: allNotifications[memberId]
-            }, { merge: true }).catch(err => console.warn('Firestore notification warning:', err));
-        }
-        
-        console.log(`📬 Notification created for ${memberId}:`, title);
-        
-        // Show visual notification if it's for current user
-        const currentMember = window.TauDB?.getCurrentMember();
-        if (currentMember && currentMember.id === memberId) {
-            if (typeof showNotification === 'function') {
-                showNotification(`${title}: ${message}`, type);
-            }
-        }
+    // Send welcome email after registration
+    window.sendWelcomeEmail = async function(member) {
+        const message = `Welcome to TAU Africa, ${member.fullName}!
+
+Your registration is complete:
+
+Member ID: ${member.id}
+Referral Code: ${member.referralCode}
+Team: ${member.team}
+
+Login at: ${window.location.origin}
+
+Start earning iKbp today!
+
+TAU Africa Team`;
+
+        return await sendTauEmail(
+            member.email,
+            member.fullName,
+            'Welcome to TAU Africa',
+            message
+        );
     };
     
-    console.log('✅ Enhanced Email & Notification System loaded');
+    console.log('✅ Email system loaded');
 })();
 </script>
     <script>
