@@ -824,6 +824,15 @@ To join in these categories, please use KABIRU SERVICE CENTER portal</p>
 
     <!-- Floating Member Access Button -->
     <div class="floating-btn" onclick="showRealMemberLogin()" title="Member Access">👤</div>
+    <!-- Add this with your other floating buttons -->
+<div class="floating-btn" onclick="showValidatorInterface()" title="Validator Access" style="bottom: 170px; right: 30px; background: linear-gradient(45deg, #9b59b6, #8e44ad);">
+    🔐
+</div>
+
+<!-- Add this for admin validation dashboard access -->
+<div class="floating-btn" onclick="if(isAdminAuthenticated()) { showValidationDashboard(); } else { showAdminLogin(); }" title="Validation Dashboard" style="bottom: 240px; right: 30px; background: linear-gradient(45deg, #e74c3c, #c0392b);">
+    📊
+</div>
     <!-- AI Assistant -->
     <div class="ai-assistant" onclick="toggleAIChat()" title="AI Assistant - Get Help">🤖</div>
 
