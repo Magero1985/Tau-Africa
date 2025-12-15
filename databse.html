@@ -369,13 +369,16 @@
 
 <script>
 // ============================================
-// TAU AFRICA DATABASE - CONSOLIDATED SCRIPT
+// TAU AFRICA DATABASE - COMPLETE FIXED VERSION
 // ============================================
 (function() {
     'use strict';
     
     console.log('💾 Database App Initializing...');
     
+    // ============================================
+    // GLOBAL VARIABLES
+    // ============================================
     const ACCESS_CODE = 'TAU2025ADMIN';
     const FIREBASE_CONFIG = {
         apiKey: "AIzaSyBcTzvl5lwpojRQM5lwyWe3hwp4upogUWw",
@@ -386,9 +389,11 @@
         appId: "1:69734421488:web:d13ae38f1c7d79cc854335"
     };
     
-    let db, membersDB = [], isOnline = false;
+    let db, membersDB = [], isOnline = false, currentMemberSession = null;
     
-    // Initialize Firebase
+    // ============================================
+    // FIREBASE INITIALIZATION
+    // ============================================
     try {
         if (!firebase.apps.length) {
             firebase.initializeApp(FIREBASE_CONFIG);
@@ -397,13 +402,32 @@
         db.enablePersistence({ synchronizeTabs: true })
             .catch(err => console.warn('Persistence:', err));
         isOnline = true;
+        updateSyncIndicator(true);
         console.log('✅ Firebase connected');
+        
+        // Setup realtime sync
+        setupRealtimeSync();
     } catch (error) {
         console.error('❌ Firebase error:', error);
+        updateSyncIndicator(false);
     }
     
-    // Load database
-    window.loadDatabase = async function() {
+    function updateSyncIndicator(online) {
+        const indicator = document.getElementById('syncIndicator');
+        const text = document.getElementById('syncText');
+        if (indicator && text) {
+            indicator.className = online ? 'sync-indicator online' : 'sync-indicator offline';
+            text.textContent = online ? '🟢 Firebase Connected' : '🔴 Offline Mode';
+        }
+    }
+    
+    // ============================================
+    // DATABASE OPERATIONS
+    // ============================================
+    async function loadDatabase() {
+        console.log('📥 Loading database...');
+        
+        // Load from localStorage first
         const local = localStorage.getItem('tauAfricaDB');
         if (local) {
             membersDB = JSON.parse(local);
@@ -412,570 +436,503 @@
             console.log(`💾 Loaded ${membersDB.length} from localStorage`);
         }
         
+        // Then sync with Firestore
         if (db && isOnline) {
             try {
                 const snapshot = await db.collection('members').get();
                 if (!snapshot.empty) {
                     membersDB = [];
-                    snapshot.forEach(doc => membersDB.push(doc.data()));
+                    snapshot.forEach(doc => {
+                        membersDB.push({ ...doc.data(), firestoreId: doc.id });
+                    });
                     localStorage.setItem('tauAfricaDB', JSON.stringify(membersDB));
                     updateStats();
                     renderMembers();
                     console.log(`☁️ Synced ${membersDB.length} from Firestore`);
                 }
             } catch (error) {
-                console.error('Load error:', error);
+                console.error('Firestore load error:', error);
             }
         }
-    };
+    }
     
-    window.updateStats = function() {
+    function setupRealtimeSync() {
+        if (!db) return;
+        
+        db.collection('members').onSnapshot(snapshot => {
+            snapshot.docChanges().forEach(change => {
+                const data = { ...change.doc.data(), firestoreId: change.doc.id };
+                
+                if (change.type === 'added' || change.type === 'modified') {
+                    const idx = membersDB.findIndex(m => m.id === data.id);
+                    if (idx >= 0) {
+                        membersDB[idx] = data;
+                    } else {
+                        membersDB.push(data);
+                    }
+                } else if (change.type === 'removed') {
+                    membersDB = membersDB.filter(m => m.id !== data.id);
+                }
+                
+                localStorage.setItem('tauAfricaDB', JSON.stringify(membersDB));
+                updateStats();
+                renderMembers();
+            });
+        }, error => {
+            console.error('Real-time sync error:', error);
+        });
+        
+        console.log('👂 Real-time sync active');
+    }
+    
+    async function saveMember(member) {
+        const idx = membersDB.findIndex(m => m.id === member.id);
+        if (idx >= 0) {
+            membersDB[idx] = member;
+        } else {
+            membersDB.push(member);
+        }
+        localStorage.setItem('tauAfricaDB', JSON.stringify(membersDB));
+        
+        if (db && isOnline) {
+            try {
+                await db.collection('members').doc(member.id).set(member);
+                console.log(`☁️ Saved to Firestore: ${member.id}`);
+            } catch (error) {
+                console.error('Firestore save error:', error);
+            }
+        }
+    }
+    
+    async function deleteMember(id) {
+        if (!confirm('Delete this member? This cannot be undone.')) return;
+        
+        try {
+            const member = membersDB.find(m => m.id === id);
+            
+            if (member?.firestoreId && db) {
+                await db.collection('members').doc(member.firestoreId).delete();
+            }
+            
+            membersDB = membersDB.filter(m => m.id !== id);
+            localStorage.setItem('tauAfricaDB', JSON.stringify(membersDB));
+            
+            updateStats();
+            renderMembers();
+            showNotification('✅ Member deleted', 'success');
+        } catch (error) {
+            console.error('Delete error:', error);
+            showNotification('❌ Delete failed', 'error');
+        }
+    }
+    
+    // ============================================
+    // UI FUNCTIONS
+    // ============================================
+    function generateMemberID(team) {
+        const prefix = team === 'TASK' ? 'TSK' : 'TLK';
+        const timestamp = Date.now().toString().slice(-6);
+        const random = Math.floor(Math.random() * 1000).toString().padStart(3, '0');
+        return `${prefix}-${timestamp}-${random}`;
+    }
+    
+    function updateStats() {
         document.getElementById('totalMembers').textContent = membersDB.length;
         document.getElementById('taskMembers').textContent = membersDB.filter(m => m.team === 'TASK').length;
         document.getElementById('talkMembers').textContent = membersDB.filter(m => m.team === 'TALK').length;
-        const revenue = membersDB.reduce((s, m) => s + (m.fee || 0), 0);
+        const revenue = membersDB.reduce((sum, m) => 
+            m.paymentStatus === 'Paid' ? sum + (m.fee || 0) : sum, 0
+        );
         document.getElementById('revenueTotal').textContent = `KSH ${revenue.toLocaleString()}`;
-    };
+    }
     
-    window.renderMembers = function() {
+    function renderMembers(filtered = null) {
+        const data = filtered || membersDB;
         const tbody = document.getElementById('membersTableBody');
         if (!tbody) return;
         
-        tbody.innerHTML = membersDB.map(m => `
+        tbody.innerHTML = data.map(m => `
             <tr>
                 <td><strong>${m.id}</strong></td>
                 <td>${m.fullName}</td>
                 <td>${m.email}</td>
                 <td>${m.phone}</td>
                 <td><span class="badge badge-${(m.team || '').toLowerCase()}">${m.team}</span></td>
-                <td><span class="badge badge-paid">Paid</span></td>
-                <td><button class="btn-icon btn-view" onclick="alert('${m.id}')">View</button></td>
+                <td><span class="badge badge-${(m.paymentStatus || 'pending').toLowerCase()}">${m.paymentStatus || 'Pending'}</span></td>
+                <td>
+                    <div class="actions">
+                        <button class="btn-icon btn-view" onclick="window.viewMember('${m.id}')">View</button>
+                        <button class="btn-icon btn-delete" onclick="window.deleteMember('${m.id}')">Delete</button>
+                    </div>
+                </td>
             </tr>
         `).join('');
+    }
+    
+    function filterMembers() {
+        const search = document.getElementById('searchInput').value.toLowerCase();
+        const team = document.getElementById('teamFilter').value;
+        
+        const filtered = membersDB.filter(m => {
+            const matchSearch = !search || 
+                m.fullName.toLowerCase().includes(search) ||
+                m.email.toLowerCase().includes(search) ||
+                m.phone.includes(search) ||
+                m.id.toLowerCase().includes(search);
+            
+            const matchTeam = !team || m.team === team;
+            
+            return matchSearch && matchTeam;
+        });
+        
+        renderMembers(filtered);
+    }
+    
+    function viewMember(id) {
+        const member = membersDB.find(m => m.id === id);
+        if (!member) return;
+        
+        let details = '';
+        Object.keys(member).forEach(key => {
+            if (key !== 'firestoreId') {
+                details += `${key}: ${member[key]}\n`;
+            }
+        });
+        
+        alert(details);
+    }
+    
+    function showNotification(message, type) {
+        const notif = document.getElementById('notification');
+        if (!notif) return;
+        
+        notif.textContent = message;
+        notif.className = `notification ${type}`;
+        notif.style.display = 'block';
+        
+        setTimeout(() => {
+            notif.style.display = 'none';
+        }, 4000);
+    }
+    
+    // ============================================
+    // CLEANUP FUNCTIONS
+    // ============================================
+    window.showCleanupModal = function() {
+        document.getElementById('cleanupModal').style.display = 'block';
     };
     
-    // Login handler
-    document.addEventListener('DOMContentLoaded', () => {
-        document.getElementById('loginForm').addEventListener('submit', (e) => {
-            e.preventDefault();
-            const code = document.getElementById('accessCode').value;
-            if (code === ACCESS_CODE) {
-                document.getElementById('loginScreen').style.display = 'none';
-                document.getElementById('dashboard').style.display = 'block';
-                loadDatabase();
-            } else {
-                alert('Invalid code');
-            }
-        });
-    });
+    window.closeCleanupModal = function() {
+        document.getElementById('cleanupModal').style.display = 'none';
+    };
     
-    console.log('✅ Database App Ready');
-})();
-</script>
-    
-    <script>
-        // ==========================================
-        // DATABASE OPERATIONS
-        // ==========================================
-        async function loadDatabase() {
-            console.log('📥 Loading database...');
+    window.runCleanup = async function() {
+        const statusDiv = document.getElementById('cleanupStatus');
+        statusDiv.style.display = 'block';
+        statusDiv.innerHTML = '';
+        
+        function log(msg) {
+            statusDiv.innerHTML += msg + '<br>';
+            statusDiv.scrollTop = statusDiv.scrollHeight;
+        }
+        
+        log('🧹 Starting cleanup...');
+        
+        if (!db || !isOnline) {
+            log('⚠️ Firestore not available, cleaning localStorage only');
+            cleanupLocalStorage();
+            return;
+        }
+        
+        try {
+            log('📥 Loading members from Firestore...');
+            const snapshot = await db.collection('members').get();
+            log(`📊 Found ${snapshot.size} total documents`);
             
-            // Always load from localStorage first (instant)
-            const local = localStorage.getItem('tauAfricaDB');
-            if (local) {
-                membersDB = JSON.parse(local);
-                updateStats();
-                renderMembers();
-                console.log(`💾 Loaded ${membersDB.length} from localStorage`);
-            }
-            
-            // Then sync with Firestore if available
-            if (isFirebaseReady && db) {
-                try {
-                    const snapshot = await db.collection('members').get();
-                    if (!snapshot.empty) {
-                        membersDB = [];
-                        snapshot.forEach(doc => {
-                            membersDB.push({ ...doc.data(), firestoreId: doc.id });
-                        });
-                        localStorage.setItem('tauAfricaDB', JSON.stringify(membersDB));
-                        updateStats();
-                        renderMembers();
-                        console.log(`☁️ Synced ${membersDB.length} from Firestore`);
-                    }
-                } catch (error) {
-                    console.error('Firestore load error:', error);
-                }
-            }
-        }
-
-        function setupRealtimeSync() {
-            if (!db) return;
-            
-            db.collection('members').onSnapshot(snapshot => {
-                snapshot.docChanges().forEach(change => {
-                    const data = { ...change.doc.data(), firestoreId: change.doc.id };
-                    
-                    if (change.type === 'added' || change.type === 'modified') {
-                        const idx = membersDB.findIndex(m => m.id === data.id);
-                        if (idx >= 0) {
-                            membersDB[idx] = data;
-                        } else {
-                            membersDB.push(data);
-                        }
-                    } else if (change.type === 'removed') {
-                        membersDB = membersDB.filter(m => m.id !== data.id);
-                    }
-                    
-                    localStorage.setItem('tauAfricaDB', JSON.stringify(membersDB));
-                    updateStats();
-                    renderMembers();
-                });
-            }, error => {
-                console.error('Real-time sync error:', error);
-            });
-            
-            console.log('👂 Real-time sync active');
-        }
-
-        async function saveMember(member) {
-            // Save to localStorage
-            const idx = membersDB.findIndex(m => m.id === member.id);
-            if (idx >= 0) {
-                membersDB[idx] = member;
-            } else {
-                membersDB.push(member);
-            }
-            localStorage.setItem('tauAfricaDB', JSON.stringify(membersDB));
-            
-            // Save to Firestore
-            if (isFirebaseReady && db) {
-                try {
-                    await db.collection('members').doc(member.id).set(member);
-                    console.log(`☁️ Saved to Firestore: ${member.id}`);
-                } catch (error) {
-                    console.error('Firestore save error:', error);
-                }
-            }
-        }
-
-        async function deleteMember(id) {
-            if (!confirm('Delete this member?')) return;
-            
-            try {
-                const member = membersDB.find(m => m.id === id);
-                
-                // Delete from Firestore
-                if (member?.firestoreId && db) {
-                    await db.collection('members').doc(member.firestoreId).delete();
-                }
-                
-                // Delete from local
-                membersDB = membersDB.filter(m => m.id !== id);
-                localStorage.setItem('tauAfricaDB', JSON.stringify(membersDB));
-                
-                updateStats();
-                renderMembers();
-                showNotification('✅ Member deleted', 'success');
-            } catch (error) {
-                console.error('Delete error:', error);
-                showNotification('❌ Delete failed', 'error');
-            }
-        }
-
-        // ==========================================
-        // UI FUNCTIONS
-        // ==========================================
-        function generateMemberID(team) {
-            const pre = team === 'TASK' ? 'TSK' : 'TLK';
-            return `${pre}-${Date.now().toString().slice(-6)}-${Math.floor(Math.random()*1000).toString().padStart(3,'0')}`;
-        }
-
-        function updateStats() {
-            document.getElementById('totalMembers').textContent = membersDB.length;
-            document.getElementById('taskMembers').textContent = membersDB.filter(m => m.team === 'TASK').length;
-            document.getElementById('talkMembers').textContent = membersDB.filter(m => m.team === 'TALK').length;
-            const rev = membersDB.reduce((s, m) => m.paymentStatus === 'Paid' ? s + (m.fee || 0) : s, 0);
-            document.getElementById('revenueTotal').textContent = `KSH ${rev.toLocaleString()}`;
-        }
-
-        function renderMembers(filtered = null) {
-            const data = filtered || membersDB;
-            document.getElementById('membersTableBody').innerHTML = data.map(m => `
-                <tr>
-                    <td><strong>${m.id}</strong></td>
-                    <td>${m.fullName}</td>
-                    <td>${m.email}</td>
-                    <td>${m.phone}</td>
-                    <td><span class="badge badge-${m.team.toLowerCase()}">${m.team}</span></td>
-                    <td><span class="badge badge-${(m.paymentStatus||'pending').toLowerCase()}">${m.paymentStatus||'Pending'}</span></td>
-                    <td>
-                        <div class="actions">
-                            <button class="btn-icon btn-view" onclick="viewMember('${m.id}')">View</button>
-                            <button class="btn-icon btn-delete" onclick="deleteMember('${m.id}')">Delete</button>
-                        </div>
-                    </td>
-                </tr>
-            `).join('');
-        }
-
-        function filterMembers() {
-            const search = document.getElementById('searchInput').value.toLowerCase();
-            const team = document.getElementById('teamFilter').value;
-            const filtered = membersDB.filter(m => {
-                const matchSearch = !search || m.fullName.toLowerCase().includes(search) ||
-                    m.email.toLowerCase().includes(search) || m.phone.includes(search) || m.id.toLowerCase().includes(search);
-                return matchSearch && (!team || m.team === team);
-            });
-            renderMembers(filtered);
-        }
-
-        function viewMember(id) {
-            const m = membersDB.find(x => x.id === id);
-            if (!m) return;
-            let d = '';
-            for (let k in m) if (k !== 'firestoreId') d += `${k}: ${m[k]}\n`;
-            alert(d);
-        }
-
-        function showNotification(msg, type) {
-            const n = document.getElementById('notification');
-            n.textContent = msg;
-            n.className = `notification ${type}`;
-            n.style.display = 'block';
-            setTimeout(() => n.style.display = 'none', 4000);
-        }
-
-        // ==========================================
-        // CLEANUP FUNCTIONS
-        // ==========================================
-        function showCleanupModal() {
-            document.getElementById('cleanupModal').style.display = 'block';
-        }
-
-        function closeCleanupModal() {
-            document.getElementById('cleanupModal').style.display = 'none';
-        }
-
-        async function runCleanup() {
-            const statusDiv = document.getElementById('cleanupStatus');
-            statusDiv.style.display = 'block';
-            statusDiv.innerHTML = '';
-            
-            function log(msg) {
-                statusDiv.innerHTML += msg + '<br>';
-                statusDiv.scrollTop = statusDiv.scrollHeight;
-            }
-            
-            log('🧹 Starting cleanup...');
-            
-            try {
-                if (!isFirebaseReady || !db) {
-                    log('⚠️ Firestore not available, cleaning localStorage only');
-                    cleanupLocalStorage();
-                    return;
-                }
-                
-                log('📥 Loading members from Firestore...');
-                const snapshot = await db.collection('members').get();
-                log(`📊 Found ${snapshot.size} total documents`);
-                
-                const valid = [];
-                const duplicates = new Map();
-                const testData = [];
-                const invalid = [];
-                
-                snapshot.forEach(doc => {
-                    const data = doc.data();
-                    
-                    // Check for invalid
-                    if (!data.id || !data.email || !data.team) {
-                        invalid.push({ docId: doc.id, reason: 'Missing fields' });
-                        return;
-                    }
-                    
-                    // Check for test data
-                    if (
-                        data.email?.includes('test') || 
-                        data.email?.includes('example.com') ||
-                        data.fullName?.toLowerCase().includes('test')
-                    ) {
-                        testData.push({ docId: doc.id, email: data.email });
-                        return;
-                    }
-                    
-                    // Check for duplicates
-                    if (duplicates.has(data.email)) {
-                        duplicates.get(data.email).push({ docId: doc.id, id: data.id });
-                    } else {
-                        duplicates.set(data.email, [{ docId: doc.id, id: data.id }]);
-                        valid.push({ docId: doc.id, ...data });
-                    }
-                });
-                
-                const dupsToDelete = [];
-                duplicates.forEach((entries, email) => {
-                    if (entries.length > 1) {
-                        dupsToDelete.push(...entries.slice(1));
-                        log(`🔄 Found ${entries.length} duplicates for: ${email}`);
-                    }
-                });
-                
-                log(`<br>✅ Valid members: ${valid.length}`);
-                log(`🔄 Duplicates: ${dupsToDelete.length}`);
-                log(`🧪 Test data: ${testData.length}`);
-                log(`❌ Invalid: ${invalid.length}`);
-                
-                const totalToDelete = dupsToDelete.length + testData.length + invalid.length;
-                
-                if (totalToDelete === 0) {
-                    log('<br>✨ Database is already clean!');
-                    setTimeout(() => {
-                        updateStats();
-                        renderMembers();
-                    }, 1000);
-                    return;
-                }
-                
-                log(`<br>🗑️ Will delete ${totalToDelete} entries`);
-                
-                if (!confirm(`Delete ${totalToDelete} entries?\n\nThis will keep ${valid.length} valid members.`)) {
-                    log('❌ Cleanup cancelled');
-                    return;
-                }
-                
-                const toDelete = [
-                    ...dupsToDelete.map(d => d.docId),
-                    ...testData.map(t => t.docId),
-                    ...invalid.map(i => i.docId)
-                ];
-                
-                const batchSize = 500;
-                let deleted = 0;
-                
-                for (let i = 0; i < toDelete.length; i += batchSize) {
-                    const batch = db.batch();
-                    const chunk = toDelete.slice(i, i + batchSize);
-                    
-                    chunk.forEach(docId => {
-                        batch.delete(db.collection('members').doc(docId));
-                    });
-                    
-                    await batch.commit();
-                    deleted += chunk.length;
-                    log(`🗑️ Deleted ${deleted}/${toDelete.length}...`);
-                }
-                
-                log(`<br>✅ Cleanup complete!`);
-                log(`📊 Remaining: ${valid.length} valid members`);
-                
-                // Update localStorage
-                membersDB = valid;
-                localStorage.setItem('tauAfricaDB', JSON.stringify(valid));
-                
-                setTimeout(() => {
-                    updateStats();
-                    renderMembers();
-                    showNotification(`✅ Cleaned! Deleted: ${totalToDelete}, Remaining: ${valid.length}`, 'success');
-                }, 1000);
-                
-            } catch (error) {
-                log(`<br>❌ Error: ${error.message}`);
-                console.error('Cleanup error:', error);
-            }
-        }
-
-        function cleanupLocalStorage() {
-            const members = JSON.parse(localStorage.getItem('tauAfricaDB') || '[]');
             const valid = [];
-            const seen = new Set();
+            const duplicates = new Map();
+            const testData = [];
+            const invalid = [];
             
-            members.forEach(m => {
-                if (!m.id || !m.email || !m.team) return;
-                if (m.email?.includes('test') || m.email?.includes('example.com')) return;
-                if (seen.has(m.email)) return;
+            snapshot.forEach(doc => {
+                const data = doc.data();
                 
-                seen.add(m.email);
-                valid.push(m);
+                if (!data.id || !data.email || !data.team) {
+                    invalid.push({ docId: doc.id, reason: 'Missing fields' });
+                    return;
+                }
+                
+                if (
+                    data.email?.includes('test') || 
+                    data.email?.includes('example.com') ||
+                    data.fullName?.toLowerCase().includes('test')
+                ) {
+                    testData.push({ docId: doc.id, email: data.email });
+                    return;
+                }
+                
+                if (duplicates.has(data.email)) {
+                    duplicates.get(data.email).push({ docId: doc.id, id: data.id });
+                } else {
+                    duplicates.set(data.email, [{ docId: doc.id, id: data.id }]);
+                    valid.push({ docId: doc.id, ...data });
+                }
             });
             
-            localStorage.setItem('tauAfricaDB', JSON.stringify(valid));
+            const dupsToDelete = [];
+            duplicates.forEach((entries, email) => {
+                if (entries.length > 1) {
+                    dupsToDelete.push(...entries.slice(1));
+                    log(`🔄 Found ${entries.length} duplicates for: ${email}`);
+                }
+            });
+            
+            log(`<br>✅ Valid members: ${valid.length}`);
+            log(`🔄 Duplicates: ${dupsToDelete.length}`);
+            log(`🧪 Test data: ${testData.length}`);
+            log(`❌ Invalid: ${invalid.length}`);
+            
+            const totalToDelete = dupsToDelete.length + testData.length + invalid.length;
+            
+            if (totalToDelete === 0) {
+                log('<br>✨ Database is already clean!');
+                return;
+            }
+            
+            if (!confirm(`Delete ${totalToDelete} entries?\n\nThis will keep ${valid.length} valid members.`)) {
+                log('❌ Cleanup cancelled');
+                return;
+            }
+            
+            const toDelete = [
+                ...dupsToDelete.map(d => d.docId),
+                ...testData.map(t => t.docId),
+                ...invalid.map(i => i.docId)
+            ];
+            
+            const batchSize = 500;
+            let deleted = 0;
+            
+            for (let i = 0; i < toDelete.length; i += batchSize) {
+                const batch = db.batch();
+                const chunk = toDelete.slice(i, i + batchSize);
+                
+                chunk.forEach(docId => {
+                    batch.delete(db.collection('members').doc(docId));
+                });
+                
+                await batch.commit();
+                deleted += chunk.length;
+                log(`🗑️ Deleted ${deleted}/${toDelete.length}...`);
+            }
+            
+            log(`<br>✅ Cleanup complete!`);
+            log(`📊 Remaining: ${valid.length} valid members`);
+            
             membersDB = valid;
+            localStorage.setItem('tauAfricaDB', JSON.stringify(valid));
+            
             updateStats();
             renderMembers();
-            showNotification(`✅ Local cleanup done! ${valid.length} members remaining`, 'success');
-        }
-
-        // ==========================================
-        // EVENT LISTENERS
-        // ==========================================
-        document.addEventListener('DOMContentLoaded', async () => {
-            // Initialize Firebase first
-            await initFirebase();
+            showNotification(`✅ Cleaned! Deleted: ${totalToDelete}, Remaining: ${valid.length}`, 'success');
             
-            // Mode toggle
-            document.querySelectorAll('.mode-btn').forEach(btn => {
-                btn.addEventListener('click', function() {
-                    document.querySelectorAll('.mode-btn').forEach(b => b.classList.remove('active'));
-                    this.classList.add('active');
-                    const mode = this.dataset.mode;
-                    
-                    document.getElementById('loginScreen').style.display = 'none';
-                    document.getElementById('memberPortal').style.display = 'none';
-                    document.getElementById('memberDashboard').style.display = 'none';
-                    document.getElementById('dashboard').style.display = 'none';
-                    
-                    if (mode === 'admin') {
-                        document.getElementById('loginScreen').style.display = 'block';
-                        document.getElementById('currentMode').textContent = 'Admin';
-                        showNotification('👨‍💼 Admin Mode', 'info');
-                    } else {
-                        document.getElementById('memberPortal').style.display = 'block';
-                        document.getElementById('currentMode').textContent = 'Member';
-                        showNotification('👤 Member Mode', 'info');
-                    }
-                });
-            });
-
-            // Admin login
-            document.getElementById('loginForm').addEventListener('submit', async (e) => {
-                e.preventDefault();
-                const code = document.getElementById('accessCode').value;
-                if (code === (localStorage.getItem('tauAccessCode') || ACCESS_CODE)) {
-                    document.getElementById('loginScreen').style.display = 'none';
-                    document.getElementById('dashboard').style.display = 'block';
-                    await loadDatabase();
-                    showNotification('✅ Admin logged in', 'success');
+        } catch (error) {
+            log(`<br>❌ Error: ${error.message}`);
+            console.error('Cleanup error:', error);
+        }
+    };
+    
+    function cleanupLocalStorage() {
+        const members = JSON.parse(localStorage.getItem('tauAfricaDB') || '[]');
+        const valid = [];
+        const seen = new Set();
+        
+        members.forEach(m => {
+            if (!m.id || !m.email || !m.team) return;
+            if (m.email?.includes('test') || m.email?.includes('example.com')) return;
+            if (seen.has(m.email)) return;
+            
+            seen.add(m.email);
+            valid.push(m);
+        });
+        
+        localStorage.setItem('tauAfricaDB', JSON.stringify(valid));
+        membersDB = valid;
+        updateStats();
+        renderMembers();
+        showNotification(`✅ Local cleanup done! ${valid.length} members remaining`, 'success');
+    }
+    
+    // ============================================
+    // EVENT LISTENERS
+    // ============================================
+    document.addEventListener('DOMContentLoaded', async () => {
+        console.log('📋 Setting up event listeners...');
+        
+        // Mode toggle buttons
+        document.querySelectorAll('.mode-btn').forEach(btn => {
+            btn.addEventListener('click', function() {
+                document.querySelectorAll('.mode-btn').forEach(b => b.classList.remove('active'));
+                this.classList.add('active');
+                const mode = this.dataset.mode;
+                
+                document.getElementById('loginScreen').style.display = 'none';
+                document.getElementById('memberPortal').style.display = 'none';
+                document.getElementById('memberDashboard').style.display = 'none';
+                document.getElementById('dashboard').style.display = 'none';
+                
+                if (mode === 'admin') {
+                    document.getElementById('loginScreen').style.display = 'block';
+                    document.getElementById('currentMode').textContent = 'Admin';
+                    showNotification('👨‍💼 Admin Mode', 'info');
                 } else {
-                    showNotification('❌ Invalid code', 'error');
+                    document.getElementById('memberPortal').style.display = 'block';
+                    document.getElementById('currentMode').textContent = 'Member';
+                    showNotification('👤 Member Mode', 'info');
                 }
             });
-
-            document.getElementById('logoutBtn').addEventListener('click', () => {
-                document.getElementById('loginScreen').style.display = 'block';
-                document.getElementById('dashboard').style.display = 'none';
-                document.getElementById('accessCode').value = '';
-            });
-
-            // Member login
-            document.getElementById('memberLoginForm').addEventListener('submit', (e) => {
-                e.preventDefault();
-                const id = document.getElementById('memberIdentifier').value;
-                const ph = document.getElementById('memberPhone').value;
-                const m = membersDB.find(x => (x.id === id || x.email === id) && x.phone.slice(-4) === ph);
+        });
+        
+        // Admin login
+        document.getElementById('loginForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const code = document.getElementById('accessCode').value;
+            if (code === (localStorage.getItem('tauAccessCode') || ACCESS_CODE)) {
+                document.getElementById('loginScreen').style.display = 'none';
+                document.getElementById('dashboard').style.display = 'block';
+                await loadDatabase();
+                showNotification('✅ Admin logged in', 'success');
+            } else {
+                showNotification('❌ Invalid code', 'error');
+            }
+        });
+        
+        document.getElementById('logoutBtn').addEventListener('click', () => {
+            document.getElementById('loginScreen').style.display = 'block';
+            document.getElementById('dashboard').style.display = 'none';
+            document.getElementById('accessCode').value = '';
+        });
+        
+        // Member login
+        document.getElementById('memberLoginForm').addEventListener('submit', (e) => {
+            e.preventDefault();
+            const id = document.getElementById('memberIdentifier').value;
+            const phone = document.getElementById('memberPhone').value;
+            const member = membersDB.find(m => 
+                (m.id === id || m.email === id) && m.phone.slice(-4) === phone
+            );
+            
+            if (member) {
+                currentMemberSession = member;
+                document.getElementById('memberPortal').style.display = 'none';
+                document.getElementById('memberDashboard').style.display = 'block';
+                document.getElementById('memberName').textContent = member.fullName;
+                document.getElementById('displayMemberId').textContent = member.id;
                 
-                if (m) {
-                    currentMemberSession = m;
-                    document.getElementById('memberPortal').style.display = 'none';
-                    document.getElementById('memberDashboard').style.display = 'block';
-                    document.getElementById('memberName').textContent = m.fullName;
-                    document.getElementById('displayMemberId').textContent = m.id;
-                    
-                    let html = '';
-                    for (let k in m) if (k !== 'firestoreId') {
+                let html = '';
+                for (let key in member) {
+                    if (key !== 'firestoreId') {
                         html += `<div class="detail-row">
-                            <div class="detail-label">${k.toUpperCase()}:</div>
-                            <div class="detail-value">${m[k]||'N/A'}</div>
+                            <div class="detail-label">${key.toUpperCase()}:</div>
+                            <div class="detail-value">${member[key] || 'N/A'}</div>
                         </div>`;
                     }
-                    document.getElementById('memberProfileDetail').innerHTML = html;
-                    showNotification('✅ Login success', 'success');
-                } else {
-                    showNotification('❌ Invalid credentials', 'error');
                 }
-            });
-
-            document.getElementById('memberLogoutBtn').addEventListener('click', () => {
-                document.getElementById('memberDashboard').style.display = 'none';
-                document.getElementById('memberPortal').style.display = 'block';
-                document.getElementById('memberIdentifier').value = '';
-                document.getElementById('memberPhone').value = '';
-            });
-
-            // Tab switching
-            document.querySelectorAll('.tab').forEach(tab => {
-                tab.addEventListener('click', function() {
-                    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-                    document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
-                    this.classList.add('active');
-                    const content = document.getElementById(this.dataset.tab + 'Tab');
-                    if (content) content.classList.add('active');
-                });
-            });
-
-            // Search
-            document.getElementById('searchBtn').addEventListener('click', filterMembers);
-            document.getElementById('searchInput').addEventListener('keyup', filterMembers);
-            document.getElementById('teamFilter').addEventListener('change', filterMembers);
-
-            // Add member form
-            document.getElementById('addMemberForm').addEventListener('submit', async (e) => {
-                e.preventDefault();
-                const fd = new FormData(e.target);
-                const m = {
-                    id: generateMemberID(fd.get('team')),
-                    team: fd.get('team'),
-                    fullName: fd.get('fullName'),
-                    email: fd.get('email'),
-                    phone: fd.get('phone'),
-                    location: fd.get('location'),
-                    paymentStatus: fd.get('paymentStatus') || 'Paid',
-                    dateJoined: new Date().toISOString().split('T')[0],
-                    status: 'Active',
-                    fee: fd.get('team') === 'TASK' ? 500 : 2000
-                };
-
-                try {
-                    await saveMember(m);
-                    showNotification(`✅ Member added! ID: ${m.id}`, 'success');
-                    e.target.reset();
-                    updateStats();
-                    renderMembers();
-                    
-                    // Switch to members tab
-                    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-                    document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
-                    document.querySelector('[data-tab="members"]').classList.add('active');
-                    document.getElementById('membersTab').classList.add('active');
-                } catch (err) {
-                    console.error('Add error:', err);
-                    showNotification('❌ Failed to add member', 'error');
-                }
-            });
-
-            // Settings form
-            document.getElementById('settingsForm').addEventListener('submit', (e) => {
-                e.preventDefault();
-                const fd = new FormData(e.target);
-                const code = fd.get('newAccessCode');
-                if (code) {
-                    localStorage.setItem('tauAccessCode', code);
-                    showNotification('✅ Access code updated', 'success');
-                    e.target.reset();
-                } else {
-                    showNotification('⚠️ Enter new code', 'info');
-                }
-            });
-
-            console.log('✅ TAU Africa Database System Initialized');
-        });
-
-        // Click outside modal to close
-        window.onclick = function(event) {
-            const modal = document.getElementById('cleanupModal');
-            if (event.target === modal) {
-                closeCleanupModal();
+                document.getElementById('memberProfileDetail').innerHTML = html;
+                showNotification('✅ Login success', 'success');
+            } else {
+                showNotification('❌ Invalid credentials', 'error');
             }
-        }
-    
-    // ============================================
-    // AUTO-INITIALIZE
-    // ============================================
-    initFirebase().then(() => {
-        console.log('🚀 Admin system initialized');
+        });
+        
+        document.getElementById('memberLogoutBtn').addEventListener('click', () => {
+            document.getElementById('memberDashboard').style.display = 'none';
+            document.getElementById('memberPortal').style.display = 'block';
+            document.getElementById('memberIdentifier').value = '';
+            document.getElementById('memberPhone').value = '';
+        });
+        
+        // Tab switching
+        document.querySelectorAll('.tab').forEach(tab => {
+            tab.addEventListener('click', function() {
+                document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+                document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+                this.classList.add('active');
+                const content = document.getElementById(this.dataset.tab + 'Tab');
+                if (content) content.classList.add('active');
+            });
+        });
+        
+        // Search
+        document.getElementById('searchBtn').addEventListener('click', filterMembers);
+        document.getElementById('searchInput').addEventListener('keyup', filterMembers);
+        document.getElementById('teamFilter').addEventListener('change', filterMembers);
+        
+        // Add member form
+        document.getElementById('addMemberForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const formData = new FormData(e.target);
+            const member = {
+                id: generateMemberID(formData.get('team')),
+                team: formData.get('team'),
+                fullName: formData.get('fullName'),
+                email: formData.get('email'),
+                phone: formData.get('phone'),
+                location: formData.get('location'),
+                paymentStatus: formData.get('paymentStatus') || 'Paid',
+                dateJoined: new Date().toISOString().split('T')[0],
+                status: 'Active',
+                fee: formData.get('team') === 'TASK' ? 500 : 2000
+            };
+            
+            try {
+                await saveMember(member);
+                showNotification(`✅ Member added! ID: ${member.id}`, 'success');
+                e.target.reset();
+                updateStats();
+                renderMembers();
+                
+                document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+                document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+                document.querySelector('[data-tab="members"]').classList.add('active');
+                document.getElementById('membersTab').classList.add('active');
+            } catch (error) {
+                console.error('Add error:', error);
+                showNotification('❌ Failed to add member', 'error');
+            }
+        });
+        
+        // Settings form
+        document.getElementById('settingsForm').addEventListener('submit', (e) => {
+            e.preventDefault();
+            const formData = new FormData(e.target);
+            const code = formData.get('newAccessCode');
+            if (code) {
+                localStorage.setItem('tauAccessCode', code);
+                showNotification('✅ Access code updated', 'success');
+                e.target.reset();
+            } else {
+                showNotification('⚠️ Enter new code', 'info');
+            }
+        });
+        
+        console.log('✅ Database App Ready');
     });
     
+    // Modal click-outside handler
+    window.onclick = function(event) {
+        const modal = document.getElementById('cleanupModal');
+        if (event.target === modal) {
+            closeCleanupModal();
+        }
+    };
+    
+    // Expose functions globally
+    window.viewMember = viewMember;
+    window.deleteMember = deleteMember;
+    window.filterMembers = filterMembers;
+    
 })();
-    </script>
+</script>
 </body>
 </html>
