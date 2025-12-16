@@ -865,19 +865,21 @@ To join in these categories, please use KABIRU SERVICE CENTER portal</p>
         🌍
     </div>
     </div>  
-    
+    <!-- Firebase SDK -->
+<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+
+<!-- EmailJS SDK -->
+<script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
 
 <script>
-<!-- EmailJS SDK (YOU ALREADY HAVE THIS) -->
-<script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
-    
-</script>
-    <script>
 // ============================================
-// TAU AFRICA - UNIFIED EMAIL SYSTEM (FIXED)
+// TAU AFRICA MAIN APP - CONSOLIDATED SCRIPT
 // ============================================
 (function() {
     'use strict';
+    
     console.log('🚀 TAU Africa Main App Initializing...');
     
     // ============================================
@@ -892,6 +894,23 @@ To join in these categories, please use KABIRU SERVICE CENTER portal</p>
         appId: "1:69734421488:web:d13ae38f1c7d79cc854335"
     };
     
+    let db, auth, isOnline = false;
+    
+    try {
+        if (!firebase.apps.length) {
+            firebase.initializeApp(FIREBASE_CONFIG);
+        }
+        db = firebase.firestore();
+        auth = firebase.auth();
+        
+        db.enablePersistence({ synchronizeTabs: true })
+            .catch(err => console.warn('Persistence:', err));
+        
+        isOnline = true;
+        console.log('✅ Firebase connected');
+    } catch (error) {
+        console.error('❌ Firebase error:', error);
+    }
     
     // ============================================
     // EMAILJS INITIALIZATION
@@ -902,401 +921,438 @@ To join in these categories, please use KABIRU SERVICE CENTER portal</p>
             console.log('✅ EmailJS ready');
         }
     }, 1000);
+    <script>
+// ============================================
+// ENHANCED EMAIL & NOTIFICATION SYSTEM
+// ============================================
+(function() {
+    'use strict';
     
-    // ============================================
-    // 3. CORE EMAIL FUNCTION (Used by all)
-    // ============================================
-    async function sendEmail(toEmail, toName, subject, message, additionalParams = {}) {
-        if (!initEmailJS()) {
-            console.error('❌ Cannot send email - EmailJS not ready');
-            return { success: false, error: 'EmailJS not initialized' };
-        }
-        
-        const templateParams = {
-            to_email: toEmail,
-            to_name: toName,
-            from_name: 'TAU Africa',
-            from_email: EMAIL_CONFIG.adminEmail,
-            subject: subject,
-            message: message,
-            ...additionalParams  // Allows passing phone, location, etc.
-        };
-        
-        console.log('📧 Sending email...', { to: toEmail, subject });
-        
-        try {
-            const response = await emailjs.send(
-                EMAIL_CONFIG.serviceId,
-                EMAIL_CONFIG.templateId,
-                templateParams
-            );
-            
-            console.log('✅ Email sent:', response.status);
-            return { success: true, status: response.status };
-            
-        } catch (error) {
-            console.error('❌ Email failed:', error);
-            return { success: false, error: error.text || error.message };
-        }
+    // Ensure EmailJS is properly initialized
+    function ensureEmailJS() {
+        return new Promise((resolve, reject) => {
+            if (typeof emailjs !== 'undefined') {
+                emailjs.init({ publicKey: "GhjI14eQVGgOli0j1" });
+                resolve(true);
+            } else {
+                setTimeout(() => {
+                    if (typeof emailjs !== 'undefined') {
+                        emailjs.init({ publicKey: "GhjI14eQVGgOli0j1" });
+                        resolve(true);
+                    } else {
+                        reject('EmailJS not loaded');
+                    }
+                }, 2000);
+            }
+        });
     }
     
-    // ============================================
-    // 4. SEND WELCOME EMAIL TO MEMBER
-    // ============================================
-    window.sendWelcomeEmail = async function(member) {
-        const message = `
-Dear ${member.fullName},
-
-🎉 WELCOME TO TAU AFRICA INTERNATIONAL! 🎉
-
-━━━━━━━━━━━━━━━━━━━━━━━━
-YOUR MEMBERSHIP DETAILS
-━━━━━━━━━━━━━━━━━━━━━━━━
-
-👤 Member ID: ${member.id}
-📧 Email: ${member.email}
-📱 Phone: ${member.phone}
-📍 Location: ${member.location}
-👥 Team: ${member.team}
-💰 Registration Fee: KSH ${member.fee} ✅ PAID
-
-━━━━━━━━━━━━━━━━━━━━━━━━
-YOUR BENEFITS
-━━━━━━━━━━━━━━━━━━━━━━━━
-
-🎁 Welcome Bonus: 500 iKbp (KSH 50) - CREDITED!
-🔑 Referral Code: ${member.referralCode}
-   Share to earn 500 iKbp per referral!
-
-💎 Start earning:
-   • Complete activities: 100-500 iKbp each
-   • Complete tasks: 200-5000 iKbp each
-   • Submit values: Earn iKb
-   • Refer friends: 500 iKbp each
-
-━━━━━━━━━━━━━━━━━━━━━━━━
-NEXT STEPS
-━━━━━━━━━━━━━━━━━━━━━━━━
-
-1. Login with your Member ID or Email
-2. Complete your first activity (earn 100 iKbp!)
-3. Share your referral code
-4. Explore the Kabiru Mining App
-
-🌐 Access your dashboard:
-   ${window.location.origin}
-
-📧 Need help? Contact:
-   grouptauafrica@gmail.com
-
-Welcome to the TAU Africa family!
-
-Best regards,
-TAU Africa Team
-🌍 Building Africa's Digital Future
-        `.trim();
-        
-        return await sendEmail(
-            member.email,
-            member.fullName,
-            '🎉 Welcome to TAU Africa International!',
-            message,
-            {
-                phone: member.phone,
-                location: member.location,
-                member_id: member.id,
-                referral_code: member.referralCode
-            }
-        );
-    };
-    
-    // ============================================
-    // 5. SEND NOTIFICATION TO ADMIN
-    // ============================================
-    window.sendEmailToAdmin = async function(formData, subject) {
-        const memberName = formData.fullName || formData.name || 'New Member';
-        const team = formData.team || 'TASK';
-        const fee = formData.fee || (team === 'TASK' ? 500 : team === 'TALK' ? 2000 : 1500);
-        
-        const message = `
-NEW REGISTRATION RECEIVED
-━━━━━━━━━━━━━━━━━━━━━━━━
-
-👤 Name: ${memberName}
-📧 Email: ${formData.email}
-📱 Phone: ${formData.phone}
-📍 Location: ${formData.location}
-👥 Team: ${team}
-💰 Fee: KSH ${fee} ✅ PAID
-📅 Date: ${new Date().toLocaleString()}
-
-${formData.id ? '🆔 Member ID: ' + formData.id : ''}
-${formData.referralCode ? '🔑 Referral Code: ' + formData.referralCode : ''}
-
-━━━━━━━━━━━━━━━━━━━━━━━━
-Additional Information:
-${JSON.stringify(formData, null, 2)}
-
-━━━━━━━━━━━━━━━━━━━━━━━━
-TAU Africa Registration System
-        `.trim();
-        
-        return await sendEmail(
-            EMAIL_CONFIG.adminEmail,
-            'TAU Africa Admin',
-            subject,
-            message,
-            {
-                phone: formData.phone,
-                location: formData.location,
-                team: team
-            }
-        );
-    };
-    
-    // ============================================
-    // 6. SEND REFERRAL NOTIFICATION
-    // ============================================
-    window.sendReferralNotification = async function(referrer, earnings) {
-        const message = `
-Congratulations ${referrer.fullName}!
-
-🎉 REFERRAL BONUS EARNED! 🎉
-
-You've earned ${earnings} iKbp (KSH ${earnings/10}) from your referral.
-
-💰 Current Balance: ${referrer.iKbpBalance || 0} iKbp
-🔑 Your Referral Code: ${referrer.referralCode}
-
-Keep sharing to earn more!
-
-Best regards,
-TAU Africa Team
-        `.trim();
-        
-        return await sendEmail(
-            referrer.email,
-            referrer.fullName,
-            '🎁 Referral Bonus Earned!',
-            message
-        );
-    };
-    
-    // ============================================
-    // 7. OVERRIDE SUCCESS HANDLERS WITH PROPER EMAIL
-    // ============================================
-    
-    // TASK Registration Success
-    window.processTaskSuccess = async function(formData) {
-        console.log('🎯 Processing TASK registration...');
-        
+    // Enhanced email sending with retry
+    window.sendTauEmail = async function(templateParams, retries = 3) {
         try {
-            // 1. Save to database
-            const referralCode = window.TauDB?.checkReferralCode();
-            const syncResult = window.TauDB?.sync(formData, 'TASK', referralCode);
+            await ensureEmailJS();
             
-            if (!syncResult || !syncResult.success) {
-                throw new Error('Database sync failed');
-            }
-            
-            const member = syncResult.member;
-            console.log('✅ Member saved:', member.id);
-            
-            // 2. Award welcome bonus
-            if (window.TauDB?.updateBalance) {
-                window.TauDB.updateBalance(member.id, 500);
-                console.log('🎁 Welcome bonus: 500 iKbp');
-            }
-            
-            // 3. Create notification
-            if (typeof createNotification === 'function') {
-                createNotification(
-                    member.id,
-                    '🎉 Welcome to TAU Africa!',
-                    `Member ID: ${member.id}\nWelcome Bonus: 500 iKbp`,
-                    'success'
-                );
-            }
-            
-            // 4. Send emails (parallel)
-            showNotification('📧 Sending confirmation emails...', 'info');
-            
-            const [welcomeResult, adminResult] = await Promise.allSettled([
-                sendWelcomeEmail(member),
-                sendEmailToAdmin(member, 'NEW TASK REGISTRATION - PAYMENT CONFIRMED')
-            ]);
-            
-            // 5. Check email results
-            const welcomeSent = welcomeResult.status === 'fulfilled' && welcomeResult.value.success;
-            const adminSent = adminResult.status === 'fulfilled' && adminResult.value.success;
-            
-            console.log('📧 Email results:', { welcomeSent, adminSent });
-            
-            // 6. Show appropriate notification
-            let message = '✅ Registration complete!';
-            if (welcomeSent && adminSent) {
-                message += ' Confirmation emails sent to you and admin.';
-            } else if (welcomeSent) {
-                message += ' Welcome email sent to you.';
-            } else if (adminSent) {
-                message += ' Admin notified.';
-            } else {
-                message += ' Emails may be delayed - check inbox in a few minutes.';
-            }
-            
-            showNotification(message, 'success');
-            
-            // 7. Close modal and show success screen
-            setTimeout(() => {
-                closeAllModals();
-                if (typeof showSuccessModal === 'function') {
-                    showSuccessModal(member);
-                }
-            }, 2000);
+            const response = await emailjs.send('service_xfira7g', 'template_bqxztig', templateParams);
+            console.log('✅ Email sent:', response);
+            return { success: true, response };
             
         } catch (error) {
-            console.error('❌ Registration error:', error);
-            showNotification('❌ Registration failed: ' + error.message, 'error');
+            console.error('❌ Email send error:', error);
+            
+            if (retries > 0) {
+                console.log(`🔄 Retrying... (${retries} attempts left)`);
+                await new Promise(resolve => setTimeout(resolve, 2000));
+                return sendTauEmail(templateParams, retries - 1);
+            }
+            
+            return { success: false, error: error.message };
         }
     };
     
-    // TALK Registration Success
-    window.processTalkSuccess = async function(formData) {
-        console.log('🎯 Processing TALK registration...');
+    // Enhanced notification with database storage
+    window.createNotification = function(memberId, title, message, type = 'info') {
+        const NOTIF_KEY = 'tauNotifications';
+        const allNotifications = JSON.parse(localStorage.getItem(NOTIF_KEY) || '{}');
         
-        try {
-            const referralCode = window.TauDB?.checkReferralCode();
-            const syncResult = window.TauDB?.sync(formData, 'TALK', referralCode);
-            
-            if (!syncResult || !syncResult.success) {
-                throw new Error('Database sync failed');
+        if (!allNotifications[memberId]) {
+            allNotifications[memberId] = [];
+        }
+        
+        const notification = {
+            id: `NOTIF-${Date.now()}`,
+            title: title,
+            message: message,
+            timestamp: new Date().toISOString(),
+            read: false,
+            type: type
+        };
+        
+        allNotifications[memberId].unshift(notification);
+        
+        if (allNotifications[memberId].length > 50) {
+            allNotifications[memberId] = allNotifications[memberId].slice(0, 50);
+        }
+        
+        localStorage.setItem(NOTIF_KEY, JSON.stringify(allNotifications));
+        
+        // Also save to Firestore if available
+        if (typeof firebase !== 'undefined' && firebase.apps.length > 0) {
+            const db = firebase.firestore();
+            db.collection('notifications').doc(memberId).set({
+                notifications: allNotifications[memberId]
+            }, { merge: true }).catch(err => console.warn('Firestore notification warning:', err));
+        }
+        
+        console.log(`📬 Notification created for ${memberId}:`, title);
+        
+        // Show visual notification if it's for current user
+        const currentMember = window.TauDB?.getCurrentMember();
+        if (currentMember && currentMember.id === memberId) {
+            if (typeof showNotification === 'function') {
+                showNotification(`${title}: ${message}`, type);
             }
-            
-            const member = syncResult.member;
-            
-            if (window.TauDB?.updateBalance) {
-                window.TauDB.updateBalance(member.id, 500);
-            }
-            
-            if (typeof createNotification === 'function') {
-                createNotification(member.id, '🎉 Welcome!', 'Welcome bonus: 500 iKbp', 'success');
-            }
-            
-            showNotification('📧 Sending confirmation emails...', 'info');
-            
-            const [welcomeResult, adminResult] = await Promise.allSettled([
-                sendWelcomeEmail(member),
-                sendEmailToAdmin(member, 'NEW TALK REGISTRATION - PAYMENT CONFIRMED')
-            ]);
-            
-            const welcomeSent = welcomeResult.status === 'fulfilled' && welcomeResult.value.success;
-            const adminSent = adminResult.status === 'fulfilled' && adminResult.value.success;
-            
-            let message = '✅ Registration complete!';
-            if (welcomeSent && adminSent) {
-                message += ' Emails sent successfully.';
-            }
-            
-            showNotification(message, 'success');
-            
-            setTimeout(() => {
-                closeAllModals();
-                if (typeof showSuccessModal === 'function') showSuccessModal(member);
-            }, 2000);
-            
-        } catch (error) {
-            console.error('❌ Registration error:', error);
-            showNotification('❌ Registration failed: ' + error.message, 'error');
         }
     };
     
-    // JOB CREATION Success
-    window.processJobCreationSuccess = async function(formData) {
-        console.log('🎯 Processing Job Creation enrollment...');
-        
-        try {
-            const referralCode = window.TauDB?.checkReferralCode();
-            const syncResult = window.TauDB?.sync(formData, 'JOB_CREATION', referralCode);
-            
-            if (!syncResult || !syncResult.success) {
-                throw new Error('Database sync failed');
-            }
-            
-            const member = syncResult.member;
-            
-            if (window.TauDB?.updateBalance) {
-                window.TauDB.updateBalance(member.id, 500);
-            }
-            
-            showNotification('📧 Sending confirmation emails...', 'info');
-            
-            await Promise.allSettled([
-                sendWelcomeEmail(member),
-                sendEmailToAdmin(member, 'JOB CREATION ENROLLMENT - PAYMENT CONFIRMED')
-            ]);
-            
-            showNotification('✅ Enrollment complete! Emails sent.', 'success');
-            
-            setTimeout(() => {
-                closeAllModals();
-                if (typeof showSuccessModal === 'function') showSuccessModal(member);
-            }, 2000);
-            
-        } catch (error) {
-            console.error('❌ Enrollment error:', error);
-            showNotification('❌ Enrollment failed: ' + error.message, 'error');
-        }
-    };
-    
-    // ============================================
-    // 8. TEST FUNCTION
-    // ============================================
-    window.testTauEmails = async function() {
-        console.log('🧪 Testing email system...');
-        
-        const testResult = await sendEmail(
-            EMAIL_CONFIG.adminEmail,
-            'Test User',
-            'TAU Email System Test',
-            'This is a test email from TAU Africa.\n\nIf you receive this, the email system is working correctly!\n\nTest Time: ' + new Date().toLocaleString()
-        );
-        
-        if (testResult.success) {
-            showNotification('✅ Test email sent! Check ' + EMAIL_CONFIG.adminEmail, 'success');
-            console.log('✅ Test passed');
-        } else {
-            showNotification('❌ Test failed: ' + testResult.error, 'error');
-            console.error('❌ Test failed:', testResult.error);
-        }
-        
-        return testResult;
-    };
-    
-    // ============================================
-    // 9. STARTUP REPORT
-    // ============================================
-    setTimeout(() => {
-        console.log('\n' + '='.repeat(60));
-        console.log('📧 TAU AFRICA EMAIL SYSTEM STATUS');
-        console.log('='.repeat(60));
-        console.log('EmailJS:', emailInitialized ? '✅ Ready' : '❌ Failed');
-        console.log('Service ID:', EMAIL_CONFIG.serviceId);
-        console.log('Template ID:', EMAIL_CONFIG.templateId);
-        console.log('Admin Email:', EMAIL_CONFIG.adminEmail);
-        console.log('='.repeat(60));
-        console.log('Functions Available:');
-        console.log('  ✅ sendWelcomeEmail(member)');
-        console.log('  ✅ sendEmailToAdmin(formData, subject)');
-        console.log('  ✅ sendReferralNotification(referrer, earnings)');
-        console.log('='.repeat(60));
-        console.log('💡 Test: window.testTauEmails()');
-        console.log('='.repeat(60) + '\n');
-    }, 2000);
-    console.log('✅ Unified Email System loaded');
-    
+    console.log('✅ Enhanced Email & Notification System loaded');
 })();
 </script>
     <script>
+    // ============================================
+    // CORE HELPER FUNCTIONS
+    // ============================================
+    function generateMemberID(team) {
+        const prefix = team === 'TASK' ? 'TSK' : team === 'TALK' ? 'TLK' : 'PUB';
+        const timestamp = Date.now().toString().slice(-6);
+        const random = Math.floor(Math.random() * 1000).toString().padStart(3, '0');
+        return `${prefix}-${timestamp}-${random}`;
+    }
+    
+    function generateReferralCode(memberId) {
+        return btoa(memberId).substring(0, 8).toUpperCase();
+    }
+    
+    window.showNotification = function(message, type = 'success') {
+        let notif = document.getElementById('notification');
+        if (!notif) {
+            notif = document.createElement('div');
+            notif.id = 'notification';
+            notif.className = 'notification';
+            document.body.appendChild(notif);
+        }
+        notif.textContent = message;
+        notif.className = 'notification ' + type;
+        notif.style.display = 'block';
+        setTimeout(() => notif.style.display = 'none', 5000);
+    };
+    
+    window.closeAllModals = function() {
+        document.querySelectorAll('.modal').forEach(m => m.remove());
+    };
+    
+    window.openModal = function(type) {
+        closeAllModals();
+        const content = typeof getModalContent === 'function' 
+            ? getModalContent(type) 
+            : `<div class="modal-content"><span class="close" onclick="closeAllModals()">×</span><h2>${type}</h2></div>`;
+        
+        const modal = document.createElement('div');
+        modal.className = 'modal';
+        modal.style.display = 'block';
+        modal.innerHTML = content;
+        document.body.appendChild(modal);
+    };
+    
+    // ============================================
+    // REGISTRATION HANDLERS
+    // ============================================
+    window.processTaskRegistration = async function(event) {
+        event.preventDefault();
+        const formData = new FormData(event.target);
+        const data = Object.fromEntries(formData.entries());
+        
+        if (!data.phone.match(/^254[0-9]{9}$/)) {
+            showNotification('❌ Phone format: 254XXXXXXXXX', 'error');
+            return;
+        }
+        
+        const memberId = generateMemberID('TASK');
+        const member = {
+            id: memberId,
+            referralCode: generateReferralCode(memberId),
+            team: 'TASK',
+            fullName: data.fullName,
+            email: data.email,
+            phone: data.phone,
+            location: data.location,
+            paymentStatus: 'Paid',
+            fee: 500,
+            dateJoined: new Date().toISOString().split('T')[0],
+            status: 'Active',
+            iKbpBalance: 500,
+            iKbBalance: 0,
+            created: new Date().toISOString(),
+            ...data
+        };
+        
+        // Save to localStorage
+        const members = JSON.parse(localStorage.getItem('tauAfricaDB') || '[]');
+        members.push(member);
+        localStorage.setItem('tauAfricaDB', JSON.stringify(members));
+        
+        // Save to Firestore
+        if (db && isOnline) {
+            try {
+                await db.collection('members').doc(memberId).set(member);
+                console.log('☁️ Saved to Firestore');
+            } catch (error) {
+                console.warn('⚠️ Firestore save failed:', error);
+            }
+        }
+        
+        showNotification(`✅ Registration Complete!\nMember ID: ${memberId}`, 'success');
+        event.target.reset();
+        
+        setTimeout(() => {
+            closeAllModals();
+            showSuccessModal(member);
+        }, 2000);
+    };
+    
+    window.processTalkRegistration = async function(event) {
+        event.preventDefault();
+        const formData = new FormData(event.target);
+        const data = Object.fromEntries(formData.entries());
+        
+        if (!data.phone.match(/^254[0-9]{9}$/)) {
+            showNotification('❌ Phone format: 254XXXXXXXXX', 'error');
+            return;
+        }
+        
+        const memberId = generateMemberID('TALK');
+        const member = {
+            id: memberId,
+            referralCode: generateReferralCode(memberId),
+            team: 'TALK',
+            fullName: data.fullName,
+            email: data.email,
+            phone: data.phone,
+            location: data.location,
+            paymentStatus: 'Paid',
+            fee: 2000,
+            dateJoined: new Date().toISOString().split('T')[0],
+            status: 'Active',
+            iKbpBalance: 500,
+            iKbBalance: 0,
+            created: new Date().toISOString(),
+            ...data
+        };
+        
+        const members = JSON.parse(localStorage.getItem('tauAfricaDB') || '[]');
+        members.push(member);
+        localStorage.setItem('tauAfricaDB', JSON.stringify(members));
+        
+        if (db && isOnline) {
+            try {
+                await db.collection('members').doc(memberId).set(member);
+            } catch (error) {
+                console.warn('⚠️ Firestore save failed:', error);
+            }
+        }
+        
+        showNotification(`✅ Registration Complete!\nMember ID: ${memberId}`, 'success');
+        event.target.reset();
+        
+        setTimeout(() => {
+            closeAllModals();
+            showSuccessModal(member);
+        }, 2000);
+    };
+    
+    // ============================================
+    // SUCCESS MODAL
+    // ============================================
+    window.showSuccessModal = function(member) {
+        const modal = document.createElement('div');
+        modal.className = 'modal';
+        modal.style.display = 'block';
+        modal.innerHTML = `
+            <div class="modal-content">
+                <h2 style="color: #2ecc71; text-align: center;">🎉 Success!</h2>
+                <div style="background: #4169e1; color: white; padding: 30px; border-radius: 15px; margin: 20px 0; text-align: center;">
+                    <h3>Member ID</h3>
+                    <h1 style="font-size: 2.5rem;">${member.id}</h1>
+                </div>
+                <div style="background: #ffd700; padding: 20px; border-radius: 10px; margin: 20px 0; text-align: center;">
+                    <h4 style="color: #333;">Referral Code</h4>
+                    <h2 style="color: #333;">${member.referralCode}</h2>
+                </div>
+                <button class="btn" onclick="closeAllModals()" style="width: 100%;">Close</button>
+            </div>
+        `;
+        document.body.appendChild(modal);
+    };
+    
+    // ============================================
+    // MEMBER LOGIN
+    // ============================================
+    window.showRealMemberLogin = function() {
+        closeAllModals();
+        const modal = document.createElement('div');
+        modal.className = 'modal';
+        modal.style.display = 'block';
+        modal.innerHTML = `
+            <div class="modal-content">
+                <span class="close" onclick="closeAllModals()">×</span>
+                <h2 style="text-align: center;">🔐 Member Login</h2>
+                <form onsubmit="processLogin(event)">
+                    <div class="form-group">
+                        <label>Member ID or Email</label>
+                        <input type="text" id="loginId" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Phone (Last 4 digits)</label>
+                        <input type="text" id="loginPhone" maxlength="4" required>
+                    </div>
+                    <button type="submit" class="btn">Login</button>
+                </form>
+            </div>
+        `;
+        document.body.appendChild(modal);
+    };
+    
+    window.processLogin = function(event) {
+        event.preventDefault();
+        const id = document.getElementById('loginId').value.trim();
+        const phone = document.getElementById('loginPhone').value.trim();
+        
+        const members = JSON.parse(localStorage.getItem('tauAfricaDB') || '[]');
+        const member = members.find(m => 
+            (m.id === id || m.email === id) && m.phone.slice(-4) === phone
+        );
+        
+        if (member) {
+            sessionStorage.setItem('tauCurrentUser', JSON.stringify(member));
+            showNotification('✅ Login successful!', 'success');
+            setTimeout(() => {
+                closeAllModals();
+                showMemberDashboard(member);
+            }, 1000);
+        } else {
+            showNotification('❌ Invalid credentials', 'error');
+        }
+    };
+    
+    window.showMemberDashboard = function(member) {
+        closeAllModals();
+        const modal = document.createElement('div');
+        modal.className = 'modal';
+        modal.style.display = 'block';
+        modal.innerHTML = `
+            <div class="modal-content" style="max-width: 900px;">
+                <span class="close" onclick="sessionStorage.removeItem('tauCurrentUser'); closeAllModals()">×</span>
+                <div style="background: linear-gradient(45deg, #4169e1, #87ceeb); color: white; padding: 25px; border-radius: 15px; margin-bottom: 20px; text-align: center;">
+                    <h2>Welcome, ${member.fullName}!</h2>
+                    <p>Member ID: ${member.id}</p>
+                </div>
+                <div style="text-align: center;">
+                    <h3>Balance: ${member.iKbpBalance || 0} iKbp</h3>
+                    <p>Team: ${member.team}</p>
+                </div>
+            </div>
+        `;
+        document.body.appendChild(modal);
+    };
+    
+    // ============================================
+    // PUBLIC REGISTRATION
+    // ============================================
+    window.showPublicRegistration = function() {
+        closeAllModals();
+        const modal = document.createElement('div');
+        modal.className = 'modal';
+        modal.style.display = 'block';
+        modal.innerHTML = `
+            <div class="modal-content">
+                <span class="close" onclick="closeAllModals()">×</span>
+                <h2 style="text-align: center;">🌍 Public Access</h2>
+                <form onsubmit="processPublicReg(event)">
+                    <div class="form-group">
+                        <label>Full Name *</label>
+                        <input type="text" name="fullName" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Email *</label>
+                        <input type="email" name="email" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Phone *</label>
+                        <input type="tel" name="phone" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Location *</label>
+                        <input type="text" name="location" required>
+                    </div>
+                    <button type="submit" class="btn">Create Account</button>
+                </form>
+            </div>
+        `;
+        document.body.appendChild(modal);
+    };
+    
+    window.processPublicReg = function(event) {
+        event.preventDefault();
+        const formData = new FormData(event.target);
+        const data = Object.fromEntries(formData.entries());
+        
+        const memberId = 'PUB-' + Date.now();
+        const member = {
+            id: memberId,
+            type: 'public',
+            ...data,
+            created: new Date().toISOString()
+        };
+        
+        const members = JSON.parse(localStorage.getItem('tauAfricaDB') || '[]');
+        members.push(member);
+        localStorage.setItem('tauAfricaDB', JSON.stringify(members));
+        
+        showNotification('✅ Account created!', 'success');
+        setTimeout(() => closeAllModals(), 2000);
+    };
+    
+    // ============================================
+    // AUTO-SYNC (Every 5 seconds)
+    // ============================================
+    setInterval(async () => {
+        if (!db || !isOnline) return;
+        
+        const members = JSON.parse(localStorage.getItem('tauAfricaDB') || '[]');
+        const batch = db.batch();
+        let count = 0;
+        
+        members.slice(0, 5).forEach(member => {
+            const ref = db.collection('members').doc(member.id);
+            batch.set(ref, member, { merge: true });
+            count++;
+        });
+        
+        if (count > 0) {
+            try {
+                await batch.commit();
+                console.log(`🔄 Synced ${count} members`);
+            } catch (error) {
+                console.warn('Sync warning:', error);
+            }
+        }
+    }, 5000);
+    
+    console.log('✅ Main App Ready');
+    
+})();
+</script>
+        
+<script>
  //===M-PESA PAYMENT INTEGRATION===//
 
     function initiateMpesaPayment(amount, phoneNumber, formData, successCallback) {
