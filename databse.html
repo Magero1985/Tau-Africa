@@ -337,28 +337,8 @@
         </div>
     </div>
 <button class="btn" onclick="showValidationDashboard()">🔐 Validation Dashboard</button>
+</div>
 <button class="btn" onclick="showSystemStats()">💰 System Balance</button>
-    <!-- Cleanup Modal -->
-    <div id="cleanupModal" class="modal">
-        <div class="modal-content">
-            <span class="close" onclick="closeCleanupModal()">&times;</span>
-            <h2 style="color: #e74c3c;">🧹 Database Cleanup</h2>
-            <div style="background: #fff3cd; padding: 15px; border-radius: 10px; margin: 20px 0;">
-                <strong>⚠️ Warning:</strong> This will remove:
-                <ul style="text-align: left; margin: 10px 0;">
-                    <li>Duplicate entries</li>
-                    <li>Test data (emails with "test" or "example.com")</li>
-                    <li>Invalid entries (missing required fields)</li>
-                </ul>
-            </div>
-            <div id="cleanupStatus"></div>
-            <button onclick="runCleanup()" class="btn" style="background: #e74c3c;">
-                Start Cleanup
-            </button>
-            <button onclick="closeCleanupModal()" class="btn" style="background: #95a5a6; margin-top: 10px;">
-                Cancel
-            </button>
-        </div>
     </div>
 
     <div id="notification" class="notification"></div>
