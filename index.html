@@ -1016,8 +1016,7 @@ To join in these categories, please use KABIRU SERVICE CENTER portal</p>
     
     console.log('✅ Enhanced Email & Notification System loaded');
 })();
-</script>
-    <script>
+    
     // ============================================
     // CORE HELPER FUNCTIONS
     // ============================================
@@ -1350,9 +1349,7 @@ To join in these categories, please use KABIRU SERVICE CENTER portal</p>
     console.log('✅ Main App Ready');
     
 })();
-</script>
         
-<script>
  //===M-PESA PAYMENT INTEGRATION===//
 
     function initiateMpesaPayment(amount, phoneNumber, formData, successCallback) {
@@ -1448,8 +1445,7 @@ function showNotification(message, type = 'success') {
         notification.style.display = 'none';
     }, 6000);
 }
-    </script>
-  <script>
+    
 
  //===VALUE SUBMISSION SYSTEM - Main App===//
  
@@ -1774,7 +1770,7 @@ function showNotification(message, type = 'success') {
     }
 })();
 </script>
-<script>
+ <script>
 
 // PUBLIC OPPORTUNITIES DISPLAY - Main App
 // ============================================
@@ -2153,99 +2149,7 @@ function processJobCreationTraining(event) {
     }
     
     initiateMpesaPayment(1500, data.phone, data, 'processJobCreationSuccess');
-}
- 
-// ===== AI ASSISTANT FUNCTIONS =====
-function toggleAIChat() {
-    const chatWindow = document.getElementById('aiChatWindow');
-    if (chatWindow.style.display === 'none' || !chatWindow.style.display) {
-        chatWindow.style.display = 'flex';
-    } else {
-        chatWindow.style.display = 'none';
-    }
-}
-
-function handleAIChatKeyPress(event) {
-    if (event.key === 'Enter') {
-        sendAIMessage();
-    }
-}
-
-function sendAIMessage() {
-    const input = document.getElementById('aiChatInput');
-    const message = input.value.trim();
-    
-    if (!message) return;
-    
-    const messagesContainer = document.getElementById('aiChatMessages');
-    
-    const userMessage = document.createElement('div');
-    userMessage.className = 'ai-message user-message';
-    userMessage.textContent = message;
-    messagesContainer.appendChild(userMessage);
-    
-    input.value = '';
-    
-    setTimeout(() => {
-        const aiResponse = generateAIResponse(message);
-        const aiMessage = document.createElement('div');
-        aiMessage.className = 'ai-message';
-        aiMessage.innerHTML = aiResponse;
-        messagesContainer.appendChild(aiMessage);
-        messagesContainer.scrollTop = messagesContainer.scrollHeight;
-    }, 1000);
-    
-    messagesContainer.scrollTop = messagesContainer.scrollHeight;
-}
-
-function generateAIResponse(userMessage) {
-    const message = userMessage.toLowerCase();
-    
-    if (message.includes('register') || message.includes('join')) {
-        return `To register with TAU Africa, you can choose between:<br>
-        • <strong>TASK Team (KSH 500)</strong> - For service providers and skilled professionals<br>
-        • <strong>TALK Team (KSH 2,000)</strong> - For investors and financial supporters<br>
-        • <strong>Job Creation Training (KSH 1,500)</strong> - For aspiring entrepreneurs<br>
-        <br>Click the relevant buttons in the Membership section to get started!`;
-    }
-    
-    if (message.includes('payment') || message.includes('mpesa')) {
-        return `Our payment process uses M-PESA:<br>
-        1. Enter your M-PESA number (254XXXXXXXXX format)<br>
-        2. You'll receive a payment prompt on your phone<br>
-        3. Enter your M-PESA PIN to confirm<br>
-        4. Wait for confirmation<br>
-        <br>All payments are secure and processed instantly!`;
-    }
-    
-    if (message.includes('kabiru') || message.includes('mining')) {
-        return `Kabiru is our digital currency! You can:<br>
-        • Mine Kabiru by validating real values in the community<br>
-        • Use the mining portal<br>
-        • Earn through community contributions<br>
-        • Convert to other currencies through our ecosystem`;
-    }
-    
-    if (message.includes('help') || message.includes('support')) {
-        return `I'm here to help! You can ask me about:<br>
-        • Registration processes and payments<br>
-        • Kabiru mining and digital currency<br>
-        • Community programs and training<br>
-        • Technical issues with the app<br>
-        • Business registration services<br>
-        <br>What specific area would you like help with?`;
-    }
-    
-    return `Thank you for your question! Here are some ways I can help:<br>
-    • Registration and membership information<br>
-    • Payment and M-PESA guidance<br>
-    • Kabiru mining and digital currency<br>
-    • Community programs and forum access<br>
-    • Technical support<br>
-    <br>Please ask a specific question, or contact <strong>grouptauafrica@gmail.com</strong> for detailed support.`;
-}
-    </script>
-     <script>
+} 
 // ===== GET MODAL CONTENT BASED ON TYPE =====
 function getModalContent(type) {
     switch(type) {
@@ -3875,7 +3779,8 @@ function createForumModal() {
         };
         localStorage.setItem(DB_CONFIG.credentialsKey, JSON.stringify(credentials));
     }
-     
+    </script>
+     <script>
     // Authentication
     function authenticateMember(identifier, phoneLastFour) {
         try {
@@ -4197,8 +4102,7 @@ function createForumModal() {
         showNotification(`🎁 Referral code: ${ref} - Referrer earns 500 iKbp when you register!`, 'info', 8000);
     }
 })(); 
-    </script>
-
+</script>
     <script>
 // TAU AFRICA UI COMPONENTS - COMPLETE
 // =====================================================
