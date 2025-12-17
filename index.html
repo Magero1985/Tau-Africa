@@ -10559,6 +10559,74 @@ console.log('💡 Run window.runIntegrationTest() to check integration');
     console.log('✅ 3-Stage Validation System loaded');
 })();
                 </script>
+    <script>
+// ============================================
+// VALIDATOR INTERFACE FIX
+// ============================================
+window.showValidatorInterface = function() {
+    const currentMember = window.TauDB?.getCurrentMember();
+    
+    if (!currentMember) {
+        showNotification('❌ Please login to validate', 'error');
+        showRealMemberLogin();
+        return;
+    }
+    
+    const modal = document.createElement('div');
+    modal.className = 'modal';
+    modal.style.display = 'block';
+    modal.innerHTML = `
+        <div class="modal-content">
+            <span class="close" onclick="this.parentElement.parentElement.remove()">&times;</span>
+            
+            <h2>🔐 Validator Interface</h2>
+            <p>Enter validation code to validate items and earn fees</p>
+            
+            <form onsubmit="processValidatorCode(event, '${currentMember.id}')">
+                <div class="form-group">
+                    <label>Validation Code *</label>
+                    <input type="text" name="code" required placeholder="VAL1-XXXXX-XXXX" style="text-transform: uppercase; letter-spacing: 2px;">
+                </div>
+                
+                <div style="background: #e3f2fd; padding: 20px; border-radius: 10px; margin: 20px 0;">
+                    <h4>Validation Stages:</h4>
+                    <ul style="margin: 10px 0 0 20px;">
+                        <li><strong>Stage 1 (VAL1):</strong> Human validation - Verify claimer is real (5%)</li>
+                        <li><strong>Stage 2 (VAL2):</strong> Value validation - Verify item quality (5%)</li>
+                        <li><strong>Stage 3 (VAL3):</strong> Chain validation - Verify logistics (5%)</li>
+                    </ul>
+                </div>
+                
+                <button type="submit" class="btn" style="width: 100%;">Validate & Earn</button>
+            </form>
+        </div>
+    `;
+    
+    document.body.appendChild(modal);
+};
+
+window.processValidatorCode = async function(event, validatorId) {
+    event.preventDefault();
+    
+    const formData = new FormData(event.target);
+    const code = formData.get('code').toUpperCase();
+    
+    showNotification('⏳ Processing validation...', 'info');
+    
+    if (typeof validateWithCode === 'function') {
+        const result = await validateWithCode(code, validatorId);
+        
+        if (result.success) {
+            closeAllModals();
+            showNotification(`✅ Validation Complete! Earned ${result.earningsIkbp.toFixed(2)} iKbp`, 'success');
+        } else {
+            showNotification(`❌ ${result.error}`, 'error');
+        }
+    } else {
+        showNotification('❌ Validation system not loaded', 'error');
+    }
+};
+    </script>
  <script>
 <!-- FINAL INITIALIZATION -->
 console.log('='.repeat(60));
