@@ -3253,6 +3253,87 @@ function showNotification(message, type = 'success') {
         showNotification('✅ Code copied!', 'success');
     }
 })();
+ </script>
+<script>   
+// ============================================
+// VALUE SUBMISSION FIX
+// ============================================
+(function() {
+    'use strict';
+    
+    // Ensure function is globally accessible
+    if (!window.openValueSubmissionModal) {
+        window.openValueSubmissionModal = function() {
+            const currentMember = window.TauDB?.getCurrentMember();
+            
+            if (!currentMember) {
+                showNotification('Please login to submit values', 'error');
+                showRealMemberLogin();
+                return;
+            }
+            
+            // Close any existing modals
+            document.querySelectorAll('.modal').forEach(m => m.remove());
+            
+            const modal = document.createElement('div');
+            modal.className = 'modal';
+            modal.style.display = 'block';
+            modal.innerHTML = `
+                <div class="modal-content" style="max-width: 700px;">
+                    <span class="close" onclick="this.parentElement.parentElement.remove()">&times;</span>
+                    
+                    <div style="background: linear-gradient(45deg, #ffd700, #ffed4e); color: #333; padding: 25px; border-radius: 15px; margin-bottom: 25px; text-align: center;">
+                        <h2 style="margin: 0;">💎 Submit Your Value</h2>
+                        <p style="margin: 10px 0 0 0;">Turn your skills, products, and services into iKb</p>
+                    </div>
+                    
+                    <form onsubmit="submitValue(event)" id="valueSubmissionForm">
+                        <div class="form-group">
+                            <label>Value Type *</label>
+                            <select name="valueType" required>
+                                <option value="">Select type</option>
+                                <option value="Product">📦 Product</option>
+                                <option value="Service">🛠️ Service</option>
+                                <option value="Skill">🎯 Skill</option>
+                                <option value="Labour">💪 Labour</option>
+                                <option value="Time">⏰ Time</option>
+                            </select>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label>Value Title *</label>
+                            <input type="text" name="valueTitle" required maxlength="100" placeholder="e.g., Professional Web Design Services">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label>Description *</label>
+                            <textarea name="valueDescription" rows="6" required maxlength="2000"></textarea>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label>Estimated Worth (KSH) *</label>
+                            <input type="number" name="worthKsh" required min="0" step="0.01">
+                            <small>This will be converted to iKb (1 iKb = 100,000 KSH)</small>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label>Location *</label>
+                            <input type="text" name="valueLocation" required placeholder="Where can you provide this?">
+                        </div>
+                        
+                        <button type="submit" class="btn" style="width: 100%; padding: 15px; font-size: 16px;">
+                            💎 Submit Value for Validation
+                        </button>
+                    </form>
+                </div>
+            `;
+            
+            document.body.appendChild(modal);
+        };
+    }
+    
+    console.log('✅ Value submission fixed');
+})();
 </script>
 <script>
 
@@ -5568,7 +5649,8 @@ function createParSiraiModal() {
         </div>
     `;
 }
-
+</script>
+    <script>
 // ===== TRUST GRAPH MODAL =====
 function createTrustGraphModal() {
     return `
@@ -5612,7 +5694,8 @@ function createTrustGraphModal() {
         </div>
     `;
 }
-
+</script>
+<script>
 // ===== FOUNDATION MODAL =====
 function createFoundationModal() {
     return `
@@ -5655,7 +5738,8 @@ function createFoundationModal() {
         </div>
     `;
 }
-
+</script>
+<script>
 // ===== HOLDINGS MODAL =====
 function createHoldingsModal() {
     return `
@@ -5713,7 +5797,8 @@ function createHoldingsModal() {
         </div>
     `;
 }
-
+</script>
+<script> 
 // ===== FORUM MODAL =====
 function createForumModal() {
     return `
@@ -5746,6 +5831,45 @@ function createForumModal() {
     `;
 }
 </script>
+    <script>
+// ============================================
+// FORUM FIX
+// ============================================
+window.openForumFixed = function() {
+    const currentMember = window.TauDB?.getCurrentMember();
+    
+    if (!currentMember) {
+        showNotification('Please login to access forum', 'error');
+        showRealMemberLogin();
+        return;
+    }
+    
+    // Force close all modals
+    document.querySelectorAll('.modal').forEach(m => m.remove());
+    
+    // Wait a moment then open forum
+    setTimeout(() => {
+        if (typeof openModal === 'function') {
+            openModal('forum');
+        } else if (typeof createForumModal === 'function') {
+            const modal = document.createElement('div');
+            modal.className = 'modal';
+            modal.style.display = 'block';
+            modal.innerHTML = createForumModal();
+            document.body.appendChild(modal);
+        }
+    }, 100);
+};
+
+// Override existing forum buttons
+document.addEventListener('DOMContentLoaded', () => {
+    setTimeout(() => {
+        document.querySelectorAll('[onclick*="forum"]').forEach(btn => {
+            btn.onclick = openForumFixed;
+        });
+    }, 2000);
+});
+    </script>
     <script>
    // =====================================================
 // TAU AFRICA DATABASE CONNECTION LAYER - COMPLETE
