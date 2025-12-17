@@ -1136,23 +1136,120 @@ To join in these categories, please use KABIRU SERVICE CENTER portal</p>
             // Wait 2 seconds for EmailJS to be ready
             await new Promise(resolve => setTimeout(resolve, 2000));
             
-            // Send welcome email
-            console.log('📧 Attempting to send welcome email...');
+            window.sendWelcomeEmail = async function(member) {
+    console.log('📧 Preparing welcome email for:', member.email);
+    
+    const emailType = member.team || member.type;
+    
+    let subject, message;
+    
+    switch(emailType) {
+        case 'TASK':
+            subject = '🎉 Welcome to TAU Africa - TASK Team';
+            message = `Welcome ${member.fullName}!
+
+Your TASK Team registration is complete!
+
+Member ID: ${member.id}
+Referral Code: ${member.referralCode}
+Team: TASK
+Initial Balance: 500 iKbp
+
+LOGIN: ${window.location.origin}
+
+HOW TO EARN:
+- Complete tasks: 100-500 iKbp
+- Refer members: 500 iKbp per referral
+- Post in forum: 50 iKbp
+- Submit values: Earn when claimed
+
+Your referral link:
+${window.location.origin}?ref=${member.referralCode}
+
+Share this link to earn 500 iKbp per referral!
+
+Welcome to the TAU Africa family!
+
+TAU Africa Team
+grouptauafrica@gmail.com`;
+            break;
             
-            const emailResult = await sendTauEmail({
-                to_email: member.email,
-                to_name: member.fullName,
-                subject: '🎉 Welcome to TAU Africa - TASK Team',
-                message: `Welcome ${member.fullName}!\n\nYour TASK Team registration is complete!\n\nMember ID: ${member.id}\nReferral Code: ${member.referralCode}\nInitial Balance: 500 iKbp\n\nLogin: ${window.location.origin}\n\nYour referral link:\n${window.location.origin}?ref=${member.referralCode}\n\nShare to earn 500 iKbp per referral!\n\nWelcome to TAU Africa!\n\nTAU Africa Team\ngrouptauafrica@gmail.com`,
-                phone: member.phone,
-                location: member.location
-            });
+        case 'TALK':
+            subject = '🎉 Welcome to TAU Africa - TALK Team';
+            message = `Welcome ${member.fullName}!
+
+Your TALK Team registration is complete!
+
+Member ID: ${member.id}
+Referral Code: ${member.referralCode}
+Team: TALK
+Support Level: ${member.supportLevel || 'Ground Level'}
+Initial Balance: 500 iKbp
+
+LOGIN: ${window.location.origin}
+
+Your investment helps build Africa's digital economy through the Kabiru ecosystem.
+
+Your referral link:
+${window.location.origin}?ref=${member.referralCode}
+
+Share to earn 500 iKbp per referral!
+
+Thank you for supporting African development!
+
+TAU Africa Team
+grouptauafrica@gmail.com`;
+            break;
             
-            if (emailResult.success) {
-                console.log('✅ Welcome email sent successfully');
-            } else {
-                console.warn('⚠️ Welcome email failed:', emailResult.error);
-            }
+        case 'public':
+            subject = '🎉 Welcome to TAU Africa - Public Access';
+            message = `Welcome ${member.fullName}!
+
+Your free TAU Africa account is ready!
+
+Member ID: ${member.id}
+Account Type: Public Access
+
+LOGIN: ${window.location.origin}
+
+WHAT YOU CAN DO:
+- Submit values to marketplace
+- Claim available values
+- Browse all opportunities
+- Upgrade to TASK/TALK anytime for earning features
+
+UPGRADE OPTIONS:
+- TASK Team (KSH 500): Earn iKbp through tasks
+- TALK Team (KSH 2,000): Support African development
+
+Start exploring today!
+
+TAU Africa Team
+grouptauafrica@gmail.com`;
+            break;
+            
+        default:
+            subject = '🎉 Welcome to TAU Africa';
+            message = `Welcome ${member.fullName}!
+
+Your account is ready: ${member.id}
+
+Login: ${window.location.origin}
+
+TAU Africa Team`;
+    }
+    
+    console.log('📤 Sending welcome email via sendTauEmail...');
+    
+    return await sendTauEmail({
+        to_email: member.email,        // ✅ Now uses member.email
+        to_name: member.fullName,      // ✅ Now uses member.fullName
+        subject: subject,
+        message: message,
+        phone: member.phone,           // ✅ Now uses member.phone
+        location: member.location      // ✅ Now uses member.location
+    });
+};
             
             // Send admin notification
             console.log('📧 Sending admin notification...');
