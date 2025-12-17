@@ -2922,27 +2922,35 @@ function showNotification(message, type = 'success') {
     notification.innerHTML = message;
     notification.className = `notification ${type}`;
     notification.style.display = 'block';
-    
-    setTimeout(() => {
-        notification.style.display = 'none';
-    }, 6000);
-}
     </script>
-  <script>
+<script>
+    // ============================================
+// FIXED VALUE SUBMISSION - ALLOWS EVERYONE
+// Replace in index after line ~2500
+// ============================================
 
- VALUE SUBMISSION SYSTEM - Main App
- ============================================
-
-    (function() {
+(function() {
     'use strict';
     
+    // Override to allow EVERYONE to submit values
     window.openValueSubmissionModal = function() {
         const currentMember = window.TauDB?.getCurrentMember();
         
-        if (!currentMember) {
-            showNotification('Please login to submit values', 'error');
-            showRealMemberLogin();
-            return;
+        // Get submitter info (member or prompt for guest)
+        let submitterInfo = {
+            id: null,
+            name: '',
+            email: '',
+            phone: ''
+        };
+        
+        if (currentMember) {
+            submitterInfo = {
+                id: currentMember.id,
+                name: currentMember.fullName,
+                email: currentMember.email,
+                phone: currentMember.phone
+            };
         }
         
         const modal = document.createElement('div');
@@ -2957,10 +2965,40 @@ function showNotification(message, type = 'success') {
                     <p style="margin: 10px 0 0 0;">Turn your skills, products, and services into iKb</p>
                 </div>
                 
-                <form onsubmit="submitValue(event)" id="valueSubmissionForm">
+                <form onsubmit="submitValueEveryone(event)" id="valueSubmissionForm">
+                    ${!currentMember ? `
+                        <!-- Guest Info Section -->
+                        <div style="background: #e3f2fd; padding: 20px; border-radius: 10px; margin-bottom: 20px;">
+                            <h4 style="margin: 0 0 15px 0; color: #1976d2;">Your Contact Information</h4>
+                            
+                            <div class="form-group">
+                                <label>Your Full Name *</label>
+                                <input type="text" name="submitterName" required placeholder="John Doe">
+                            </div>
+                            
+                            <div class="form-group">
+                                <label>Your Email *</label>
+                                <input type="email" name="submitterEmail" required placeholder="you@example.com">
+                            </div>
+                            
+                            <div class="form-group">
+                                <label>Your Phone *</label>
+                                <input type="tel" name="submitterPhone" required placeholder="254XXXXXXXXX">
+                            </div>
+                            
+                            <p style="margin: 10px 0 0 0; font-size: 12px; color: #666;">
+                                💡 <a href="#" onclick="closeAllModals(); setTimeout(() => showPublicRegistration(), 500); return false;" style="color: #1976d2;">Register for free</a> to track your submissions
+                            </p>
+                        </div>
+                    ` : `
+                        <div style="background: #e8f5e9; padding: 15px; border-radius: 10px; margin-bottom: 20px;">
+                            <strong>Submitting as:</strong> ${currentMember.fullName} (${currentMember.id})
+                        </div>
+                    `}
+                    
                     <div class="form-group">
                         <label>Value Type *</label>
-                        <select name="valueType" required onchange="updateValueTypeInfo(this.value)">
+                        <select name="valueType" required>
                             <option value="">Select type</option>
                             <option value="Product">📦 Product</option>
                             <option value="Service">🛠️ Service</option>
@@ -2970,75 +3008,26 @@ function showNotification(message, type = 'success') {
                         </select>
                     </div>
                     
-                    <div id="valueTypeInfo" style="display: none; background: #e3f2fd; padding: 15px; border-radius: 10px; margin-bottom: 20px;">
-                        <p id="valueTypeDescription" style="margin: 0; font-size: 14px; color: #1976d2;"></p>
-                    </div>
-                    
                     <div class="form-group">
                         <label>Value Title *</label>
-                        <input type="text" name="valueTitle" placeholder="e.g., Professional Web Design Services" required maxlength="100">
-                        <small>Clear, descriptive title (max 100 characters)</small>
+                        <input type="text" name="valueTitle" required maxlength="100" placeholder="e.g., Professional Web Design Services">
                     </div>
                     
                     <div class="form-group">
                         <label>Detailed Description *</label>
-                        <textarea name="valueDescription" rows="6" placeholder="Describe what you're offering, what makes it valuable, delivery time, terms, etc." required maxlength="2000"></textarea>
+                        <textarea name="valueDescription" rows="6" required maxlength="2000" placeholder="Describe what you're offering, what makes it valuable, delivery time, terms, etc."></textarea>
                         <small><span id="charCount">0</span>/2000 characters</small>
                     </div>
                     
                     <div class="form-group">
                         <label>Estimated Worth (KSH) *</label>
-                        <input type="number" name="worthKsh" placeholder="Enter value in KSH" required min="0" step="0.01" onchange="calculateIkb(this.value)">
+                        <input type="number" name="worthKsh" required min="0" step="0.01" placeholder="Enter value in KSH">
                         <small>This will be converted to iKb (1 iKb = 100,000 KSH)</small>
-                        <div id="ikbEquivalent" style="display: none; margin-top: 10px; padding: 10px; background: #fff3e0; border-radius: 8px; text-align: center;">
-                            <strong style="color: #e65100;">Equivalent: <span id="ikbValue">0</span> iKb</strong>
-                        </div>
-                    </div>
-                    
-                    <div class="form-group">
-                        <label>Category</label>
-                        <select name="valueCategory">
-                            <option value="">Select category (optional)</option>
-                            <option value="Technology">Technology & IT</option>
-                            <option value="Creative">Creative & Design</option>
-                            <option value="Business">Business & Finance</option>
-                            <option value="Education">Education & Training</option>
-                            <option value="Health">Health & Wellness</option>
-                            <option value="Agriculture">Agriculture & Food</option>
-                            <option value="Construction">Construction & Trade</option>
-                            <option value="Transport">Transport & Logistics</option>
-                            <option value="Other">Other</option>
-                        </select>
-                    </div>
-                    
-                    <div class="form-group">
-                        <label>Delivery/Availability *</label>
-                        <select name="availability" required>
-                            <option value="">When can you deliver?</option>
-                            <option value="Immediate">Immediate (within 24 hours)</option>
-                            <option value="1-3 days">1-3 days</option>
-                            <option value="1 week">Within 1 week</option>
-                            <option value="2 weeks">Within 2 weeks</option>
-                            <option value="1 month">Within 1 month</option>
-                            <option value="On demand">On demand/Flexible</option>
-                        </select>
                     </div>
                     
                     <div class="form-group">
                         <label>Location/Region *</label>
-                        <input type="text" name="valueLocation" placeholder="Where can you provide this value?" required>
-                        <small>e.g., "Nairobi, Kenya" or "Remote/Online"</small>
-                    </div>
-                    
-                    <div class="form-group">
-                        <label>Contact Preference *</label>
-                        <select name="contactMethod" required>
-                            <option value="">How should buyers contact you?</option>
-                            <option value="Email">Email</option>
-                            <option value="Phone">Phone/WhatsApp</option>
-                            <option value="TAU Platform">Through TAU Platform</option>
-                            <option value="Any">Any method</option>
-                        </select>
+                        <input type="text" name="valueLocation" required placeholder="Where can you provide this value?">
                     </div>
                     
                     <div class="form-group">
@@ -3046,16 +3035,6 @@ function showNotification(message, type = 'success') {
                             <input type="checkbox" name="termsAgree" required style="width: auto; margin-right: 10px;">
                             I certify that this value is genuine and I can deliver as described *
                         </label>
-                    </div>
-                    
-                    <div style="background: #fff3cd; padding: 15px; border-radius: 10px; margin: 20px 0;">
-                        <strong>📋 Submission Process:</strong>
-                        <ol style="margin: 10px 0 0 20px; padding: 0;">
-                            <li>Submit your value</li>
-                            <li>Receive validation code</li>
-                            <li>Admin reviews (24-48 hours)</li>
-                            <li>Once approved, earn iKb when value is claimed</li>
-                        </ol>
                     </div>
                     
                     <button type="submit" class="btn" style="width: 100%; padding: 15px; font-size: 16px;">
@@ -3067,52 +3046,39 @@ function showNotification(message, type = 'success') {
         
         document.body.appendChild(modal);
         
-        // Add character counter
+        // Character counter
         const textarea = modal.querySelector('textarea[name="valueDescription"]');
         textarea.addEventListener('input', function() {
             document.getElementById('charCount').textContent = this.value.length;
         });
     };
     
-    window.updateValueTypeInfo = function(type) {
-        const info = document.getElementById('valueTypeInfo');
-        const desc = document.getElementById('valueTypeDescription');
-        
-        const descriptions = {
-            'Product': '📦 Physical or digital products you create or sell',
-            'Service': '🛠️ Professional services you provide (consulting, repair, etc.)',
-            'Skill': '🎯 Expertise or abilities you can teach or apply',
-            'Labour': '💪 Physical work or manual tasks you can perform',
-            'Time': '⏰ Your time and availability for projects or tasks'
-        };
-        
-        if (type && descriptions[type]) {
-            desc.textContent = descriptions[type];
-            info.style.display = 'block';
-        } else {
-            info.style.display = 'none';
-        }
-    };
-    
-    window.calculateIkb = function(kshValue) {
-        if (!kshValue || kshValue <= 0) {
-            document.getElementById('ikbEquivalent').style.display = 'none';
-            return;
-        }
-        
-        const ikb = (parseFloat(kshValue) / 100000).toFixed(6);
-        document.getElementById('ikbValue').textContent = ikb;
-        document.getElementById('ikbEquivalent').style.display = 'block';
-    };
-    
-    window.submitValue = function(event) {
+    // New submission handler that works for everyone
+    window.submitValueEveryone = function(event) {
         event.preventDefault();
-        const currentMember = window.TauDB?.getCurrentMember();
-        if (!currentMember) return;
         
         const formData = new FormData(event.target);
+        const currentMember = window.TauDB?.getCurrentMember();
+        
         const worthKsh = parseFloat(formData.get('worthKsh'));
         const worthIkb = (worthKsh / 100000).toFixed(6);
+        
+        // Determine submitter info
+        let submitterId, submitterName, submitterEmail, submitterPhone;
+        
+        if (currentMember) {
+            // Logged-in member
+            submitterId = currentMember.id;
+            submitterName = currentMember.fullName;
+            submitterEmail = currentMember.email;
+            submitterPhone = currentMember.phone;
+        } else {
+            // Guest/Public user
+            submitterId = 'GUEST-' + Date.now();
+            submitterName = formData.get('submitterName');
+            submitterEmail = formData.get('submitterEmail');
+            submitterPhone = formData.get('submitterPhone');
+        }
         
         const value = {
             id: 'VAL-' + Date.now(),
@@ -3121,40 +3087,30 @@ function showNotification(message, type = 'success') {
             description: formData.get('valueDescription'),
             worthKsh: worthKsh,
             worthIkb: worthIkb,
-            category: formData.get('valueCategory') || 'Uncategorized',
-            availability: formData.get('availability'),
             location: formData.get('valueLocation'),
-            contactMethod: formData.get('contactMethod'),
-            submittedBy: currentMember.id,
-            submittedByName: currentMember.fullName,
-            submittedByEmail: currentMember.email,
-            submittedByPhone: currentMember.phone,
+            submittedBy: submitterId,
+            submittedByName: submitterName,
+            submittedByEmail: submitterEmail,
+            submittedByPhone: submitterPhone,
+            isGuestSubmission: !currentMember,
             validationCode: generateValueCode(),
             status: 'Pending Review',
             created: new Date().toISOString(),
             validated: false
         };
         
-        // Save to values database
+        // Save to localStorage
         const values = JSON.parse(localStorage.getItem('tauValues') || '[]');
         values.push(value);
         localStorage.setItem('tauValues', JSON.stringify(values));
         
-        // Add to validation queue
-        const validations = JSON.parse(localStorage.getItem('tauPendingValidations') || '[]');
-        validations.push({
-            id: 'VALID-' + Date.now(),
-            type: 'value',
-            data: value,
-            status: 'Pending',
-            created: new Date().toISOString()
-        });
-        localStorage.setItem('tauPendingValidations', JSON.stringify(validations));
-        
-        // Notify member
-        createNotification(currentMember.id, '💎 Value Submitted!', 
-            `Your value "${value.title}" has been submitted for review. Validation code: ${value.validationCode}`, 
-            'success');
+        // Save to Firebase if available
+        if (typeof firebase !== 'undefined' && firebase.apps.length > 0) {
+            const db = firebase.firestore();
+            db.collection('values').doc(value.id).set(value)
+                .then(() => console.log('☁️ Value synced to Firestore'))
+                .catch(err => console.warn('⚠️ Firestore sync warning:', err));
+        }
         
         // Notify admins
         const adminNotifs = JSON.parse(localStorage.getItem('tauAdminNotifications') || '[]');
@@ -3163,19 +3119,29 @@ function showNotification(message, type = 'success') {
             type: 'new_value_submission',
             data: {
                 valueName: value.title,
-                submittedBy: currentMember.fullName,
-                memberId: currentMember.id,
+                submittedBy: submitterName,
                 worth: worthIkb + ' iKb',
-                validationCode: value.validationCode
+                validationCode: value.validationCode,
+                isGuest: !currentMember
             },
             timestamp: new Date().toISOString(),
             read: false
         });
         localStorage.setItem('tauAdminNotifications', JSON.stringify(adminNotifs));
         
+        // Notify member if logged in
+        if (currentMember && typeof createNotification === 'function') {
+            createNotification(
+                currentMember.id,
+                '💎 Value Submitted!',
+                `Your value "${value.title}" has been submitted. Code: ${value.validationCode}`,
+                'success'
+            );
+        }
+        
         // Show success modal
         closeAllModals();
-        showValueSubmissionSuccess(value);
+        showValueSubmissionSuccess(value, !currentMember);
     };
     
     function generateValueCode() {
@@ -3184,7 +3150,7 @@ function showNotification(message, type = 'success') {
         return 'VAL-' + timestamp + '-' + random;
     }
     
-    window.showValueSubmissionSuccess = function(value) {
+    window.showValueSubmissionSuccess = function(value, isGuest) {
         const modal = document.createElement('div');
         modal.className = 'modal';
         modal.style.display = 'block';
@@ -3207,18 +3173,25 @@ function showNotification(message, type = 'success') {
                     </button>
                 </div>
                 
+                ${isGuest ? `
+                    <div style="background: #fff3cd; padding: 20px; border-radius: 10px; margin: 20px 0;">
+                        <strong>💡 Track Your Submission:</strong>
+                        <p style="margin: 10px 0 0 0;">
+                            <a href="#" onclick="closeAllModals(); setTimeout(() => showPublicRegistration(), 500); return false;" style="color: #1976d2; text-decoration: none; font-weight: 600;">
+                                Register for free →
+                            </a> to track all your submissions and earn when values are claimed!
+                        </p>
+                    </div>
+                ` : ''}
+                
                 <div style="background: #e3f2fd; padding: 20px; border-radius: 10px; margin: 20px 0;">
                     <h4 style="margin: 0 0 10px 0; color: #1976d2;">What Happens Next?</h4>
                     <ol style="margin: 0; padding-left: 20px; color: #666;">
-                        <li>Admins will review your value (24-48 hours)</li>
-                        <li>You'll receive a notification when approved</li>
-                        <li>Your value will be visible to all TAU Africa members</li>
-                        <li>When someone claims your value, you earn ${value.worthIkb} iKb!</li>
+                        <li>Admins review your value (24-48 hours)</li>
+                        <li>You'll receive email notification when approved</li>
+                        <li>Your value becomes visible to all TAU members</li>
+                        <li>When someone claims it, you earn ${value.worthIkb} iKb!</li>
                     </ol>
-                </div>
-                
-                <div style="background: #fff3cd; padding: 15px; border-radius: 10px; margin: 20px 0;">
-                    <strong>💡 Tip:</strong> Save your validation code! You can use it to check your value's status.
                 </div>
                 
                 <button onclick="this.parentElement.parentElement.remove()" class="btn" style="width: 100%;">
@@ -3229,112 +3202,10 @@ function showNotification(message, type = 'success') {
         document.body.appendChild(modal);
     };
     
-    window.copyToClipboard = function(text) {
-        if (navigator.clipboard) {
-            navigator.clipboard.writeText(text).then(() => {
-                showNotification('✅ Code copied to clipboard!', 'success');
-            }).catch(() => {
-                fallbackCopy(text);
-            });
-        } else {
-            fallbackCopy(text);
-        }
-    };
+    console.log('✅ Value submission now open to EVERYONE');
     
-    function fallbackCopy(text) {
-        const temp = document.createElement('textarea');
-        temp.value = text;
-        temp.style.position = 'fixed';
-        temp.style.opacity = '0';
-        document.body.appendChild(temp);
-        temp.select();
-        document.execCommand('copy');
-        document.body.removeChild(temp);
-        showNotification('✅ Code copied!', 'success');
-    }
 })();
- </script>
-<script>   
-// ============================================
-// VALUE SUBMISSION FIX
-// ============================================
-(function() {
-    'use strict';
-    
-    // Ensure function is globally accessible
-    if (!window.openValueSubmissionModal) {
-        window.openValueSubmissionModal = function() {
-            const currentMember = window.TauDB?.getCurrentMember();
-            
-            if (!currentMember) {
-                showNotification('Please login to submit values', 'error');
-                showRealMemberLogin();
-                return;
-            }
-            
-            // Close any existing modals
-            document.querySelectorAll('.modal').forEach(m => m.remove());
-            
-            const modal = document.createElement('div');
-            modal.className = 'modal';
-            modal.style.display = 'block';
-            modal.innerHTML = `
-                <div class="modal-content" style="max-width: 700px;">
-                    <span class="close" onclick="this.parentElement.parentElement.remove()">&times;</span>
-                    
-                    <div style="background: linear-gradient(45deg, #ffd700, #ffed4e); color: #333; padding: 25px; border-radius: 15px; margin-bottom: 25px; text-align: center;">
-                        <h2 style="margin: 0;">💎 Submit Your Value</h2>
-                        <p style="margin: 10px 0 0 0;">Turn your skills, products, and services into iKb</p>
-                    </div>
-                    
-                    <form onsubmit="submitValue(event)" id="valueSubmissionForm">
-                        <div class="form-group">
-                            <label>Value Type *</label>
-                            <select name="valueType" required>
-                                <option value="">Select type</option>
-                                <option value="Product">📦 Product</option>
-                                <option value="Service">🛠️ Service</option>
-                                <option value="Skill">🎯 Skill</option>
-                                <option value="Labour">💪 Labour</option>
-                                <option value="Time">⏰ Time</option>
-                            </select>
-                        </div>
-                        
-                        <div class="form-group">
-                            <label>Value Title *</label>
-                            <input type="text" name="valueTitle" required maxlength="100" placeholder="e.g., Professional Web Design Services">
-                        </div>
-                        
-                        <div class="form-group">
-                            <label>Description *</label>
-                            <textarea name="valueDescription" rows="6" required maxlength="2000"></textarea>
-                        </div>
-                        
-                        <div class="form-group">
-                            <label>Estimated Worth (KSH) *</label>
-                            <input type="number" name="worthKsh" required min="0" step="0.01">
-                            <small>This will be converted to iKb (1 iKb = 100,000 KSH)</small>
-                        </div>
-                        
-                        <div class="form-group">
-                            <label>Location *</label>
-                            <input type="text" name="valueLocation" required placeholder="Where can you provide this?">
-                        </div>
-                        
-                        <button type="submit" class="btn" style="width: 100%; padding: 15px; font-size: 16px;">
-                            💎 Submit Value for Validation
-                        </button>
-                    </form>
-                </div>
-            `;
-            
-            document.body.appendChild(modal);
-        };
-    }
-    
-    console.log('✅ Value submission fixed');
-})();
-</script>
+    </script>
 <script>
 
 // PUBLIC OPPORTUNITIES DISPLAY - Main App
