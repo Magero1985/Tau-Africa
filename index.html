@@ -828,7 +828,10 @@ To join in these categories, please use KABIRU SERVICE CENTER portal</p>
 <div class="floating-btn" onclick="showValidatorInterface()" title="Validator Access" style="bottom: 170px; right: 30px; background: linear-gradient(45deg, #9b59b6, #8e44ad);">
     🔐
 </div>
-
+<!-- EMAIL TEST BUTTON -->
+<div class="floating-btn" onclick="testEmailSystem()" title="Test Email System" style="bottom: 310px; right: 30px; background: linear-gradient(45deg, #e67e22, #d35400);">
+    📧
+</div>
 <!-- Add this for admin validation dashboard access -->
 <div class="floating-btn" onclick="if(isAdminAuthenticated()) { showValidationDashboard(); } else { showAdminLogin(); }" title="Validation Dashboard" style="bottom: 240px; right: 30px; background: linear-gradient(45deg, #e74c3c, #c0392b);">
     📊
@@ -867,14 +870,8 @@ To join in these categories, please use KABIRU SERVICE CENTER portal</p>
     </div>  
     <!-- Firebase SDK -->
 <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
-
-<!-- EmailJS SDK -->
-<script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
-</body>
-    <script>
-    // ============================================
+<script>
+// ============================================
 // TAU AFRICA - UNIFIED EMAIL & NOTIFICATION SYSTEM
 // Place this BEFORE all other scripts
 // ============================================
@@ -916,6 +913,30 @@ To join in these categories, please use KABIRU SERVICE CENTER portal</p>
                     reject(new Error('EmailJS timeout'));
                 }
             }, 10000);
+        });
+    }
+    
+    // Helper function to wait for EmailJS
+    function waitForEmailJS(timeout = 5000) {
+        return new Promise((resolve) => {
+            if (emailJSReady) {
+                resolve(true);
+                return;
+            }
+            
+            const startTime = Date.now();
+            
+            const checkEmailJS = setInterval(() => {
+                if (emailJSReady) {
+                    clearInterval(checkEmailJS);
+                    resolve(true);
+                }
+                
+                if (Date.now() - startTime > timeout) {
+                    clearInterval(checkEmailJS);
+                    resolve(false);
+                }
+            }, 100);
         });
     }
     
@@ -981,6 +1002,8 @@ To join in these categories, please use KABIRU SERVICE CENTER portal</p>
     // 3. WELCOME EMAIL TEMPLATES
     // ============================================
     window.sendWelcomeEmail = async function(member) {
+        console.log('📧 Preparing welcome email for:', member.email);
+        
         const emailType = member.team || member.type;
         
         let subject, message;
@@ -1081,6 +1104,8 @@ Login: ${window.location.origin}
 TAU Africa Team`;
         }
         
+        console.log('📤 Sending welcome email via sendTauEmail...');
+        
         return await sendTauEmail({
             to_email: member.email,
             to_name: member.fullName,
@@ -1096,6 +1121,8 @@ TAU Africa Team`;
     // ============================================
     window.sendAdminNotificationEmail = async function(type, data) {
         const adminEmail = 'grouptauafrica@gmail.com';
+        
+        console.log('📧 Preparing admin notification:', type);
         
         let subject, message;
         
@@ -1142,6 +1169,8 @@ Review and approve in admin dashboard.`;
                 message = JSON.stringify(data, null, 2);
         }
         
+        console.log('📤 Sending admin notification...');
+        
         return await sendTauEmail({
             to_email: adminEmail,
             to_name: 'TAU Admin',
@@ -1151,103 +1180,70 @@ Review and approve in admin dashboard.`;
     };
     
     // ============================================
-    // 5. UNIFIED NOTIFICATION CREATOR
-    // ============================================
-    window.createNotification = function(memberId, title, message, type = 'info') {
-        const NOTIF_KEY = 'tauNotifications';
-        const allNotifications = JSON.parse(localStorage.getItem(NOTIF_KEY) || '{}');
-        
-        if (!allNotifications[memberId]) {
-            allNotifications[memberId] = [];
-        }
-        
-        const notification = {
-            id: `NOTIF-${Date.now()}`,
-            title: title,
-            message: message,
-            timestamp: new Date().toISOString(),
-            read: false,
-            type: type
-        };
-        
-        allNotifications[memberId].unshift(notification);
-        
-        // Keep only last 50 notifications
-        if (allNotifications[memberId].length > 50) {
-            allNotifications[memberId] = allNotifications[memberId].slice(0, 50);
-        }
-        
-        localStorage.setItem(NOTIF_KEY, JSON.stringify(allNotifications));
-        
-        // Also save to Firestore if available
-        if (typeof firebase !== 'undefined' && firebase.apps.length > 0) {
-            try {
-                const db = firebase.firestore();
-                db.collection('notifications').doc(memberId).set({
-                    notifications: allNotifications[memberId]
-                }, { merge: true }).catch(err => console.warn('Firestore notification warning:', err));
-            } catch (error) {
-                console.warn('Firestore notification error:', error);
-            }
-        }
-        
-        console.log(`📬 Notification created for ${memberId}:`, title);
-        
-        // Show visual notification if it's for current user
-        const currentMember = window.TauDB?.getCurrentMember();
-        if (currentMember && currentMember.id === memberId) {
-            if (typeof showNotification === 'function') {
-                showNotification(`${title}: ${message}`, type);
-            }
-        }
-        
-        // Update notification badge
-        updateNotificationBadge();
-    };
-    
-    // ============================================
-    // 6. NOTIFICATION BADGE UPDATER
-    // ============================================
-    function updateNotificationBadge() {
-        const currentMember = window.TauDB?.getCurrentMember();
-        if (!currentMember) return;
-        
-        const NOTIF_KEY = 'tauNotifications';
-        const allNotifications = JSON.parse(localStorage.getItem(NOTIF_KEY) || '{}');
-        const memberNotifs = allNotifications[currentMember.id] || [];
-        const unread = memberNotifs.filter(n => !n.read).length;
-        
-        const badge = document.getElementById('tauNotifBadge');
-        if (badge) {
-            if (unread > 0) {
-                badge.style.display = 'block';
-                badge.textContent = unread;
-            } else {
-                badge.style.display = 'none';
-            }
-        }
-    }
-    
-    // ============================================
-    // 7. AUTO-INITIALIZE
+    // 5. AUTO-INITIALIZE
     // ============================================
     initEmailJS().catch(err => {
         console.error('Failed to initialize EmailJS:', err);
     });
+    
+    // ============================================
+    // 6. EMAIL TEST FUNCTION (For debugging)
+    // ============================================
+    window.testEmailSystem = async function() {
+        console.log('🧪 Testing email system...');
+        
+        if (typeof emailjs === 'undefined') {
+            alert('❌ EmailJS not loaded. Check console for errors.');
+            return;
+        }
+        
+        const testEmail = prompt('Enter test email address:', 'your@email.com');
+        if (!testEmail) return;
+        
+        if (typeof showNotification === 'function') {
+            showNotification('📧 Sending test email...', 'info');
+        }
+        
+        const result = await sendTauEmail({
+            to_email: testEmail,
+            to_name: 'Test User',
+            subject: 'TAU Africa - Email System Test',
+            message: `This is a test email from TAU Africa.
+
+If you received this, the email system is working correctly!
+
+Timestamp: ${new Date().toISOString()}
+
+TAU Africa Team
+grouptauafrica@gmail.com`,
+            phone: 'Test',
+            location: 'Test'
+        });
+        
+        if (result.success) {
+            alert('✅ Test email sent successfully! Check your inbox (and spam folder).');
+        } else {
+            alert('❌ Email failed: ' + result.error);
+        }
+    };
+    
+    // Make waitForEmailJS available globally
+    window.waitForEmailJS = waitForEmailJS;
     
     console.log('✅ TAU Email System loaded');
     console.log('📧 Available functions:');
     console.log('  - sendTauEmail(params)');
     console.log('  - sendWelcomeEmail(member)');
     console.log('  - sendAdminNotificationEmail(type, data)');
-    console.log('  - createNotification(memberId, title, message, type)');
+    console.log('  - testEmailSystem() - Click 📧 button to test');
     
 })();
 </script>
+
 <script>
-     // ============================================
+// ============================================
 // TAU AFRICA - FIXED REGISTRATION HANDLERS
-// Place this AFTER email system but BEFORE database connector
+// Place this AFTER email system
 // ============================================
 
 (function() {
@@ -1275,34 +1271,51 @@ Review and approve in admin dashboard.`;
         const member = syncResult.member;
         console.log('✅ Member created:', member.id);
         
-        // Send welcome email
-        console.log('📧 Sending welcome email...');
-        const emailResult = await sendWelcomeEmail(member);
+        // IMPORTANT: Wait for EmailJS to be ready
+        const emailJSReady = await waitForEmailJS();
         
-        if (emailResult.success) {
-            console.log('✅ Welcome email sent');
+        if (!emailJSReady) {
+            console.warn('⚠️ EmailJS not ready, skipping email');
         } else {
-            console.warn('⚠️ Welcome email failed:', emailResult.error);
+            // Send welcome email
+            console.log('📧 Sending welcome email...');
+            try {
+                const emailResult = await sendWelcomeEmail(member);
+                
+                if (emailResult.success) {
+                    console.log('✅ Welcome email sent');
+                } else {
+                    console.warn('⚠️ Welcome email failed:', emailResult.error);
+                }
+            } catch (emailError) {
+                console.error('Email send error:', emailError);
+            }
+            
+            // Notify admin
+            console.log('📧 Notifying admin...');
+            try {
+                await sendAdminNotificationEmail('NEW_REGISTRATION', {
+                    fullName: member.fullName,
+                    id: member.id,
+                    team: 'TASK',
+                    email: member.email,
+                    phone: member.phone,
+                    location: member.location
+                });
+            } catch (adminEmailError) {
+                console.error('Admin email error:', adminEmailError);
+            }
         }
         
-        // Notify admin
-        console.log('📧 Notifying admin...');
-        await sendAdminNotificationEmail('NEW_REGISTRATION', {
-            fullName: member.fullName,
-            id: member.id,
-            team: 'TASK',
-            email: member.email,
-            phone: member.phone,
-            location: member.location
-        });
-        
         // Create notification
-        createNotification(
-            member.id,
-            '🎉 Welcome to TAU Africa!',
-            `Your TASK account is ready! Member ID: ${member.id}. Start earning iKbp today!`,
-            'success'
-        );
+        if (typeof createNotification === 'function') {
+            createNotification(
+                member.id,
+                '🎉 Welcome to TAU Africa!',
+                `Your TASK account is ready! Member ID: ${member.id}. Start earning iKbp today!`,
+                'success'
+            );
+        }
         
         // Show success notification
         showNotification(`✅ Registration Complete! Member ID: ${member.id}`, 'success');
@@ -1337,35 +1350,52 @@ Review and approve in admin dashboard.`;
         const member = syncResult.member;
         console.log('✅ Member created:', member.id);
         
-        // Send welcome email
-        console.log('📧 Sending welcome email...');
-        const emailResult = await sendWelcomeEmail(member);
+        // IMPORTANT: Wait for EmailJS to be ready
+        const emailJSReady = await waitForEmailJS();
         
-        if (emailResult.success) {
-            console.log('✅ Welcome email sent');
+        if (!emailJSReady) {
+            console.warn('⚠️ EmailJS not ready, skipping email');
         } else {
-            console.warn('⚠️ Welcome email failed:', emailResult.error);
+            // Send welcome email
+            console.log('📧 Sending welcome email...');
+            try {
+                const emailResult = await sendWelcomeEmail(member);
+                
+                if (emailResult.success) {
+                    console.log('✅ Welcome email sent');
+                } else {
+                    console.warn('⚠️ Welcome email failed:', emailResult.error);
+                }
+            } catch (emailError) {
+                console.error('Email send error:', emailError);
+            }
+            
+            // Notify admin
+            console.log('📧 Notifying admin...');
+            try {
+                await sendAdminNotificationEmail('NEW_REGISTRATION', {
+                    fullName: member.fullName,
+                    id: member.id,
+                    team: 'TALK',
+                    email: member.email,
+                    phone: member.phone,
+                    location: member.location,
+                    supportLevel: member.supportLevel
+                });
+            } catch (adminEmailError) {
+                console.error('Admin email error:', adminEmailError);
+            }
         }
         
-        // Notify admin
-        console.log('📧 Notifying admin...');
-        await sendAdminNotificationEmail('NEW_REGISTRATION', {
-            fullName: member.fullName,
-            id: member.id,
-            team: 'TALK',
-            email: member.email,
-            phone: member.phone,
-            location: member.location,
-            supportLevel: member.supportLevel
-        });
-        
         // Create notification
-        createNotification(
-            member.id,
-            '🎉 Welcome to TAU Africa!',
-            `Your TALK account is ready! Member ID: ${member.id}. Thank you for supporting African development!`,
-            'success'
-        );
+        if (typeof createNotification === 'function') {
+            createNotification(
+                member.id,
+                '🎉 Welcome to TAU Africa!',
+                `Your TALK account is ready! Member ID: ${member.id}. Thank you for supporting African development!`,
+                'success'
+            );
+        }
         
         // Show success notification
         showNotification(`✅ Registration Complete! Member ID: ${member.id}`, 'success');
@@ -1401,11 +1431,15 @@ Review and approve in admin dashboard.`;
         console.log('✅ Member enrolled:', member.id);
         
         // Send welcome email
-        const emailResult = await sendTauEmail({
-            to_email: member.email,
-            to_name: member.fullName,
-            subject: '🎉 Welcome to TAU Job Creation Program',
-            message: `Welcome ${member.fullName}!
+        const emailJSReady = await waitForEmailJS();
+        
+        if (emailJSReady) {
+            try {
+                await sendTauEmail({
+                    to_email: member.email,
+                    to_name: member.fullName,
+                    subject: '🎉 Welcome to TAU Job Creation Program',
+                    message: `Welcome ${member.fullName}!
 
 Your Job Creation Training enrollment is complete!
 
@@ -1424,31 +1458,32 @@ You'll receive training materials and schedule via email.
 Questions? Contact: grouptauafrica@gmail.com
 
 TAU Africa Team`,
-            phone: member.phone,
-            location: member.location
-        });
-        
-        if (emailResult.success) {
-            console.log('✅ Welcome email sent');
+                    phone: member.phone,
+                    location: member.location
+                });
+                
+                await sendAdminNotificationEmail('NEW_REGISTRATION', {
+                    fullName: member.fullName,
+                    id: member.id,
+                    team: 'JOB_CREATION',
+                    email: member.email,
+                    phone: member.phone,
+                    businessIdea: formData.businessIdea
+                });
+            } catch (error) {
+                console.error('Email error:', error);
+            }
         }
         
-        // Notify admin
-        await sendAdminNotificationEmail('NEW_REGISTRATION', {
-            fullName: member.fullName,
-            id: member.id,
-            team: 'JOB_CREATION',
-            email: member.email,
-            phone: member.phone,
-            businessIdea: formData.businessIdea
-        });
-        
         // Create notification
-        createNotification(
-            member.id,
-            '🎉 Welcome to Job Creation!',
-            `Your enrollment is complete! Member ID: ${member.id}. Training starts soon!`,
-            'success'
-        );
+        if (typeof createNotification === 'function') {
+            createNotification(
+                member.id,
+                '🎉 Welcome to Job Creation!',
+                `Your enrollment is complete! Member ID: ${member.id}. Training starts soon!`,
+                'success'
+            );
+        }
         
         showNotification(`✅ Enrollment Complete! Member ID: ${member.id}`, 'success');
         
@@ -1464,6 +1499,11 @@ TAU Africa Team`,
         }, 2000);
     };
     
+    console.log('✅ Registration Handlers loaded');
+    
+})();
+</script>
+<script>    
     // ============================================
     // 4. PUBLIC REGISTRATION (OTP VERIFIED)
     // ============================================
