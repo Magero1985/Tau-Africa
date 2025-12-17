@@ -641,13 +641,13 @@ input[type="date"] {
             min-width: 120px;
         }
     </style>
-  </head>
+</head>
 <body>
     <div class="container">
         <!-- Header -->
         <div class="header">
             <div class="logo">🌍 TAU</div>
-            <h1 class="main-title">TAU AFRICA INTERNATIONAL</h1>
+            <h1 class="main-title">TAU AFRICA ECOSYSTEM</h1>
             <p class="vision">Community • Value • Corporate • Sovereignty</p>
             
             <!-- Social Media Links -->
@@ -675,7 +675,7 @@ input[type="date"] {
         <div class="wings-container">
             <!-- AUFFI Wing -->
             <div class="wing auffi">
-                <h2 class="wing-title">🌍 KABIRU DIGITAL ECOSYSTEM!</h2>
+                <h2 class="wing-title">🌍 KABIRU DIGITAL VALUE CURRENCY!</h2>
                 <p class="wing-description">We are building Kabiru Ecosystem. The Digital Africa Value Currency and Ecosystem Platforms dedicated to harnessing Africa's human and environmental values to create the continent's own Sovereign Wealth. Join us in the Initiative for Community • Value • Corporate • Sovereignty • 
 
 You can participate in the Initiative and earn iKbp by proofing & validating values:
@@ -804,7 +804,7 @@ To join in these categories, please use KABIRU SERVICE CENTER portal</p>
         </div>
     </div>
 
-    <!-- Notification -->
+<!-- Notification -->
     <div id="notification" class="notification"></div>
 <!-- Notification Bell Icon - Add to your header -->
 <div id="tauNotificationBell" style="position: fixed; top: 20px; right: 80px; z-index: 1000;">
@@ -824,9 +824,15 @@ To join in these categories, please use KABIRU SERVICE CENTER portal</p>
 
     <!-- Floating Member Access Button -->
     <div class="floating-btn" onclick="showRealMemberLogin()" title="Member Access">👤</div>
-    <!-- AI Assistant -->
-    <div class="ai-assistant" onclick="toggleAIChat()" title="AI Assistant - Get Help">🤖</div>
+    <!-- Add this with your other floating buttons -->
+<div class="floating-btn" onclick="showValidatorInterface()" title="Validator Access" style="bottom: 170px; right: 30px; background: linear-gradient(45deg, #9b59b6, #8e44ad);">
+    🔐
+</div>
 
+<!-- Add this for admin validation dashboard access -->
+<div class="floating-btn" onclick="if(isAdminAuthenticated()) { showValidationDashboard(); } else { showAdminLogin(); }" title="Validation Dashboard" style="bottom: 240px; right: 30px; background: linear-gradient(45deg, #e74c3c, #c0392b);">
+    📊
+</div>
     <!-- AI Chat Window -->
     <div class="ai-chat-window" id="aiChatWindow">
         <div class="ai-chat-header">
@@ -856,11 +862,14 @@ To join in these categories, please use KABIRU SERVICE CENTER portal</p>
         🌍
     </div>
     </div>
-<script>
-<!-- EmailJS SDK (YOU ALREADY HAVE THIS) -->
-<script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
-    
+
+<!-- Firebase SDK -->
+<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
 </script>
+<!-- EmailJS SDK -->
+<script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
 <script>
 // ============================================
 // TAU AFRICA - UNIFIED EMAIL SYSTEM (FIXED)
@@ -1305,13 +1314,13 @@ TAU Africa Team
     // ============================================
     // 1. FIREBASE CONFIG & INIT
     // ============================================
-    const FIREBASE_CONFIG = {
-        apiKey: "AIzaSyAW0vk_gg03xXEm6I1TQnU8KRiv1RhcrQ4",
-        authDomain: "tau-africa-ecosystem.firebaseapp.com",
-        projectId: "tau-africa-ecosystem",
-        storageBucket: "tau-africa-ecosystem.firebasestorage.app",
-        messagingSenderId: "1047279398196",
-        appId: "1:1047279398196:web:06d43661650c794268c961"
+      const FIREBASE_CONFIG = {
+        apiKey: "AIzaSyBcTzvl5lwpojRQM5lwyWe3hwp4upogUWw",
+        authDomain: "tau-main-app.firebaseapp.com",
+        projectId: "tau-main-app",
+        storageBucket: "tau-main-app.firebasestorage.app",
+        messagingSenderId: "69734421488",
+        appId: "1:69734421488:web:d13ae38f1c7d79cc854335"
     };
     
     let db, isOnline = false;
@@ -2277,13 +2286,13 @@ TAU AFRICA - COMPLETE FIX (ALL-IN-ONE)
     // ========================================
     // PART 1: FIREBASE CONNECTION
     // ========================================
-    const FIREBASE_CONFIG = {
-        apiKey: "AIzaSyAW0vk_gg03xXEm6I1TQnU8KRiv1RhcrQ4",
-        authDomain: "tau-africa-ecosystem.firebaseapp.com",
-        projectId: "tau-africa-ecosystem",
-        storageBucket: "tau-africa-ecosystem.firebasestorage.app",
-        messagingSenderId: "1047279398196",
-        appId: "1:1047279398196:web:06d43661650c794268c961"
+      const FIREBASE_CONFIG = {
+        apiKey: "AIzaSyBcTzvl5lwpojRQM5lwyWe3hwp4upogUWw",
+        authDomain: "tau-main-app.firebaseapp.com",
+        projectId: "tau-main-app",
+        storageBucket: "tau-main-app.firebasestorage.app",
+        messagingSenderId: "69734421488",
+        appId: "1:69734421488:web:d13ae38f1c7d79cc854335"
     };
     
     let db = null;
@@ -7593,13 +7602,13 @@ console.log('💡 Run window.runIntegrationTest() to check integration');
     // ============================================
     // FIREBASE CONFIGURATION
     // ============================================
-    const FIREBASE_CONFIG = {
-        apiKey: "AIzaSyAW0vk_gg03xXEm6I1TQnU8KRiv1RhcrQ4",
-        authDomain: "tau-africa-ecosystem.firebaseapp.com",
-        projectId: "tau-africa-ecosystem",
-        storageBucket: "tau-africa-ecosystem.firebasestorage.app",
-        messagingSenderId: "1047279398196",
-        appId: "1:1047279398196:web:06d43661650c794268c961"
+      const FIREBASE_CONFIG = {
+        apiKey: "AIzaSyBcTzvl5lwpojRQM5lwyWe3hwp4upogUWw",
+        authDomain: "tau-main-app.firebaseapp.com",
+        projectId: "tau-main-app",
+        storageBucket: "tau-main-app.firebasestorage.app",
+        messagingSenderId: "69734421488",
+        appId: "1:69734421488:web:d13ae38f1c7d79cc854335"
     };
     
     let db, isOnline = false;
@@ -7901,15 +7910,14 @@ console.log('💡 Run window.runIntegrationTest() to check integration');
     // ============================================
     // FIREBASE CONFIG (Same for both apps)
     // ============================================
-    const FIREBASE_CONFIG = {
-        apiKey: "AIzaSyAW0vk_gg03xXEm6I1TQnU8KRiv1RhcrQ4",
-        authDomain: "tau-africa-ecosystem.firebaseapp.com",
-        projectId: "tau-africa-ecosystem",
-        storageBucket: "tau-africa-ecosystem.firebasestorage.app",
-        messagingSenderId: "1047279398196",
-        appId: "1:1047279398196:web:06d43661650c794268c961"
+      const FIREBASE_CONFIG = {
+        apiKey: "AIzaSyBcTzvl5lwpojRQM5lwyWe3hwp4upogUWw",
+        authDomain: "tau-main-app.firebaseapp.com",
+        projectId: "tau-main-app",
+        storageBucket: "tau-main-app.firebasestorage.app",
+        messagingSenderId: "69734421488",
+        appId: "1:69734421488:web:d13ae38f1c7d79cc854335"
     };
-    
     let db, isKabiruApp = false;
     
     // Detect which app this is
@@ -8760,13 +8768,13 @@ console.log('💡 Run window.runIntegrationTest() to check integration');
     // ============================================
     // 2. FIREBASE CONFIGURATION (Verified Working)
     // ============================================
-    const FIREBASE_CONFIG = {
-        apiKey: "AIzaSyAW0vk_gg03xXEm6I1TQnU8KRiv1RhcrQ4",
-        authDomain: "tau-africa-ecosystem.firebaseapp.com",
-        projectId: "tau-africa-ecosystem",
-        storageBucket: "tau-africa-ecosystem.firebasestorage.app",
-        messagingSenderId: "1047279398196",
-        appId: "1:1047279398196:web:06d43661650c794268c961"
+      const FIREBASE_CONFIG = {
+        apiKey: "AIzaSyBcTzvl5lwpojRQM5lwyWe3hwp4upogUWw",
+        authDomain: "tau-main-app.firebaseapp.com",
+        projectId: "tau-main-app",
+        storageBucket: "tau-main-app.firebasestorage.app",
+        messagingSenderId: "69734421488",
+        appId: "1:69734421488:web:d13ae38f1c7d79cc854335"
     };
     
     let db, isOnline = false;
@@ -9856,13 +9864,13 @@ console.log('💡 Run window.runIntegrationTest() to check integration');
     // ============================================
     // 1. FIREBASE INITIALIZATION
     // ============================================
-    const FIREBASE_CONFIG = {
-        apiKey: "AIzaSyAW0vk_gg03xXEm6I1TQnU8KRiv1RhcrQ4",
-        authDomain: "tau-africa-ecosystem.firebaseapp.com",
-        projectId: "tau-africa-ecosystem",
-        storageBucket: "tau-africa-ecosystem.firebasestorage.app",
-        messagingSenderId: "1047279398196",
-        appId: "1:1047279398196:web:06d43661650c794268c961"
+      const FIREBASE_CONFIG = {
+        apiKey: "AIzaSyBcTzvl5lwpojRQM5lwyWe3hwp4upogUWw",
+        authDomain: "tau-main-app.firebaseapp.com",
+        projectId: "tau-main-app",
+        storageBucket: "tau-main-app.firebasestorage.app",
+        messagingSenderId: "69734421488",
+        appId: "1:69734421488:web:d13ae38f1c7d79cc854335"
     };
     
     let db = null;
@@ -10188,6 +10196,369 @@ console.log('💡 Run window.runIntegrationTest() to check integration');
     
 })();
      </script>
+    <script>
+// ============================================
+// 3-STAGE VALIDATION SYSTEM FOR VALUES & JOBS
+// ============================================
+(function() {
+    'use strict';
+    
+    const VALIDATION_FEES = {
+        system: 0.15,      // 15%
+        validator1: 0.05,  // 5%
+        validator2: 0.05,  // 5%
+        validator3: 0.05,  // 5%
+        total: 0.30        // 30%
+    };
+    
+    const TRANSACTION_FEE = 0.00001; // 0.001% for tasks/activities
+    
+    // Generate validation codes
+    function generateValidatorCode(stage) {
+        const prefix = stage === 1 ? 'VAL1' : stage === 2 ? 'VAL2' : 'VAL3';
+        const timestamp = Date.now().toString(36).toUpperCase();
+        const random = Math.random().toString(36).substring(2, 6).toUpperCase();
+        return `${prefix}-${timestamp}-${random}`;
+    }
+    
+    // Create validation code in database
+    window.createValidationCode = async function(itemType, itemId, stage) {
+        const code = generateValidatorCode(stage);
+        const codes = JSON.parse(localStorage.getItem('tauValidatorCodes') || '[]');
+        
+        const validationCode = {
+            id: `CODE-${Date.now()}`,
+            code: code,
+            itemType: itemType, // 'value' or 'job'
+            itemId: itemId,
+            stage: stage,
+            status: 'pending',
+            created: new Date().toISOString(),
+            validatedBy: null,
+            validatedAt: null
+        };
+        
+        codes.push(validationCode);
+        localStorage.setItem('tauValidatorCodes', JSON.stringify(codes));
+        
+        // Save to Firestore
+        if (typeof firebase !== 'undefined' && firebase.apps.length > 0) {
+            const db = firebase.firestore();
+            await db.collection('validationCodes').doc(validationCode.id).set(validationCode);
+        }
+        
+        console.log(`✅ Validation code created: ${code} (Stage ${stage})`);
+        return validationCode;
+    };
+    
+    // Validate with code
+    window.validateWithCode = async function(code, validatorId) {
+        const codes = JSON.parse(localStorage.getItem('tauValidatorCodes') || '[]');
+        const codeObj = codes.find(c => c.code === code && c.status === 'pending');
+        
+        if (!codeObj) {
+            return { success: false, error: 'Invalid or already used code' };
+        }
+        
+        const { itemType, itemId, stage } = codeObj;
+        
+        // Get the item
+        const storageKey = itemType === 'value' ? 'tauValues' : 'tauJobsPortal';
+        const items = JSON.parse(localStorage.getItem(storageKey) || '[]');
+        const item = items.find(i => i.id === itemId);
+        
+        if (!item) {
+            return { success: false, error: 'Item not found' };
+        }
+        
+        // Update code status
+        codeObj.status = 'used';
+        codeObj.validatedBy = validatorId;
+        codeObj.validatedAt = new Date().toISOString();
+        localStorage.setItem('tauValidatorCodes', JSON.stringify(codes));
+        
+        // Update item validation stage
+        if (!item.validationStages) {
+            item.validationStages = {};
+        }
+        
+        item.validationStages[`stage${stage}`] = {
+            validated: true,
+            validatedBy: validatorId,
+            validatedAt: new Date().toISOString(),
+            code: code
+        };
+        
+        // Calculate earnings
+        let earnings = 0;
+        const worthKsh = parseFloat(item.worthKsh || 0);
+        const feeAmount = worthKsh * VALIDATION_FEES.total;
+        
+        if (stage === 1) {
+            earnings = feeAmount * (VALIDATION_FEES.validator1 / VALIDATION_FEES.total);
+            item.status = 'Stage 1 Complete - Awaiting Claimer';
+        } else if (stage === 2) {
+            earnings = feeAmount * (VALIDATION_FEES.validator2 / VALIDATION_FEES.total);
+            item.status = 'Stage 2 Complete - Ready for Chain';
+        } else if (stage === 3) {
+            earnings = feeAmount * (VALIDATION_FEES.validator3 / VALIDATION_FEES.total);
+            item.status = 'Fully Validated - Ready for Claim';
+            item.validated = true;
+            
+            // Calculate and distribute all fees
+            const systemFee = feeAmount * (VALIDATION_FEES.system / VALIDATION_FEES.total);
+            
+            // Award system fee
+            const systemAccount = {
+                id: 'SYSTEM',
+                iKbpBalance: (JSON.parse(localStorage.getItem('systemBalance') || '0')) + (systemFee * 10)
+            };
+            localStorage.setItem('systemBalance', JSON.stringify(systemAccount.iKbpBalance));
+        }
+        
+        // Save updated item
+        const itemIndex = items.findIndex(i => i.id === itemId);
+        items[itemIndex] = item;
+        localStorage.setItem(storageKey, JSON.stringify(items));
+        
+        // Award validator
+        if (window.TauDB?.updateBalance) {
+            window.TauDB.updateBalance(validatorId, earnings * 10); // Convert to iKbp
+        }
+        
+        // Create notification
+        if (typeof createNotification === 'function') {
+            createNotification(
+                validatorId,
+                `✅ Validation Complete!`,
+                `Stage ${stage} validated. Earned ${(earnings * 10).toFixed(2)} iKbp`,
+                'success'
+            );
+        }
+        
+        // Save to Firestore
+        if (typeof firebase !== 'undefined' && firebase.apps.length > 0) {
+            const db = firebase.firestore();
+            await db.collection('validationCodes').doc(codeObj.id).set(codeObj, { merge: true });
+            
+            if (itemType === 'value') {
+                await db.collection('values').doc(itemId).set(item, { merge: true });
+            } else {
+                await db.collection('jobs').doc(itemId).set(item, { merge: true });
+            }
+        }
+        
+        console.log(`✅ Stage ${stage} validation complete. Validator earned ${earnings} KSH`);
+        
+        return {
+            success: true,
+            stage: stage,
+            earnings: earnings,
+            earningsIkbp: earnings * 10,
+            item: item
+        };
+    };
+    
+    // Admin: Generate codes for item
+    window.generateValidationCodes = async function(itemType, itemId) {
+        const item = itemType === 'value' 
+            ? JSON.parse(localStorage.getItem('tauValues') || '[]').find(v => v.id === itemId)
+            : JSON.parse(localStorage.getItem('tauJobsPortal') || '[]').find(j => j.id === itemId);
+        
+        if (!item) {
+            showNotification('❌ Item not found', 'error');
+            return;
+        }
+        
+        const codes = [];
+        for (let stage = 1; stage <= 3; stage++) {
+            const code = await createValidationCode(itemType, itemId, stage);
+            codes.push(code);
+        }
+        
+        showNotification(`✅ 3 validation codes generated for ${item.title}`, 'success');
+        
+        // Display codes modal
+        const modal = document.createElement('div');
+        modal.className = 'modal';
+        modal.style.display = 'block';
+        modal.innerHTML = `
+            <div class="modal-content">
+                <span class="close" onclick="this.parentElement.parentElement.remove()">&times;</span>
+                <h2>🔐 Validation Codes Generated</h2>
+                <p><strong>${item.title}</strong></p>
+                
+                <div style="background: #f8f9fa; padding: 20px; border-radius: 10px; margin: 20px 0;">
+                    ${codes.map(c => `
+                        <div style="background: white; padding: 15px; border-radius: 8px; margin-bottom: 10px; border-left: 4px solid ${c.stage === 1 ? '#3498db' : c.stage === 2 ? '#f39c12' : '#2ecc71'};">
+                            <h4>Stage ${c.stage}: Human Validation ${c.stage === 1 ? '(5%)' : c.stage === 2 ? '(5%)' : '(5%)'}</h4>
+                            <div style="font-size: 20px; font-weight: bold; letter-spacing: 2px; margin: 10px 0;">${c.code}</div>
+                            <button onclick="copyToClipboard('${c.code}')" class="btn btn-small">Copy Code</button>
+                        </div>
+                    `).join('')}
+                </div>
+                
+                <button onclick="this.parentElement.parentElement.remove()" class="btn">Close</button>
+            </div>
+        `;
+        document.body.appendChild(modal);
+        
+        return codes;
+    };
+    
+    // Validator interface
+    window.showValidatorInterface = function() {
+        const currentMember = window.TauDB?.getCurrentMember();
+        
+        if (!currentMember) {
+            showNotification('❌ Please login first', 'error');
+            return;
+        }
+        
+        const modal = document.createElement('div');
+        modal.className = 'modal';
+        modal.style.display = 'block';
+        modal.innerHTML = `
+            <div class="modal-content">
+                <span class="close" onclick="this.parentElement.parentElement.remove()">&times;</span>
+                
+                <h2>🔐 Validator Interface</h2>
+                <p>Enter validation code to validate items and earn fees</p>
+                
+                <form onsubmit="processValidation(event, '${currentMember.id}')">
+                    <div class="form-group">
+                        <label>Validation Code *</label>
+                        <input type="text" name="code" required placeholder="VAL1-XXXXX-XXXX" style="text-transform: uppercase; letter-spacing: 2px;">
+                    </div>
+                    
+                    <div style="background: #e3f2fd; padding: 20px; border-radius: 10px; margin: 20px 0;">
+                        <h4>Validation Stages:</h4>
+                        <ul style="margin: 10px 0 0 20px;">
+                            <li><strong>Stage 1 (VAL1):</strong> Human validation - Verify claimer is real (5%)</li>
+                            <li><strong>Stage 2 (VAL2):</strong> Value validation - Verify item quality (5%)</li>
+                            <li><strong>Stage 3 (VAL3):</strong> Chain validation - Verify logistics (5%)</li>
+                        </ul>
+                    </div>
+                    
+                    <button type="submit" class="btn" style="width: 100%;">Validate & Earn</button>
+                </form>
+            </div>
+        `;
+        
+        document.body.appendChild(modal);
+    };
+    
+    // Process validation submission
+    window.processValidation = async function(event, validatorId) {
+        event.preventDefault();
+        
+        const formData = new FormData(event.target);
+        const code = formData.get('code').toUpperCase();
+        
+        showNotification('⏳ Processing validation...', 'info');
+        
+        const result = await validateWithCode(code, validatorId);
+        
+        if (result.success) {
+            closeAllModals();
+            
+            const modal = document.createElement('div');
+            modal.className = 'modal';
+            modal.style.display = 'block';
+            modal.innerHTML = `
+                <div class="modal-content">
+                    <h2 style="color: #2ecc71; text-align: center;">✅ Validation Successful!</h2>
+                    
+                    <div style="background: linear-gradient(45deg, #2ecc71, #27ae60); color: white; padding: 30px; border-radius: 15px; margin: 20px 0; text-align: center;">
+                        <h3>Stage ${result.stage} Complete</h3>
+                        <h1 style="font-size: 3rem; margin: 20px 0;">+${result.earningsIkbp.toFixed(2)} iKbp</h1>
+                        <p style="font-size: 1.2rem;">KSH ${result.earnings.toFixed(2)}</p>
+                    </div>
+                    
+                    <div style="background: #f8f9fa; padding: 20px; border-radius: 10px;">
+                        <h4>Item Status:</h4>
+                        <p>${result.item.status}</p>
+                    </div>
+                    
+                    <button onclick="this.parentElement.parentElement.remove()" class="btn" style="width: 100%; margin-top: 20px;">Close</button>
+                </div>
+            `;
+            document.body.appendChild(modal);
+            
+        } else {
+            showNotification(`❌ ${result.error}`, 'error');
+        }
+    };
+    
+    // 2-Stage validation for tasks/activities
+    window.validateTaskActivity = async function(itemId, itemType, validatorId) {
+        const storageKey = itemType === 'task' ? 'tauTasks' : 'tauActivities';
+        const items = JSON.parse(localStorage.getItem(storageKey) || '[]');
+        const item = items.find(i => i.id === itemId);
+        
+        if (!item) {
+            return { success: false, error: 'Item not found' };
+        }
+        
+        // Stage 1: Member completion
+        if (!item.completedBy) {
+            return { success: false, error: 'Item not completed by member yet' };
+        }
+        
+        // Stage 2: Admin approval
+        item.validated = true;
+        item.approvedBy = validatorId;
+        item.approvedAt = new Date().toISOString();
+        
+        // Calculate transaction fee
+        const reward = parseFloat(item.reward || 0);
+        const fee = reward * TRANSACTION_FEE;
+        const netReward = reward - fee;
+        
+        // Award member net reward
+        if (window.TauDB?.updateBalance) {
+            window.TauDB.updateBalance(item.completedBy, netReward);
+        }
+        
+        // Award system fee
+        const systemBalance = parseFloat(localStorage.getItem('systemBalance') || '0');
+        localStorage.setItem('systemBalance', (systemBalance + fee).toString());
+        
+        // Save updated item
+        const itemIndex = items.findIndex(i => i.id === itemId);
+        items[itemIndex] = item;
+        localStorage.setItem(storageKey, JSON.stringify(items));
+        
+        // Notify member
+        if (typeof createNotification === 'function') {
+            createNotification(
+                item.completedBy,
+                '✅ Task/Activity Approved!',
+                `Earned ${netReward.toFixed(2)} iKbp (${(reward * TRANSACTION_FEE * 100).toFixed(3)}% fee applied)`,
+                'success'
+            );
+        }
+        
+        // Save to Firestore
+        if (typeof firebase !== 'undefined' && firebase.apps.length > 0) {
+            const db = firebase.firestore();
+            const collection = itemType === 'task' ? 'tasks' : 'activities';
+            await db.collection(collection).doc(itemId).set(item, { merge: true });
+        }
+        
+        console.log(`✅ ${itemType} approved. Fee: ${fee} iKbp, Net reward: ${netReward} iKbp`);
+        
+        return {
+            success: true,
+            netReward: netReward,
+            fee: fee,
+            item: item
+        };
+    };
+    
+    console.log('✅ 3-Stage Validation System loaded');
+})();
+                </script>
  <script>
 <!-- FINAL INITIALIZATION -->
 console.log('='.repeat(60));
