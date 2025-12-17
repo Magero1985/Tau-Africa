@@ -641,6 +641,32 @@ input[type="date"] {
             min-width: 120px;
         }
     </style>
+    <style>
+/* Fix for stuck button states */
+button[type="submit"]:active {
+    transform: scale(0.98);
+}
+
+button[type="submit"]:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+/* Prevent multiple clicks */
+.btn-register {
+    transition: all 0.3s ease;
+}
+
+.btn-register:active {
+    background: linear-gradient(45deg, #c0392b, #e74c3c) !important;
+}
+
+/* Fix for checkbox validation in Job Creation form */
+input[type="checkbox"][name="focus"] {
+    width: auto !important;
+    margin-right: 8px;
+}
+    </style>
   </head>
 <body>
     <div class="container">
@@ -1412,96 +1438,209 @@ grouptauafrica@gmail.com`,
             }
         }, 2000);
     };
-    
-    // ============================================
-    // 3. JOB CREATION REGISTRATION SUCCESS
-    // ============================================
-    window.processJobCreationSuccess = async function(formData) {
-        console.log('🔄 Processing Job Creation enrollment...');
-        
-        const referralCode = window.TauDB?.checkReferralCode();
-        const syncResult = window.TauDB.sync(formData, 'JOB_CREATION', referralCode);
-        
-        if (!syncResult.success) {
-            showNotification('❌ Enrollment failed', 'error');
-            return;
-        }
-        
-        const member = syncResult.member;
-        console.log('✅ Member enrolled:', member.id);
-        
-        // Send welcome email
-        const emailJSReady = await waitForEmailJS();
-        
-        if (emailJSReady) {
-            try {
-                await sendTauEmail({
-                    to_email: member.email,
-                    to_name: member.fullName,
-                    subject: '🎉 Welcome to TAU Job Creation Program',
-                    message: `Welcome ${member.fullName}!
+    </script>
+    <script>
+// ============================================
+// FIX JOB CREATION REGISTRATION FORM
+// ============================================
 
-Your Job Creation Training enrollment is complete!
+// Replace the existing createJobCreationModal function with this corrected version:
 
-Member ID: ${member.id}
-Program: 6-Week Job Creation Training
-
-LOGIN: ${window.location.origin}
-
-PROGRAM DETAILS:
-- Duration: 6 weeks
-- Format: ${formData.learningFormat || 'Hybrid'}
-- Focus: ${formData.businessIdea || 'Entrepreneurship'}
-
-You'll receive training materials and schedule via email.
-
-Questions? Contact: grouptauafrica@gmail.com
-
-TAU Africa Team`,
-                    phone: member.phone,
-                    location: member.location
-                });
+function createJobCreationModal() {
+    return `
+        <div class="modal-content">
+            <span class="close" onclick="closeAllModals()">&times;</span>
+            <h2>💼 Job Creation Training Program</h2>
+            <p>Comprehensive entrepreneurship and job creation program designed for African innovators</p>
+            
+            <div class="payment-info">
+                <h3>Training Fee: KSH 1,500</h3>
+                <p>6-week intensive program • Digital materials • Certification • Mentorship support</p>
+            </div>
+            
+            <form onsubmit="processJobCreationTraining(event)" id="jobCreationForm">
+                <div class="form-group">
+                    <label>Full Name *</label>
+                    <input type="text" name="fullName" required>
+                </div>
                 
-                await sendAdminNotificationEmail('NEW_REGISTRATION', {
-                    fullName: member.fullName,
-                    id: member.id,
-                    team: 'JOB_CREATION',
-                    email: member.email,
-                    phone: member.phone,
-                    businessIdea: formData.businessIdea
-                });
-            } catch (error) {
-                console.error('Email error:', error);
-            }
-        }
-        
-        // Create notification
-        if (typeof createNotification === 'function') {
-            createNotification(
-                member.id,
-                '🎉 Welcome to Job Creation!',
-                `Your enrollment is complete! Member ID: ${member.id}. Training starts soon!`,
-                'success'
-            );
-        }
-        
-        showNotification(`✅ Enrollment Complete! Member ID: ${member.id}`, 'success');
-        
-        setTimeout(() => {
-            const paymentModal = document.querySelector('.payment-modal');
-            if (paymentModal) paymentModal.remove();
-            
-            if (typeof closeAllModals === 'function') closeAllModals();
-            
-            if (typeof showSuccessModal === 'function') {
-                showSuccessModal(member);
-            }
-        }, 2000);
-    };
+                <div class="form-group">
+                    <label>Email *</label>
+                    <input type="email" name="email" required>
+                </div>
+                
+                <div class="form-group">
+                    <label>Phone Number (M-PESA) *</label>
+                    <input type="tel" name="phone" required placeholder="254XXXXXXXXX" pattern="254[0-9]{9}">
+                    <small>Format: 254XXXXXXXXX</small>
+                </div>
+                
+                <div class="form-group">
+                    <label>Location *</label>
+                    <input type="text" name="location" required>
+                </div>
+
+                <div class="form-group">
+                    <label>Age Range *</label>
+                    <select name="ageRange" required>
+                        <option value="">Select age range</option>
+                        <option value="18-25">18-25 years</option>
+                        <option value="26-35">26-35 years</option>
+                        <option value="36-45">36-45 years</option>
+                        <option value="46-55">46-55 years</option>
+                        <option value="56+">56+ years</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label>Current Employment Status *</label>
+                    <select name="employmentStatus" required>
+                        <option value="">Select status</option>
+                        <option value="Unemployed">Unemployed</option>
+                        <option value="Underemployed">Underemployed</option>
+                        <option value="Student">Student</option>
+                        <option value="Self-employed">Self-employed</option>
+                        <option value="Employed">Employed (seeking additional income)</option>
+                        <option value="Recent Graduate">Recent Graduate</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label>Business Idea/Interest Area *</label>
+                    <textarea name="businessIdea" rows="3" placeholder="What type of business or job creation are you interested in? Be specific about your vision." required></textarea>
+                </div>
+
+                <div class="form-group">
+                    <label>Target Market/Customers *</label>
+                    <textarea name="targetMarket" rows="2" placeholder="Who will be your customers or beneficiaries?" required></textarea>
+                </div>
+
+                <div class="form-group">
+                    <label>Available Capital/Startup Funds</label>
+                    <select name="startupFunds">
+                        <option value="">Select range</option>
+                        <option value="No funds">No funds available</option>
+                        <option value="Under KSH 10K">Under KSH 10,000</option>
+                        <option value="KSH 10K-50K">KSH 10,000 - 50,000</option>
+                        <option value="KSH 50K-100K">KSH 50,000 - 100,000</option>
+                        <option value="KSH 100K-500K">KSH 100,000 - 500,000</option>
+                        <option value="Over KSH 500K">Over KSH 500,000</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label>Educational Background *</label>
+                    <select name="education" required>
+                        <option value="">Select level</option>
+                        <option value="Primary School">Primary School</option>
+                        <option value="Secondary School">Secondary School</option>
+                        <option value="College Diploma">College Diploma</option>
+                        <option value="University Degree">University Degree</option>
+                        <option value="Postgraduate">Postgraduate</option>
+                        <option value="Vocational Training">Vocational Training</option>
+                        <option value="Self-taught">Self-taught</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label>Relevant Skills/Experience</label>
+                    <textarea name="relevantSkills" rows="2" placeholder="List any skills or experience relevant to your business idea"></textarea>
+                </div>
+                
+                <div class="form-group">
+                    <label>Training Focus Areas (Select all that apply) *</label>
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 10px;">
+                        <label><input type="checkbox" name="focus" value="Business Planning" required> Business Planning</label>
+                        <label><input type="checkbox" name="focus" value="Financial Management"> Financial Management</label>
+                        <label><input type="checkbox" name="focus" value="Marketing & Sales"> Marketing & Sales</label>
+                        <label><input type="checkbox" name="focus" value="Digital Skills"> Digital Skills</label>
+                        <label><input type="checkbox" name="focus" value="Leadership"> Leadership</label>
+                        <label><input type="checkbox" name="focus" value="Networking"> Networking</label>
+                        <label><input type="checkbox" name="focus" value="Legal Compliance"> Legal Compliance</label>
+                        <label><input type="checkbox" name="focus" value="Product Development"> Product Development</label>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>Preferred Learning Format *</label>
+                    <select name="learningFormat" required>
+                        <option value="">Select format</option>
+                        <option value="Online only">Online only</option>
+                        <option value="In-person only">In-person only</option>
+                        <option value="Hybrid">Hybrid (Online + In-person)</option>
+                        <option value="Self-paced">Self-paced online</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label>Timeline to Start Business *</label>
+                    <select name="businessTimeline" required>
+                        <option value="">Select timeline</option>
+                        <option value="Within 3 months">Within 3 months</option>
+                        <option value="3-6 months">3-6 months</option>
+                        <option value="6-12 months">6-12 months</option>
+                        <option value="Over 1 year">Over 1 year</option>
+                        <option value="Just exploring">Just exploring options</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label>
+                        <input type="checkbox" name="terms" required style="width: auto; margin-right: 10px;">
+                        I agree to the TAU Africa Terms of Service and Privacy Policy *
+                    </label>
+                </div>
+                
+                <button type="submit" class="btn btn-register" style="width: 100%;">Proceed to M-PESA Payment (KSH 1,500)</button>
+            </form>
+        </div>
+    `;
+}
+
+// Update the processJobCreationTraining function with better error handling:
+function processJobCreationTraining(event) {
+    event.preventDefault();
     
-    console.log('✅ Registration Handlers loaded');
+    console.log('🔄 Job Creation form submitted');
     
-})();
+    const form = event.target;
+    const formData = new FormData(form);
+    const data = Object.fromEntries(formData.entries());
+    
+    // Log the data for debugging
+    console.log('📋 Form data:', data);
+    
+    // Validate required fields
+    if (!data.phone || !data.fullName || !data.email) {
+        showNotification('❌ Please fill all required fields', 'error');
+        console.error('Missing required fields');
+        return false;
+    }
+    
+    // Validate phone format
+    if (!data.phone.match(/^254[0-9]{9}$/)) {
+        showNotification('❌ Please use correct phone format: 254XXXXXXXXX', 'error');
+        console.error('Invalid phone format:', data.phone);
+        return false;
+    }
+    
+    // Check for at least one focus area selected
+    const focusAreas = form.querySelectorAll('input[name="focus"]:checked');
+    if (focusAreas.length === 0) {
+        showNotification('❌ Please select at least one training focus area', 'error');
+        console.error('No focus areas selected');
+        return false;
+    }
+    
+    console.log('✅ Validation passed, initiating payment...');
+    
+    // Proceed to M-PESA payment
+    initiateMpesaPayment(1500, data.phone, data, 'processJobCreationSuccess');
+    
+    return false;
+}
+
+console.log('✅ Job Creation Modal Fix Applied');
 </script>
 <script>    
     // ============================================
