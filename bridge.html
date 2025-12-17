@@ -1344,5 +1344,57 @@ console.log('💡 Run TauDiagnostics.testFirebase() to test connection');
 console.log('💡 Run TauDiagnostics.testButtons() to check buttons');
 console.log('💡 Run TauDiagnostics.testRegistration() to test signup');
     </script>
+        <script>
+// ============================================
+// BRIDGE ADMIN ACCESS FIX
+// ============================================
+(function() {
+    'use strict';
+    
+    const ADMIN_CODE = 'TAU2025ADMIN';
+    
+    // Create login modal on load
+    window.showBridgeLogin = function() {
+        const modal = document.createElement('div');
+        modal.className = 'modal';
+        modal.style.display = 'block';
+        modal.innerHTML = `
+            <div class="modal-content">
+                <h2>🔐 Admin Access</h2>
+                <form onsubmit="verifyBridgeAdmin(event)">
+                    <div class="form-group">
+                        <label>Admin Code</label>
+                        <input type="password" id="bridgeAdminCode" required>
+                    </div>
+                    <button type="submit" class="btn">Access Bridge</button>
+                </form>
+            </div>
+        `;
+        document.body.appendChild(modal);
+    };
+    
+    window.verifyBridgeAdmin = function(event) {
+        event.preventDefault();
+        const code = document.getElementById('bridgeAdminCode').value;
+        
+        if (code === ADMIN_CODE) {
+            document.querySelectorAll('.modal').forEach(m => m.remove());
+            document.querySelector('.container').style.display = 'block';
+            notify('✅ Admin access granted', 'success');
+        } else {
+            notify('❌ Invalid code', 'error');
+        }
+    };
+    
+    // Hide content initially
+    document.addEventListener('DOMContentLoaded', () => {
+        const container = document.querySelector('.container');
+        if (container) {
+            container.style.display = 'none';
+            showBridgeLogin();
+        }
+    });
+})();
+        </script>
 </body>
     </html>
