@@ -649,7 +649,50 @@ input[type="date"] {
             <div class="logo">🌍 TAU</div>
             <h1 class="main-title">TAU AFRICA ECOSYSTEM</h1>
             <p class="vision">Community • Value • Corporate • Sovereignty</p>
-            
+            <!-- Add this RIGHT AFTER your header div, around line 200 -->
+<button onclick="quickEmailTest()" style="position: fixed; top: 10px; left: 10px; z-index: 9999; background: red; color: white; padding: 10px; border: none; border-radius: 5px; cursor: pointer;">
+    🧪 TEST EMAIL
+</button>
+
+<script>
+function quickEmailTest() {
+    console.log('=== EMAIL DIAGNOSTIC ===');
+    console.log('1. EmailJS loaded?', typeof emailjs !== 'undefined');
+    console.log('2. sendTauEmail exists?', typeof sendTauEmail !== 'undefined');
+    console.log('3. createNotification exists?', typeof createNotification !== 'undefined');
+    
+    if (typeof emailjs === 'undefined') {
+        alert('❌ EmailJS library NOT loaded!');
+        return;
+    }
+    
+    const testEmail = prompt('Enter your email:', 'test@example.com');
+    if (!testEmail) return;
+    
+    alert('📧 Sending test email... Check console for results.');
+    
+    emailjs.send(
+        'service_xfira7g',
+        'template_bqxztig',
+        {
+            to_email: testEmail,
+            to_name: 'Test User',
+            subject: 'TAU Test Email',
+            message: 'If you see this, EmailJS is working!',
+            from_name: 'TAU Africa',
+            from_email: 'grouptauafrica@gmail.com',
+            phone: 'Test',
+            location: 'Test'
+        }
+    ).then(response => {
+        console.log('✅ EMAIL SUCCESS:', response);
+        alert('✅ Email sent! Check your inbox.');
+    }).catch(error => {
+        console.error('❌ EMAIL FAILED:', error);
+        alert('❌ Email failed: ' + error.text);
+    });
+}
+</script>
             <!-- Social Media Links -->
             <div class="social-links">
                 <a href="https://x.com/grouptauafrica?t=pFlJ-gky_A7Dp3e0lbZ5Sg&s=09" target="_blank" class="social-link">
