@@ -12963,5 +12963,658 @@ window.processValidatorCode = async function(event, validatorId) {
 })();
 
     </script>
+    <script>
+        // ============================================
+// TAU AFRICA - JOBS GALLERY & ACTIVITIES SYSTEM
+// Complete implementation with validation
+// ============================================
+
+(function() {
+    'use strict';
+    
+    console.log('💼 Loading Jobs Gallery & Activities System...');
+    
+    // ============================================
+    // 1. JOBS GALLERY MODAL - COMPLETE INTERFACE
+    // ============================================
+    
+    window.openJobsGallery = function() {
+        closeAllModals();
+        
+        const modal = document.createElement('div');
+        modal.className = 'modal';
+        modal.style.display = 'block';
+        modal.innerHTML = `
+            <div class="modal-content" style="max-width: 1200px;">
+                <span class="close" onclick="this.parentElement.parentElement.remove()">&times;</span>
+                
+                <div style="background: linear-gradient(45deg, #667eea, #764ba2); color: white; padding: 25px; border-radius: 15px; margin-bottom: 20px;">
+                    <h2 style="margin: 0;">💼 JOBS GALLERY</h2>
+                    <p style="margin: 10px 0 0 0;">Post jobs, find jobs, and apply - All in one place</p>
+                </div>
+                
+                <!-- TAB NAVIGATION -->
+                <div style="display: flex; gap: 10px; margin-bottom: 20px; flex-wrap: wrap;">
+                    <button class="btn btn-small" onclick="switchJobTab('post')" id="jobTabPost" style="background: #667eea;">Post Job Opening</button>
+                    <button class="btn btn-small" onclick="switchJobTab('browse')" id="jobTabBrowse" style="background: #95a5a6;">Browse Jobs Portal</button>
+                    <button class="btn btn-small" onclick="switchJobTab('search')" id="jobTabSearch" style="background: #95a5a6;">Search Jobs</button>
+                    <button class="btn btn-small" onclick="switchJobTab('apply')" id="jobTabApply" style="background: #95a5a6;">Apply for Job</button>
+                </div>
+                
+                <!-- TAB CONTENT -->
+                <div id="jobTabContent"></div>
+            </div>
+        `;
+        
+        document.body.appendChild(modal);
+        
+        // Show default tab
+        switchJobTab('post');
+    };
+    
+    // Switch between job tabs
+    window.switchJobTab = function(tab) {
+        // Update button styles
+        ['post', 'browse', 'search', 'apply'].forEach(t => {
+            const btn = document.getElementById('jobTab' + t.charAt(0).toUpperCase() + t.slice(1));
+            if (btn) {
+                btn.style.background = t === tab ? '#667eea' : '#95a5a6';
+            }
+        });
+        
+        const content = document.getElementById('jobTabContent');
+        if (!content) return;
+        
+        switch(tab) {
+            case 'post':
+                content.innerHTML = getJobPostForm();
+                break;
+            case 'browse':
+                content.innerHTML = getJobsBrowsePortal();
+                loadJobsPortal();
+                break;
+            case 'search':
+                content.innerHTML = getJobSearchForm();
+                break;
+            case 'apply':
+                content.innerHTML = getJobApplicationForm();
+                break;
+        }
+    };
+    
+    // ============================================
+    // 2. POST JOB OPENING (Public & Members)
+    // ============================================
+    
+    function getJobPostForm() {
+        return `
+            <form onsubmit="submitJobOpening(event)">
+                <div style="background: #e3f2fd; padding: 15px; border-radius: 10px; margin-bottom: 20px;">
+                    <strong>📢 Anyone can post jobs!</strong>
+                    <p style="margin: 10px 0 0 0; font-size: 14px;">
+                        Jobs undergo 3-stage validation before appearing in Jobs Portal
+                    </p>
+                </div>
+                
+                <div class="form-group">
+                    <label>Your Name *</label>
+                    <input type="text" name="posterName" required placeholder="Your full name or company name">
+                </div>
+                
+                <div class="form-group">
+                    <label>Email *</label>
+                    <input type="email" name="posterEmail" required placeholder="your@email.com">
+                </div>
+                
+                <div class="form-group">
+                    <label>Phone *</label>
+                    <input type="tel" name="posterPhone" required placeholder="254XXXXXXXXX">
+                </div>
+                
+                <div class="form-group">
+                    <label>Company/Organization Name *</label>
+                    <input type="text" name="companyName" required>
+                </div>
+                
+                <div class="form-group">
+                    <label>Job Title *</label>
+                    <input type="text" name="jobTitle" required placeholder="e.g., Software Developer">
+                </div>
+                
+                <div class="form-group">
+                    <label>Job Category *</label>
+                    <select name="jobCategory" required>
+                        <option value="">Select category</option>
+                        <option value="IT & Digital">IT & Digital Economy</option>
+                        <option value="Marketing">Marketing & Advertising</option>
+                        <option value="Admin">Front Desk & Data Handlers</option>
+                        <option value="Management">Management</option>
+                        <option value="Healthcare">Healthcare</option>
+                        <option value="Sales">Sales & Customer Service</option>
+                        <option value="Education">Education & Training</option>
+                        <option value="Engineering">Engineering</option>
+                        <option value="Finance">Finance & Accounting</option>
+                        <option value="Agriculture">Agriculture & Food</option>
+                        <option value="Manufacturing">Manufacturing</option>
+                        <option value="Logistics">Transportation & Logistics</option>
+                        <option value="Other">Other</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label>Job Type *</label>
+                    <select name="jobType" required>
+                        <option value="">Select type</option>
+                        <option value="Full-time">Full-time</option>
+                        <option value="Part-time">Part-time</option>
+                        <option value="Contract">Contract</option>
+                        <option value="Freelance">Freelance</option>
+                        <option value="Internship">Internship</option>
+                        <option value="Temporary">Temporary</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label>Location *</label>
+                    <input type="text" name="jobLocation" required placeholder="City, Country or Remote">
+                </div>
+                
+                <div class="form-group">
+                    <label>Job Description *</label>
+                    <textarea name="jobDescription" rows="6" required placeholder="Detailed job description, responsibilities, requirements..."></textarea>
+                </div>
+                
+                <div class="form-group">
+                    <label>Required Qualifications *</label>
+                    <textarea name="qualifications" rows="4" required placeholder="Education, experience, skills required..."></textarea>
+                </div>
+                
+                <div class="form-group">
+                    <label>Experience Level *</label>
+                    <select name="experienceLevel" required>
+                        <option value="">Select level</option>
+                        <option value="Entry Level">Entry Level (0-2 years)</option>
+                        <option value="Mid Level">Mid Level (2-5 years)</option>
+                        <option value="Senior Level">Senior Level (5-10 years)</option>
+                        <option value="Executive">Executive Level (10+ years)</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label>Salary Range (Optional)</label>
+                    <input type="text" name="salaryRange" placeholder="e.g., KSH 50,000 - 80,000">
+                </div>
+                
+                <div class="form-group">
+                    <label>Application Deadline</label>
+                    <input type="date" name="deadline">
+                </div>
+                
+                <div class="form-group">
+                    <label>Worth in KSH (Job Value) *</label>
+                    <input type="number" name="worthKsh" required min="0" step="0.01" placeholder="Enter job's market value">
+                    <small>This determines validation fees (30% of worth)</small>
+                </div>
+                
+                <button type="submit" class="btn" style="width: 100%; background: #667eea; font-size: 16px; padding: 15px;">
+                    📤 Submit Job for Validation
+                </button>
+            </form>
+        `;
+    }
+    
+    window.submitJobOpening = async function(event) {
+        event.preventDefault();
+        
+        const formData = new FormData(event.target);
+        const currentMember = window.TauDB?.getCurrentMember();
+        
+        const jobId = 'JOB-' + Date.now();
+        const validationCode = generateJobValidationCode();
+        
+        const job = {
+            id: jobId,
+            validationCode: validationCode,
+            type: 'job',
+            
+            // Poster info
+            postedBy: currentMember?.id || 'PUBLIC-' + Date.now(),
+            posterName: formData.get('posterName'),
+            posterEmail: formData.get('posterEmail'),
+            posterPhone: formData.get('posterPhone'),
+            
+            // Job details
+            companyName: formData.get('companyName'),
+            title: formData.get('jobTitle'),
+            category: formData.get('jobCategory'),
+            jobType: formData.get('jobType'),
+            location: formData.get('jobLocation'),
+            description: formData.get('jobDescription'),
+            qualifications: formData.get('qualifications'),
+            experienceLevel: formData.get('experienceLevel'),
+            salaryRange: formData.get('salaryRange') || 'Not specified',
+            deadline: formData.get('deadline'),
+            
+            // Validation
+            worthKsh: parseFloat(formData.get('worthKsh')),
+            worthIkb: (parseFloat(formData.get('worthKsh')) / 100000).toFixed(6),
+            validated: false,
+            status: 'Pending Review',
+            validationStages: {},
+            
+            // Metadata
+            postedAt: new Date().toISOString(),
+            claimedBy: null,
+            applications: []
+        };
+        
+        // Save job
+        const jobs = JSON.parse(localStorage.getItem('tauJobsPortal') || '[]');
+        jobs.push(job);
+        localStorage.setItem('tauJobsPortal', JSON.stringify(jobs));
+        
+        // Save to Firestore
+        if (typeof firebase !== 'undefined' && firebase.apps.length > 0) {
+            try {
+                const db = firebase.firestore();
+                await db.collection('jobs').doc(jobId).set(job);
+            } catch (error) {
+                console.warn('Firestore sync warning:', error);
+            }
+        }
+        
+        // Notify admin
+        const adminNotifs = JSON.parse(localStorage.getItem('tauAdminNotifications') || '[]');
+        adminNotifs.unshift({
+            id: 'ADMIN-' + Date.now(),
+            type: 'new_job_posting',
+            data: {
+                jobTitle: job.title,
+                company: job.companyName,
+                postedBy: job.posterName,
+                validationCode: validationCode,
+                jobId: jobId
+            },
+            timestamp: new Date().toISOString(),
+            read: false
+        });
+        localStorage.setItem('tauAdminNotifications', JSON.stringify(adminNotifs));
+        
+        closeAllModals();
+        
+        // Show success modal
+        const modal = document.createElement('div');
+        modal.className = 'modal';
+        modal.style.display = 'block';
+        modal.innerHTML = `
+            <div class="modal-content">
+                <span class="close" onclick="this.parentElement.parentElement.remove()">&times;</span>
+                
+                <div style="text-align: center;">
+                    <div style="font-size: 5rem; margin-bottom: 20px;">✅</div>
+                    <h2 style="color: #2ecc71;">Job Posted Successfully!</h2>
+                </div>
+                
+                <div style="background: linear-gradient(45deg, #ffd700, #ffed4e); padding: 25px; border-radius: 15px; margin: 25px 0; text-align: center;">
+                    <h3 style="color: #333; margin: 0 0 15px 0;">Job Validation Code</h3>
+                    <div style="background: white; padding: 15px; border-radius: 10px; font-size: 24px; font-weight: bold; letter-spacing: 3px; color: #333;">
+                        ${validationCode}
+                    </div>
+                    <button onclick="copyToClipboard('${validationCode}')" class="btn" style="margin-top: 15px; background: white; color: #333;">
+                        📋 Copy Code
+                    </button>
+                </div>
+                
+                <div style="background: #e3f2fd; padding: 20px; border-radius: 10px; margin: 20px 0;">
+                    <h4 style="margin: 0 0 10px 0; color: #1976d2;">What Happens Next?</h4>
+                    <ol style="margin: 0; padding-left: 20px; color: #666;">
+                        <li>Admins will generate 3 validation codes (VAL1, VAL2, VAL3)</li>
+                        <li>Job undergoes 3-stage validation process</li>
+                        <li>After all 3 stages, job appears in Jobs Portal</li>
+                        <li>Members can then claim the job</li>
+                        <li>You'll receive notifications on progress</li>
+                    </ol>
+                </div>
+                
+                <div style="background: #f8f9fa; padding: 15px; border-radius: 10px;">
+                    <strong>📋 Job Details:</strong>
+                    <p style="margin: 10px 0 0 0;">
+                        <strong>Title:</strong> ${job.title}<br>
+                        <strong>Company:</strong> ${job.companyName}<br>
+                        <strong>Location:</strong> ${job.location}<br>
+                        <strong>Worth:</strong> ${job.worthIkb} iKb (${job.worthKsh} KSH)
+                    </p>
+                </div>
+                
+                <button onclick="this.parentElement.parentElement.remove()" class="btn" style="width: 100%; margin-top: 20px;">
+                    Close
+                </button>
+            </div>
+        `;
+        
+        document.body.appendChild(modal);
+        
+        showNotification('✅ Job posted! Awaiting validation.', 'success');
+    };
+    
+    function generateJobValidationCode() {
+        const timestamp = Date.now().toString(36).toUpperCase();
+        const random = Math.random().toString(36).substring(2, 8).toUpperCase();
+        return `JOB-${timestamp}-${random}`;
+    }
+    
+    // ============================================
+    // 3. JOBS PORTAL - BROWSE VALIDATED JOBS
+    // ============================================
+    
+    function getJobsBrowsePortal() {
+        return `
+            <div style="background: #fff3cd; padding: 15px; border-radius: 10px; margin-bottom: 20px;">
+                <strong>💼 Jobs Portal</strong>
+                <p style="margin: 10px 0 0 0; font-size: 14px;">
+                    Validated jobs ready for claiming. Members can claim jobs through 3-stage validation process.
+                </p>
+            </div>
+            
+            <div id="jobsPortalContainer" style="min-height: 300px;">
+                <div style="text-align: center; padding: 40px;">
+                    <div class="spinner"></div>
+                    <p>Loading jobs...</p>
+                </div>
+            </div>
+        `;
+    }
+    
+    window.loadJobsPortal = function() {
+        const container = document.getElementById('jobsPortalContainer');
+        if (!container) return;
+        
+        const jobs = JSON.parse(localStorage.getItem('tauJobsPortal') || '[]');
+        
+        // Show validated jobs only
+        const validatedJobs = jobs.filter(j => j.validated && j.status === 'Approved' && !j.claimedBy);
+        
+        if (validatedJobs.length === 0) {
+            container.innerHTML = `
+                <div style="text-align: center; padding: 60px 20px; background: white; border-radius: 15px;">
+                    <div style="font-size: 4rem; margin-bottom: 20px;">💼</div>
+                    <h3 style="color: #666; margin-bottom: 10px;">No jobs available yet</h3>
+                    <p style="color: #999;">Check back soon or post your own job!</p>
+                </div>
+            `;
+            return;
+        }
+        
+        container.innerHTML = `
+            <div style="display: grid; gap: 20px;">
+                ${validatedJobs.map(job => createJobCard(job)).join('')}
+            </div>
+        `;
+    };
+    
+    function createJobCard(job) {
+        const currentMember = window.TauDB?.getCurrentMember();
+        const canClaim = currentMember && (currentMember.team === 'TASK' || currentMember.team === 'TALK');
+        
+        // Calculate validation stages
+        const stages = job.validationStages || {};
+        const stage1 = stages.stage1?.validated;
+        const stage2 = stages.stage2?.validated;
+        const stage3 = stages.stage3?.validated;
+        
+        return `
+            <div style="background: white; border-left: 4px solid #667eea; border-radius: 15px; padding: 25px; box-shadow: 0 5px 15px rgba(0,0,0,0.1);">
+                <div style="display: flex; justify-content: between; align-items: start; margin-bottom: 15px;">
+                    <div style="flex: 1;">
+                        <h3 style="margin: 0 0 10px 0; color: #2a5298;">${job.title}</h3>
+                        <div style="font-size: 14px; color: #666; margin-bottom: 10px;">
+                            <strong>${job.companyName}</strong> • ${job.location}
+                        </div>
+                    </div>
+                    <span style="background: #667eea; color: white; padding: 5px 12px; border-radius: 12px; font-size: 12px; font-weight: 600; white-space: nowrap;">
+                        ${job.jobType}
+                    </span>
+                </div>
+                
+                <p style="color: #666; margin-bottom: 15px; line-height: 1.6;">${job.description.substring(0, 200)}${job.description.length > 200 ? '...' : ''}</p>
+                
+                <div style="background: #f8f9fa; padding: 15px; border-radius: 10px; margin-bottom: 15px;">
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; font-size: 14px;">
+                        <div><strong>Category:</strong> ${job.category}</div>
+                        <div><strong>Experience:</strong> ${job.experienceLevel}</div>
+                        <div><strong>Salary:</strong> ${job.salaryRange}</div>
+                        <div><strong>Deadline:</strong> ${job.deadline ? new Date(job.deadline).toLocaleDateString() : 'N/A'}</div>
+                    </div>
+                </div>
+                
+                <!-- Validation Progress -->
+                <div style="display: flex; gap: 5px; margin: 15px 0;">
+                    <div style="flex: 1; height: 8px; background: ${stage1 ? '#2ecc71' : '#ddd'}; border-radius: 4px;" title="Stage 1: Human Validation"></div>
+                    <div style="flex: 1; height: 8px; background: ${stage2 ? '#2ecc71' : '#ddd'}; border-radius: 4px;" title="Stage 2: Quality Check"></div>
+                    <div style="flex: 1; height: 8px; background: ${stage3 ? '#2ecc71' : '#ddd'}; border-radius: 4px;" title="Stage 3: Chain Verification"></div>
+                </div>
+                
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+                    <div style="background: linear-gradient(45deg, #ffd700, #f39c12); padding: 8px 15px; border-radius: 20px; font-weight: bold; color: #333;">
+                        ${job.worthIkb} iKb
+                    </div>
+                    <button onclick="viewJobDetails('${job.id}')" class="btn btn-small">
+                        View Details
+                    </button>
+                </div>
+                
+                <button onclick="claimJob('${job.id}')" class="btn" style="width: 100%; padding: 12px; background: ${canClaim ? '#667eea' : '#95a5a6'};">
+                    ${canClaim ? '💼 Claim Job' : '🔒 Members Only'}
+                </button>
+            </div>
+        `;
+    }
+    
+    window.viewJobDetails = function(jobId) {
+        const jobs = JSON.parse(localStorage.getItem('tauJobsPortal') || '[]');
+        const job = jobs.find(j => j.id === jobId);
+        
+        if (!job) {
+            showNotification('❌ Job not found', 'error');
+            return;
+        }
+        
+        const modal = document.createElement('div');
+        modal.className = 'modal';
+        modal.style.display = 'block';
+        modal.innerHTML = `
+            <div class="modal-content" style="max-width: 800px;">
+                <span class="close" onclick="this.parentElement.parentElement.remove()">&times;</span>
+                
+                <h2>${job.title}</h2>
+                
+                <div style="background: #f8f9fa; padding: 20px; border-radius: 10px; margin: 20px 0;">
+                    <h3 style="margin: 0 0 10px 0;">${job.companyName}</h3>
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; font-size: 14px;">
+                        <div><strong>Location:</strong> ${job.location}</div>
+                        <div><strong>Type:</strong> ${job.jobType}</div>
+                        <div><strong>Category:</strong> ${job.category}</div>
+                        <div><strong>Experience:</strong> ${job.experienceLevel}</div>
+                        <div><strong>Salary:</strong> ${job.salaryRange}</div>
+                        <div><strong>Deadline:</strong> ${job.deadline ? new Date(job.deadline).toLocaleDateString() : 'Not specified'}</div>
+                    </div>
+                </div>
+                
+                <div style="margin: 20px 0;">
+                    <h4>Job Description:</h4>
+                    <p style="line-height: 1.8; color: #666;">${job.description}</p>
+                </div>
+                
+                <div style="margin: 20px 0;">
+                    <h4>Required Qualifications:</h4>
+                    <p style="line-height: 1.8; color: #666;">${job.qualifications}</p>
+                </div>
+                
+                <div style="background: linear-gradient(45deg, #ffd700, #ffed4e); padding: 20px; border-radius: 10px; text-align: center; margin: 20px 0;">
+                    <h4 style="color: #333; margin: 0 0 10px 0;">Job Worth</h4>
+                    <div style="font-size: 2rem; font-weight: bold; color: #333;">${job.worthIkb} iKb</div>
+                    <div style="font-size: 1rem; color: #666;">${job.worthKsh} KSH</div>
+                </div>
+                
+                <button onclick="this.parentElement.parentElement.remove(); claimJob('${job.id}')" class="btn" style="width: 100%; padding: 15px; background: #667eea;">
+                    💼 Claim This Job
+                </button>
+            </div>
+        `;
+        
+        document.body.appendChild(modal);
+    };
+    
+    window.claimJob = function(jobId) {
+        const currentMember = window.TauDB?.getCurrentMember();
+        
+        if (!currentMember) {
+            showNotification('Please login to claim jobs', 'info');
+            setTimeout(() => showRealMemberLogin(), 500);
+            return;
+        }
+        
+        if (currentMember.type === 'public') {
+            showNotification('Please upgrade to TASK or TALK membership to claim jobs', 'info');
+            setTimeout(() => showUpgradeOptions(), 500);
+            return;
+        }
+        
+        const jobs = JSON.parse(localStorage.getItem('tauJobsPortal') || '[]');
+        const job = jobs.find(j => j.id === jobId);
+        
+        if (!job) {
+            showNotification('❌ Job not found', 'error');
+            return;
+        }
+        
+        // Check if job is fully validated
+        const stages = job.validationStages || {};
+        if (!stages.stage1?.validated || !stages.stage2?.validated || !stages.stage3?.validated) {
+            showNotification('⏳ This job is still undergoing validation', 'info');
+            return;
+        }
+        
+        if (job.claimedBy) {
+            showNotification('❌ This job has already been claimed', 'error');
+            return;
+        }
+        
+        closeAllModals();
+        
+        const modal = document.createElement('div');
+        modal.className = 'modal';
+        modal.style.display = 'block';
+        modal.innerHTML = `
+            <div class="modal-content">
+                <span class="close" onclick="this.parentElement.parentElement.remove()">&times;</span>
+                
+                <h2>💼 Claim Job</h2>
+                
+                <div style="background: #f8f9fa; padding: 20px; border-radius: 10px; margin: 20px 0;">
+                    <h3 style="margin: 0 0 10px 0;">${job.title}</h3>
+                    <p style="margin: 0;"><strong>${job.companyName}</strong></p>
+                </div>
+                
+                <form onsubmit="submitJobClaim(event, '${jobId}', '${currentMember.id}')">
+                    <div class="form-group">
+                        <label>Why are you a good fit for this role? *</label>
+                        <textarea name="fitReason" rows="4" required placeholder="Explain your qualifications and experience..."></textarea>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Your CV/Resume Summary *</label>
+                        <textarea name="cvSummary" rows="4" required placeholder="Brief summary of your education and work experience..."></textarea>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Available Start Date</label>
+                        <input type="date" name="startDate">
+                    </div>
+                    
+                    <button type="submit" class="btn" style="width: 100%; background: #667eea;">
+                        Submit Job Claim
+                    </button>
+                </form>
+            </div>
+        `;
+        
+        document.body.appendChild(modal);
+    };
+    
+    window.submitJobClaim = async function(event, jobId, memberId) {
+        event.preventDefault();
+        
+        const formData = new FormData(event.target);
+        
+        const jobs = JSON.parse(localStorage.getItem('tauJobsPortal') || '[]');
+        const jobIndex = jobs.findIndex(j => j.id === jobId);
+        
+        if (jobIndex === -1) {
+            showNotification('❌ Job not found', 'error');
+            return;
+        }
+        
+        // Update job
+        jobs[jobIndex].claimedBy = memberId;
+        jobs[jobIndex].claimedAt = new Date().toISOString();
+        jobs[jobIndex].claimDetails = {
+            fitReason: formData.get('fitReason'),
+            cvSummary: formData.get('cvSummary'),
+            startDate: formData.get('startDate')
+        };
+        jobs[jobIndex].status = 'Claimed - In Progress';
+        
+        localStorage.setItem('tauJobsPortal', JSON.stringify(jobs));
+        
+        // Save to Firestore
+        if (typeof firebase !== 'undefined' && firebase.apps.length > 0) {
+            try {
+                const db = firebase.firestore();
+                await db.collection('jobs').doc(jobId).set(jobs[jobIndex], { merge: true });
+            } catch (error) {
+                console.warn('Firestore sync warning:', error);
+            }
+        }
+        
+        // Notify job poster
+        if (typeof createNotification === 'function' && jobs[jobIndex].postedBy && jobs[jobIndex].postedBy.startsWith('TSK') || jobs[jobIndex].postedBy.startsWith('TLK')) {
+            createNotification(
+                jobs[jobIndex].postedBy,
+                '💼 Your Job Was Claimed!',
+                `"${jobs[jobIndex].title}" was claimed by a member`,
+                'success'
+            );
+        }
+        
+        showNotification('✅ Job claimed! Employer will be notified.', 'success');
+        closeAllModals();
+        
+        // Refresh jobs portal
+        setTimeout(() => {
+            if (typeof loadJobsPortal === 'function') {
+                loadJobsPortal();
+            }
+        }, 500);
+    };
+    
+    // ============================================
+    // 4. JOB SEARCH FORM
+    // ============================================
+    
+    function getJobSearchForm() {
+        return `
+            <form onsubmit="searchJobs(event)">
+                <div class="form-group">
+                    <label>Job Title/Keywords</label>
+                    <input type="text" name="keywords" placeholder="e.g., Developer, Manager, Designer">
+                </div>
+                
+                <div class="form-group">
+                    <label>Category</label>
+                    <select name="category">
+                        <option value="">All categories</option>
+                        <option value="IT & Digital">IT & Digital</option>
+    </script>
 </body>
 </html>
