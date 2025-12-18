@@ -1176,70 +1176,65 @@ window.deleteMember = async function(memberId) {
     console.log('✅ System Balance Tracking loaded');
 })();
 </script>
-    <script>     
-// ============================================
-// EMERGENCY FACTORY RESET (WIPE EVERYTHING)
-// ============================================
-window.factoryResetDatabase = async function() {
-    const confirmation = confirm("🚨 WARNING: This will PERMANENTLY DELETE ALL members from both Firebase and Local Storage.\n\nThis cannot be undone. Are you sure?");
+    <script>
+// REPLACE your existing setupRealtimeSync with this optimized version
+let renderTimeout;
+function setupRealtimeSync() {
+    if (!db) return;
     
-    if (!confirmation) return;
-    
-    const secondConfirmation = confirm("Are you ABSOLUTELY sure? All registration data will be lost.");
-    if (!secondConfirmation) return;
+    db.collection('members').onSnapshot(snapshot => {
+        snapshot.docChanges().forEach(change => {
+            const data = { ...change.doc.data(), firestoreId: change.doc.id };
+            
+            if (change.type === 'added' || change.type === 'modified') {
+                const idx = membersDB.findIndex(m => m.id === data.id);
+                if (idx >= 0) membersDB[idx] = data;
+                else membersDB.push(data);
+            } else if (change.type === 'removed') {
+                membersDB = membersDB.filter(m => m.id !== data.id);
+            }
+        });
 
-    showNotification('☢️ Starting Full System Wipe...', 'info');
+        // DEBOUNCE: Only render once every 300ms, even if 100 changes happen
+        clearTimeout(renderTimeout);
+        renderTimeout = setTimeout(() => {
+            localStorage.setItem('tauAfricaDB', JSON.stringify(membersDB));
+            updateStats();
+            renderMembers();
+            console.log('⚡ Optimized Render Complete');
+        }, 300);
+        
+    }, error => {
+        console.error('Sync error:', error);
+    });
+}
+
+// ADD this function for a TRUE Factory Reset
+window.factoryResetDatabase = async function() {
+    const confirmation = confirm("🚨 DANGER: This is a FACTORY RESET. It will delete ALL members from the cloud and local storage. Proceed?");
+    if (!confirmation) return;
+
+    const finalCheck = prompt("Type 'DELETE ALL' to confirm:");
+    if (finalCheck !== 'DELETE ALL') return;
 
     try {
-        // 1. Clear Local Storage
-        localStorage.removeItem('tauAfricaDB');
-        localStorage.removeItem('tauCredentials');
-        localStorage.removeItem('tauNotifications');
-        localStorage.removeItem('tauValues');
+        showNotification('🧹 Wiping all data...', 'info');
         
-        // 2. Clear Firestore (Batch Delete)
-        if (typeof firebase !== 'undefined' && firebase.apps.length > 0) {
-            const db = firebase.firestore();
-            const membersRef = db.collection('members');
-            const snapshot = await membersRef.get();
+        // 1. Clear Firestore
+        const snapshot = await db.collection('members').get();
+        const batch = db.batch();
+        snapshot.forEach(doc => batch.delete(doc.ref));
+        await batch.commit();
 
-            if (snapshot.empty) {
-                showNotification('✨ Firebase was already empty.', 'success');
-            } else {
-                showNotification(`🗑️ Deleting ${snapshot.size} records...`, 'info');
-                
-                // Firestore batches are limited to 500 operations
-                let batch = db.batch();
-                let count = 0;
-
-                for (const doc of snapshot.docs) {
-                    batch.delete(doc.ref);
-                    count++;
-
-                    if (count === 500) {
-                        await batch.commit();
-                        batch = db.batch();
-                        count = 0;
-                        showNotification('...Still deleting...', 'info');
-                    }
-                }
-
-                if (count > 0) {
-                    await batch.commit();
-                }
-            }
-        }
-
-        alert("✅ FACTORY RESET COMPLETE. The page will now reload.");
-        window.location.reload();
-
-    } catch (error) {
-        console.error('Reset Error:', error);
-        if (error.message.includes('quota')) {
-            alert("❌ QUOTA EXCEEDED: Firebase is blocking deletions until your daily limit resets (usually at midnight US Pacific Time). Local data has been cleared, but you must wait for the reset to clear Firebase.");
-        } else {
-            alert("❌ Reset Failed: " + error.message);
-        }
+        // 2. Clear Local Storage
+        localStorage.removeItem('tauAfricaDB');
+        membersDB = [];
+        
+        renderMembers();
+        updateStats();
+        showNotification('✅ Factory Reset Complete!', 'success');
+    } catch (e) {
+        showNotification('❌ Reset Failed: ' + e.message, 'error');
     }
 };
 </script>
