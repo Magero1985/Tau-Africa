@@ -1176,39 +1176,8 @@ window.deleteMember = async function(memberId) {
     console.log('✅ System Balance Tracking loaded');
 })();
 </script>
-    <script>
-// REPLACE your existing setupRealtimeSync with this optimized version
-let renderTimeout;
-function setupRealtimeSync() {
-    if (!db) return;
     
-    db.collection('members').onSnapshot(snapshot => {
-        snapshot.docChanges().forEach(change => {
-            const data = { ...change.doc.data(), firestoreId: change.doc.id };
-            
-            if (change.type === 'added' || change.type === 'modified') {
-                const idx = membersDB.findIndex(m => m.id === data.id);
-                if (idx >= 0) membersDB[idx] = data;
-                else membersDB.push(data);
-            } else if (change.type === 'removed') {
-                membersDB = membersDB.filter(m => m.id !== data.id);
-            }
-        });
-
-        // DEBOUNCE: Only render once every 300ms, even if 100 changes happen
-        clearTimeout(renderTimeout);
-        renderTimeout = setTimeout(() => {
-            localStorage.setItem('tauAfricaDB', JSON.stringify(membersDB));
-            updateStats();
-            renderMembers();
-            console.log('⚡ Optimized Render Complete');
-        }, 300);
-        
-    }, error => {
-        console.error('Sync error:', error);
-    });
-}
-
+    <script>
 // ADD this function for a TRUE Factory Reset
 window.factoryResetDatabase = async function() {
     const confirmation = confirm("🚨 DANGER: This is a FACTORY RESET. It will delete ALL members from the cloud and local storage. Proceed?");
