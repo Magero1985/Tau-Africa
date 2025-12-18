@@ -5670,7 +5670,7 @@ function createHoldingsModal() {
 }
 </script>
 <script> 
-// ===== FORUM MODAL =====
+// ===== FORUM MODAL =====//
 function createForumModal() {
     return `
         <div class="modal-content">
@@ -5743,8 +5743,8 @@ document.addEventListener('DOMContentLoaded', () => {
     </script>
     <script>
    // =====================================================
-// TAU AFRICA DATABASE CONNECTION LAYER - COMPLETE
-// =====================================================
+   // TAU AFRICA DATABASE CONNECTION LAYER - COMPLETE
+   // =====================================================
 
 (function() {
     'use strict';
@@ -9486,10 +9486,10 @@ console.log('💡 Run window.runIntegrationTest() to check integration');
 })();
 </script>
 
-        <style>
-<!-- ============================================ -->
-<!-- VISUAL INDICATOR FOR PENDING TRANSFERS -->
-<!-- ============================================ -->
+ <style>
+    //============================================//
+    //   VISUAL INDICATOR FOR PENDING TRANSFERS   //
+    // ============================================//
 
 /* Add pulsing indicator for pending transfers */
 @keyframes transferPulse {
@@ -12093,7 +12093,8 @@ window.processValidatorCode = async function(event, validatorId) {
         
         document.body.appendChild(modal);
     }
-    
+</script>
+    <script>
     window.submitValueClaim = async function(event, valueId, memberId) {
         event.preventDefault();
         
@@ -12140,7 +12141,8 @@ window.processValidatorCode = async function(event, validatorId) {
         closeAllModals();
         refreshPublicOpportunities();
     };
-    
+</script>
+    <script>
     // Handle task/activity completion
     window.handleTaskActivityComplete = function(type, itemId) {
         const currentMember = window.TauDB?.getCurrentMember();
@@ -12230,7 +12232,8 @@ window.processValidatorCode = async function(event, validatorId) {
         
         document.body.appendChild(modal);
     };
-    
+</script>
+    <script>
     window.submitCompletion = async function(event, type, itemId, memberId) {
         event.preventDefault();
         
@@ -12304,7 +12307,8 @@ window.processValidatorCode = async function(event, validatorId) {
         showNotification('✅ Submitted! You\'ll be notified when approved.', 'success');
         closeAllModals();
     };
-    
+ </script>
+    <script>
     // ============================================
     // 2. ENHANCED MEMBER DASHBOARD WITH DROPDOWN
     // ============================================
