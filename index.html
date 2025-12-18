@@ -763,15 +763,14 @@ To join in these categories, please use KABIRU SERVICE CENTER portal</p>
                 <button class="btn" onclick="openModal('jobCreation')">Job Creation hubs</button>
             </div>
 
-            <!-- Jobs Area -->
-            <div class="section">
+            <!-- Jobs Area --><div class="section">
     <h3 class="section-title">💼 JOBS GALLERY</h3>
-    <p>Connect jobs and job seekers with verified opportunities</p>
-    <button class="btn" onclick="openJobsGallery()">Job Openings</button>
-    <button class="btn" onclick="openJobsGallery()">Job Search</button>
-    <button class="btn" onclick="openJobsGallery()">Jobs Portal</button>
-    <button class="btn" onclick="openJobsGallery()">Apply for Job</button>
-</div>
+    <p>Connect job seekers with verified job opportunities</p>
+    <button class="btn" onclick="openJobsGallery('post')">Job Opening</button>
+    <button class="btn" onclick="openJobsGallery('browse')">Job Search</button>
+    <button class="btn" onclick="openJobsGallery('browse')">Jobs Portal</button>
+    <button class="btn" onclick="openJobsGallery('apply')">Apply Job</button>
+            </div>
 
             <!-- Community -->
             <div class="section">
@@ -2178,9 +2177,7 @@ function closeAllModals() {
     modals.forEach(modal => modal.remove());
     currentModal = null;
 }
-    
-</script>
-    <script>
+
 // ===== SELECTION FUNCTIONS =====
 
     function selectLevel(level, element) {
@@ -2211,9 +2208,8 @@ function selectCategory(category, element) {
     const categoryInput = document.getElementById('taskCategory');
     if (categoryInput) categoryInput.value = category;
 }
-    </script>
-    <script>
- SUBMISSION HANDLERS =====
+    
+ //===SUBMISSION HANDLERS =====//
 function processTaskRegistration(event) {
     event.preventDefault();
     const form = event.target;
@@ -4244,7 +4240,7 @@ document.addEventListener('DOMContentLoaded', function() {
     console.log('✅ AI Assistant: ACTIVE');
     console.log('========================================');
     
-    showNotification('✅ Welcome to TAU Africa International! Email system is now ACTIVE - all forms will send to grouptauafrica@gmail.com', 'success');
+    showNotification('✅ Welcome to Tau Africa Digital Ecosystem and Kabiru value Currency construction.  here you will build your wealth using values ●○● share a ▪︎job, a ▪︎experience, an ▪︎activity, a ▪︎task, ▪︎knowledge, ▪︎skill and expertise to earn Kabiru || 'read white-paper');
 });
         
 // ===== GET MODAL CONTENT BASED ON TYPE =====
@@ -4979,32 +4975,35 @@ function createResearchModal() {
     // ============================================
     // OPEN JOBS GALLERY MODAL
     // ============================================
-    window.openJobsGallery = function() {
-        closeAllModals();
-        
-        const modal = document.createElement('div');
-        modal.className = 'modal';
-        modal.style.display = 'block';
-        modal.innerHTML = `
-            <div class="modal-content" style="max-width: 1200px;">
-                <span class="close" onclick="this.parentElement.parentElement.remove()">&times;</span>
-                
-                <div style="background: linear-gradient(45deg, #667eea, #764ba2); color: white; padding: 25px; border-radius: 15px; margin-bottom: 20px;">
-                    <h2 style="margin: 0;">💼 JOBS GALLERY</h2>
-                    <p style="margin: 10px 0 0 0;">Post jobs, find jobs, and apply - All validated</p>
-                </div>
-                
-                <!-- TAB NAVIGATION -->
-                <div style="display: flex; gap: 10px; margin-bottom: 20px; flex-wrap: wrap;">
-                    <button class="btn btn-small" onclick="switchJobTab('post')" id="jobTabPost" style="background: #667eea;">Post Job Opening</button>
-                    <button class="btn btn-small" onclick="switchJobTab('browse')" id="jobTabBrowse" style="background: #95a5a6;">Jobs Portal</button>
-                    <button class="btn btn-small" onclick="switchJobTab('search')" id="jobTabSearch" style="background: #95a5a6;">Search Jobs</button>
-                    <button class="btn btn-small" onclick="switchJobTab('apply')" id="jobTabApply" style="background: #95a5a6;">Apply</button>
-                </div>
-                
-                <!-- TAB CONTENT -->
-                <div id="jobTabContent"></div>
+    // MODIFIED: Added 'defaultTab' parameter
+window.openJobsGallery = function(defaultTab = 'post') {
+    closeAllModals();
+    const modal = document.createElement('div');
+    modal.className = 'modal';
+    modal.style.display = 'block';
+    modal.innerHTML = `
+        <div class="modal-content" style="max-width: 1200px;">
+            <span class="close" onclick="this.parentElement.parentElement.remove()">&times;</span>
+            <div style="background: linear-gradient(45deg, #667eea, #764ba2); color: white; padding: 25px; border-radius: 15px; margin-bottom: 20px;">
+                <h2 style="margin: 0;">💼 JOBS GALLERY</h2>
+                <p style="margin: 10px 0 0 0;">Post jobs, find jobs, and apply - All in one place</p>
             </div>
+            
+            <div style="display: flex; gap: 10px; margin-bottom: 20px; flex-wrap: wrap;">
+                <button class="btn btn-small" onclick="switchJobTab('post')" id="jobTabPost">Post Job Opening</button>
+                <button class="btn btn-small" onclick="switchJobTab('browse')" id="jobTabBrowse">Browse Jobs Portal</button>
+                <button class="btn btn-small" onclick="switchJobTab('search')" id="jobTabSearch">Search Jobs</button>
+                <button class="btn btn-small" onclick="switchJobTab('apply')" id="jobTabApply">Apply for Job</button>
+            </div>
+
+            <div id="jobTabContent"></div>
+        </div>
+    `;
+    document.body.appendChild(modal);
+    
+    // Start on the specific tab requested by the button
+    switchJobTab(defaultTab);
+};
         `;
         
         document.body.appendChild(modal);
