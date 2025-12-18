@@ -13615,6 +13615,302 @@ window.processValidatorCode = async function(event, validatorId) {
                     <select name="category">
                         <option value="">All categories</option>
                         <option value="IT & Digital">IT & Digital</option>
+                        <option value="Marketing">Marketing</option>
+                        <option value="Admin">Admin</option>
+                        <option value="Management">Management</option>
+                        <option value="Healthcare">Healthcare</option>
+                        <option value="Sales">Sales</option>
+                        <option value="Education">Education</option>
+                        <option value="Engineering">Engineering</option>
+                        <option value="Finance">Finance</option>
+                        <option value="Agriculture">Agriculture</option>
+                        <option value="Manufacturing">Manufacturing</option>
+                        <option value="Logistics">Logistics</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label>Location</label>
+                    <input type="text" name="location" placeholder="City, Country or Remote">
+                </div>
+                
+                <div class="form-group">
+                    <label>Job Type</label>
+                    <select name="jobType">
+                        <option value="">All types</option>
+                        <option value="Full-time">Full-time</option>
+                        <option value="Part-time">Part-time</option>
+                        <option value="Contract">Contract</option>
+                        <option value="Freelance">Freelance</option>
+                        <option value="Internship">Internship</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label>Experience Level</label>
+                    <select name="experience">
+                        <option value="">Any level</option>
+                        <option value="Entry Level">Entry Level</option>
+                        <option value="Mid Level">Mid Level</option>
+                        <option value="Senior Level">Senior Level</option>
+                        <option value="Executive">Executive</option>
+                    </select>
+                </div>
+                
+                <button type="submit" class="btn" style="width: 100%; background: #667eea;">
+                    🔍 Search Jobs
+                </button>
+            </form>
+            
+            <div id="searchResults" style="margin-top: 30px;"></div>
+        `;
+    }
+    
+    window.searchJobs = function(event) {
+        event.preventDefault();
+        
+        const formData = new FormData(event.target);
+        const searchCriteria = {
+            keywords: formData.get('keywords')?.toLowerCase() || '',
+            category: formData.get('category'),
+            location: formData.get('location')?.toLowerCase() || '',
+            jobType: formData.get('jobType'),
+            experience: formData.get('experience')
+        };
+        
+        const jobs = JSON.parse(localStorage.getItem('tauJobsPortal') || '[]');
+        
+        // Filter validated jobs
+        let results = jobs.filter(j => j.validated && j.status === 'Approved');
+        
+        // Apply filters
+        if (searchCriteria.keywords) {
+            results = results.filter(j => 
+                j.title.toLowerCase().includes(searchCriteria.keywords) ||
+                j.description.toLowerCase().includes(searchCriteria.keywords) ||
+                j.companyName.toLowerCase().includes(searchCriteria.keywords)
+            );
+        }
+        
+        if (searchCriteria.category) {
+            results = results.filter(j => j.category === searchCriteria.category);
+        }
+        
+        if (searchCriteria.location) {
+            results = results.filter(j => 
+                j.location.toLowerCase().includes(searchCriteria.location)
+            );
+        }
+        
+        if (searchCriteria.jobType) {
+            results = results.filter(j => j.jobType === searchCriteria.jobType);
+        }
+        
+        if (searchCriteria.experience) {
+            results = results.filter(j => j.experienceLevel === searchCriteria.experience);
+        }
+        
+        const resultsContainer = document.getElementById('searchResults');
+        
+        if (results.length === 0) {
+            resultsContainer.innerHTML = `
+                <div style="text-align: center; padding: 40px; background: white; border-radius: 15px;">
+                    <div style="font-size: 3rem; margin-bottom: 15px;">🔍</div>
+                    <h3 style="color: #666;">No jobs found</h3>
+                    <p style="color: #999;">Try different search criteria</p>
+                </div>
+            `;
+            return;
+        }
+        
+        resultsContainer.innerHTML = `
+            <h3>Search Results (${results.length})</h3>
+            <div style="display: grid; gap: 20px; margin-top: 20px;">
+                ${results.map(job => createJobCard(job)).join('')}
+            </div>
+        `;
+    };
+    
+    // ============================================
+    // 5. JOB APPLICATION FORM
+    // ============================================
+    
+    function getJobApplicationForm() {
+        return `
+            <div style="background: #e3f2fd; padding: 15px; border-radius: 10px; margin-bottom: 20px;">
+                <strong>📝 Apply for Jobs</strong>
+                <p style="margin: 10px 0 0 0; font-size: 14px;">
+                    Submit applications for jobs in the portal. Employers will review your application.
+                </p>
+            </div>
+            
+            <form onsubmit="submitJobApplication(event)">
+                <div class="form-group">
+                    <label>Select Job *</label>
+                    <select name="jobId" required id="jobSelectDropdown">
+                        <option value="">Select a job to apply for</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label>Your Full Name *</label>
+                    <input type="text" name="applicantName" required>
+                </div>
+                
+                <div class="form-group">
+                    <label>Email *</label>
+                    <input type="email" name="applicantEmail" required>
+                </div>
+                
+                <div class="form-group">
+                    <label>Phone *</label>
+                    <input type="tel" name="applicantPhone" required>
+                </div>
+                
+                <div class="form-group">
+                    <label>Current Location *</label>
+                    <input type="text" name="applicantLocation" required>
+                </div>
+                
+                <div class="form-group">
+                    <label>Cover Letter *</label>
+                    <textarea name="coverLetter" rows="6" required placeholder="Tell us why you're a great fit for this role..."></textarea>
+                </div>
+                
+                <div class="form-group">
+                    <label>Education Background *</label>
+                    <textarea name="education" rows="3" required placeholder="Your degrees, certifications, and training..."></textarea>
+                </div>
+                
+                <div class="form-group">
+                    <label>Work Experience *</label>
+                    <textarea name="experience" rows="4" required placeholder="Your relevant work experience..."></textarea>
+                </div>
+                
+                <div class="form-group">
+                    <label>Key Skills *</label>
+                    <textarea name="skills" rows="3" required placeholder="List your relevant skills..."></textarea>
+                </div>
+                
+                <div class="form-group">
+                    <label>References</label>
+                    <textarea name="references" rows="2" placeholder="Professional references (optional)"></textarea>
+                </div>
+                
+                <button type="submit" class="btn" style="width: 100%; background: #667eea; padding: 15px;">
+                    📤 Submit Application
+                </button>
+            </form>
+        `;
+    }
+    
+    // Populate job dropdown when application form loads
+    setTimeout(() => {
+        const dropdown = document.getElementById('jobSelectDropdown');
+        if (dropdown) {
+            const jobs = JSON.parse(localStorage.getItem('tauJobsPortal') || '[]');
+            const availableJobs = jobs.filter(j => j.validated && j.status === 'Approved' && !j.claimedBy);
+            
+            availableJobs.forEach(job => {
+                const option = document.createElement('option');
+                option.value = job.id;
+                option.textContent = `${job.title} - ${job.companyName}`;
+                dropdown.appendChild(option);
+            });
+        }
+    }, 500);
+    
+    window.submitJobApplication = async function(event) {
+        event.preventDefault();
+        
+        const formData = new FormData(event.target);
+        const jobId = formData.get('jobId');
+        
+        const application = {
+            id: 'APP-' + Date.now(),
+            jobId: jobId,
+            applicantName: formData.get('applicantName'),
+            applicantEmail: formData.get('applicantEmail'),
+            applicantPhone: formData.get('applicantPhone'),
+            applicantLocation: formData.get('applicantLocation'),
+            coverLetter: formData.get('coverLetter'),
+            education: formData.get('education'),
+            experience: formData.get('experience'),
+            skills: formData.get('skills'),
+            references: formData.get('references') || 'Not provided',
+            appliedAt: new Date().toISOString(),
+            status: 'Submitted'
+        };
+        
+        // Save application to job
+        const jobs = JSON.parse(localStorage.getItem('tauJobsPortal') || '[]');
+        const jobIndex = jobs.findIndex(j => j.id === jobId);
+        
+        if (jobIndex === -1) {
+            showNotification('❌ Job not found', 'error');
+            return;
+        }
+        
+        if (!jobs[jobIndex].applications) {
+            jobs[jobIndex].applications = [];
+        }
+        
+        jobs[jobIndex].applications.push(application);
+        localStorage.setItem('tauJobsPortal', JSON.stringify(jobs));
+        
+        // Save to Firestore
+        if (typeof firebase !== 'undefined' && firebase.apps.length > 0) {
+            try {
+                const db = firebase.firestore();
+                await db.collection('jobs').doc(jobId).set(jobs[jobIndex], { merge: true });
+            } catch (error) {
+                console.warn('Firestore sync warning:', error);
+            }
+        }
+        
+        showNotification('✅ Application submitted successfully!', 'success');
+        event.target.reset();
+        
+        // Show success modal
+        const modal = document.createElement('div');
+        modal.className = 'modal';
+        modal.style.display = 'block';
+        modal.innerHTML = `
+            <div class="modal-content">
+                <span class="close" onclick="this.parentElement.parentElement.remove()">&times;</span>
+                
+                <div style="text-align: center;">
+                    <div style="font-size: 5rem; margin-bottom: 20px;">✅</div>
+                    <h2 style="color: #2ecc71;">Application Submitted!</h2>
+                </div>
+                
+                <div style="background: #f8f9fa; padding: 20px; border-radius: 10px; margin: 20px 0;">
+                    <p style="margin: 0; text-align: center;">
+                        Your application for <strong>${jobs[jobIndex].title}</strong> at <strong>${jobs[jobIndex].companyName}</strong> has been submitted.
+                    </p>
+                </div>
+                
+                <div style="background: #e3f2fd; padding: 15px; border-radius: 10px;">
+                    <strong>What happens next?</strong>
+                    <ul style="margin: 10px 0 0 20px; font-size: 14px;">
+                        <li>The employer will review your application</li>
+                        <li>You may be contacted for an interview</li>
+                        <li>Keep checking your email and phone</li>
+                    </ul>
+                </div>
+                
+                <button onclick="this.parentElement.parentElement.remove()" class="btn" style="width: 100%; margin-top: 20px;">
+                    Close
+                </button>
+            </div>
+        `;
+        
+        document.body.appendChild(modal);
+    };
+    
+    console.log('✅ Jobs Gallery & Activities System loaded');
+    
+})();
     </script>
 </body>
 </html>
