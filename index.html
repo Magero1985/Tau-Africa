@@ -4964,87 +4964,68 @@ function createResearchModal() {
 }
 </script>
  <script>
-// ============================================
-// REFINED JOBS GALLERY - WITH MENU & BACK BUTTON
-// ============================================
-window.openJobsGallery = function(initialTab = null) {
+     window.openJobsGallery = function(startMode = null) {
     closeAllModals();
     const modal = document.createElement('div');
     modal.className = 'modal';
-    modal.style.display = 'block';
     modal.id = 'jobsGalleryModal';
+    modal.style.display = 'block';
     
     modal.innerHTML = `
-        <div class="modal-content" style="max-width: 1200px;">
+        <div class="modal-content" style="max-width: 1000px; min-height: 500px;">
             <span class="close" onclick="this.parentElement.parentElement.remove()">&times;</span>
-            <div style="background: linear-gradient(45deg, #667eea, #764ba2); color: white; padding: 25px; border-radius: 15px; margin-bottom: 20px;">
-                <h2 style="margin: 0;">💼 JOBS GALLERY</h2>
-                <p style="margin: 10px 0 0 0;">Post, search, and apply - Securely validated</p>
-            </div>
             
-            <div id="jobMainMenu" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; padding: 10px;">
-                <div onclick="switchJobTab('post')" style="background: #667eea; color: white; padding: 30px; cursor: pointer; border-radius: 15px; text-align: center; transition: 0.3s;">
-                    <div style="font-size: 2.5rem; margin-bottom: 10px;">📢</div>
-                    <strong>Post Job Opening</strong>
-                </div>
-                <div onclick="switchJobTab('browse')" style="background: #764ba2; color: white; padding: 30px; cursor: pointer; border-radius: 15px; text-align: center; transition: 0.3s;">
-                    <div style="font-size: 2.5rem; margin-bottom: 10px;">📂</div>
-                    <strong>Browse Jobs Portal</strong>
-                </div>
-                <div onclick="switchJobTab('search')" style="background: #4169e1; color: white; padding: 30px; cursor: pointer; border-radius: 15px; text-align: center; transition: 0.3s;">
-                    <div style="font-size: 2.5rem; margin-bottom: 10px;">🔍</div>
-                    <strong>Search Jobs</strong>
-                </div>
-                <div onclick="switchJobTab('apply')" style="background: #27ae60; color: white; padding: 30px; cursor: pointer; border-radius: 15px; text-align: center; transition: 0.3s;">
-                    <div style="font-size: 2.5rem; margin-bottom: 10px;">📝</div>
-                    <strong>Apply for Job</strong>
-                </div>
+            <div style="background: linear-gradient(45deg, #4169e1, #2ecc71); color: white; padding: 20px; border-radius: 12px; margin-bottom: 20px;">
+                <h2 style="margin:0;">💼 JOBS GALLERY</h2>
             </div>
 
-            <div id="jobTabView" style="display: none;">
-                <button class="btn" onclick="showJobMenu()" style="background: #95a5a6; margin-bottom: 20px; font-size: 14px;">⬅️ Back to Jobs Menu</button>
-                <div id="jobTabContent"></div>
+            <div id="jobSelectionMenu" style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; padding: 10px;">
+                <button class="btn" style="height: 100px; font-weight: bold;" onclick="switchJobView('post')">📢 POST A JOB</button>
+                <button class="btn" style="height: 100px; font-weight: bold;" onclick="switchJobView('browse')">📂 BROWSE PORTAL</button>
+                <button class="btn" style="height: 100px; font-weight: bold;" onclick="switchJobView('search')">🔍 SEARCH JOBS</button>
+                <button class="btn" style="height: 100px; font-weight: bold;" onclick="switchJobView('apply')">📝 APPLY NOW</button>
+            </div>
+
+            <div id="jobContentView" style="display: none;">
+                <button class="btn-small" onclick="backToJobMenu()" style="background: #666; margin-bottom: 15px;">⬅️ Back to Menu</button>
+                <div id="jobFormContainer" style="padding: 10px; border: 1px solid #eee; border-radius: 8px;">
+                    </div>
             </div>
         </div>
     `;
     document.body.appendChild(modal);
-    
-    // If a button was clicked on the main page, open that tab directly
-    if (initialTab) {
-        switchJobTab(initialTab);
+
+    // If the user clicked a specific button from the main page, jump straight to it
+    if (startMode) {
+        switchJobView(startMode);
     }
 };
 
-// Helper to go back to the selection menu
-window.showJobMenu = function() {
-    document.getElementById('jobMainMenu').style.display = 'grid';
-    document.getElementById('jobTabView').style.display = 'none';
+window.switchJobView = function(view) {
+    const menu = document.getElementById('jobSelectionMenu');
+    const content = document.getElementById('jobContentView');
+    const container = document.getElementById('jobFormContainer');
+
+    // HIDE the menu and SHOW the content container
+    menu.style.display = 'none';
+    content.style.display = 'block';
+
+    // Fill the container with the right form
+    if (view === 'post') container.innerHTML = getJobPostForm();
+    else if (view === 'browse') {
+        container.innerHTML = getJobsBrowsePortal();
+        if (typeof loadJobsPortal === 'function') loadJobsPortal();
+    }
+    else if (view === 'search') container.innerHTML = getJobSearchForm();
+    else if (view === 'apply') container.innerHTML = getJobApplicationForm();
 };
 
-// Re-write the switch logic to handle the UI toggle
-window.switchJobTab = function(tab) {
-    const mainMenu = document.getElementById('jobMainMenu');
-    const tabView = document.getElementById('jobTabView');
-    const content = document.getElementById('jobTabContent');
-    
-    if (!mainMenu || !tabView || !content) return;
-    
-    // Hide menu, show content view
-    mainMenu.style.display = 'none';
-    tabView.style.display = 'block';
-    
-    // Load appropriate content
-    switch(tab) {
-        case 'post': content.innerHTML = getJobPostForm(); break;
-        case 'browse': 
-            content.innerHTML = getJobsBrowsePortal();
-            loadJobsPortal();
-            break;
-        case 'search': content.innerHTML = getJobSearchForm(); break;
-        case 'apply': content.innerHTML = getJobApplicationForm(); break;
-    }
+window.backToJobMenu = function() {
+    // SHOW the menu and HIDE the content container
+    document.getElementById('jobSelectionMenu').style.display = 'grid';
+    document.getElementById('jobContentView').style.display = 'none';
 };
-</script>
+ </script>
     <script>
 // ===== COMMUNITY PROGRAMS MODAL =====
 function createCommunityModal() {
