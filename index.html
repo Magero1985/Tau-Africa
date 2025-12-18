@@ -763,14 +763,15 @@ To join in these categories, please use KABIRU SERVICE CENTER portal</p>
                 <button class="btn" onclick="openModal('jobCreation')">Job Creation hubs</button>
             </div>
 
-            <!-- Jobs Area --><div class="section">
+            <!-- Jobs Area -->
+<div class="section">
     <h3 class="section-title">💼 JOBS GALLERY</h3>
-    <p>Connect job seekers with verified job opportunities</p>
+    <p>Connect jobs and job seekers with verified opportunities</p>
     <button class="btn" onclick="openJobsGallery('post')">Job Opening</button>
-    <button class="btn" onclick="openJobsGallery('browse')">Job Search</button>
+    <button class="btn" onclick="openJobsGallery('search')">Job Search</button>
     <button class="btn" onclick="openJobsGallery('browse')">Jobs Portal</button>
-    <button class="btn" onclick="openJobsGallery('apply')">Apply Job</button>
-            </div>
+    <button class="btn" onclick="openJobsGallery('apply')">Apply for Job</button>
+</div>
 
             <!-- Community -->
             <div class="section">
@@ -829,7 +830,7 @@ To join in these categories, please use KABIRU SERVICE CENTER portal</p>
 </div>
 
 <!-- Add this for admin validation dashboard access -->
-<div class="floating-btn" onclick="if(isAdminAuthenticated()) { showValidationDashboard(); } else { showAdminLogin(); }" title="Validation Dashboard" style="bottom: 240px; right: 30px; background: linear-gradient(45deg, #e74c3c, #c0392b);">
+<div class="floating-btn" onclick="openAdminBridge()" title="Admin Database" style="bottom: 240px; right: 30px; background: linear-gradient(45deg, #e74c3c, #c0392b);">
     📊
 </div>
     <!-- AI Chat Window -->
@@ -4964,73 +4965,85 @@ function createResearchModal() {
 </script>
 <script>
 // ============================================
-// JOBS GALLERY - FIXED TO USE REAL DATA
+// REFINED JOBS GALLERY - WITH MENU & BACK BUTTON
 // ============================================
-(function() {
-    'use strict';
-    
-    console.log('💼 Loading REAL Jobs Gallery System...');
-    
-    // ============================================
-    // OPEN JOBS GALLERY MODAL
-    // ============================================
-    // MODIFIED: Added 'defaultTab' parameter
-window.openJobsGallery = function(defaultTab = 'post') {
+window.openJobsGallery = function(initialTab = null) {
     closeAllModals();
     const modal = document.createElement('div');
     modal.className = 'modal';
     modal.style.display = 'block';
+    modal.id = 'jobsGalleryModal';
+    
     modal.innerHTML = `
         <div class="modal-content" style="max-width: 1200px;">
             <span class="close" onclick="this.parentElement.parentElement.remove()">&times;</span>
             <div style="background: linear-gradient(45deg, #667eea, #764ba2); color: white; padding: 25px; border-radius: 15px; margin-bottom: 20px;">
                 <h2 style="margin: 0;">💼 JOBS GALLERY</h2>
-                <p style="margin: 10px 0 0 0;">Post jobs, find jobs, and apply - All in one place</p>
+                <p style="margin: 10px 0 0 0;">Post, search, and apply - Securely validated</p>
             </div>
             
-            <div style="display: flex; gap: 10px; margin-bottom: 20px; flex-wrap: wrap;">
-                <button class="btn btn-small" onclick="switchJobTab('post')" id="jobTabPost">Post Job Opening</button>
-                <button class="btn btn-small" onclick="switchJobTab('browse')" id="jobTabBrowse">Browse Jobs Portal</button>
-                <button class="btn btn-small" onclick="switchJobTab('search')" id="jobTabSearch">Search Jobs</button>
-                <button class="btn btn-small" onclick="switchJobTab('apply')" id="jobTabApply">Apply for Job</button>
+            <div id="jobMainMenu" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; padding: 10px;">
+                <div onclick="switchJobTab('post')" style="background: #667eea; color: white; padding: 30px; cursor: pointer; border-radius: 15px; text-align: center; transition: 0.3s;">
+                    <div style="font-size: 2.5rem; margin-bottom: 10px;">📢</div>
+                    <strong>Post Job Opening</strong>
+                </div>
+                <div onclick="switchJobTab('browse')" style="background: #764ba2; color: white; padding: 30px; cursor: pointer; border-radius: 15px; text-align: center; transition: 0.3s;">
+                    <div style="font-size: 2.5rem; margin-bottom: 10px;">📂</div>
+                    <strong>Browse Jobs Portal</strong>
+                </div>
+                <div onclick="switchJobTab('search')" style="background: #4169e1; color: white; padding: 30px; cursor: pointer; border-radius: 15px; text-align: center; transition: 0.3s;">
+                    <div style="font-size: 2.5rem; margin-bottom: 10px;">🔍</div>
+                    <strong>Search Jobs</strong>
+                </div>
+                <div onclick="switchJobTab('apply')" style="background: #27ae60; color: white; padding: 30px; cursor: pointer; border-radius: 15px; text-align: center; transition: 0.3s;">
+                    <div style="font-size: 2.5rem; margin-bottom: 10px;">📝</div>
+                    <strong>Apply for Job</strong>
+                </div>
             </div>
 
-            <div id="jobTabContent"></div>
+            <div id="jobTabView" style="display: none;">
+                <button class="btn" onclick="showJobMenu()" style="background: #95a5a6; margin-bottom: 20px; font-size: 14px;">⬅️ Back to Jobs Menu</button>
+                <div id="jobTabContent"></div>
+            </div>
         </div>
     `;
     document.body.appendChild(modal);
     
-    // Start on the specific tab requested by the button
-    switchJobTab(defaultTab);
+    // If a button was clicked on the main page, open that tab directly
+    if (initialTab) {
+        switchJobTab(initialTab);
+    }
 };
-        `;
-        
-        document.body.appendChild(modal);
-        switchJobTab('post'); // Default tab
-    };
+
+// Helper to go back to the selection menu
+window.showJobMenu = function() {
+    document.getElementById('jobMainMenu').style.display = 'grid';
+    document.getElementById('jobTabView').style.display = 'none';
+};
+
+// Re-write the switch logic to handle the UI toggle
+window.switchJobTab = function(tab) {
+    const mainMenu = document.getElementById('jobMainMenu');
+    const tabView = document.getElementById('jobTabView');
+    const content = document.getElementById('jobTabContent');
     
-    // Switch tabs
-    window.switchJobTab = function(tab) {
-        ['post', 'browse', 'search', 'apply'].forEach(t => {
-            const btn = document.getElementById('jobTab' + t.charAt(0).toUpperCase() + t.slice(1));
-            if (btn) btn.style.background = t === tab ? '#667eea' : '#95a5a6';
-        });
-        
-        const content = document.getElementById('jobTabContent');
-        if (!content) return;
-        
-        if (tab === 'post') {
-            content.innerHTML = getJobPostForm();
-        } else if (tab === 'browse') {
-            content.innerHTML = '<div id="jobsPortalList"></div>';
-            loadRealJobsPortal();
-        } else if (tab === 'search') {
-            content.innerHTML = getJobSearchForm();
-        } else if (tab === 'apply') {
-            content.innerHTML = getJobApplicationForm();
-            populateJobDropdown();
-        }
-    };
+    if (!mainMenu || !tabView || !content) return;
+    
+    // Hide menu, show content view
+    mainMenu.style.display = 'none';
+    tabView.style.display = 'block';
+    
+    // Load appropriate content
+    switch(tab) {
+        case 'post': content.innerHTML = getJobPostForm(); break;
+        case 'browse': 
+            content.innerHTML = getJobsBrowsePortal();
+            loadJobsPortal();
+            break;
+        case 'search': content.innerHTML = getJobSearchForm(); break;
+        case 'apply': content.innerHTML = getJobApplicationForm(); break;
+    }
+};
     
     // ============================================
     // POST JOB FORM
@@ -8364,8 +8377,19 @@ function openAdminDatabase() {
     }
 }
 window.openAdminBridge = function() {
-    const currentMember = window.TauDB?.getCurrentMember();
-    
+    const code = prompt('Enter Admin Access Code:');
+    if (code === 'TAU2025ADMIN') {
+        // FIXED: Corrected spelling from 'databse.html' to 'database.html'
+        const bridgeWindow = window.open('database.html', 'tauBridge', 'width=1400,height=900');
+        
+        if (!bridgeWindow) {
+            showNotification('⚠️ Please allow popups to open the admin page', 'error');
+            window.location.href = 'database.html'; // Fallback to current tab
+        }
+    } else {
+        showNotification('❌ Invalid Access Code', 'error');
+    }
+};
     // Check admin access
     const ADMIN_IDS = ['TSK-000000-001', 'TLK-000000-001'];
     const ADMIN_EMAILS = ['admin@tauafrica.org', 'grouptauafrica@gmail.com'];
