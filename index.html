@@ -13806,20 +13806,40 @@ console.log('✅ Kabiru transfer button fixed');
 // FIX ADMIN BRIDGE BUTTON
 // ============================================
 window.openAdminBridge = function() {
-    const code = prompt('Enter Admin Access Code:');
-    if (code === 'TAU2025ADMIN') {
-        // FIXED: Changed 'databse.html' to 'database.html'
-        const bridgeWindow = window.open('database.html', 'tauBridge', 'width=1400,height=900');
-        
-        if (!bridgeWindow) {
-            showNotification('⚠️ Popup blocked! Please allow popups or click here.', 'error');
-            window.location.href = 'database.html';
+    const currentMember = window.TauDB?.getCurrentMember();
+    
+    // Check admin access
+    const ADMIN_IDS = ['TSK-000000-001', 'TLK-000000-001'];
+    const ADMIN_EMAILS = ['admin@tauafrica.org', 'grouptauafrica@gmail.com'];
+    
+    const hasAccess = currentMember && (
+        ADMIN_IDS.includes(currentMember.id) ||
+        ADMIN_EMAILS.includes(currentMember.email) ||
+        currentMember.role === 'admin'
+    );
+    
+    if (!hasAccess) {
+        const code = prompt('Enter Admin Access Code:');
+        if (code !== 'TAU2025ADMIN') {
+            showNotification('❌ Invalid access code', 'error');
+            return;
         }
+    }
+    
+    // Open database page
+    const bridgeWindow = window.open('databse.html', 'tauBridge', 'width=1400,height=900');
+    
+    if (!bridgeWindow) {
+        showNotification('⚠️ Please allow popups', 'error');
+        window.location.href = 'databse.html';
     } else {
-        showNotification('❌ Invalid Access Code', 'error');
+        showNotification('✅ Opening Admin Bridge...', 'success');
     }
 };
-        
+
+console.log('✅ Admin bridge button fixed');
+</script>
+        <script>
 // ============================================
 // LOGIN STATUS INDICATOR & IMPROVED DASHBOARD
 // Add this before closing </body> tag
