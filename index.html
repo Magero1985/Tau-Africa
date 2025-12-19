@@ -5025,8 +5025,43 @@ window.backToJobMenu = function() {
     document.getElementById('jobSelectionMenu').style.display = 'grid';
     document.getElementById('jobContentView').style.display = 'none';
 };
- </script>
-    <script>
+    window.submitJobOpening = function(event) {
+    event.preventDefault();
+    console.log("Submitting job...");
+    
+    const form = event.target;
+    const formData = new FormData(form);
+    const jobData = Object.fromEntries(formData.entries());
+    
+    // Add metadata
+    jobData.id = 'JOB-' + Date.now();
+    jobData.status = 'pending';
+    jobData.createdAt = new Date().toISOString();
+
+    try {
+        // Save to LocalStorage
+        const jobs = JSON.parse(localStorage.getItem('tauJobsPortal') || '[]');
+        jobs.push(jobData);
+        localStorage.setItem('tauJobsPortal', JSON.stringify(jobs));
+
+        // 1. Show Success Notification
+        showNotification('✅ Job Created Successfully! Pending Validation.', 'success');
+        
+        // 2. Reset Form
+        form.reset();
+        
+        // 3. Switch view to see the portal
+        setTimeout(() => {
+            if (typeof switchJobTab === 'function') switchJobTab('browse');
+        }, 1500);
+
+    } catch (error) {
+        console.error("Job Submission Error:", error);
+        showNotification('❌ Failed to create job', 'error');
+    }
+};
+</script>
+<script>
 // ===== COMMUNITY PROGRAMS MODAL =====
 function createCommunityModal() {
     return `
