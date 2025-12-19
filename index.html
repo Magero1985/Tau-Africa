@@ -5025,43 +5025,8 @@ window.backToJobMenu = function() {
     document.getElementById('jobSelectionMenu').style.display = 'grid';
     document.getElementById('jobContentView').style.display = 'none';
 };
-    window.submitJobOpening = function(event) {
-    event.preventDefault();
-    console.log("Submitting job...");
-    
-    const form = event.target;
-    const formData = new FormData(form);
-    const jobData = Object.fromEntries(formData.entries());
-    
-    // Add metadata
-    jobData.id = 'JOB-' + Date.now();
-    jobData.status = 'pending';
-    jobData.createdAt = new Date().toISOString();
-
-    try {
-        // Save to LocalStorage
-        const jobs = JSON.parse(localStorage.getItem('tauJobsPortal') || '[]');
-        jobs.push(jobData);
-        localStorage.setItem('tauJobsPortal', JSON.stringify(jobs));
-
-        // 1. Show Success Notification
-        showNotification('✅ Job Created Successfully! Pending Validation.', 'success');
-        
-        // 2. Reset Form
-        form.reset();
-        
-        // 3. Switch view to see the portal
-        setTimeout(() => {
-            if (typeof switchJobTab === 'function') switchJobTab('browse');
-        }, 1500);
-
-    } catch (error) {
-        console.error("Job Submission Error:", error);
-        showNotification('❌ Failed to create job', 'error');
-    }
-};
-</script>
-<script>
+ </script>
+    <script>
 // ===== COMMUNITY PROGRAMS MODAL =====
 function createCommunityModal() {
     return `
@@ -7189,6 +7154,18 @@ document.addEventListener('DOMContentLoaded', () => {
                     </div>
                     
                     <div class="form-group">
+                    <label>Category *</label>
+                    <select name="category" required>
+                            <option value="">Select category</option>
+                            <option value="General">General Discussion</option>
+                            <option value="Job Sharing">Job Sharing</option>
+                            <option value="Training">Training</option>
+                            <option value="Business">Business</option>
+                            <option value="Questions">Questions</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
                         <label>Content *</label>
                         <textarea name="content" rows="6" required maxlength="2000"></textarea>
                     </div>
@@ -7258,7 +7235,9 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         }
     };
-
+</script>
+    
+<script>
     // ACTIVITIES MODAL - COMPLETE
     window.createActivitiesModal = function() {
         const currentMember = window.TauDB.getCurrentMember();
@@ -7369,7 +7348,8 @@ document.addEventListener('DOMContentLoaded', () => {
             setTimeout(() => openModal('activities'), 500);
         }
     };
-
+</script>
+    <script>
     // TASKS MODAL - COMPLETE
     window.createTasksModal = function() {
         const currentMember = window.TauDB.getCurrentMember();
@@ -7447,7 +7427,8 @@ document.addEventListener('DOMContentLoaded', () => {
             setTimeout(() => openModal('tasks'), 500);
         }
     };
-    
+</script>
+    <script>
     // MEMBER LOGIN - COMPLETE
     window.showRealMemberLogin = function() {
         const modal = document.createElement('div');
@@ -7500,7 +7481,8 @@ document.addEventListener('DOMContentLoaded', () => {
             showNotification('❌ Invalid credentials', 'error');
         }
     };
-
+    </script>
+    <script>
     // MEMBER DASHBOARD - COMPLETE
     window.showRealMemberDashboard = function(member) {
         const modal = document.createElement('div');
@@ -7555,6 +7537,8 @@ document.addEventListener('DOMContentLoaded', () => {
     <button class="btn" onclick="openModal('forum')">💬 Forum</button>
     <button class="btn" onclick="openModal('activities')">📚 Activities</button>
     <button class="btn" onclick="openModal('tasks')">✅ Tasks</button>
+    
+    // In showRealMemberDashboard() function, add this button:
 
 <div style="margin-top: 30px; padding: 20px; background: linear-gradient(45deg, #FFD700, #FFA500); border-radius: 15px; text-align: center;">
     <h3 style="color: #333; margin-bottom: 15px;">💎 Kabiru Mining Transfer</h3>
@@ -11265,8 +11249,7 @@ console.log('💡 Run window.runIntegrationTest() to check integration');
         modal.innerHTML = `
             <div class="modal-content">
                 <span class="close" onclick="this.parentElement.parentElement.remove()">&times;</span>
-                
-                <h2>🔐 Validator Interface</h2>
+<h2>🔐 Validator Interface</h2>
                 <p>Enter validation code to validate items and earn fees</p>
                 
                 <form onsubmit="processValidation(event, '${currentMember.id}')">
@@ -11902,8 +11885,7 @@ window.processValidatorCode = async function(event, validatorId) {
         
         document.body.appendChild(modal);
     }
-</script>
-    <script>
+
     window.submitValueClaim = async function(event, valueId, memberId) {
         event.preventDefault();
         
@@ -11949,9 +11931,7 @@ window.processValidatorCode = async function(event, validatorId) {
         showNotification('✅ Value claimed! Provider will be notified.', 'success');
         closeAllModals();
         refreshPublicOpportunities();
-    };
-</script>
-    <script>
+      }
     // Handle task/activity completion
     window.handleTaskActivityComplete = function(type, itemId) {
         const currentMember = window.TauDB?.getCurrentMember();
@@ -12040,9 +12020,7 @@ window.processValidatorCode = async function(event, validatorId) {
         `;
         
         document.body.appendChild(modal);
-    };
-</script>
-    <script>
+        }
     window.submitCompletion = async function(event, type, itemId, memberId) {
         event.preventDefault();
         
@@ -12428,8 +12406,8 @@ window.processValidatorCode = async function(event, validatorId) {
                                         <strong style="color: #2ecc71;">Stage 3: Chain Validation (5%)</strong>
                                         <div style="font-size: 12px; color: #666;">Code format: VAL3-XXXXX-XXXX</div>
                                     </div>
-                                </div>
-                                <div style="font-size: 14px; color: #666; margin-left: 55px;">
+        </div>
+        <div style="font-size: 14px; color: #666; margin-left: 55px;">
                                     ✓ Verify logistics and delivery capability<br>
                                     ✓ Confirm value transfer method<br>
                                     ✓ Approve for final release<br>
@@ -13414,7 +13392,7 @@ window.processValidatorCode = async function(event, validatorId) {
             }
         }, 500);
     };
-    
+ 
     // ============================================
     // 4. JOB SEARCH FORM
     // ============================================
@@ -13547,7 +13525,6 @@ window.processValidatorCode = async function(event, validatorId) {
             </div>
         `;
     };
-    
     // ============================================
     // 5. JOB APPLICATION FORM
     // ============================================
@@ -13728,8 +13705,8 @@ window.processValidatorCode = async function(event, validatorId) {
     console.log('✅ Jobs Gallery & Activities System loaded');
     
 })();
-    </script>
-    <script>
+</script>   
+<script>
 // ============================================
 // FIX KABIRU TRANSFER BUTTON
 // ============================================
@@ -13838,8 +13815,8 @@ window.openAdminBridge = function() {
 };
 
 console.log('✅ Admin bridge button fixed');
-</script>
-        <script>
+    </script>
+    <script>
 // ============================================
 // LOGIN STATUS INDICATOR & IMPROVED DASHBOARD
 // Add this before closing </body> tag
