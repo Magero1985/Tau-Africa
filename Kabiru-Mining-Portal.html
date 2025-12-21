@@ -2639,32 +2639,149 @@
             console.log('KABIRU Mining App starting...');
             setupAuthStateListener();
         });
+// Setup Firebase Auth State Listener
+function setupAuthStateListener() {
+    if (!auth) {
+        showOfflineLogin();
+        return;
+    }
 
-        function setupAuthStateListener() {
-            if (!auth) {
-                showOfflineLogin();
-                return;
+    // Check if this is a password reset or email verification link
+    const urlParams = new URLSearchParams(window.location.search);
+    const mode = urlParams.get('mode');
+    const oobCode = urlParams.get('oobCode');
+    
+    if (mode && oobCode) {
+        handleFirebaseAction(mode, oobCode);
+        return;
+    }
+
+    auth.onAuthStateChanged(async (user) => {
+        console.log('Auth state changed:', user ? user.uid : 'No user');
+        
+        if (user) {
+            if (user.emailVerified) {
+                console.log('User authenticated and verified');
+                await loadUserData(user);
+                showMiningApp();
+            } else {
+                console.log('User not verified, showing verification screen');
+                showEmailVerification();
             }
-
-            auth.onAuthStateChanged(async (user) => {
-                console.log('Auth state changed:', user ? user.uid : 'No user');
-                
-                if (user) {
-                    if (user.emailVerified) {
-                        console.log('User authenticated and verified');
-                        await loadUserData(user);
-                        showMiningApp();
-                    } else {
-                        console.log('User not verified, showing verification screen');
-                        showEmailVerification();
-                    }
-                } else {
-                    console.log('No authenticated user, showing login');
-                    showLoginPage();
-                }
-            });
+        } else {
+            console.log('No authenticated user, showing login');
+            showLoginPage();
         }
-
+    });
+}
+// Handle Firebase actions (email verification, password reset)
+async function handleFirebaseAction(mode, oobCode) {
+    console.log('Handling Firebase action:', mode);
+    
+    if (mode === 'verifyEmail') {
+        // Email verification
+        try {
+            await auth.applyActionCode(oobCode);
+            showSuccess('Email verified successfully! You can now login.');
+            console.log('Email verification successful');
+            
+            // Clean URL and show login
+            window.history.replaceState({}, document.title, window.location.pathname);
+            setTimeout(() => {
+                showLoginPage();
+            }, 2000);
+            
+        } catch (error) {
+            console.error('Email verification error:', error);
+            showError('Email verification failed. The link may have expired.');
+            setTimeout(() => {
+                showLoginPage();
+            }, 2000);
+        }
+        
+    } else if (mode === 'resetPassword') {
+        // Password reset - verify the code first
+        try {
+            await auth.verifyPasswordResetCode(oobCode);
+            
+            // Show a custom UI for entering new password
+            showPasswordResetForm(oobCode);
+            
+        } catch (error) {
+            console.error('Password reset verification error:', error);
+            showError('Password reset link is invalid or has expired.');
+            setTimeout(() => {
+                showLoginPage();
+            }, 2000);
+        }
+    }
+}
+        // Show password reset form
+function showPasswordResetForm(oobCode) {
+    hideAllContainers();
+    
+    // Create a temporary container for new password input
+    const resetFormHtml = `
+        <div style="margin: 20px 0;">
+            <div style="text-align: center; margin-bottom: 20px;">
+                <div style="font-size: 48px; margin-bottom: 15px;">🔑</div>
+                <div style="font-size: 18px; color: #FFD700; margin-bottom: 10px;">Create New Password</div>
+            </div>
+            
+            <div class="form-group">
+                <label class="form-label">New Password</label>
+                <div class="password-input-container">
+                    <input type="password" class="form-input" id="newPassword" placeholder="Enter new password (min 6 chars)" required>
+                    <button type="button" class="password-toggle" onclick="togglePassword('newPassword')">👁</button>
+                </div>
+            </div>
+            
+            <div class="form-group">
+                <label class="form-label">Confirm New Password</label>
+                <div class="password-input-container">
+                    <input type="password" class="form-input" id="confirmNewPassword" placeholder="Confirm new password" required>
+                    <button type="button" class="password-toggle" onclick="togglePassword('confirmNewPassword')">👁</button>
+                </div>
+            </div>
+            
+            <button type="button" class="auth-button" onclick="confirmPasswordReset('${oobCode}')">Reset Password</button>
+        </div>
+    `;
+    
+    document.getElementById('passwordResetContainer').innerHTML = resetFormHtml;
+    document.getElementById('passwordResetContainer').style.display = 'block';
+}
+        // Confirm password reset with new password
+async function confirmPasswordReset(oobCode) {
+    const newPassword = document.getElementById('newPassword').value;
+    const confirmPassword = document.getElementById('confirmNewPassword').value;
+    
+    if (!newPassword || newPassword.length < 6) {
+        showError('Password must be at least 6 characters long');
+        return;
+    }
+    
+    if (newPassword !== confirmPassword) {
+        showError('Passwords do not match');
+        return;
+    }
+    
+    try {
+        await auth.confirmPasswordReset(oobCode, newPassword);
+        showSuccess('Password reset successful! You can now login with your new password.');
+        console.log('Password reset successful');
+        
+        // Clean URL and redirect to login
+        window.history.replaceState({}, document.title, window.location.pathname);
+        setTimeout(() => {
+            showLoginPage();
+        }, 2000);
+        
+    } catch (error) {
+        console.error('Password reset confirmation error:', error);
+        showError('Failed to reset password. Please try again or request a new reset link.');
+    }
+}
         function showOfflineLogin() {
             showNotification('Running in offline mode - you can still mine tokens!');
             initOfflineMode();
@@ -3201,25 +3318,32 @@
         }
 
         async function handlePasswordReset() {
-            const email = document.getElementById('resetEmail').value.trim();
-            if (!email) {
-                showError('Please enter your email address');
-                return;
-            }
-            
-            if (!auth) {
-                showError('Password reset requires internet connection.');
-                return;
-            }
+    const email = document.getElementById('resetEmail').value.trim();
+    if (!email) {
+        showError('Please enter your email address');
+        return;
+    }
+    
+    if (!auth) {
+        showError('Password reset requires internet connection.');
+        return;
+    }
 
-            try {
-                await auth.sendPasswordResetEmail(email);
-                showSuccess('Password reset email sent! Check your inbox.');
-                setTimeout(() => showLogin(), 2000);
-            } catch (error) {
-                showError('Failed to send reset email: ' + error.message);
-            }
+    try {
+        // Configure action code settings to redirect back to your app
+        const actionCodeSettings = {
+            url: window.location.origin + window.location.pathname + '?mode=resetPassword',
+            handleCodeInApp: true
+        };
+        
+        await auth.sendPasswordResetEmail(email, actionCodeSettings);
+        showSuccess('Password reset email sent! Check your inbox.');
+        setTimeout(() => showLogin(), 2000);
+    } catch (error) {
+        showError('Failed to send reset email: ' + error.message);
+    }
         }
+        
 
         document.addEventListener('keydown', function(e) {
             if (e.key === 'Enter') {
