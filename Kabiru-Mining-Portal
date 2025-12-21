@@ -934,7 +934,7 @@
                     </div>
                 </div>
                 
-              <button class="auth-button" onclick="checkEmailVerification()">I've Verified My Email</button>
+                <button class="auth-button" onclick="checkEmailVerification()">I've Verified My Email</button>
                 
                 <div style="text-align: center; font-size: 12px; opacity: 0.8;">
                     Didn't receive the email? 
@@ -1156,6 +1156,79 @@
                         📊 History
                     </button>
                 </div>
+                
+                <!-- Cash Withdrawal Section -->
+                <div style="margin-top: 15px; padding: 15px; background: rgba(255, 165, 0, 0.1); border-radius: 10px; border: 1px solid rgba(255, 165, 0, 0.3);">
+                    <div style="font-size: 14px; font-weight: bold; color: #FFA500; margin-bottom: 10px;">💰 Cash Withdrawal</div>
+                    <div style="font-size: 12px; opacity: 0.8; margin-bottom: 10px;">
+                        Convert iKb to cash at TAU Africa Centers
+                    </div>
+                    <button class="auth-button" onclick="openCashWithdrawalModal()" style="font-size: 12px; padding: 10px; background: linear-gradient(45deg, #FFA500, #FF8C00); width: 100%;">
+                        💵 Request Cash Withdrawal
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Cash Withdrawal Modal -->
+    <div id="cashWithdrawalModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeModal('cashWithdrawalModal')">&times;</span>
+            <h2 class="modal-title">💰 Cash Withdrawal Request</h2>
+            <div style="margin-bottom: 20px;">
+                <div style="background: rgba(255, 165, 0, 0.1); padding: 15px; border-radius: 10px; margin: 15px 0; border: 1px solid rgba(255, 165, 0, 0.3);">
+                    
+                    <div style="font-size: 14px; margin-bottom: 15px; text-align: center;">
+                        Available Balance: <span style="color: #FFD700; font-weight: bold;" id="withdrawableBalance">0.0000 iKb</span>
+                    </div>
+                    
+                    <div style="margin: 15px 0;">
+                        <label style="font-size: 12px; color: #FFA500; margin-bottom: 5px; display: block;">Amount to Withdraw (iKb):</label>
+                        <input type="number" id="cashWithdrawAmount" placeholder="0.0000" step="0.0001" min="0.0001" 
+                               style="width: 100%; padding: 12px; border: 1px solid rgba(255, 165, 0, 0.3); border-radius: 8px; background: rgba(255, 255, 255, 0.1); color: white; font-size: 16px;"
+                               oninput="calculateCashEquivalent()">
+                    </div>
+                    
+                    <div style="background: rgba(0, 255, 135, 0.1); padding: 15px; border-radius: 8px; margin: 15px 0; text-align: center; border: 1px solid rgba(0, 255, 135, 0.3);">
+                        <div style="font-size: 12px; opacity: 0.8; margin-bottom: 5px;">You will receive:</div>
+                        <div style="font-size: 24px; font-weight: bold; color: #00ff87;" id="cashEquivalent">0.00 KSH</div>
+                        <div style="font-size: 10px; opacity: 0.7; margin-top: 5px;">Exchange Rate: 1 iKb = 100,000 KSH</div>
+                    </div>
+                    
+                    <div style="margin: 15px 0;">
+                        <label style="font-size: 12px; color: #FFA500; margin-bottom: 5px; display: block;">Pickup Location *</label>
+                        <select id="pickupLocation" style="width: 100%; padding: 12px; border: 1px solid rgba(255, 165, 0, 0.3); border-radius: 8px; background: rgba(255, 255, 255, 0.1); color: white; font-size: 14px;">
+                            <option value="">-- Select TAU Center or Agent --</option>
+                            <option value="Nairobi HQ">Nairobi - TAU Africa HQ</option>
+                            <option value="Mombasa Center">Mombasa Center</option>
+                            <option value="Kisumu Center">Kisumu Center</option>
+                            <option value="Nakuru Center">Nakuru Center</option>
+                            <option value="Local Agent">Local Agent (specify below)</option>
+                        </select>
+                    </div>
+                    
+                    <div style="margin: 15px 0;">
+                        <label style="font-size: 12px; color: #FFA500; margin-bottom: 5px; display: block;">Phone Number for Contact *</label>
+                        <input type="tel" id="withdrawalPhone" placeholder="254XXXXXXXXX" 
+                               style="width: 100%; padding: 12px; border: 1px solid rgba(255, 165, 0, 0.3); border-radius: 8px; background: rgba(255, 255, 255, 0.1); color: white; font-size: 14px;">
+                    </div>
+                    
+                    <div style="margin: 15px 0;">
+                        <label style="font-size: 12px; color: #FFA500; margin-bottom: 5px; display: block;">Additional Notes (Optional):</label>
+                        <textarea id="withdrawalNotes" placeholder="Preferred time, local agent name, special instructions..." rows="3"
+                                  style="width: 100%; padding: 12px; border: 1px solid rgba(255, 165, 0, 0.3); border-radius: 8px; background: rgba(255, 255, 255, 0.1); color: white; font-size: 12px;"></textarea>
+                    </div>
+                    
+                    <button class="auth-button" onclick="submitCashWithdrawal()" style="font-size: 14px; padding: 15px; background: linear-gradient(45deg, #FFA500, #FF8C00); width: 100%;">
+                        💵 Submit Withdrawal Request
+                    </button>
+                </div>
+                
+                <div style="font-size: 11px; opacity: 0.8; text-align: center; color: #FFD700; padding: 10px; background: rgba(255, 215, 0, 0.1); border-radius: 8px;">
+                    ⏱ Requests processed within 24-48 hours<br>
+                    📞 You will be contacted to arrange pickup
+                </div>
             </div>
         </div>
     </div>
@@ -1232,6 +1305,30 @@
         </div>
     </div>
 
+    <!-- Member ID Link Modal -->
+    <div id="memberIDModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeModal('memberIDModal')">&times;</span>
+            <h2 class="modal-title">Link TAU Africa Member ID</h2>
+            <div style="margin-bottom: 20px;">
+                <div style="background: rgba(255, 215, 0, 0.1); padding: 15px; border-radius: 10px; margin-bottom: 15px; border: 1px solid rgba(255, 215, 0, 0.3);">
+                    <p style="font-size: 14px; margin-bottom: 10px;">Enter your TAU Africa Member ID to activate mining:</p>
+                    
+                    <input type="text" id="linkMemberID" placeholder="TSK-XXXXXX-XXX or TLK-XXXXXX-XXX" 
+                           style="width: 100%; padding: 12px; border: 1px solid rgba(255, 215, 0, 0.3); border-radius: 8px; background: rgba(255, 255, 255, 0.1); color: white; font-size: 14px; margin-bottom: 10px;">
+                    
+                    <button class="auth-button" onclick="verifyAndLinkMemberID()">
+                        🔗 Verify & Link Member ID
+                    </button>
+                </div>
+                
+                <div style="font-size: 12px; opacity: 0.8; text-align: center;">
+                    Don't have a Member ID? <a href="https://magero1985.github.io/Tau-Africa/" target="_blank" style="color: #FFD700;">Register at TAU Africa</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- Read Modal -->
     <div id="readModal" class="modal">
         <div class="modal-content">
@@ -1267,18 +1364,6 @@
             <span class="close" onclick="closeModal('languageModal')">&times;</span>
             <h2 class="modal-title">Select Language</h2>
             <div style="margin-bottom: 20px;">
-                <div style="padding: 15px; background: rgba(255, 255, 255, 0.1); border-radius: 10px; margin: 10px 0; cursor: pointer;" onclick="selectLanguage('en')">
-                    <strong>🇺🇸 English</strong>
-                </div>
-                
-                <div style="padding: 15px; background: rgba(255, 255, 255, 0.1); border-radius: 10px; margin: 10px 0; cursor: pointer;" onclick="selectLanguage('sw')">
-                    <strong>🇰🇪 Kiswahili</strong>
-                </div>
-                
-                <div style="padding: 15px; background: rgba(255, 255, 255, 0.1); border-radius: 10px; margin: 10px 0; cursor: pointer;" onclick="selectLanguage('fr')">
-                    <strong> Dho Luo</strong>
-                </div>
-                
                 <div style="padding: 15px; background: rgba(255, 255, 255, 0.1); border-radius: 10px; margin: 10px 0; cursor: pointer;" onclick="selectLanguage('ar')">
                     <strong>Kikuyu</strong>
                 </div>
@@ -1505,81 +1590,90 @@
     <!-- Notification -->
     <div id="notification" class="notification"></div>
 
-
     <script>
-        // Debug logging
-        function debugLog(msg, type = 'info') {
-            const console = document.getElementById('debugConsole');
-            const line = document.createElement('div');
-            line.className = `debug-line debug-${type}`;
-            line.textContent = `[${new Date().toLocaleTimeString()}] ${msg}`;
-            console.appendChild(line);
-            console.scrollTop = console.scrollHeight;
-            window.console.log(msg);
-        }
-
-        // Global variables
-        let app, db, auth;
+        // Global Variables
         let currentUser = null;
         let userBalance = 0.0000;
         let minedBalance = 0.0000;
         let receivedBalance = 0.0000;
         let reserveBalance = 0.0000;
         let lockedBalance = 0.0000;
+        let kabiruPoints = 0.0000;
         let totalTasksCompleted = 0;
         let miningRate = 0.001;
         let isMining = false;
+        let selectedSovereignType = null;
+        let selectedValueType = null;
+        let selectedValueAmount = null;
         let userWalletAddress = '';
         let transactionHistory = [];
+        let referralCode = '';
+        let lockupPeriods = [];
+        let currentConversionType = null;
+        let transferListener = null;
 
-        debugLog('🚀 Phase 2 Starting...', 'info');
-
-        // Firebase config
+        // Firebase Configuration
         const firebaseConfig = {
             apiKey: "AIzaSyCZhPjrl18PuyBh01Ou2KQMs-Ph3x2GP7o",
             authDomain: "kabiru-mining-app.firebaseapp.com",
             projectId: "kabiru-mining-app",
             storageBucket: "kabiru-mining-app.appspot.com",
             messagingSenderId: "217095254990",
-            appId: "1:217095254990:web:9eb44eff825666995fb19f"
+            appId: "1:217095254990:web:9eb44eff825666995fb19f",
+            measurementId: "G-W6070RT4PB"
         };
 
         // Initialize Firebase
+        let app, db, auth;
+
         try {
             app = firebase.initializeApp(firebaseConfig);
             db = firebase.firestore();
             auth = firebase.auth();
-            debugLog('✅ Firebase initialized', 'success');
+            console.log('✅ Firebase initialized successfully');
         } catch (error) {
-            debugLog('❌ Firebase error: ' + error.message, 'error');
+            console.error('❌ Firebase initialization error:', error);
+            showError('Firebase connection failed. Using offline mode.');
+            initOfflineMode();
         }
 
-        // Generate wallet address
-        function generateWalletAddress() {
-            const chars = '0123456789abcdef';
-            let address = '0x';
-            for (let i = 0; i < 40; i++) {
-                address += chars[Math.floor(Math.random() * chars.length)];
+        // Initialize offline mode if Firebase fails
+        function initOfflineMode() {
+            console.log('🔴 Initializing offline mode...');
+            const savedData = localStorage.getItem('kabiruMiningData');
+            if (savedData) {
+                const data = JSON.parse(savedData);
+                userBalance = data.userBalance || 0.0000;
+                minedBalance = data.minedBalance || 0.0000;
+                receivedBalance = data.receivedBalance || 0.0000;
+                reserveBalance = data.reserveBalance || 0.0000;
+                lockedBalance = data.lockedBalance || 0.0000;
+                kabiruPoints = data.kabiruPoints || 0.0000;
+                totalTasksCompleted = data.totalTasksCompleted || 0;
+                transactionHistory = data.transactionHistory || [];
+                referralCode = data.referralCode || '';
+                lockupPeriods = data.lockupPeriods || [];
             }
-            return address;
+            
+            if (!referralCode) {
+                referralCode = 'KABIRU_' + Math.random().toString(36).substr(2, 6).toUpperCase();
+            }
+            
+            currentUser = {
+                uid: 'offline-user',
+                email: 'demo@kabiru.app',
+                displayName: 'Demo User',
+                balance: userBalance,
+                tasksCompleted: totalTasksCompleted,
+                miningRate: miningRate,
+                walletAddress: generateWalletAddress()
+            };
+            
+            userWalletAddress = currentUser.walletAddress;
+            showMiningApp();
         }
 
-        // Show notification
-        function showNotification(message) {
-            const notif = document.getElementById('notification');
-            notif.textContent = message;
-            notif.classList.add('show');
-            setTimeout(() => {
-                notif.classList.remove('show');
-            }, 3000);
-        }
-
-        // Generate transaction ID
-        function generateTransactionId() {
-            return 'tx_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
-        }
-
-        // Save user data
+        // Save user data function
         async function saveUserData() {
             const userData = {
                 balance: userBalance,
@@ -1587,143 +1681,60 @@
                 receivedBalance: receivedBalance,
                 reserveBalance: reserveBalance,
                 lockedBalance: lockedBalance,
+                kabiruPoints: kabiruPoints,
                 tasksCompleted: totalTasksCompleted,
                 miningRate: miningRate,
                 walletAddress: userWalletAddress,
                 transactionHistory: transactionHistory,
+                referralCode: referralCode,
+                lockupPeriods: lockupPeriods,
                 lastActive: new Date().toISOString()
             };
 
             localStorage.setItem('kabiruMiningData', JSON.stringify(userData));
-            debugLog('💾 Data saved to localStorage', 'info');
 
-            if (currentUser && db) {
+            if (currentUser && currentUser.uid && db && currentUser.uid !== 'offline-user') {
                 try {
-                    await db.collection('users').doc(currentUser.uid).set({
+                    await db.collection('users').doc(currentUser.uid).update({
                         ...userData,
-                        email: currentUser.email,
-                        displayName: currentUser.displayName,
                         lastActive: firebase.firestore.FieldValue.serverTimestamp()
-                    }, { merge: true });
-                    debugLog('💾 Data saved to Firestore', 'success');
+                    });
+                    console.log('💾 User data saved to Firestore');
                 } catch (error) {
-                    debugLog('⚠️ Firestore save error: ' + error.message, 'error');
+                    console.error('❌ Error saving user data to Firestore:', error);
                 }
             }
         }
 
-        // Load user data
-        async function loadUserData(user) {
-            debugLog('📂 Loading user data...', 'info');
-
-            // Try Firestore first
-            if (db) {
-                try {
-                    const doc = await db.collection('users').doc(user.uid).get();
-                    if (doc.exists) {
-                        const data = doc.data();
-                        minedBalance = data.minedBalance || 0;
-                        receivedBalance = data.receivedBalance || 0;
-                        reserveBalance = data.reserveBalance || 0;
-                        lockedBalance = data.lockedBalance || 0;
-                        userBalance = minedBalance + receivedBalance;
-                        totalTasksCompleted = data.tasksCompleted || 0;
-                        miningRate = data.miningRate || 0.001;
-                        userWalletAddress = data.walletAddress || generateWalletAddress();
-                        transactionHistory = data.transactionHistory || [];
-                        debugLog('✅ Loaded from Firestore', 'success');
-                        updateDisplay();
-                        return;
-                    }
-                } catch (error) {
-                    debugLog('⚠️ Firestore load error: ' + error.message, 'error');
-                }
-            }
-
-            // Fallback to localStorage
-            const savedData = localStorage.getItem('kabiruMiningData');
-            if (savedData) {
-                const data = JSON.parse(savedData);
-                minedBalance = data.minedBalance || 0;
-                receivedBalance = data.receivedBalance || 0;
-                reserveBalance = data.reserveBalance || 0;
-                lockedBalance = data.lockedBalance || 0;
-                userBalance = data.balance || 0;
-                totalTasksCompleted = data.tasksCompleted || 0;
-                miningRate = data.miningRate || 0.001;
-                userWalletAddress = data.walletAddress || generateWalletAddress();
-                transactionHistory = data.transactionHistory || [];
-                debugLog('✅ Loaded from localStorage', 'success');
-            } else {
-                debugLog('ℹ️ No saved data, starting fresh', 'info');
-                userWalletAddress = generateWalletAddress();
-            }
-
-            updateDisplay();
-        }
-
-        // Update display
-        function updateDisplay() {
-            userBalance = minedBalance + receivedBalance;
-            
-            document.getElementById('balance').textContent = userBalance.toFixed(4) + ' iKb';
-            document.getElementById('totalBalance').textContent = userBalance.toFixed(4) + ' iKb';
-            document.getElementById('minedBalance').textContent = minedBalance.toFixed(4) + ' iKb';
-            document.getElementById('tasksCompleted').textContent = totalTasksCompleted;
-            document.getElementById('miningRate').textContent = miningRate.toFixed(3);
-            
-            if (currentUser) {
-                const name = currentUser.displayName || 'User';
-                const initial = name.charAt(0).toUpperCase();
-                
-                document.getElementById('userName').textContent = name;
-                document.getElementById('userEmail').textContent = currentUser.email;
-                document.getElementById('userAvatar').textContent = initial;
-                
-                // Update modal fields
-                document.getElementById('modalUserName').textContent = name;
-                document.getElementById('modalUserEmail').textContent = currentUser.email;
-                document.getElementById('modalUserAvatar').textContent = initial;
-                document.getElementById('modalUserBalance').textContent = userBalance.toFixed(4) + ' iKb';
-                document.getElementById('modalUserTasks').textContent = totalTasksCompleted;
-            }
-        }
-
-        // Mining function
+        // Main mining function
         async function mineTokens(type, reward) {
-            debugLog(`⛏️ Mining ${type} started`, 'info');
+            // Check if TAU Member ID is linked
+            if (!currentUser || !currentUser.tauMemberId) {
+                showNotification('⚠️ Please link your TAU Africa Member ID to start mining!');
+                openMemberIDLinkModal();
+                return;
+            }
+            
+            console.log('⛏️ Mining started:', type, 'Reward:', reward);
             
             if (isMining) {
-                showNotification('Already mining! Please wait.');
+                showNotification('Already mining! Please wait for current session to complete.');
                 return;
             }
 
             isMining = true;
             document.getElementById('miningStatus').textContent = 'Mining...';
             
-            // Disable buttons
-            document.getElementById('sovereignBtn').disabled = true;
-            document.getElementById('valueBtn').disabled = true;
-            document.getElementById('reserveBtn').disabled = true;
-            
-            showNotification(`🔥 ${type.toUpperCase()} mining started!`);
-            
-            // Mining countdown
-            let countdown = 3;
-            const timer = setInterval(() => {
-                document.getElementById('miningTimer').textContent = `Mining... ${countdown}s`;
-                countdown--;
-                if (countdown < 0) {
-                    clearInterval(timer);
-                }
-            }, 1000);
+            disableMiningButtons();
+            showNotification(`🔥 ${type.toUpperCase()} mining started! Please wait...`);
+            startMiningCountdown();
             
             setTimeout(async () => {
+                const oldBalance = userBalance;
                 minedBalance += reward;
                 userBalance = minedBalance + receivedBalance;
                 totalTasksCompleted++;
                 
-                // Add transaction
                 const transaction = {
                     id: generateTransactionId(),
                     type: 'mining',
@@ -1734,30 +1745,210 @@
                 };
                 transactionHistory.unshift(transaction);
                 
-                updateDisplay();
+                if (transactionHistory.length > 50) {
+                    transactionHistory = transactionHistory.slice(0, 50);
+                }
+                
+                console.log('💰 Balance updated:', oldBalance.toFixed(4), '->', userBalance.toFixed(4));
+                
+                updateBalanceDisplay();
+                updateUserDisplay();
                 await saveUserData();
                 
                 document.getElementById('miningStatus').textContent = 'Completed';
-                document.getElementById('miningTimer').textContent = 'Ready to mine!';
-                showNotification(`✅ Earned ${reward.toFixed(4)} iKb!`);
+                showNotification(`✅ ${type.toUpperCase()} mining complete! +${reward.toFixed(4)} iKb earned`);
                 
-                debugLog(`✅ Mining complete: +${reward.toFixed(4)} iKb`, 'success');
-                
-                // Enable buttons
-                document.getElementById('sovereignBtn').disabled = false;
-                document.getElementById('valueBtn').disabled = false;
-                document.getElementById('reserveBtn').disabled = false;
-                
+                enableMiningButtons();
                 isMining = false;
                 
                 setTimeout(() => {
                     document.getElementById('miningStatus').textContent = 'Ready';
-                }, 2000);
+                }, 3000);
                 
-            }, 3500);
+            }, Math.random() * 2000 + 3000);
         }
 
-        // Send KABIRU
+        // Verify and link Member ID
+        async function verifyAndLinkMemberID() {
+            const memberId = document.getElementById('linkMemberID').value.trim();
+            
+            if (!memberId || !memberId.match(/^(TSK|TLK)-\d{6}-\d{3}$/)) {
+                showNotification('❌ Invalid Member ID format. Use: TSK-XXXXXX-XXX or TLK-XXXXXX-XXX');
+                return;
+            }
+            
+            try {
+                showNotification('🔍 Verifying Member ID...');
+                
+                // Check if Member ID exists in Firestore
+                const memberQuery = await db.collection('members')
+                    .where('id', '==', memberId)
+                    .where('email', '==', currentUser.email)
+                    .limit(1)
+                    .get();
+                
+                if (memberQuery.empty) {
+                    showNotification('❌ Member ID not found or email mismatch. Please check your ID and email.');
+                    return;
+                }
+                
+                const memberData = memberQuery.docs[0].data();
+                
+                // Link Member ID to Kabiru user account
+                await db.collection('users').doc(currentUser.uid).update({
+                    tauMemberId: memberId,
+                    tauMemberName: memberData.fullName,
+                    tauMemberTeam: memberData.team,
+                    tauMemberLevel: memberData.level || 1,
+                    memberVerified: true,
+                    linkedAt: firebase.firestore.FieldValue.serverTimestamp()
+                });
+                
+                currentUser.tauMemberId = memberId;
+                currentUser.tauMemberLevel = memberData.level || 1;
+                
+                // Update mining rate based on level
+                const levelRates = {
+                    1: 0.001,
+                    2: 0.0015,
+                    3: 0.002,
+                    4: 0.0025
+                };
+                miningRate = levelRates[memberData.level || 1];
+                
+                await saveUserData();
+                updateBalanceDisplay();
+                
+                showNotification(`✅ Member ID verified!\nLevel ${memberData.level || 1} - Mining rate: ${miningRate} iKb/day\nYou can now start mining!`);
+                closeModal('memberIDModal');
+                
+            } catch (error) {
+                console.error('Verification error:', error);
+                showNotification('❌ Verification failed. Please try again or contact support.');
+            }
+        }
+
+        // Open Member ID Link Modal
+        function openMemberIDLinkModal() {
+            document.getElementById('memberIDModal').style.display = 'block';
+        }
+
+        // Cash withdrawal functions
+        function openCashWithdrawalModal() {
+            document.getElementById('cashWithdrawalModal').style.display = 'block';
+            const availableBalance = minedBalance + receivedBalance;
+            document.getElementById('withdrawableBalance').textContent = availableBalance.toFixed(4) + ' iKb';
+            document.getElementById('cashWithdrawAmount').value = '';
+            document.getElementById('cashEquivalent').textContent = '0.00 KSH';
+            document.getElementById('withdrawalPhone').value = currentUser ? currentUser.email : '';
+            closeModal('walletModal');
+        }
+
+        function calculateCashEquivalent() {
+            const ikbAmount = parseFloat(document.getElementById('cashWithdrawAmount').value) || 0;
+            const kshAmount = ikbAmount * 100000;
+            document.getElementById('cashEquivalent').textContent = kshAmount.toLocaleString('en-KE', {minimumFractionDigits: 2, maximumFractionDigits: 2}) + ' KSH';
+        }
+
+        async function submitCashWithdrawal() {
+            const amount = parseFloat(document.getElementById('cashWithdrawAmount').value);
+            const location = document.getElementById('pickupLocation').value;
+            const phone = document.getElementById('withdrawalPhone').value.trim();
+            const notes = document.getElementById('withdrawalNotes').value.trim();
+            const availableBalance = minedBalance + receivedBalance;
+            
+            if (!amount || amount <= 0) {
+                showNotification('❌ Please enter a valid amount');
+                return;
+            }
+            
+            if (amount > availableBalance) {
+                showNotification(`❌ Insufficient balance. Available: ${availableBalance.toFixed(4)} iKb`);
+                return;
+            }
+            
+            if (!location) {
+                showNotification('❌ Please select a pickup location');
+                return;
+            }
+            
+            if (!phone) {
+                showNotification('❌ Please enter your phone number');
+                return;
+            }
+            
+            if (!phone.match(/^254[0-9]{9}$/)) {
+                showNotification('❌ Invalid phone format. Use: 254XXXXXXXXX');
+                return;
+            }
+            
+            try {
+                showNotification('⏳ Processing withdrawal request...');
+                
+                if (minedBalance >= amount) {
+                    minedBalance -= amount;
+                } else {
+                    const remaining = amount - minedBalance;
+                    minedBalance = 0;
+                    receivedBalance -= remaining;
+                }
+                
+                userBalance = minedBalance + receivedBalance;
+                
+                const withdrawalRequest = {
+                    userId: currentUser.uid,
+                    userEmail: currentUser.email,
+                    userName: currentUser.displayName,
+                    tauMemberId: currentUser.tauMemberId || 'Not linked',
+                    tauMemberLevel: currentUser.tauMemberLevel || 1,
+                    ikbAmount: amount,
+                    kshAmount: amount * 100000,
+                    pickupLocation: location,
+                    contactPhone: phone,
+                    notes: notes || 'None',
+                    status: 'pending',
+                    requestedAt: firebase.firestore.FieldValue.serverTimestamp(),
+                    processedAt: null,
+                    processedBy: null
+                };
+                
+                const docRef = await db.collection('cashWithdrawals').add(withdrawalRequest);
+                
+                const transaction = {
+                    id: generateTransactionId(),
+                    type: 'cash_withdrawal',
+                    amount: amount,
+                    kshAmount: amount * 100000,
+                    pickupLocation: location,
+                    contactPhone: phone,
+                    withdrawalId: docRef.id,
+                    timestamp: new Date().toISOString(),
+                    status: 'pending'
+                };
+                transactionHistory.unshift(transaction);
+                
+                if (transactionHistory.length > 50) {
+                    transactionHistory = transactionHistory.slice(0, 50);
+                }
+                
+                await saveUserData();
+                updateBalanceDisplay();
+                
+                showNotification(`✅ Withdrawal Request Submitted!\n\n${amount.toFixed(4)} iKb = ${(amount * 100000).toLocaleString()} KSH\n\nPickup: ${location}\nPhone: ${phone}\n\n📞 You will be contacted within 24-48 hours.`);
+                
+                document.getElementById('cashWithdrawAmount').value = '';
+                document.getElementById('withdrawalNotes').value = '';
+                document.getElementById('pickupLocation').value = '';
+                
+                closeModal('cashWithdrawalModal');
+                
+            } catch (error) {
+                console.error('❌ Withdrawal error:', error);
+                showNotification('❌ Withdrawal request failed. Please try again.');
+            }
+        }
+
+        // Send KABIRU function
         async function sendKabiru() {
             const recipient = document.getElementById('sendRecipient').value.trim();
             const amount = parseFloat(document.getElementById('sendAmount').value);
@@ -1766,52 +1957,48 @@
             const availableBalance = minedBalance + receivedBalance;
             
             if (!recipient) {
-                showNotification('Please enter recipient email');
+                showNotification('Please enter recipient email or address.');
                 return;
             }
             
             if (!amount || amount <= 0) {
-                showNotification('Please enter valid amount');
+                showNotification('Please enter a valid amount.');
                 return;
             }
             
             if (totalAmount > availableBalance) {
-                showNotification('Insufficient balance');
+                showNotification('Insufficient balance. Available: ' + availableBalance.toFixed(4) + ' iKb');
                 return;
             }
             
             try {
-                debugLog('💸 Sending tokens...', 'info');
-                
-                // Deduct from sender
                 if (minedBalance >= totalAmount) {
                     minedBalance -= totalAmount;
                 } else {
-                    const remaining = totalAmount - minedBalance;
+                    const remainingAmount = totalAmount - minedBalance;
                     minedBalance = 0;
-                    receivedBalance -= remaining;
+                    receivedBalance -= remainingAmount;
                 }
                 
-                // Try to find recipient in Firestore
-                if (db) {
+                if (db && currentUser.uid !== 'offline-user') {
                     try {
                         const recipientQuery = await db.collection('users').where('email', '==', recipient).limit(1).get();
                         
                         if (!recipientQuery.empty) {
                             const recipientDoc = recipientQuery.docs[0];
-                            await db.collection('users').doc(recipientDoc.id).update({
+                            const recipientId = recipientDoc.id;
+                            
+                            await db.collection('users').doc(recipientId).update({
                                 receivedBalance: firebase.firestore.FieldValue.increment(amount)
                             });
-                            debugLog('✅ Recipient found and credited', 'success');
                         } else {
-                            debugLog('⚠️ Recipient not found', 'info');
+                            showNotification('Recipient not found. Transaction recorded as pending.');
                         }
                     } catch (error) {
-                        debugLog('⚠️ Recipient search error: ' + error.message, 'error');
+                        console.error('Error finding recipient:', error);
                     }
                 }
                 
-                // Add transaction
                 const transaction = {
                     id: generateTransactionId(),
                     type: 'send',
@@ -1823,107 +2010,160 @@
                 };
                 transactionHistory.unshift(transaction);
                 
-                updateDisplay();
                 await saveUserData();
+                updateBalanceDisplay();
                 
-                showNotification(`✅ Sent ${amount.toFixed(4)} iKb!`);
-                debugLog(`✅ Transfer complete`, 'success');
-                
-                // Clear inputs
+                showNotification(`✅ Successfully sent ${amount.toFixed(4)} iKb to ${recipient}!`);
                 document.getElementById('sendRecipient').value = '';
                 document.getElementById('sendAmount').value = '';
-                
                 closeModal('sendReceiveModal');
                 
             } catch (error) {
-                debugLog('❌ Send error: ' + error.message, 'error');
-                showNotification('Transfer failed');
+                console.error('Send error:', error);
+                showNotification('❌ Failed to send KABIRU. Please try again.');
             }
         }
 
-        // Copy wallet address
-        function copyAddress() {
+        // Currency conversion functions
+        function convertCurrency(type) {
+            currentConversionType = type;
+            document.getElementById('conversionModal').style.display = 'block';
+            
+            if (type === 'ikb_to_ikbp') {
+                document.getElementById('conversionTitle').textContent = 'Convert iKb to iKbp';
+                document.getElementById('conversionFromLabel').textContent = 'Amount in iKb:';
+                document.getElementById('conversionRate').textContent = 'Exchange Rate: 1 iKb = 100,000 iKbp';
+            } else if (type === 'ikb_to_ksh') {
+                document.getElementById('conversionTitle').textContent = 'Convert iKb to KSH';
+                document.getElementById('conversionFromLabel').textContent = 'Amount in iKb:';
+                document.getElementById('conversionRate').textContent = 'Exchange Rate: 1 iKb = 100,000 KSH';
+            }
+            
+            document.getElementById('conversionAmount').oninput = updateConversionResult;
+        }
+
+        function updateConversionResult() {
+            const amount = parseFloat(document.getElementById('conversionAmount').value) || 0;
+            let result = 0;
+            
+            if (currentConversionType === 'ikb_to_ikbp') {
+                result = amount * 100000;
+                document.getElementById('conversionResult').textContent = result.toLocaleString() + ' iKbp';
+            } else if (currentConversionType === 'ikb_to_ksh') {
+                result = amount * 100000;
+                document.getElementById('conversionResult').textContent = result.toLocaleString() + ' KSH';
+            }
+        }
+
+        async function executeConversion() {
+            const amount = parseFloat(document.getElementById('conversionAmount').value);
+            const availableBalance = minedBalance + receivedBalance;
+            
+            if (!amount || amount <= 0) {
+                showNotification('Please enter a valid amount.');
+                return;
+            }
+            
+            if (amount > availableBalance) {
+                showNotification('Insufficient iKb balance for conversion.');
+                return;
+            }
+            
+            try {
+                if (minedBalance >= amount) {
+                    minedBalance -= amount;
+                } else {
+                    const remainingAmount = amount - minedBalance;
+                    minedBalance = 0;
+                    receivedBalance -= remainingAmount;
+                }
+                
+                let convertedAmount = 0;
+                let transactionType = '';
+                
+                if (currentConversionType === 'ikb_to_ikbp') {
+                    convertedAmount = amount * 100000;
+                    kabiruPoints += convertedAmount;
+                    transactionType = 'conversion_to_ikbp';
+                    showNotification(`✅ Converted ${amount.toFixed(4)} iKb to ${convertedAmount.toLocaleString()} iKbp!`);
+                } else if (currentConversionType === 'ikb_to_ksh') {
+                    convertedAmount = amount * 100000;
+                    transactionType = 'conversion_to_ksh';
+                    showNotification(`✅ Converted ${amount.toFixed(4)} iKb to ${convertedAmount.toLocaleString()} KSH!`);
+                }
+                
+                const transaction = {
+                    id: generateTransactionId(),
+                    type: transactionType,
+                    amount: amount,
+                    convertedAmount: convertedAmount,
+                    timestamp: new Date().toISOString(),
+                    status: 'completed'
+                };
+                transactionHistory.unshift(transaction);
+                
+                await saveUserData();
+                updateBalanceDisplay();
+                
+                document.getElementById('conversionAmount').value = '';
+                closeModal('conversionModal');
+                
+            } catch (error) {
+                console.error('Conversion error:', error);
+                showNotification('❌ Conversion failed. Please try again.');
+            }
+        }
+
+        // Copy and share functions
+        function copyReceiveAddress() {
+            const address = userWalletAddress;
             if (navigator.clipboard) {
-                navigator.clipboard.writeText(userWalletAddress).then(() => {
-                    showNotification('📋 Address copied!');
-                }).catch(() => {
-                    fallbackCopy(userWalletAddress);
+                navigator.clipboard.writeText(address).then(() => {
+                    showNotification('📋 Wallet address copied to clipboard!');
+                }).catch(err => {
+                    fallbackCopyToClipboard(address);
                 });
             } else {
-                fallbackCopy(userWalletAddress);
+                fallbackCopyToClipboard(address);
             }
         }
 
-        function fallbackCopy(text) {
-            const textArea = document.createElement('textarea');
-            textArea.value = text;
-            document.body.appendChild(textArea);
-            textArea.select();
-            try {
-                document.execCommand('copy');
-                showNotification('📋 Address copied!');
-            } catch (err) {
-                showNotification('Copy failed');
-            }
-            document.body.removeChild(textArea);
-        }
-
-        // Share wallet address
-        function shareAddress() {
-            const shareText = `Send KABIRU tokens to: ${userWalletAddress}`;
+        function shareReceiveAddress() {
+            const address = userWalletAddress;
+            const shareText = `Send KABIRU tokens to my wallet address: ${address}`;
             
             if (navigator.share) {
                 navigator.share({
-                    title: 'My KABIRU Wallet',
+                    title: 'My KABIRU Wallet Address',
                     text: shareText
                 }).then(() => {
-                    showNotification('📱 Shared!');
+                    showNotification('📱 Wallet address shared successfully!');
                 }).catch(() => {
-                    copyAddress();
+                    fallbackShare(shareText);
                 });
             } else {
-                copyAddress();
+                fallbackShare(shareText);
             }
         }
 
-        // Open modals
-        function openWalletModal() {
-            document.getElementById('walletAddress').textContent = userWalletAddress;
-            document.getElementById('walletMinedBalance').textContent = minedBalance.toFixed(4) + ' iKb';
-            document.getElementById('walletReceivedBalance').textContent = receivedBalance.toFixed(4) + ' iKb';
-            document.getElementById('walletLockedBalance').textContent = lockedBalance.toFixed(4) + ' iKb';
-            document.getElementById('walletReserveBalance').textContent = reserveBalance.toFixed(4) + ' iKb';
-            document.getElementById('walletTotalBalance').textContent = (minedBalance + receivedBalance + lockedBalance + reserveBalance).toFixed(4) + ' iKb';
-            document.getElementById('walletModal').style.display = 'block';
-        }
-
         function openSendReceiveModal() {
-            document.getElementById('availableToSend').textContent = (minedBalance + receivedBalance).toFixed(4) + ' iKb';
-            document.getElementById('receiveAddress').textContent = userWalletAddress;
             document.getElementById('sendReceiveModal').style.display = 'block';
+            document.getElementById('availableToSend').textContent = (minedBalance + receivedBalance).toFixed(4) + ' iKb';
+            document.getElementById('receiveAddress').textContent = userWalletAddress || 'Loading...';
             closeModal('walletModal');
         }
 
         function openTransactionHistoryModal() {
-            displayTransactionHistory();
             document.getElementById('transactionHistoryModal').style.display = 'block';
+            displayTransactionHistory();
             closeModal('walletModal');
         }
 
-        function openProfileModal() {
-            document.getElementById('profileModal').style.display = 'block';
-        }
-
-        function closeModal(modalId) {
-            document.getElementById(modalId).style.display = 'none';
-        }
-
-        // Display transaction history
         function displayTransactionHistory() {
-            const list = document.getElementById('transactionList');
+            const transactionList = document.getElementById('transactionList');
             
             if (transactionHistory.length === 0) {
-                list.innerHTML = '<div style="text-align: center; opacity: 0.7; font-size: 14px; padding: 20px;">No transactions yet</div>';
+                transactionList.innerHTML = '<div style="text-align: center; opacity: 0.7; font-size: 14px; padding: 20px;">No transactions yet</div>';
                 return;
             }
             
@@ -1932,177 +2172,855 @@
                 const date = new Date(tx.timestamp).toLocaleDateString();
                 const time = new Date(tx.timestamp).toLocaleTimeString();
                 let icon = '⚡';
-                let amountClass = 'positive';
                 let amountText = `+${tx.amount.toFixed(4)} iKb`;
                 let description = '';
                 
-                if (tx.type === 'mining') {
-                    icon = '⛏️';
-                    description = `${tx.subtype} mining`;
-                } else if (tx.type === 'send') {
-                    icon = '📤';
-                    amountClass = 'negative';
-                    amountText = `-${tx.amount.toFixed(4)} iKb`;
-                    description = `Sent to ${tx.recipient}`;
-                } else if (tx.type === 'receive') {
-                    icon = '📥';
-                    description = `Received from ${tx.sender || 'Unknown'}`;
+                switch (tx.type) {
+                    case 'mining':
+                        icon = '⛏️';
+                        description = `${tx.subtype} mining`;
+                        break;
+                    case 'send':
+                        icon = '📤';
+                        amountText = `-${tx.amount.toFixed(4)} iKb`;
+                        description = `Sent to ${tx.recipient}`;
+                        break;
+                    case 'receive':
+                        icon = '📥';
+                        description = `Received from ${tx.sender || 'Unknown'}`;
+                        break;
+                    case 'tau_transfer':
+                        icon = '💎';
+                        description = `Transfer from TAU Africa`;
+                        break;
+                    case 'cash_withdrawal':
+                        icon = '💵';
+                        amountText = `-${tx.amount.toFixed(4)} iKb`;
+                        description = `Cash withdrawal request`;
+                        break;
+                    case 'referral_bonus':
+                        icon = '🎁';
+                        description = 'Referral bonus';
+                        break;
+                    case 'lockup':
+                        icon = '🔒';
+                        amountText = `-${tx.amount.toFixed(4)} iKb`;
+                        description = `Locked for ${tx.months} months`;
+                        break;
+                    case 'conversion_to_ikbp':
+                        icon = '🔄';
+                        amountText = `-${tx.amount.toFixed(4)} iKb`;
+                        description = `Converted to ${tx.convertedAmount.toLocaleString()} iKbp`;
+                        break;
+                    case 'conversion_to_ksh':
+                        icon = '💱';
+                        amountText = `-${tx.amount.toFixed(4)} iKb`;
+                        description = `Converted to ${tx.convertedAmount.toLocaleString()} KSH`;
+                        break;
                 }
                 
                 html += `
-                    <div class="transaction-item">
-                        <div class="transaction-icon">${icon}</div>
-                        <div class="transaction-details">
-                            <div class="transaction-title">${description}</div>
-                            <div class="transaction-time">${date} ${time}</div>
+                    <div style="background: rgba(255, 255, 255, 0.1); padding: 10px; border-radius: 8px; margin: 5px 0; display: flex; align-items: center; gap: 10px;">
+                        <div style="font-size: 16px;">${icon}</div>
+                        <div style="flex: 1;">
+                            <div style="font-size: 12px; font-weight: bold;">${description}</div>
+                            <div style="font-size: 10px; opacity: 0.7;">${date} ${time}</div>
                         </div>
-                        <div class="transaction-amount ${amountClass}">${amountText}</div>
+                        <div style="font-size: 12px; font-weight: bold; color: ${tx.type === 'send' || tx.type === 'lockup' || tx.type.includes('conversion') || tx.type === 'cash_withdrawal' ? '#ff6b6b' : '#00ff87'};">${amountText}</div>
                     </div>
                 `;
             });
             
-            list.innerHTML = html;
+            transactionList.innerHTML = html;
         }
 
-        // Email verification handler
-        async function handleEmailVerificationLink(oobCode) {
-            debugLog('📧 Processing verification link', 'info');
-            try {
-                await auth.applyActionCode(oobCode);
-                debugLog('✅ Email verified!', 'success');
-                window.history.replaceState({}, document.title, window.location.pathname);
-                showNotification('Email verified! Please sign in.');
-                setTimeout(() => showLogin(), 2000);
-            } catch (error) {
-                debugLog('❌ Verification error: ' + error.message, 'error');
-                showNotification('Verification failed.');
-                setTimeout(() => showLogin(), 2000);
+        function startMiningCountdown() {
+            const timerElement = document.getElementById('miningTimer');
+            let seconds = 3;
+            
+            const countdown = setInterval(() => {
+                timerElement.textContent = `Mining in progress... ${seconds}s`;
+                seconds--;
+                
+                if (seconds < 0) {
+                    clearInterval(countdown);
+                    timerElement.textContent = 'Mining complete!';
+                    setTimeout(() => {
+                        timerElement.textContent = 'Ready to mine!';
+                    }, 2000);
+                }
+            }, 1000);
+        }
+
+        function disableMiningButtons() {
+            const buttons = document.querySelectorAll('.main-button, .value-item');
+            buttons.forEach(btn => {
+                btn.style.opacity = '0.5';
+                btn.style.pointerEvents = 'none';
+            });
+        }
+
+        function enableMiningButtons() {
+            const buttons = document.querySelectorAll('.main-button, .value-item');
+            buttons.forEach(btn => {
+                btn.style.opacity = '1';
+                btn.style.pointerEvents = 'auto';
+            });
+        }
+
+        // Modal functions
+        function openUtilitiesModal() {
+            document.getElementById('utilitiesModal').style.display = 'block';
+        }
+
+        function openWalletModal() {
+            document.getElementById('walletModal').style.display = 'block';
+            document.getElementById('walletAddress').textContent = userWalletAddress || 'Not available';
+            document.getElementById('walletMinedBalance').textContent = minedBalance.toFixed(4) + ' iKb';
+            document.getElementById('walletReceivedBalance').textContent = receivedBalance.toFixed(4) + ' iKb';
+            document.getElementById('walletLockedBalance').textContent = lockedBalance.toFixed(4) + ' iKb';
+            document.getElementById('walletReserveBalance').textContent = reserveBalance.toFixed(4) + ' iKb';
+            document.getElementById('walletTotalBalance').textContent = (minedBalance + receivedBalance + lockedBalance + reserveBalance).toFixed(4) + ' iKb';
+        }
+
+        function openReadModal() {
+            document.getElementById('readModal').style.display = 'block';
+        }
+
+        function openLanguageModal() {
+            document.getElementById('languageModal').style.display = 'block';
+        }
+
+        function openUserAccountModal() {
+            document.getElementById('userAccountModal').style.display = 'block';
+            if (currentUser) {
+                document.getElementById('modalUserAvatar').textContent = (currentUser.displayName || 'U').charAt(0).toUpperCase();
+                document.getElementById('modalUserName').textContent = currentUser.displayName || 'Anonymous User';
+                document.getElementById('modalUserEmail').textContent = currentUser.email || 'No email';
+                document.getElementById('modalUserBalance').textContent = userBalance.toFixed(4) + ' iKb';
+                document.getElementById('modalUserTasks').textContent = totalTasksCompleted;
+                document.getElementById('currentLockedAmount').textContent = lockedBalance.toFixed(4) + ' iKb';
+                
+                const referralLink = generateReferralLink();
+                document.getElementById('referralLink').textContent = referralLink;
             }
         }
 
-        // Auth state listener
-        function setupAuthListener() {
-            debugLog('👂 Auth listener active', 'info');
+        function openSovereignModal() {
+            document.getElementById('sovereignModal').style.display = 'block';
+            selectedSovereignType = null;
+            document.getElementById('sovereignStartBtn').disabled = true;
+        }
+
+        function openValueModal() {
+            document.getElementById('valueModal').style.display = 'block';
+            selectedValueType = null;
+            selectedValueAmount = null;
+            document.getElementById('valueStartBtn').disabled = true;
+        }
+
+        function showReserveModal() {
+            document.getElementById('reserveModal').style.display = 'block';
+            document.getElementById('availableForReserve').textContent = (minedBalance + receivedBalance).toFixed(4) + ' iKb';
+            document.getElementById('currentReserveAmount').textContent = reserveBalance.toFixed(4) + ' iKb';
+            closeModal('userAccountModal');
+        }
+
+        function closeModal(modalId) {
+            document.getElementById(modalId).style.display = 'none';
+        }
+
+        function selectLanguage(langCode) {
+            showNotification(`Language changed to ${langCode === 'en' ? 'English' : langCode === 'sw' ? 'Kiswahili' : langCode === 'fr' ? 'Dho Luo' : 'Kikuyu'}`);
+            closeModal('languageModal');
+        }
+
+        function selectSovereignValue(type, element) {
+            document.querySelectorAll('#sovereignModal div[onclick]').forEach(div => {
+                div.style.background = 'rgba(255, 255, 255, 0.1)';
+            });
             
+            element.style.background = 'rgba(255, 215, 0, 0.2)';
+            selectedSovereignType = type;
+            document.getElementById('sovereignStartBtn').disabled = false;
+        }
+
+        function selectValue(type, amount, element) {
+            document.querySelectorAll('#valueModal div[onclick]').forEach(div => {
+                div.style.background = 'rgba(255, 255, 255, 0.1)';
+            });
+            
+            element.style.background = 'rgba(255, 215, 0, 0.2)';
+            selectedValueType = type;
+            selectedValueAmount = amount;
+            document.getElementById('valueStartBtn').disabled = false;
+        }
+
+        function startSovereignMining() {
+            if (selectedSovereignType) {
+                closeModal('sovereignModal');
+                mineTokens(selectedSovereignType, 0.003);
+            }
+        }
+
+        function startValueMining() {
+            if (selectedValueType && selectedValueAmount) {
+                closeModal('valueModal');
+                mineTokens(selectedValueType, selectedValueAmount);
+            }
+        }
+
+        function generateReferralLink() {
+            if (!referralCode) {
+                referralCode = 'KABIRU_' + (currentUser?.uid?.substr(-6) || Math.random().toString(36).substr(2, 6)).toUpperCase();
+            }
+            const baseUrl = window.location.origin + window.location.pathname;
+            return `${baseUrl}?ref=${referralCode}`;
+        }
+
+        function copyReferralLink() {
+            const referralLink = generateReferralLink();
+            if (navigator.clipboard) {
+                navigator.clipboard.writeText(referralLink).then(() => {
+                    showNotification('Referral link copied to clipboard!');
+                }).catch(err => {
+                    fallbackCopyToClipboard(referralLink);
+                });
+            } else {
+                fallbackCopyToClipboard(referralLink);
+            }
+        }
+
+        function fallbackCopyToClipboard(text) {
+            const textArea = document.createElement('textarea');
+            textArea.value = text;
+            document.body.appendChild(textArea);
+            textArea.focus();
+            textArea.select();
+            try {
+                document.execCommand('copy');
+                showNotification('Link copied to clipboard!');
+            } catch (err) {
+                showNotification('Could not copy link. Please copy manually.');
+            }
+            document.body.removeChild(textArea);
+        }
+
+        function shareReferralLink() {
+            const referralLink = generateReferralLink();
+            const shareText = `Join me on KABIRU and start mining iKb tokens! Use my referral link: ${referralLink}`;
+            
+            if (navigator.share) {
+                navigator.share({
+                    title: 'Join KABIRU Mining App',
+                    text: shareText,
+                    url: referralLink
+                }).then(() => {
+                    showNotification('Referral link shared successfully!');
+                }).catch(() => {
+                    fallbackShare(shareText);
+                });
+            } else {
+                fallbackShare(shareText);
+            }
+        }
+
+        function fallbackShare(text) {
+            if (navigator.clipboard) {
+                navigator.clipboard.writeText(text).then(() => {
+                    showNotification('Referral message copied! You can paste it anywhere to share.');
+                }).catch(() => {
+                    showNotification('Share: Copy the referral link manually to share with friends.');
+                });
+            } else {
+                showNotification('Share your referral link manually with friends!');
+            }
+        }
+
+        async function lockupTokens(months) {
+            const availableBalance = minedBalance + receivedBalance;
+            
+            if (availableBalance < 0.01) {
+                showNotification('Insufficient balance for lockup. Minimum 0.01 iKb required.');
+                return;
+            }
+
+            const lockupAmount = prompt(`Enter amount to lock for ${months} months (Available: ${availableBalance.toFixed(4)} iKb):`);
+            
+            if (!lockupAmount || isNaN(lockupAmount) || parseFloat(lockupAmount) <= 0) {
+                showNotification('Invalid amount entered.');
+                return;
+            }
+
+            const amount = parseFloat(lockupAmount);
+            
+            if (amount > availableBalance) {
+                showNotification('Insufficient balance for this lockup amount.');
+                return;
+            }
+
+            const bonusPercentage = months === 3 ? 0.05 : months === 6 ? 0.12 : 0.25;
+            const bonus = amount * bonusPercentage;
+            const unlockDate = new Date();
+            unlockDate.setMonth(unlockDate.getMonth() + months);
+
+            if (minedBalance >= amount) {
+                minedBalance -= amount;
+            } else {
+                const remainingAmount = amount - minedBalance;
+                minedBalance = 0;
+                receivedBalance -= remainingAmount;
+            }
+            
+            lockedBalance += amount + bonus;
+            
+            const lockupInfo = {
+                amount: amount,
+                bonus: bonus,
+                months: months,
+                lockDate: new Date().toISOString(),
+                unlockDate: unlockDate.toISOString(),
+                status: 'locked'
+            };
+            
+            lockupPeriods.push(lockupInfo);
+            
+            const transaction = {
+                id: generateTransactionId(),
+                type: 'lockup',
+                amount: amount,
+                bonus: bonus,
+                months: months,
+                timestamp: new Date().toISOString(),
+                status: 'completed'
+            };
+            transactionHistory.unshift(transaction);
+            
+            await saveUserData();
+            updateBalanceDisplay();
+            updateUserDisplay();
+            
+            showNotification(`Successfully locked ${amount.toFixed(4)} iKb for ${months} months with ${bonus.toFixed(4)} iKb bonus!`);
+            closeModal('userAccountModal');
+        }
+
+        async function addToReserve() {
+            const amount = parseFloat(document.getElementById('reserveAmount').value);
+            const availableBalance = minedBalance + receivedBalance;
+            
+            if (!amount || amount <= 0) {
+                showNotification('Please enter a valid amount.');
+                return;
+            }
+            
+            if (amount > availableBalance) {
+                showNotification('Insufficient balance for this reserve amount.');
+                return;
+            }
+            
+            if (minedBalance >= amount) {
+                minedBalance -= amount;
+            } else {
+                const remainingAmount = amount - minedBalance;
+                minedBalance = 0;
+                receivedBalance -= remainingAmount;
+            }
+            
+            reserveBalance += amount;
+            
+            const transaction = {
+                id: generateTransactionId(),
+                type: 'reserve_add',
+                amount: amount,
+                timestamp: new Date().toISOString(),
+                status: 'completed'
+            };
+            transactionHistory.unshift(transaction);
+            
+            await saveUserData();
+            updateBalanceDisplay();
+            
+            showNotification(`Successfully added ${amount.toFixed(4)} iKb to reserves!`);
+            document.getElementById('reserveAmount').value = '';
+            showReserveModal();
+        }
+
+        async function withdrawFromReserve() {
+            const amount = parseFloat(document.getElementById('reserveAmount').value);
+            
+            if (!amount || amount <= 0) {
+                showNotification('Please enter a valid amount.');
+                return;
+            }
+            
+            if (amount > reserveBalance) {
+                showNotification('Insufficient reserve balance for this withdrawal.');
+                return;
+            }
+            
+            reserveBalance -= amount;
+            receivedBalance += amount;
+            
+            const transaction = {
+                id: generateTransactionId(),
+                type: 'reserve_withdraw',
+                amount: amount,
+                timestamp: new Date().toISOString(),
+                status: 'completed'
+            };
+            transactionHistory.unshift(transaction);
+            
+            await saveUserData();
+            updateBalanceDisplay();
+            
+            showNotification(`Successfully withdrew ${amount.toFixed(4)} iKb from reserves!`);
+            document.getElementById('reserveAmount').value = '';
+            showReserveModal();
+        }
+
+        // TAU-Kabiru Transfer Listener
+        function listenForKabiruTransfers(memberEmail) {
+            if (!memberEmail || !db) {
+                console.log('⚠️ No email or database for transfer listener');
+                return null;
+            }
+            
+            console.log('👂 Listening for iKb transfers to:', memberEmail);
+            
+            return db.collection('members')
+                .where('email', '==', memberEmail)
+                .onSnapshot(snapshot => {
+                    snapshot.forEach(doc => {
+                        const data = doc.data();
+                        
+                        if (data.pendingKabiruTransfer && data.pendingKabiruTransfer.status === 'pending') {
+                            const transfer = data.pendingKabiruTransfer;
+                            
+                            console.log('💎 Transfer detected:', transfer);
+                            
+                            const transferredIkb = transfer.iKb || 0;
+                            const transferredIkbp = transfer.iKbp || 0;
+                            
+                            receivedBalance += transferredIkb;
+                            kabiruPoints += transferredIkbp;
+                            userBalance = minedBalance + receivedBalance;
+                            
+                            const transaction = {
+                                id: generateTransactionId(),
+                                type: 'tau_transfer',
+                                iKb: transferredIkb,
+                                iKbp: transferredIkbp,
+                                timestamp: new Date().toISOString(),
+                                status: 'completed'
+                            };
+                            transactionHistory.unshift(transaction);
+                            
+                            db.collection('members').doc(doc.id).update({
+                                'pendingKabiruTransfer.status': 'completed',
+                                'pendingKabiruTransfer.completedAt': firebase.firestore.FieldValue.serverTimestamp()
+                            }).then(() => {
+                                console.log('✅ Transfer marked as completed');
+                            });
+                            
+                            updateBalanceDisplay();
+                            saveUserData();
+                            
+                            showNotification(`✅ Received from TAU Africa!\n\n${transferredIkb.toFixed(4)} iKb${transferredIkbp > 0 ? '\n' + transferredIkbp.toLocaleString() + ' iKbp' : ''}\n\n⛏️ Start mining to grow your balance!`);
+                            
+                            console.log('✅ Transfer completed - Balances updated');
+                        }
+                    });
+                }, error => {
+                    console.error('⚠️ Transfer listener error:', error);
+                });
+        }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('KABIRU Mining App starting...');
+            setupAuthStateListener();
+        });
+
+        function setupAuthStateListener() {
+            if (!auth) {
+                showOfflineLogin();
+                return;
+            }
+
             auth.onAuthStateChanged(async (user) => {
+                console.log('Auth state changed:', user ? user.uid : 'No user');
+                
                 if (user) {
-                    debugLog('👤 User: ' + user.email, 'info');
-                    await user.reload();
-                    
                     if (user.emailVerified) {
-                        debugLog('✅ Email verified', 'success');
-                        currentUser = user;
+                        console.log('User authenticated and verified');
                         await loadUserData(user);
                         showMiningApp();
                     } else {
-                        debugLog('⚠️ Not verified', 'info');
-                        showVerification();
+                        console.log('User not verified, showing verification screen');
+                        showEmailVerification();
                     }
                 } else {
-                    debugLog('👤 No user', 'info');
+                    console.log('No authenticated user, showing login');
                     showLoginPage();
                 }
             });
         }
 
-        // Login
+        function showOfflineLogin() {
+            showNotification('Running in offline mode - you can still mine tokens!');
+            initOfflineMode();
+        }
+
+        async function loadUserData(firebaseUser) {
+            try {
+                console.log('Loading user data for:', firebaseUser.uid);
+                
+                const userDoc = await db.collection('users').doc(firebaseUser.uid).get();
+                
+                if (userDoc.exists) {
+                    const userData = userDoc.data();
+                    
+                    if (userData.tauMemberId) {
+                        try {
+                            const memberQuery = await db.collection('members')
+                                .where('id', '==', userData.tauMemberId)
+                                .limit(1)
+                                .get();
+                            
+                            if (!memberQuery.empty) {
+                                const memberData = memberQuery.docs[0].data();
+                                const memberLevel = memberData.level || 1;
+                                
+                                const levelRates = {
+                                    1: 0.001,
+                                    2: 0.0015,
+                                    3: 0.002,
+                                    4: 0.0025
+                                };
+                                
+                                miningRate = levelRates[memberLevel] || 0.001;
+                                currentUser.tauMemberLevel = memberLevel;
+                                
+                                console.log(`⚡ Mining rate: ${miningRate} iKb/day (Level ${memberLevel})`);
+                            }
+                        } catch (error) {
+                            console.error('Error loading member level:', error);
+                        }
+                    }
+                    
+                    minedBalance = userData.minedBalance || 0.0000;
+                    receivedBalance = userData.receivedBalance || 0.0000;
+                    userBalance = minedBalance + receivedBalance;
+                    reserveBalance = userData.reserveBalance || 0.0000;
+                    lockedBalance = userData.lockedBalance || 0.0000;
+                    kabiruPoints = userData.kabiruPoints || 0.0000;
+                    totalTasksCompleted = userData.tasksCompleted || 0;
+                    miningRate = userData.miningRate || 0.001;
+                    userWalletAddress = userData.walletAddress || generateWalletAddress();
+                    transactionHistory = userData.transactionHistory || [];
+                    referralCode = userData.referralCode || '';
+                    lockupPeriods = userData.lockupPeriods || [];
+                    console.log('User data loaded from Firestore - Balance:', userBalance);
+                } else {
+                    userWalletAddress = generateWalletAddress();
+                    referralCode = 'KABIRU_' + firebaseUser.uid.substr(-6).toUpperCase();
+                    
+                    const newUserData = {
+                        uid: firebaseUser.uid,
+                        email: firebaseUser.email,
+                        displayName: firebaseUser.displayName || 'Anonymous User',
+                        balance: 0.0000,
+                        minedBalance: 0.0000,
+                        receivedBalance: 0.0000,
+                        reserveBalance: 0.0000,
+                        lockedBalance: 0.0000,
+                        kabiruPoints: 0.0000,
+                        tasksCompleted: 0,
+                        miningRate: 0.001,
+                        walletAddress: userWalletAddress,
+                        transactionHistory: [],
+                        referralCode: referralCode,
+                        lockupPeriods: [],
+                        createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+                        lastActive: firebase.firestore.FieldValue.serverTimestamp()
+                    };
+                    
+                    await db.collection('users').doc(firebaseUser.uid).set(newUserData);
+                    console.log('New user document created');
+                }
+                
+                await checkReferralBonus();
+                
+                currentUser = {
+                    uid: firebaseUser.uid,
+                    email: firebaseUser.email,
+                    displayName: firebaseUser.displayName || 'Anonymous User',
+                    balance: userBalance,
+                    tasksCompleted: totalTasksCompleted,
+                    miningRate: miningRate,
+                    walletAddress: userWalletAddress,
+                    tauMemberId: userDoc.exists ? userDoc.data().tauMemberId : null,
+                    tauMemberLevel: userDoc.exists ? userDoc.data().tauMemberLevel : null
+                };
+                
+                updateUserDisplay();
+                
+                if (firebaseUser && firebaseUser.email) {
+                    console.log('🔗 Starting transfer listener for:', firebaseUser.email);
+                    transferListener = listenForKabiruTransfers(firebaseUser.email);
+                }
+                
+            } catch (error) {
+                console.error('Error loading user data:', error);
+                userBalance = 0.0000;
+                minedBalance = 0.0000;
+                receivedBalance = 0.0000;
+                reserveBalance = 0.0000;
+                lockedBalance = 0.0000;
+                kabiruPoints = 0.0000;
+                totalTasksCompleted = 0;
+                miningRate = 0.001;
+                userWalletAddress = generateWalletAddress();
+                transactionHistory = [];
+                referralCode = '';
+                lockupPeriods = [];
+            }
+        }
+
+        async function checkReferralBonus() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const referralCodeParam = urlParams.get('ref');
+            
+            if (referralCodeParam && referralCodeParam !== referralCode) {
+                try {
+                    const referrerQuery = await db.collection('users').where('referralCode', '==', referralCodeParam).limit(1).get();
+                    
+                    if (!referrerQuery.empty) {
+                        const referrerDoc = referrerQuery.docs[0];
+                        const referrerId = referrerDoc.id;
+                        
+                        receivedBalance += 0.01;
+                        userBalance = minedBalance + receivedBalance;
+                        
+                        await db.collection('users').doc(referrerId).update({
+                            receivedBalance: firebase.firestore.FieldValue.increment(0.005)
+                        });
+                        
+                        const transaction = {
+                            id: generateTransactionId(),
+                            type: 'referral_bonus',
+                            amount: 0.01,
+                            referrer: referralCodeParam,
+                            timestamp: new Date().toISOString(),
+                            status: 'completed'
+                        };
+                        transactionHistory.unshift(transaction);
+                        
+                        showNotification('Welcome bonus: +0.01 iKb for joining through referral!');
+                        console.log('Referral bonus awarded');
+                        
+                        window.history.replaceState({}, document.title, window.location.pathname);
+                    }
+                } catch (error) {
+                    console.error('Error processing referral:', error);
+                }
+            }
+        }
+
+        function generateWalletAddress() {
+            const chars = '0123456789abcdef';
+            let address = '0x';
+            for (let i = 0; i < 40; i++) {
+                address += chars[Math.floor(Math.random() * chars.length)];
+            }
+            return address;
+        }
+
+        function updateUserDisplay() {
+            if (!currentUser) return;
+            
+            document.getElementById('userName').textContent = currentUser.displayName || 'Anonymous User';
+            document.getElementById('userEmail').textContent = currentUser.email || 'No email';
+            document.getElementById('userAvatar').textContent = (currentUser.displayName || 'U').charAt(0).toUpperCase();
+            
+            updateBalanceDisplay();
+            document.getElementById('tasksCompleted').textContent = totalTasksCompleted;
+            document.getElementById('miningRate').textContent = miningRate.toFixed(3);
+        }
+
+        function updateBalanceDisplay() {
+            userBalance = minedBalance + receivedBalance;
+            
+            const balanceText = userBalance.toFixed(4) + ' iKb';
+            document.getElementById('balance').textContent = balanceText;
+            document.getElementById('totalBalance').textContent = balanceText;
+            document.getElementById('userAccountBalance').textContent = balanceText;
+        }
+
+        function generateTransactionId() {
+            return 'tx_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+        }
+
         async function handleLogin() {
             const email = document.getElementById('loginEmail').value.trim();
             const password = document.getElementById('loginPassword').value;
             
             if (!email || !password) {
-                showNotification('Please fill in all fields');
+                showError('Please fill in all fields');
+                return;
+            }
+            
+            if (!isValidEmail(email)) {
+                showError('Please enter a valid email address');
+                return;
+            }
+            
+            if (!auth) {
+                currentUser = {
+                    uid: 'offline-user',
+                    email: email,
+                    displayName: email.split('@')[0],
+                    balance: userBalance,
+                    tasksCompleted: totalTasksCompleted,
+                    miningRate: miningRate,
+                    walletAddress: generateWalletAddress()
+                };
+                userWalletAddress = currentUser.walletAddress;
+                showSuccess('Logged in offline mode! You can start mining.');
+                setTimeout(() => {
+                    showMiningApp();
+                }, 1500);
                 return;
             }
             
             try {
-                debugLog('🔐 Login attempt', 'info');
-                const cred = await auth.signInWithEmailAndPassword(email, password);
+                hideMessages();
+                document.querySelector('#loginContainer .auth-button').textContent = 'Signing in...';
+                document.querySelector('#loginContainer .auth-button').disabled = true;
                 
-                if (!cred.user.emailVerified) {
-                    showNotification('Please verify your email first');
-                    await auth.signOut();
+                const userCredential = await auth.signInWithEmailAndPassword(email, password);
+                const user = userCredential.user;
+                
+                if (!user.emailVerified) {
+                    showError('Please verify your email address first. Check your inbox for the verification link.');
+                    document.querySelector('#loginContainer .auth-button').textContent = 'Sign In';
+                    document.querySelector('#loginContainer .auth-button').disabled = false;
                     return;
                 }
                 
-                debugLog('✅ Login successful', 'success');
-                showNotification('Login successful!');
+                console.log('Login successful');
+                showSuccess('Login successful! Loading your mining dashboard...');
+                
             } catch (error) {
-                debugLog('❌ Login error: ' + error.message, 'error');
-                showNotification('Login failed: ' + error.message);
+                console.error('Login error:', error);
+                document.querySelector('#loginContainer .auth-button').textContent = 'Sign In';
+                document.querySelector('#loginContainer .auth-button').disabled = false;
+                
+                let errorMessage = 'Login failed. ';
+                switch (error.code) {
+                    case 'auth/user-not-found':
+                        errorMessage = 'No account found with this email. Please sign up first.';
+                        break;
+                    case 'auth/wrong-password':
+                        errorMessage = 'Incorrect password. Please try again.';
+                        break;
+                    case 'auth/invalid-email':
+                        errorMessage = 'Please enter a valid email address.';
+                        break;
+                    case 'auth/too-many-requests':
+                        errorMessage = 'Too many failed attempts. Please try again later.';
+                        break;
+                    default:
+                        errorMessage += error.message;
+                }
+                showError(errorMessage);
             }
         }
 
-        // Signup
         async function handleSignup() {
             const name = document.getElementById('signupName').value.trim();
             const email = document.getElementById('signupEmail').value.trim();
             const password = document.getElementById('signupPassword').value;
+            const confirmPassword = document.getElementById('confirmPassword').value;
             
-            if (!name || !email || !password) {
-                showNotification('Please fill in all fields');
+            if (!name) {
+                showError('Please enter your full name');
+                return;
+            }
+            
+            if (!email) {
+                showError('Please enter your email address');
+                return;
+            }
+            
+            if (!isValidEmail(email)) {
+                showError('Please enter a valid email address');
+                return;
+            }
+            
+            if (!password) {
+                showError('Please create a password');
                 return;
             }
             
             if (password.length < 6) {
-                showNotification('Password must be 6+ characters');
+                showError('Password must be at least 6 characters long');
+                return;
+            }
+            
+            if (password !== confirmPassword) {
+                showError('Passwords do not match');
+                return;
+            }
+            
+            if (!auth) {
+                showError('Signup requires internet connection. Please try again later.');
                 return;
             }
             
             try {
-                debugLog('📝 Creating account', 'info');
-                const cred = await auth.createUserWithEmailAndPassword(email, password);
-                await cred.user.updateProfile({ displayName: name });
-                await cred.user.sendEmailVerification({
+                hideMessages();
+                document.querySelector('#signupContainer .auth-button').textContent = 'Creating Account...';
+                document.querySelector('#signupContainer .auth-button').disabled = true;
+                
+                const userCredential = await auth.createUserWithEmailAndPassword(email, password);
+                const user = userCredential.user;
+                
+                await user.updateProfile({
+                    displayName: name
+                });
+                
+                await user.sendEmailVerification({
                     url: window.location.origin + window.location.pathname,
                     handleCodeInApp: false
                 });
-                debugLog('✅ Account created', 'success');
-                showNotification('Account created! Check email.');
-                showVerification();
+                
+                console.log('Account created, verification email sent');
+                showSuccess('Account created! Please check your email for verification instructions.');
+                showEmailVerification();
+                
             } catch (error) {
-                debugLog('❌ Signup error: ' + error.message, 'error');
-                showNotification('Signup failed: ' + error.message);
-            }
-        }
-
-        // Check verification
-        async function checkVerification() {
-            if (auth.currentUser) {
-                await auth.currentUser.reload();
-                if (auth.currentUser.emailVerified) {
-                    showNotification('Verified! Logging in...');
-                    setTimeout(() => {
-                        currentUser = auth.currentUser;
-                        loadUserData(auth.currentUser);
-                        showMiningApp();
-                    }, 1500);
-                } else {
-                    showNotification('Not verified yet. Check email.');
+                console.error('Signup error:', error);
+                document.querySelector('#signupContainer .auth-button').textContent = 'Create Account';
+                document.querySelector('#signupContainer .auth-button').disabled = false;
+                
+                let errorMessage = 'Account creation failed. ';
+                switch (error.code) {
+                    case 'auth/email-already-in-use':
+                        errorMessage = 'This email is already registered. Please sign in instead.';
+                        break;
+                    case 'auth/invalid-email':
+                        errorMessage = 'Please enter a valid email address.';
+                        break;
+                    case 'auth/weak-password':
+                        errorMessage = 'Password should be at least 6 characters long.';
+                        break;
+                    default:
+                        errorMessage += error.message;
                 }
+                showError(errorMessage);
             }
         }
 
-        // Logout
-        async function logout() {
-            try {
-                await saveUserData();
-                await auth.signOut();
-                currentUser = null;
-                userBalance = 0;
-                minedBalance = 0;
-                receivedBalance = 0;
-                totalTasksCompleted = 0;
-                transactionHistory = [];
-                debugLog('🚪 Logged out', 'info');
-                showNotification('Logged out');
-                showLoginPage();
-            } catch (error) {
-                debugLog('❌ Logout error: ' + error.message, 'error');
-            }
-        }
-
-        // UI functions
         function showLoginPage() {
             document.getElementById('loginPage').style.display = 'flex';
             document.getElementById('miningApp').style.display = 'none';
@@ -2112,27 +3030,212 @@
         function showMiningApp() {
             document.getElementById('loginPage').style.display = 'none';
             document.getElementById('miningApp').style.display = 'block';
+            showMain();
+            updateUserDisplay();
+        }
+
+        function showMain() {
+            document.getElementById('mainPage').classList.add('active');
         }
 
         function showLogin() {
-            document.getElementById('loginContainer').classList.remove('hidden');
-            document.getElementById('signupContainer').classList.add('hidden');
-            document.getElementById('verificationContainer').classList.add('hidden');
+            hideAllContainers();
+            document.getElementById('loginContainer').style.display = 'block';
+            hideMessages();
         }
 
         function showSignup() {
-            document.getElementById('loginContainer').classList.add('hidden');
-            document.getElementById('signupContainer').classList.remove('hidden');
-            document.getElementById('verificationContainer').classList.add('hidden');
+            hideAllContainers();
+            document.getElementById('signupContainer').style.display = 'block';
+            hideMessages();
         }
 
-        function showVerification() {
-            document.getElementById('loginContainer').classList.add('hidden');
-            document.getElementById('signupContainer').classList.add('hidden');
-            document.getElementById('verificationContainer').classList.remove('hidden');
+        function showPasswordReset() {
+            hideAllContainers();
+            document.getElementById('passwordResetContainer').style.display = 'block';
+            hideMessages();
         }
 
-        // Close modal when clicking outside
+        function showEmailVerification() {
+            hideAllContainers();
+            document.getElementById('emailVerificationContainer').style.display = 'block';
+            hideMessages();
+        }
+
+        function hideAllContainers() {
+            const containers = [
+                'loginContainer',
+                'signupContainer', 
+                'passwordResetContainer',
+                'emailVerificationContainer'
+            ];
+            
+            containers.forEach(id => {
+                document.getElementById(id).style.display = 'none';
+            });
+        }
+
+        function selectTask(taskType) {
+            document.querySelectorAll('.task-category').forEach(cat => {
+                cat.classList.remove('active');
+            });
+            event.target.classList.add('active');
+            showNotification(`Selected ${taskType} task category`);
+        }
+
+        function isValidEmail(email) {
+            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            return emailRegex.test(email);
+        }
+
+        function togglePassword(inputId) {
+            const passwordInput = document.getElementById(inputId);
+            const toggleButton = passwordInput.nextElementSibling;
+            
+            if (passwordInput.type === 'password') {
+                passwordInput.type = 'text';
+                toggleButton.textContent = '🙈';
+            } else {
+                passwordInput.type = 'password';
+                toggleButton.textContent = '👁';
+            }
+        }
+
+        function showError(message) {
+            hideMessages();
+            document.getElementById('errorText').textContent = message;
+            document.getElementById('errorMessage').style.display = 'block';
+            setTimeout(() => {
+                document.getElementById('errorMessage').style.display = 'none';
+            }, 5000);
+        }
+
+        function showSuccess(message) {
+            hideMessages();
+            document.getElementById('successText').textContent = message;
+            document.getElementById('successMessage').style.display = 'block';
+            setTimeout(() => {
+                document.getElementById('successMessage').style.display = 'none';
+            }, 3000);
+        }
+
+        function hideMessages() {
+            document.getElementById('errorMessage').style.display = 'none';
+            document.getElementById('successMessage').style.display = 'none';
+        }
+
+        function showNotification(message) {
+            const notification = document.getElementById('notification');
+            notification.textContent = message;
+            notification.classList.add('show');
+            
+            setTimeout(() => {
+                notification.classList.remove('show');
+            }, 3000);
+        }
+
+        async function logout() {
+            try {
+                await saveUserData();
+                
+                if (transferListener) {
+                    transferListener();
+                    transferListener = null;
+                }
+                
+                if (auth) {
+                    await auth.signOut();
+                }
+                
+                currentUser = null;
+                userBalance = 0.0000;
+                minedBalance = 0.0000;
+                receivedBalance = 0.0000;
+                reserveBalance = 0.0000;
+                lockedBalance = 0.0000;
+                kabiruPoints = 0.0000;
+                totalTasksCompleted = 0;
+                miningRate = 0.001;
+                isMining = false;
+                userWalletAddress = '';
+                transactionHistory = [];
+                referralCode = '';
+                lockupPeriods = [];
+                
+                localStorage.removeItem('kabiruMiningData');
+                
+                showNotification('Logged out successfully');
+                console.log('User logged out');
+                showLoginPage();
+                
+            } catch (error) {
+                console.error('Logout error:', error);
+                showNotification('Logout completed');
+                showLoginPage();
+            }
+        }
+
+        function checkEmailVerification() {
+            if (auth && auth.currentUser) {
+                auth.currentUser.reload().then(() => {
+                    if (auth.currentUser.emailVerified) {
+                        showSuccess('Email verified successfully!');
+                        setTimeout(() => {
+                            showMiningApp();
+                        }, 1500);
+                    } else {
+                        showError('Email not yet verified. Please check your inbox.');
+                    }
+                });
+            }
+        }
+
+        function resendEmailVerification() {
+            if (auth && auth.currentUser) {
+                auth.currentUser.sendEmailVerification().then(() => {
+                    showNotification('Verification email resent!');
+                }).catch(error => {
+                    showError('Failed to resend verification email: ' + error.message);
+                });
+            }
+        }
+
+        async function handlePasswordReset() {
+            const email = document.getElementById('resetEmail').value.trim();
+            if (!email) {
+                showError('Please enter your email address');
+                return;
+            }
+            
+            if (!auth) {
+                showError('Password reset requires internet connection.');
+                return;
+            }
+
+            try {
+                await auth.sendPasswordResetEmail(email);
+                showSuccess('Password reset email sent! Check your inbox.');
+                setTimeout(() => showLogin(), 2000);
+            } catch (error) {
+                showError('Failed to send reset email: ' + error.message);
+            }
+        }
+
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Enter') {
+                const activeContainer = document.querySelector('#loginPage [style*="display: block"]');
+                if (activeContainer) {
+                    if (activeContainer.id === 'loginContainer') {
+                        handleLogin();
+                    } else if (activeContainer.id === 'signupContainer') {
+                        handleSignup();
+                    } else if (activeContainer.id === 'passwordResetContainer') {
+                        handlePasswordReset();
+                    }
+                }
+            }
+        });
+
         window.onclick = function(event) {
             const modals = document.querySelectorAll('.modal');
             modals.forEach(modal => {
@@ -2142,22 +3245,423 @@
             });
         }
 
-        // Initialize
-        document.addEventListener('DOMContentLoaded', function() {
-            debugLog('📄 DOM loaded', 'success');
-            
-            const urlParams = new URLSearchParams(window.location.search);
-            const mode = urlParams.get('mode');
-            const oobCode = urlParams.get('oobCode');
-            
-            if (mode === 'verifyEmail' && oobCode) {
-                handleEmailVerificationLink(oobCode);
-            } else {
-                setupAuthListener();
-            }
-        });
-
-        debugLog('✅ Phase 2 loaded successfully', 'success');
+        console.log('✅ KABIRU Mining App - Fully Loaded & Ready!');
     </script>
-</body>
-</html>
+    <script>
+    (function() {
+    'use strict';
+    
+    console.log('🌉 TAU-Kabiru Bridge - Initializing...');
+    
+    // ============================================
+    // FIREBASE CONFIG (Same for both apps)
+    // ============================================
+    const FIREBASE_CONFIG = {
+        apiKey: "AIzaSyAW0vk_gg03xXEm6I1TQnU8KRiv1RhcrQ4",
+        authDomain: "tau-africa-ecosystem.firebaseapp.com",
+        projectId: "tau-africa-ecosystem",
+        storageBucket: "tau-africa-ecosystem.firebasestorage.app",
+        messagingSenderId: "1047279398196",
+        appId: "1:1047279398196:web:06d43661650c794268c961"
+    };
+    
+    let db, isKabiruApp = false;
+    
+    // Detect which app this is
+    if (window.location.href.includes('Kabiru-Mining-Portal')) {
+        isKabiruApp = true;
+        console.log('📍 Detected: Kabiru Mining App');
+    } else {
+        console.log('📍 Detected: TAU Main App');
+    }
+    
+    // Initialize Firebase
+    try {
+        if (!firebase.apps.length) {
+            firebase.initializeApp(FIREBASE_CONFIG);
+        }
+        db = firebase.firestore();
+        console.log('✅ Firebase connected');
+    } catch (error) {
+        console.error('❌ Firebase init failed:', error);
+        db = null;
+    }
+    
+    // ============================================
+    // MAIN APP SIDE: Enhanced Withdrawal
+    // ============================================
+    if (!isKabiruApp && db) {
+        
+        window.initiateKabiruWithdrawal = async function() {
+            const currentMember = window.TauDB?.getCurrentMember();
+            
+            if (!currentMember) {
+                if (typeof showNotification === 'function') {
+                    showNotification('Please login first', 'error');
+                }
+                return;
+            }
+            
+            const availableIkbp = currentMember.iKbpBalance || 0;
+            const availableIkb = currentMember.iKbBalance || 0;
+            
+            // Minimum check
+            if (availableIkbp < 10000 && availableIkb < 0.0001) {
+                if (typeof showNotification === 'function') {
+                    showNotification('❌ Minimum: 10,000 iKbp or 0.0001 iKb', 'error');
+                }
+                return;
+            }
+            
+            const confirmMsg = `Transfer to Kabiru Mining App?\n\n` +
+                              `${availableIkbp.toLocaleString()} iKbp\n` +
+                              `${availableIkb.toFixed(6)} iKb\n\n` +
+                              `This will zero your TAU balance and credit Kabiru.`;
+            
+            if (!confirm(confirmMsg)) return;
+            
+            try {
+                // Create transfer record
+                const transferId = 'XFER-' + Date.now();
+                
+                await db.collection('kabiru_transfers').add({
+                    transferId: transferId,
+                    memberId: currentMember.id,
+                    memberName: currentMember.fullName,
+                    memberEmail: currentMember.email,
+                    iKbp: availableIkbp,
+                    iKb: availableIkb,
+                    timestamp: firebase.firestore.FieldValue.serverTimestamp(),
+                    status: 'pending',
+                    direction: 'tau_to_kabiru'
+                });
+                
+                // Update member document
+                await db.collection('members').doc(currentMember.id).update({
+                    pendingKabiruTransfer: {
+                        transferId: transferId,
+                        iKbp: availableIkbp,
+                        iKb: availableIkb,
+                        timestamp: new Date().toISOString(),
+                        status: 'pending'
+                    },
+                    lastTransferToKabiru: new Date().toISOString()
+                });
+                
+                // Zero out TAU balances locally
+                const members = JSON.parse(localStorage.getItem('tauAfricaDB') || '[]');
+                const memberIndex = members.findIndex(m => m.id === currentMember.id);
+                if (memberIndex !== -1) {
+                    members[memberIndex].iKbpBalance = 0;
+                    members[memberIndex].iKbBalance = 0;
+                    members[memberIndex].pendingKabiruTransfer = {
+                        transferId: transferId,
+                        iKbp: availableIkbp,
+                        iKb: availableIkb,
+                        status: 'pending'
+                    };
+                    localStorage.setItem('tauAfricaDB', JSON.stringify(members));
+                    
+                    // Update session
+                    sessionStorage.setItem('tauCurrentUser', JSON.stringify(members[memberIndex]));
+                }
+                
+                if (typeof showNotification === 'function') {
+                    showNotification('✅ Transfer initiated! Open Kabiru Mining App to receive.', 'success');
+                }
+                
+                // Show transfer ID
+                alert(`Transfer ID: ${transferId}\n\nOpen Kabiru Mining App and login to receive your tokens.`);
+                
+                console.log('✅ Transfer created:', transferId);
+                
+            } catch (error) {
+                console.error('❌ Transfer failed:', error);
+                if (typeof showNotification === 'function') {
+                    showNotification('❌ Transfer failed: ' + error.message, 'error');
+                }
+            }
+        };
+        
+        console.log('✅ Main App: Withdrawal function enhanced');
+    }
+    
+    // ============================================
+    // KABIRU APP SIDE: Listen for Incoming Transfers
+    // ============================================
+    if (isKabiruApp && db) {
+        
+        console.log('👂 Kabiru App: Listening for transfers...');
+        
+        // Function to get current Kabiru user
+        function getCurrentKabiruMember() {
+            // Adjust this based on your Kabiru app's storage
+            const kabiruUser = sessionStorage.getItem('kabiruCurrentUser') || 
+                               sessionStorage.getItem('tauCurrentUser');
+            
+            if (kabiruUser) {
+                return JSON.parse(kabiruUser);
+            }
+            
+            // Try localStorage as fallback
+            const allMembers = JSON.parse(localStorage.getItem('tauAfricaDB') || '[]');
+            if (allMembers.length > 0) {
+                // Return last logged in member (you may need to adjust this)
+                return allMembers[0];
+            }
+            
+            return null;
+        }
+        
+        // Listen for transfers in real-time
+        function startTransferListener() {
+            const currentMember = getCurrentKabiruMember();
+            
+            if (!currentMember) {
+                console.log('⚠️ No member logged in, waiting...');
+                // Retry after 5 seconds
+                setTimeout(startTransferListener, 5000);
+                return;
+            }
+            
+            console.log('👤 Listening for transfers to:', currentMember.id);
+            
+            // Listen to kabiru_transfers collection
+            db.collection('kabiru_transfers')
+                .where('memberId', '==', currentMember.id)
+                .where('status', '==', 'pending')
+                .onSnapshot(snapshot => {
+                    snapshot.docChanges().forEach(change => {
+                        if (change.type === 'added') {
+                            const transfer = change.doc.data();
+                            processIncomingTransfer(transfer, change.doc.id);
+                        }
+                    });
+                });
+        }
+        
+        // Process incoming transfer
+        async function processIncomingTransfer(transfer, docId) {
+            console.log('📥 Incoming transfer detected:', transfer);
+            
+            try {
+                // Get current Kabiru balances (adjust storage keys as needed)
+                const kabiruData = JSON.parse(localStorage.getItem('kabiruMiningData') || 
+                                             localStorage.getItem('tauAfricaDB') || '[]');
+                
+                const memberIndex = kabiruData.findIndex(m => m.id === transfer.memberId);
+                
+                if (memberIndex !== -1) {
+                    // Credit the balances
+                    kabiruData[memberIndex].iKbpBalance = 
+                        (kabiruData[memberIndex].iKbpBalance || 0) + (transfer.iKbp || 0);
+                    kabiruData[memberIndex].iKbBalance = 
+                        (kabiruData[memberIndex].iKbBalance || 0) + (transfer.iKb || 0);
+                    
+                    // Save to localStorage
+                    localStorage.setItem('kabiruMiningData', JSON.stringify(kabiruData));
+                    
+                    console.log('✅ Balances credited:', {
+                        iKbp: transfer.iKbp,
+                        iKb: transfer.iKb
+                    });
+                } else {
+                    // Create new member record in Kabiru
+                    kabiruData.push({
+                        id: transfer.memberId,
+                        fullName: transfer.memberName,
+                        email: transfer.memberEmail,
+                        iKbpBalance: transfer.iKbp || 0,
+                        iKbBalance: transfer.iKb || 0,
+                        importedFromTAU: true,
+                        importDate: new Date().toISOString()
+                    });
+                    
+                    localStorage.setItem('kabiruMiningData', JSON.stringify(kabiruData));
+                    console.log('✅ New member created with balances');
+                }
+                
+                // Mark transfer as completed
+                await db.collection('kabiru_transfers').doc(docId).update({
+                    status: 'completed',
+                    completedAt: firebase.firestore.FieldValue.serverTimestamp()
+                });
+                
+                // Update member document
+                await db.collection('members').doc(transfer.memberId).update({
+                    'pendingKabiruTransfer.status': 'completed',
+                    lastKabiruSync: firebase.firestore.FieldValue.serverTimestamp()
+                });
+                
+                // Show success notification
+                if (typeof showNotification === 'function') {
+                    showNotification(
+                        `✅ Received from TAU!\n${transfer.iKbp} iKbp + ${transfer.iKb} iKb`, 
+                        'success'
+                    );
+                } else {
+                    alert(`✅ Transfer Complete!\n\nReceived:\n${transfer.iKbp} iKbp\n${transfer.iKb} iKb`);
+                }
+                
+                // Trigger UI refresh if functions exist
+                if (typeof updateMiningStats === 'function') updateMiningStats();
+                if (typeof refreshBalance === 'function') refreshBalance();
+                
+            } catch (error) {
+                console.error('❌ Transfer processing error:', error);
+                
+                // Mark transfer as failed
+                await db.collection('kabiru_transfers').doc(docId).update({
+                    status: 'failed',
+                    error: error.message,
+                    failedAt: firebase.firestore.FieldValue.serverTimestamp()
+                });
+            }
+        }
+        
+        // Start listening after 2 seconds
+        setTimeout(startTransferListener, 2000);
+        
+        console.log('✅ Kabiru App: Transfer listener installed');
+    }
+    
+    // ============================================
+    // REVERSE SYNC: Kabiru → TAU (Activities/Tasks)
+    // ============================================
+    if (isKabiruApp && db) {
+        
+        // When user completes activities/tasks in Kabiru and wants to send back to TAU
+        window.sendToTAU = async function(iKbp, iKb, reason) {
+            const currentMember = getCurrentKabiruMember();
+            
+            if (!currentMember) {
+                alert('Please login first');
+                return;
+            }
+            
+            try {
+                // Create reverse transfer
+                const transferId = 'KXFER-' + Date.now();
+                
+                await db.collection('kabiru_transfers').add({
+                    transferId: transferId,
+                    memberId: currentMember.id,
+                    memberName: currentMember.fullName,
+                    iKbp: iKbp || 0,
+                    iKb: iKb || 0,
+                    reason: reason || 'Mining earnings',
+                    timestamp: firebase.firestore.FieldValue.serverTimestamp(),
+                    status: 'pending',
+                    direction: 'kabiru_to_tau'
+                });
+                
+                console.log('✅ Reverse transfer created:', transferId);
+                alert('✅ Transfer to TAU initiated!');
+                
+            } catch (error) {
+                console.error('❌ Reverse transfer failed:', error);
+                alert('❌ Transfer failed: ' + error.message);
+            }
+        };
+        
+        console.log('✅ Kabiru App: Reverse transfer function ready');
+    }
+    
+    // ============================================
+    // MAIN APP: Listen for Reverse Transfers
+    // ============================================
+    if (!isKabiruApp && db) {
+        
+        function listenForReverseTransfers() {
+            const currentMember = window.TauDB?.getCurrentMember();
+            
+            if (!currentMember) {
+                setTimeout(listenForReverseTransfers, 5000);
+                return;
+            }
+            
+            db.collection('kabiru_transfers')
+                .where('memberId', '==', currentMember.id)
+                .where('direction', '==', 'kabiru_to_tau')
+                .where('status', '==', 'pending')
+                .onSnapshot(snapshot => {
+                    snapshot.docChanges().forEach(async change => {
+                        if (change.type === 'added') {
+                            const transfer = change.doc.data();
+                            
+                            // Credit TAU balance
+                            if (window.TauDB?.updateBalance) {
+                                window.TauDB.updateBalance(currentMember.id, transfer.iKbp || 0);
+                            }
+                            
+                            // Mark as completed
+                            await db.collection('kabiru_transfers').doc(change.doc.id).update({
+                                status: 'completed',
+                                completedAt: firebase.firestore.FieldValue.serverTimestamp()
+                            });
+                            
+                            if (typeof showNotification === 'function') {
+                                showNotification(`✅ Received from Kabiru: ${transfer.iKbp} iKbp`, 'success');
+                            }
+                        }
+                    });
+                });
+        }
+        
+        setTimeout(listenForReverseTransfers, 3000);
+        console.log('✅ Main App: Reverse transfer listener ready');
+    }
+    
+    // ============================================
+    // EXPOSE GLOBAL API
+    // ============================================
+    window.TauKabiruBridge = {
+        isKabiruApp: isKabiruApp,
+        transferToKabiru: !isKabiruApp ? window.initiateKabiruWithdrawal : null,
+        transferToTAU: isKabiruApp ? window.sendToTAU : null,
+        checkPendingTransfers: async function(memberId) {
+            if (!db) return [];
+            const snapshot = await db.collection('kabiru_transfers')
+                .where('memberId', '==', memberId)
+                .where('status', '==', 'pending')
+                .get();
+            return snapshot.docs.map(doc => ({id: doc.id, ...doc.data()}));
+        }
+    };
+    
+    console.log('✅ TAU-Kabiru Bridge loaded successfully');
+    console.log(`📍 App Mode: ${isKabiruApp ? 'Kabiru Mining' : 'TAU Main'}`);
+    
+})();
+            </script>
+    <script>
+        // services/realtimeService.js - KABIRU MINING VERSION
+export const realtimeService = {
+  
+  // Listen for INCOMING transfers from TAU
+  subscribeToIncomingTransfers(memberId, callback) {
+    return db.collection('kabiru_transfers')
+      .where('memberId', '==', memberId)
+      .where('direction', '==', 'tau_to_kabiru')
+      .where('status', '==', 'pending')
+      .onSnapshot(callback);
+  },
+  
+  // Listen to member profile (for balance sync)
+  subscribeToMemberProfile(memberId, callback) {
+    return db.collection('members').doc(memberId)
+      .onSnapshot(callback);
+  },
+  
+  // Listen to mining-specific events
+  subscribeToMiningEvents(callback) {
+    return db.collection('sync_events')
+      .where('type', '==', 'mining_update')
+      .orderBy('timestamp', 'desc')
+      .limit(20)
+      .onSnapshot(callback);
+  }
+};
+    </script>
+ </body>
+    </html>
