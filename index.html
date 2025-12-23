@@ -471,17 +471,19 @@ input[type="date"] {
         }
 
         .notification {
-            position: fixed;
-            top: 20px;
-            right: 20px;
-            padding: 20px;
-            border-radius: 10px;
-            color: white;
-            font-weight: bold;
-            z-index: 1001;
-            display: none;
-            max-width: 350px;
-        }
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    padding: 20px;
+    border-radius: 10px;
+    color: white;
+    font-weight: bold;
+    /* Increase z-index to be higher than all other UI elements */
+    z-index: 20000; 
+    display: none;
+    max-width: 350px;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+}
 
         .success { background: #2ecc71; }
         .error { background: #e74c3c; }
@@ -823,7 +825,7 @@ To join in these categories, please use KABIRU SERVICE CENTER portal</p>
 </div>
 
     <!-- Floating Member Access Button -->
-    <div class="floating-btn" onclick="showRealMemberLogin()" title="Member Access">👤</div>
+
     <!-- Add this with your other floating buttons -->
 <div class="floating-btn" onclick="showValidatorInterface()" title="Validator Access" style="bottom: 170px; right: 30px; background: linear-gradient(45deg, #9b59b6, #8e44ad);">
     🔐
@@ -13824,42 +13826,138 @@ console.log('✅ Admin bridge button fixed');
 
 (function() {
     'use strict';
-    
-    console.log('🔧 Loading UI improvements...');
-    
-    // ============================================
-    // 1. LOGIN STATUS INDICATOR
-    // ============================================
-    
+    console.log('🔧 Loading Improved UI Layout...');
+
     function createLoginStatusIndicator() {
-        // Check if already exists
         if (document.getElementById('loginStatusIndicator')) return;
-        
+
         const indicator = document.createElement('div');
         indicator.id = 'loginStatusIndicator';
         indicator.style.cssText = `
             position: fixed;
-            top: 20px;
-            left: 20px;
-            z-index: 9998;
-            background: rgba(255, 255, 255, 0.95);
-            padding: 10px 15px;
-            border-radius: 25px;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-            font-size: 13px;
+            bottom: 30px;
+            right: 30px;
+            z-index: 9000; /* High, but lower than Modals and Notifications */
+            background: linear-gradient(135deg, #4169e1, #2a5298);
+            color: white;
+            padding: 12px 20px;
+            border-radius: 30px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+            font-size: 14px;
+            font-weight: bold;
             cursor: pointer;
             transition: all 0.3s ease;
-            backdrop-filter: blur(10px);
-            border: 2px solid rgba(65, 105, 225, 0.3);
+            backdrop-filter: blur(5px);
+            border: 2px solid rgba(255, 255, 255, 0.2);
+            display: flex;
+            align-items: center;
+            gap: 8px;
         `;
-        
         document.body.appendChild(indicator);
-        updateLoginStatus();
-        
-        // Update status every 3 seconds
-        setInterval(updateLoginStatus, 3000);
+
+        function updateIndicator() {
+            const member = window.TauDB?.getCurrentMember();
+            if (member) {
+                indicator.innerHTML = `👤 ${member.fullName.split(' ')[0]} | ${member.iKbpBalance || 0} iKbp`;
+                indicator.onclick = showQuickMenu;
+                indicator.style.animation = 'none';
+            } else {
+                indicator.innerHTML = `🔐 Login / Access`;
+                indicator.onclick = showLoginRegisterMenu;
+                indicator.style.animation = 'pulseIndicator 2s infinite';
+            }
+        }
+
+        setInterval(updateIndicator, 2000);
+        updateIndicator();
     }
-    
+
+    // UPDATED: Menus now appear ABOVE the button (bottom-aligned)
+    window.showQuickMenu = function() {
+        const member = window.TauDB?.getCurrentMember();
+        if (!member) return;
+        closeQuickMenu();
+
+        const menu = document.createElement('div');
+        menu.id = 'tauQuickMenu';
+        menu.style.cssText = `
+            position: fixed;
+            bottom: 90px; /* Positioned above the button */
+            right: 30px;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            z-index: 9500;
+            padding: 15px;
+            width: 220px;
+            color: #333;
+            animation: slideUp 0.3s ease;
+        `;
+
+        menu.innerHTML = `
+            <div style="padding-bottom: 10px; border-bottom: 1px solid #eee; margin-bottom: 10px;">
+                <strong style="color: #4169e1;">${member.fullName}</strong>
+            </div>
+            <div style="display: grid; gap: 8px;">
+                <button onclick="closeQuickMenu(); showRealMemberDashboard();" class="btn btn-small" style="width: 100%; text-align: left;">📊 Dashboard</button>
+                <button onclick="closeQuickMenu(); showActivitiesMining('${member.id}');" class="btn btn-small" style="width: 100%; text-align: left;">📚 Activities</button>
+                <button onclick="closeQuickMenu(); showTasksMining('${member.id}');" class="btn btn-small" style="width: 100%; text-align: left;">✅ Tasks</button>
+                <button onclick="closeQuickMenu(); sessionStorage.removeItem('tauCurrentUser'); location.reload();" class="btn btn-small" style="width: 100%; text-align: left; background: #e74c3c;">🚪 Logout</button>
+            </div>
+        `;
+        document.body.appendChild(menu);
+        
+        // Close when clicking away
+        setTimeout(() => {
+            document.addEventListener('click', function h() { 
+                closeQuickMenu(); 
+                document.removeEventListener('click', h); 
+            });
+        }, 100);
+    };
+
+    window.showLoginRegisterMenu = function() {
+        closeQuickMenu();
+        const menu = document.createElement('div');
+        menu.id = 'tauQuickMenu';
+        menu.style.cssText = `
+            position: fixed;
+            bottom: 90px;
+            right: 30px;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            z-index: 9500;
+            padding: 15px;
+            width: 200px;
+        `;
+        menu.innerHTML = `
+            <button onclick="closeQuickMenu(); showRealMemberLogin();" class="btn" style="width: 100%; margin-bottom: 10px;">Login</button>
+            <button onclick="closeQuickMenu(); openModal('taskRegistration');" class="btn btn-register" style="width: 100%;">Join TAU</button>
+        `;
+        document.body.appendChild(menu);
+    };
+
+    window.closeQuickMenu = function() {
+        const menu = document.getElementById('tauQuickMenu');
+        if (menu) menu.remove();
+    };
+
+    // Add necessary animations
+    const style = document.createElement('style');
+    style.textContent = `
+        @keyframes slideUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes pulseIndicator { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.05); box-shadow: 0 4px 25px rgba(65, 105, 225, 0.5); } }
+    `;
+    document.head.appendChild(style);
+
+    // Initialize
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', createLoginStatusIndicator);
+    } else {
+        createLoginStatusIndicator();
+    }
+})();
     function updateLoginStatus() {
         const indicator = document.getElementById('loginStatusIndicator');
         if (!indicator) return;
