@@ -1561,7 +1561,25 @@ async function syncMemberFromFirestore(memberId) {
 
 console.log('✅ Authentication fixed');
     }
-    
+    // ============================================
+// TAU DATABASE HELPER (CRITICAL)
+// ============================================
+window.TauDB = {
+    getCurrentMember: function() {
+        return JSON.parse(sessionStorage.getItem('tauCurrentUser') || 'null');
+    },
+    sync: function(formData, team, referralCode) {
+        const members = JSON.parse(localStorage.getItem('tauAfricaDB') || '[]');
+        const id = (team === 'TASK' ? 'TSK' : 'TLK') + '-' + Math.random().toString(36).substr(2, 9).toUpperCase();
+        const member = { ...formData, id, team, referralCode, iKbpBalance: 500, joinDate: new Date().toISOString() };
+        members.push(member);
+        localStorage.setItem('tauAfricaDB', JSON.stringify(members));
+        sessionStorage.setItem('tauCurrentUser', JSON.stringify(member));
+        return { success: true, member };
+    }
+};
+// Ensure showRealMemberLogin points to your existing function
+window.showRealMemberLogin = window.showMemberLogin;
     // ============================================
     // 4. CLOUD-FIRST BALANCE UPDATES
     // ============================================
@@ -11979,7 +11997,7 @@ window.processValidatorCode = async function(event, validatorId) {
             setTimeout(() => showUpgradeOptions(), 500);
             return;
         }
-        
+  result
         // Member can interact - show completion modal
         const storageKey = type === 'task' ? 'tauTasks' : 'tauActivities';
         const items = JSON.parse(localStorage.getItem(storageKey) || '[]');
@@ -13842,7 +13860,7 @@ console.log('✅ Admin bridge button fixed');
             position: fixed;
             top: 20px;
             left: 20px;
-            z-index: 9998;
+            z-index: 5000; /* Lower than notifications and modals */;
             background: rgba(255, 255, 255, 0.95);
             padding: 10px 15px;
             border-radius: 25px;
@@ -13914,7 +13932,7 @@ console.log('✅ Admin bridge button fixed');
             border-radius: 15px;
             box-shadow: 0 10px 30px rgba(0,0,0,0.2);
             padding: 15px;
-            z-index: 9999;
+            z-index: 6000;
             min-width: 250px;
         `;
         
