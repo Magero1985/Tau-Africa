@@ -5,19 +5,12 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>TAU TUBE - Media Platform</title>
     
-    <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
-    
-    <!-- Firebase -->
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-storage-compat.js"></script>
-    
-    <!-- EmailJS -->
     <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
-    
-    <!-- Lucide Icons -->
     <script src="https://unpkg.com/lucide@latest"></script>
     
     <style>
@@ -34,12 +27,35 @@
         .video-thumbnail:hover {
             transform: scale(1.05);
         }
+        .smooth-loader {
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.1), transparent);
+            animation: shimmer 1.5s infinite;
+        }
+        @keyframes shimmer {
+            0% { transform: translateX(-100%); }
+            100% { transform: translateX(100%); }
+        }
     </style>
 </head>
 <body class="bg-gray-900 min-h-screen">
 
+    <!-- Notification Toast -->
+    <div id="notification-toast" class="fixed top-4 right-4 bg-gradient-to-r from-purple-600 to-teal-400 text-white p-4 rounded-lg shadow-lg z-50 hidden max-w-sm">
+        <div class="flex items-start gap-3">
+            <i data-lucide="bell" style="width: 24px; height: 24px;"></i>
+            <div>
+                <p id="notification-text" class="font-semibold"></p>
+            </div>
+            <button onclick="closeNotification()" class="ml-auto">
+                <i data-lucide="x" style="width: 20px; height: 20px;"></i>
+            </button>
+        </div>
+    </div>
+
     <!-- Header -->
-    <div class="bg-gradient-to-r from-purple-600 to-blue-600 p-4">
+    <div class="bg-gradient-to-r from-purple-600 via-cyan-500 to-teal-400 p-4">
         <div class="max-w-7xl mx-auto flex flex-wrap items-center justify-between gap-4">
             <div class="flex items-center gap-3">
                 <div class="bg-white p-2 rounded-lg">
@@ -52,13 +68,13 @@
             </div>
             
             <div class="flex items-center gap-2 flex-wrap">
-                <div class="bg-white bg-opacity-20 backdrop-blur-sm px-4 py-2 rounded-lg flex items-center gap-2">
+                <button onclick="togglePointsDropdown()" class="bg-white bg-opacity-20 backdrop-blur-sm px-4 py-2 rounded-lg flex items-center gap-2">
                     <i data-lucide="award" class="text-yellow-300" style="width: 20px; height: 20px;"></i>
                     <div>
                         <p class="text-white font-bold"><span id="user-points">0</span> iKbp</p>
                         <p class="text-purple-200 text-xs">Kabiru Points</p>
                     </div>
-                </div>
+                </button>
                 
                 <button onclick="shareReferral()" class="bg-white text-purple-600 px-4 py-2 rounded-lg hover:bg-purple-50 flex items-center gap-2 font-semibold text-sm">
                     <i data-lucide="share-2" style="width: 18px; height: 18px;"></i> Refer
@@ -85,28 +101,49 @@
 
     <!-- Navigation Tabs -->
     <div class="bg-gray-800 border-b border-gray-700">
-        <div class="max-w-7xl mx-auto flex flex-wrap items-center justify-between px-4">
-            <div class="flex gap-1 flex-wrap">
-                <button onclick="switchTab('videos')" id="tab-videos" class="px-4 py-3 text-sm bg-purple-600 text-white">
-                    <i data-lucide="film" class="inline" style="width: 18px; height: 18px;"></i> Videos
-                </button>
-                <button onclick="switchTab('images')" id="tab-images" class="px-4 py-3 text-sm text-gray-400 hover:text-white">
-                    <i data-lucide="image" class="inline" style="width: 18px; height: 18px;"></i> Images
-                </button>
-                <button onclick="switchTab('audio')" id="tab-audio" class="px-4 py-3 text-sm text-gray-400 hover:text-white">
-                    <i data-lucide="mic" class="inline" style="width: 18px; height: 18px;"></i> Audio
-                </button>
-                <button onclick="switchTab('live')" id="tab-live" class="px-4 py-3 text-sm text-gray-400 hover:text-white flex items-center gap-2">
-                    <i data-lucide="radio" class="text-red-500" style="width: 18px; height: 18px;"></i> Live
-                </button>
+        <div class="max-w-7xl mx-auto px-4">
+            <div class="flex items-center justify-between border-b border-gray-700 pb-3 mb-3">
+                <div class="flex gap-1 flex-wrap">
+                    <button onclick="switchTab('videos')" id="tab-videos" class="px-4 py-3 text-sm bg-purple-600 text-white rounded-t">
+                        <i data-lucide="film" class="inline" style="width: 18px; height: 18px;"></i> Videos
+                    </button>
+                    <button onclick="switchTab('images')" id="tab-images" class="px-4 py-3 text-sm text-gray-400 hover:text-white rounded-t">
+                        <i data-lucide="image" class="inline" style="width: 18px; height: 18px;"></i> Images
+                    </button>
+                    <button onclick="switchTab('audio')" id="tab-audio" class="px-4 py-3 text-sm text-gray-400 hover:text-white rounded-t">
+                        <i data-lucide="mic" class="inline" style="width: 18px; height: 18px;"></i> Audio
+                    </button>
+                    <button onclick="switchTab('live')" id="tab-live" class="px-4 py-3 text-sm text-gray-400 hover:text-white flex items-center gap-2 rounded-t">
+                        <i data-lucide="radio" class="text-red-500" style="width: 18px; height: 18px;"></i> Live
+                    </button>
+                    <button onclick="switchTab('competitions')" id="tab-competitions" class="px-4 py-3 text-sm text-gray-400 hover:text-white flex items-center gap-2 rounded-t">
+                        <i data-lucide="trophy" class="text-yellow-400" style="width: 18px; height: 18px;"></i> Competitions
+                    </button>
+                </div>
+                
+                <div class="flex gap-2">
+                    <button onclick="setViewMode('grid')" id="view-grid" class="p-2 text-purple-400 hover:text-white">
+                        <i data-lucide="grid" style="width: 20px; height: 20px;"></i>
+                    </button>
+                    <button onclick="setViewMode('list')" id="view-list" class="p-2 text-gray-400 hover:text-white">
+                        <i data-lucide="list" style="width: 20px; height: 20px;"></i>
+                    </button>
+                </div>
             </div>
             
-            <div class="flex gap-2 py-2">
-                <button onclick="setViewMode('grid')" id="view-grid" class="p-2 text-purple-400 hover:text-white">
-                    <i data-lucide="grid" style="width: 20px; height: 20px;"></i>
-                </button>
-                <button onclick="setViewMode('list')" id="view-list" class="p-2 text-gray-400 hover:text-white">
-                    <i data-lucide="list" style="width: 20px; height: 20px;"></i>
+            <!-- Account Section -->
+            <div class="flex items-center justify-between py-3">
+                <div class="flex items-center gap-3">
+                    <div class="w-12 h-12 bg-gradient-to-r from-purple-600 to-teal-400 rounded-full flex items-center justify-center">
+                        <i data-lucide="user" class="text-white" style="width: 24px; height: 24px;"></i>
+                    </div>
+                    <div>
+                        <p id="account-name" class="text-white font-semibold">Guest User</p>
+                        <p class="text-gray-400 text-sm">Standard Account</p>
+                    </div>
+                </div>
+                <button onclick="showAccountModal()" class="bg-gradient-to-r from-purple-600 to-teal-400 text-white px-6 py-2 rounded-lg hover:opacity-90 flex items-center gap-2 font-semibold">
+                    <i data-lucide="user-plus" style="width: 18px; height: 18px;"></i> Create TAU TUBE Account
                 </button>
             </div>
         </div>
@@ -120,11 +157,11 @@
     </div>
 
     <!-- Video Player Modal -->
-    <div id="video-modal" class="fixed inset-0 bg-black bg-opacity-95 z-50 hidden items-center justify-center p-4">
+    <div id="video-modal" class="fixed inset-0 bg-black bg-opacity-95 z-50 hidden items-center justify-center p-4" style="padding-bottom: 60px;">
         <div class="w-full max-w-5xl">
             <div class="bg-black rounded-lg overflow-hidden">
                 <div class="relative aspect-video bg-black">
-                    <video id="video-player" class="w-full h-full" controls>
+                    <video id="video-player" class="w-full h-full" controls preload="auto">
                         <source id="video-source" src="" type="video/mp4">
                     </video>
                     <div id="live-badge" class="absolute top-4 left-4 bg-red-600 text-white px-3 py-2 rounded-lg font-bold hidden items-center gap-2">
@@ -135,19 +172,83 @@
             
             <div class="bg-gray-800 p-4 mt-2 rounded-lg">
                 <h2 id="video-title" class="text-white text-xl font-bold mb-2"></h2>
-                <div class="flex items-center justify-between mb-4">
+                <div class="flex items-center justify-between mb-4 flex-wrap gap-2">
                     <div>
                         <p id="video-author" class="text-gray-400"></p>
                         <p id="video-views" class="text-gray-500 text-sm"></p>
                     </div>
-                    <div class="flex gap-2">
-                        <button class="bg-purple-600 text-white px-4 py-2 rounded-lg hover:bg-purple-700">Subscribe</button>
-                        <button class="bg-gray-700 text-white px-4 py-2 rounded-lg hover:bg-gray-600">Like</button>
-                        <button class="bg-gray-700 text-white px-4 py-2 rounded-lg hover:bg-gray-600">Share</button>
+                    <div class="flex gap-2 flex-wrap">
+                        <button onclick="subscribeToChannel()" class="bg-purple-600 text-white px-4 py-2 rounded-lg hover:bg-purple-700 flex items-center gap-2">
+                            <i data-lucide="user-plus" style="width: 16px; height: 16px;"></i> Subscribe
+                        </button>
+                        <button onclick="likeVideo()" class="bg-gray-700 text-white px-4 py-2 rounded-lg hover:bg-gray-600 flex items-center gap-2">
+                            <i data-lucide="thumbs-up" style="width: 16px; height: 16px;"></i> Like
+                        </button>
+                        <button onclick="shareVideo()" class="bg-gray-700 text-white px-4 py-2 rounded-lg hover:bg-gray-600 flex items-center gap-2">
+                            <i data-lucide="share-2" style="width: 16px; height: 16px;"></i> Share
+                        </button>
+                        <button onclick="sendGift()" class="bg-yellow-400 text-gray-900 px-4 py-2 rounded-lg hover:bg-yellow-300 flex items-center gap-2">
+                            <i data-lucide="gift" style="width: 16px; height: 16px;"></i> Gift
+                        </button>
                     </div>
                 </div>
-                <button onclick="closeVideoModal()" class="w-full bg-gray-700 text-white py-2 rounded-lg hover:bg-gray-600">Close</button>
+                
+                <!-- Comments Section -->
+                <div class="border-t border-gray-700 pt-4 mt-4">
+                    <h3 class="text-white font-semibold mb-3">Comments</h3>
+                    <div class="flex gap-2 mb-4">
+                        <input type="text" id="comment-input" placeholder="Add a comment..." class="flex-1 bg-gray-700 text-white p-2 rounded-lg">
+                        <button onclick="postComment()" class="bg-purple-600 text-white px-4 py-2 rounded-lg hover:bg-purple-700">
+                            <i data-lucide="send" style="width: 16px; height: 16px;"></i>
+                        </button>
+                    </div>
+                    <div id="comments-list" class="space-y-3 max-h-64 overflow-y-auto">
+                        <!-- Comments will appear here -->
+                    </div>
+                </div>
+                
+                <button onclick="closeVideoModal()" class="w-full bg-gray-700 text-white py-2 rounded-lg hover:bg-gray-600 mt-4">Close</button>
             </div>
+        </div>
+    </div>
+
+    <!-- Live Stream Modal -->
+    <div id="live-modal" class="fixed inset-0 bg-black bg-opacity-95 z-50 hidden items-center justify-center p-4">
+        <div class="bg-gray-800 rounded-lg p-6 w-full max-w-2xl">
+            <h2 class="text-white text-2xl font-bold mb-4">Start Live Stream</h2>
+            
+            <form id="live-form" class="space-y-4">
+                <div>
+                    <label class="text-gray-300 block mb-2">Stream Title</label>
+                    <input type="text" id="live-title" required class="w-full bg-gray-700 text-white p-3 rounded-lg" placeholder="Enter stream title...">
+                </div>
+
+                <div>
+                    <label class="text-gray-300 block mb-2">Description</label>
+                    <textarea id="live-description" required class="w-full bg-gray-700 text-white p-3 rounded-lg h-24" placeholder="What's your stream about?"></textarea>
+                </div>
+
+                <div>
+                    <label class="text-gray-300 block mb-2">Category</label>
+                    <select id="live-category" class="w-full bg-gray-700 text-white p-3 rounded-lg">
+                        <option>Gaming</option>
+                        <option>Music</option>
+                        <option>Education</option>
+                        <option>Events</option>
+                        <option>Business Meeting</option>
+                        <option>Other</option>
+                    </select>
+                </div>
+
+                <div class="flex gap-2">
+                    <button type="submit" class="flex-1 bg-red-600 text-white py-3 rounded-lg hover:bg-red-700 font-semibold flex items-center justify-center gap-2">
+                        <i data-lucide="radio" style="width: 20px; height: 20px;"></i> Go Live
+                    </button>
+                    <button type="button" onclick="closeLiveModal()" class="flex-1 bg-gray-700 text-white py-3 rounded-lg hover:bg-gray-600">
+                        Cancel
+                    </button>
+                </div>
+            </form>
         </div>
     </div>
 
@@ -211,23 +312,88 @@
         </div>
     </div>
 
-    <!-- Referral Banner -->
-    <div class="fixed bottom-4 right-4 bg-gradient-to-r from-purple-600 to-blue-600 p-4 rounded-lg shadow-lg max-w-sm">
-        <div class="flex items-start gap-3">
-            <i data-lucide="trending-up" class="text-yellow-300" style="width: 24px; height: 24px;"></i>
-            <div>
-                <h3 class="text-white font-bold mb-1">Earn iKbp Rewards!</h3>
-                <p class="text-purple-100 text-sm mb-2">Share your referral code and earn 50 iKbp for each active user who joins!</p>
-                <div class="bg-white bg-opacity-20 p-2 rounded text-white font-mono text-sm" id="referral-code-display">
-                    TAU-XXXXXXXX
+    <!-- Account Creation Modal -->
+    <div id="account-modal" class="fixed inset-0 bg-black bg-opacity-75 z-50 hidden items-center justify-center p-4">
+        <div class="bg-gray-800 rounded-lg p-6 w-full max-w-md">
+            <h2 class="text-white text-2xl font-bold mb-4">Create TAU TUBE Account</h2>
+            
+            <form id="account-form" class="space-y-4">
+                <div>
+                    <label class="text-gray-300 block mb-2">Full Name</label>
+                    <input type="text" id="account-fullname" required class="w-full bg-gray-700 text-white p-3 rounded-lg" placeholder="Enter your name">
                 </div>
+
+                <div>
+                    <label class="text-gray-300 block mb-2">Email</label>
+                    <input type="email" id="account-email" required class="w-full bg-gray-700 text-white p-3 rounded-lg" placeholder="your@email.com">
+                </div>
+
+                <div>
+                    <label class="text-gray-300 block mb-2">Password</label>
+                    <input type="password" id="account-password" required class="w-full bg-gray-700 text-white p-3 rounded-lg" placeholder="Create password">
+                </div>
+
+                <div class="bg-gradient-to-r from-purple-600 to-teal-400 p-4 rounded-lg">
+                    <h3 class="text-white font-bold mb-2">Standard Account Features:</h3>
+                    <ul class="text-white text-sm space-y-1">
+                        <li>✓ Upload unlimited videos, images & audio</li>
+                        <li>✓ Live streaming capabilities</li>
+                        <li>✓ Earn iKbp rewards for content</li>
+                        <li>✓ Join competitions</li>
+                        <li>✓ Comment, like & share</li>
+                        <li>✓ Build your subscriber base</li>
+                    </ul>
+                </div>
+
+                <div class="flex gap-2">
+                    <button type="submit" class="flex-1 bg-gradient-to-r from-purple-600 to-teal-400 text-white py-3 rounded-lg hover:opacity-90 font-semibold">
+                        Create Account
+                    </button>
+                    <button type="button" onclick="closeAccountModal()" class="flex-1 bg-gray-700 text-white py-3 rounded-lg hover:bg-gray-600">
+                        Cancel
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Share Modal -->
+    <div id="share-modal" class="fixed inset-0 bg-black bg-opacity-75 z-50 hidden items-center justify-center p-4">
+        <div class="bg-gray-800 rounded-lg p-6 w-full max-w-md">
+            <h2 class="text-white text-2xl font-bold mb-4">Share</h2>
+            
+            <div class="space-y-3">
+                <button onclick="shareToWhatsApp()" class="w-full bg-green-600 text-white p-3 rounded-lg hover:bg-green-700 flex items-center justify-center gap-2">
+                    <i data-lucide="message-circle" style="width: 20px; height: 20px;"></i> WhatsApp
+                </button>
+                <button onclick="shareToFacebook()" class="w-full bg-blue-600 text-white p-3 rounded-lg hover:bg-blue-700 flex items-center justify-center gap-2">
+                    <i data-lucide="facebook" style="width: 20px; height: 20px;"></i> Facebook
+                </button>
+                <button onclick="shareToTwitter()" class="w-full bg-sky-500 text-white p-3 rounded-lg hover:bg-sky-600 flex items-center justify-center gap-2">
+                    <i data-lucide="twitter" style="width: 20px; height: 20px;"></i> Twitter
+                </button>
+                <button onclick="copyShareLink()" class="w-full bg-gray-700 text-white p-3 rounded-lg hover:bg-gray-600 flex items-center justify-center gap-2">
+                    <i data-lucide="copy" style="width: 20px; height: 20px;"></i> Copy Link
+                </button>
+            </div>
+            
+            <button onclick="closeShareModal()" class="w-full bg-gray-700 text-white py-2 rounded-lg hover:bg-gray-600 mt-4">
+                Close
+            </button>
+        </div>
+    </div>
+
+    <!-- Referral Banner (Occasional sliding text) -->
+    <div id="referral-banner" class="fixed bottom-0 left-0 right-0 bg-gradient-to-r from-purple-600 via-cyan-500 to-teal-400 py-2 px-4 z-40 hidden">
+        <div class="overflow-hidden">
+            <div class="animate-marquee whitespace-nowrap text-white font-semibold">
+                🎁 Earn iKbp Rewards! Share your referral code and earn 50 iKbp for each active user who joins! Your code: <span id="referral-code-banner">TAU-XXXXXXXX</span>
             </div>
         </div>
     </div>
 
     <!-- JavaScript -->
     <script>
-        // Firebase Configuration
         const FIREBASE_CONFIG = {
             apiKey: "AIzaSyBcTzvl5lwpojRQM5lwyWe3hwp4upogUWw",
             authDomain: "tau-main-app.firebaseapp.com",
@@ -244,70 +410,68 @@
             adminEmail: 'grouptauafrica@gmail.com'
         };
 
-        // Initialize Firebase
         firebase.initializeApp(FIREBASE_CONFIG);
         const auth = firebase.auth();
         const db = firebase.firestore();
         const storage = firebase.storage();
 
-        // Initialize EmailJS
         emailjs.init(EMAIL_CONFIG.publicKey);
 
-        // Global state
         let currentTab = 'videos';
         let viewMode = 'grid';
         let uploadType = 'video';
         let userPoints = 0;
         let referralCode = '';
+        let currentVideoId = null;
+        let shareUrl = '';
 
-        // Initialize Lucide icons
         document.addEventListener('DOMContentLoaded', () => {
             lucide.createIcons();
             loadInitialData();
+            startReferralBannerRotation();
         });
 
-        // Load initial data
         async function loadInitialData() {
-            // Generate referral code
             referralCode = `TAU-${Math.random().toString(36).substr(2, 8).toUpperCase()}`;
-            document.getElementById('referral-code-display').textContent = referralCode;
+            document.getElementById('referral-code-banner').textContent = referralCode;
 
-            // Load user points from localStorage
             userPoints = parseInt(localStorage.getItem('ikbp_points') || '0');
             document.getElementById('user-points').textContent = userPoints;
 
-            // Load breaking news
             await loadBreakingNews();
-
-            // Load content
             await loadContent();
         }
 
-        // Load breaking news
-        async function loadBreakingNews() {
-            const ticker = document.getElementById('news-ticker');
-            // Sample news - replace with Firebase query
-            ticker.textContent = 'TAU Africa announces new partnership • Kabiru Ecosystem reaches 10,000 users • New features coming to TAU Main App';
+        function startReferralBannerRotation() {
+            setInterval(() => {
+                const banner = document.getElementById('referral-banner');
+                banner.classList.remove('hidden');
+                setTimeout(() => {
+                    banner.classList.add('hidden');
+                }, 10000);
+            }, 60000);
         }
 
-        // Switch tabs
+        async function loadBreakingNews() {
+            const ticker = document.getElementById('news-ticker');
+            ticker.textContent = 'TAU Africa announces new partnership • Kabiru Ecosystem reaches 10,000 users • New features coming to TAU Main App • Join our content competitions and win amazing prizes!';
+        }
+
         function switchTab(tab) {
             currentTab = tab;
             
-            // Update button styles
-            ['videos', 'images', 'audio', 'live'].forEach(t => {
+            ['videos', 'images', 'audio', 'live', 'competitions'].forEach(t => {
                 const btn = document.getElementById(`tab-${t}`);
                 if (t === tab) {
-                    btn.className = 'px-4 py-3 text-sm bg-purple-600 text-white';
+                    btn.className = 'px-4 py-3 text-sm bg-purple-600 text-white rounded-t';
                 } else {
-                    btn.className = 'px-4 py-3 text-sm text-gray-400 hover:text-white';
+                    btn.className = 'px-4 py-3 text-sm text-gray-400 hover:text-white rounded-t';
                 }
             });
 
             loadContent();
         }
 
-        // Set view mode
         function setViewMode(mode) {
             viewMode = mode;
             
@@ -317,16 +481,56 @@
             loadContent();
         }
 
-        // Load content
         async function loadContent() {
             const container = document.getElementById('content-grid');
-            container.innerHTML = '<p class="text-white col-span-full text-center">Loading...</p>';
+            container.innerHTML = '<div class="col-span-full flex justify-center p-8"><div class="smooth-loader w-full h-32 relative overflow-hidden bg-gray-800 rounded-lg"></div></div>';
 
-            // Sample data - replace with Firebase queries
+            setTimeout(() => {
+                if (currentTab === 'competitions') {
+                    loadCompetitions();
+                } else {
+                    loadMediaContent();
+                }
+            }, 500);
+        }
+
+        function loadCompetitions() {
+            const container = document.getElementById('content-grid');
+            container.className = 'grid grid-cols-1 md:grid-cols-2 gap-4';
+            
+            const competitions = [
+                { id: 1, title: 'Best Video Creator of the Month', prize: '5000 iKbp + Featured Spot', deadline: '10 days left', participants: 234 },
+                { id: 2, title: 'Audio Content Challenge', prize: '3000 iKbp', deadline: '15 days left', participants: 156 },
+                { id: 3, title: 'Photography Competition', prize: '2000 iKbp + Equipment', deadline: '20 days left', participants: 389 }
+            ];
+
+            container.innerHTML = competitions.map(comp => `
+                <div class="bg-gradient-to-r from-purple-600 to-teal-400 rounded-lg p-6">
+                    <div class="bg-gray-900 rounded-lg p-4">
+                        <div class="flex items-start justify-between mb-4">
+                            <i data-lucide="trophy" class="text-yellow-400" style="width: 32px; height: 32px;"></i>
+                            <span class="bg-red-600 text-white px-3 py-1 rounded-full text-sm">${comp.deadline}</span>
+                        </div>
+                        <h3 class="text-white text-xl font-bold mb-2">${comp.title}</h3>
+                        <p class="text-yellow-400 font-semibold mb-3">🎁 Prize: ${comp.prize}</p>
+                        <p class="text-gray-400 text-sm mb-4">👥 ${comp.participants} participants</p>
+                        <button onclick="joinCompetition(${comp.id})" class="w-full bg-gradient-to-r from-purple-600 to-teal-400 text-white py-3 rounded-lg hover:opacity-90 font-semibold">
+                            Join Competition
+                        </button>
+                    </div>
+                </div>
+            `).join('');
+            
+            lucide.createIcons();
+        }
+
+        function loadMediaContent() {
+            const container = document.getElementById('content-grid');
+            
             const sampleVideos = [
-                { id: 1, title: 'TAU Africa Launch Event', thumbnail: 'https://images.unsplash.com/photo-1492684223066-81342ee5ff30?w=400', duration: '15:30', views: 1234, author: 'TAU Official', isLive: false },
-                { id: 2, title: 'Community Update March 2024', thumbnail: 'https://images.unsplash.com/photo-1505373877841-8d25f7d46678?w=400', duration: '8:45', views: 856, author: 'TAU News', isLive: false },
-                { id: 3, title: 'Live: Breaking News', thumbnail: 'https://images.unsplash.com/photo-1504711434969-e33886168f5c?w=400', duration: 'LIVE', views: 3421, author: 'TAU Broadcasting', isLive: true }
+                { id: 1, title: 'TAU Africa Launch Event', thumbnail: 'https://images.unsplash.com/photo-1492684223066-81342ee5ff30?w=400', duration: '15:30', views: 1234, author: 'TAU Official', isLive: false, likes: 245, subscribers: 1500 },
+                { id: 2, title: 'Community Update March 2024', thumbnail: 'https://images.unsplash.com/photo-1505373877841-8d25f7d46678?w=400', duration: '8:45', views: 856, author: 'TAU News', isLive: false, likes: 189, subscribers: 890 },
+                { id: 3, title: 'Live: Breaking News', thumbnail: 'https://images.unsplash.com/photo-1504711434969-e33886168f5c?w=400', duration: 'LIVE', views: 3421, author: 'TAU Broadcasting', isLive: true, likes: 567, subscribers: 2300 }
             ];
 
             container.className = viewMode === 'grid' ? 'grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4' : 'grid grid-cols-1 gap-4';
@@ -349,7 +553,11 @@
                         <div class="p-3">
                             <h3 class="text-white font-semibold">${video.title}</h3>
                             <p class="text-gray-400 text-sm">${video.author}</p>
-                            <p class="text-gray-500 text-xs">${video.views.toLocaleString()} views</p>
+                            <div class="flex items-center gap-3 text-gray-500 text-xs mt-1">
+                                <span>${video.views.toLocaleString()} views</span>
+                                <span>👍 ${video.likes}</span>
+                                <span>👥 ${video.subscribers}</span>
+                            </div>
                         </div>
                     </div>
                 `).join('');
@@ -357,13 +565,12 @@
             }
         }
 
-        // Play video
         function playVideo(videoId) {
+            currentVideoId = videoId;
             const modal = document.getElementById('video-modal');
             modal.classList.remove('hidden');
             modal.classList.add('flex');
             
-            // Sample video URL
             document.getElementById('video-source').src = 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4';
             document.getElementById('video-title').textContent = 'Sample Video Title';
             document.getElementById('video-author').textContent = 'TAU Official';
@@ -371,12 +578,12 @@
             
             const player = document.getElementById('video-player');
             player.load();
-            player.play();
+            player.play().catch(err => console.log('Autoplay prevented'));
 
+            loadComments();
             lucide.createIcons();
         }
 
-        // Close video modal
         function closeVideoModal() {
             const modal = document.getElementById('video-modal');
             modal.classList.add('hidden');
@@ -386,14 +593,86 @@
             player.pause();
         }
 
-        // Show upload modal
+        function loadComments() {
+            const commentsList = document.getElementById('comments-list');
+            const sampleComments = [
+                { author: 'John Doe', text: 'Great content! Keep it up 👍', time: '2 hours ago' },
+                { author: 'Jane Smith', text: 'Very informative, thank you!', time: '5 hours ago' }
+            ];
+
+            commentsList.innerHTML = sampleComments.map(comment => `
+                <div class="bg-gray-700 p-3 rounded-lg">
+                    <div class="flex items-start gap-2">
+                        <div class="w-8 h-8 bg-gradient-to-r from-purple-600 to-teal-400 rounded-full flex items-center justify-center flex-shrink-0">
+                            <i data-lucide="user" class="text-white" style="width: 16px; height: 16px;"></i>
+                        </div>
+                        <div class="flex-1">
+                            <div class="flex items-center gap-2 mb-1">
+                                <p class="text-white font-semibold text-sm">${comment.author}</p>
+                                <span class="text-gray-500 text-xs">${comment.time}</span>
+                            </div>
+                            <p class="text-gray-300 text-sm">${comment.text}</p>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+            
+            lucide.createIcons();
+        }
+
+        function postComment() {
+            const input = document.getElementById('comment-input');
+            const text = input.value.trim();
+            
+            if (!text) return;
+
+            showNotification('Comment posted successfully!');
+            input.value = '';
+            
+            userPoints += 5;
+            localStorage.setItem('ikbp_points', userPoints);
+            document.getElementById('user-points').textContent = userPoints;
+        }
+
+        function subscribeToChannel() {
+            showNotification('Subscribed successfully! +10 iKbp');
+            userPoints += 10;
+            localStorage.setItem('ikbp_points', userPoints);
+            document.getElementById('user-points').textContent = userPoints;
+        }
+
+        function likeVideo() {
+            showNotification('Video liked! +2 iKbp');
+            userPoints += 2;
+            localStorage.setItem('ikbp_points', userPoints);
+            document.getElementById('user-points').textContent = userPoints;
+        }
+
+        function shareVideo() {
+            shareUrl = `https://tautube.africa/video/${currentVideoId}`;
+            document.getElementById('share-modal').classList.remove('hidden');
+            document.getElementById('share-modal').classList.add('flex');
+            lucide.createIcons();
+        }
+
+        function sendGift() {
+            showNotification('Gift sent! The creator will receive your support 🎁');
+            userPoints -= 50;
+            if (userPoints < 0) userPoints = 0;
+            localStorage.setItem('ikbp_points', userPoints);
+            document.getElementById('user-points').textContent = userPoints;
+        }
+
+        function joinCompetition(compId) {
+            showNotification('You have successfully joined the competition! Good luck! 🏆');
+        }
+
         function showUploadModal() {
             document.getElementById('upload-modal').classList.remove('hidden');
             document.getElementById('upload-modal').classList.add('flex');
             lucide.createIcons();
         }
 
-        // Close upload modal
         function closeUploadModal() {
             document.getElementById('upload-modal').classList.add('hidden');
             document.getElementById('upload-modal').classList.remove('flex');
@@ -401,7 +680,22 @@
             document.getElementById('selected-file').textContent = '';
         }
 
-        // Set upload type
+        function showAccountModal() {
+            document.getElementById('account-modal').classList.remove('hidden');
+            document.getElementById('account-modal').classList.add('flex');
+            lucide.createIcons();
+        }
+
+        function closeAccountModal() {
+            document.getElementById('account-modal').classList.add('hidden');
+            document.getElementById('account-modal').classList.remove('flex');
+        }
+
+        function closeShareModal() {
+            document.getElementById('share-modal').classList.add('hidden');
+            document.getElementById('share-modal').classList.remove('flex');
+        }
+
         function setUploadType(type) {
             uploadType = type;
             
@@ -417,48 +711,55 @@
             lucide.createIcons();
         }
 
-        // Handle file selection
-        document.addEventListener('DOMContentLoaded', () => {
-            document.getElementById('upload-file')?.addEventListener('change', (e) => {
-                const file = e.target.files[0];
-                if (file) {
-                    document.getElementById('selected-file').textContent = `Selected: ${file.name} (${(file.size / 1024 / 1024).toFixed(2)} MB)`;
-                }
-            });
+        document.getElementById('upload-file')?.addEventListener('change', (e) => {
+            const file = e.target.files[0];
+            if (file) {
+                document.getElementById('selected-file').textContent = `Selected: ${file.name} (${(file.size / 1024 / 1024).toFixed(2)} MB)`;
+            }
         });
 
-        // Handle upload form
-        document.addEventListener('DOMContentLoaded', () => {
-            document.getElementById('upload-form')?.addEventListener('submit', async (e) => {
-                e.preventDefault();
-                
-                const file = document.getElementById('upload-file').files[0];
-                const title = document.getElementById('upload-title').value;
-                const description = document.getElementById('upload-description').value;
-                
-                if (!file) {
-                    alert('Please select a file');
-                    return;
-                }
+        document.getElementById('upload-form')?.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const file = document.getElementById('upload-file').files[0];
+            const title = document.getElementById('upload-title').value;
+            const description = document.getElementById('upload-description').value;
+            
+            if (!file) {
+                alert('Please select a file');
+                return;
+            }
 
-                await uploadFile(file, { title, description, type: uploadType });
-            });
+            await uploadFile(file, { title, description, type: uploadType });
         });
 
-        // Upload file
+        document.getElementById('account-form')?.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const name = document.getElementById('account-fullname').value;
+            const email = document.getElementById('account-email').value;
+            const password = document.getElementById('account-password').value;
+            
+            try {
+                await auth.createUserWithEmailAndPassword(email, password);
+                document.getElementById('account-name').textContent = name;
+                closeAccountModal();
+                showNotification('Account created successfully! Welcome to TAU TUBE! +100 iKbp');
+                
+                userPoints += 100;
+                localStorage.setItem('ikbp_points', userPoints);
+                document.getElementById('user-points').textContent = userPoints;
+            } catch (error) {
+                alert('Error creating account: ' + error.message);
+            }
+        });
+
         async function uploadFile(file, metadata) {
             try {
-                const user = auth.currentUser;
-                if (!user) {
-                    alert('Please log in to upload');
-                    return;
-                }
-
-                // Show progress
                 document.getElementById('upload-progress-container').classList.remove('hidden');
 
                 const timestamp = Date.now();
-                const storageRef = storage.ref(`${metadata.type}s/${user.uid}/${timestamp}_${file.name}`);
+                const storageRef = storage.ref(`${metadata.type}s/${timestamp}_${file.name}`);
                 const uploadTask = storageRef.put(file);
 
                 uploadTask.on('state_changed',
@@ -474,9 +775,7 @@
                     async () => {
                         const downloadURL = await uploadTask.snapshot.ref.getDownloadURL();
                         
-                        // Save to Firestore
                         await db.collection(metadata.type + 's').add({
-                            uid: user.uid,
                             title: metadata.title,
                             description: metadata.description,
                             url: downloadURL,
@@ -486,13 +785,12 @@
                             status: 'published'
                         });
 
-                        // Award points
                         const points = metadata.type === 'video' ? 20 : metadata.type === 'audio' ? 10 : 5;
                         userPoints += points;
                         localStorage.setItem('ikbp_points', userPoints);
                         document.getElementById('user-points').textContent = userPoints;
 
-                        alert('Upload successful! You earned ' + points + ' iKbp points!');
+                        showNotification(`Upload successful! You earned ${points} iKbp points! 🎉`);
                         closeUploadModal();
                         loadContent();
                     }
@@ -504,34 +802,62 @@
             }
         }
 
-        // Share referral
         async function shareReferral() {
             const referralLink = `https://tautube.africa/ref/${referralCode}`;
+            shareUrl = referralLink;
             
-            if (navigator.share) {
-                try {
-                    await navigator.share({
-                        title: 'Join Tau Tube',
-                        text: 'Join me on Tau Tube and earn iKbp rewards!',
-                        url: referralLink
-                    });
-                } catch (err) {
-                    copyToClipboard(referralLink);
-                }
-            } else {
-                copyToClipboard(referralLink);
-            }
+            document.getElementById('share-modal').classList.remove('hidden');
+            document.getElementById('share-modal').classList.add('flex');
+            lucide.createIcons();
+        }
 
-            // Award points for sharing
+        function shareToWhatsApp() {
+            const text = encodeURIComponent(`Join me on TAU TUBE and earn iKbp rewards! ${shareUrl}`);
+            window.open(`https://wa.me/?text=${text}`, '_blank');
+            awardSharePoints();
+        }
+
+        function shareToFacebook() {
+            window.open(`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(shareUrl)}`, '_blank');
+            awardSharePoints();
+        }
+
+        function shareToTwitter() {
+            const text = encodeURIComponent('Join me on TAU TUBE and earn iKbp rewards!');
+            window.open(`https://twitter.com/intent/tweet?text=${text}&url=${encodeURIComponent(shareUrl)}`, '_blank');
+            awardSharePoints();
+        }
+
+        function copyShareLink() {
+            navigator.clipboard.writeText(shareUrl);
+            showNotification('Link copied to clipboard!');
+            awardSharePoints();
+        }
+
+        function awardSharePoints() {
             userPoints += 10;
             localStorage.setItem('ikbp_points', userPoints);
             document.getElementById('user-points').textContent = userPoints;
+            closeShareModal();
         }
 
-        function copyToClipboard(text) {
-            navigator.clipboard.writeText(text);
-            alert('Referral link copied to clipboard!');
+        function showNotification(message) {
+            const notification = document.getElementById('notification-toast');
+            document.getElementById('notification-text').textContent = message;
+            notification.classList.remove('hidden');
+            
+            setTimeout(() => {
+                notification.classList.add('hidden');
+            }, 5000);
+        }
+
+        function closeNotification() {
+            document.getElementById('notification-toast').classList.add('hidden');
+        }
+
+        function togglePointsDropdown() {
+            showNotification('Your iKbp balance can be used for gifts, premium features, and rewards!');
         }
     </script>
 </body>
-          </html>
+    </html>
