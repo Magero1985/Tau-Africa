@@ -1,0 +1,537 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TAU TUBE - Media Platform</title>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Firebase -->
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-storage-compat.js"></script>
+    
+    <!-- EmailJS -->
+    <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
+    
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    
+    <style>
+        @keyframes marquee {
+            0% { transform: translateX(100%); }
+            100% { transform: translateX(-100%); }
+        }
+        .animate-marquee {
+            animation: marquee 30s linear infinite;
+        }
+        .video-thumbnail {
+            transition: transform 0.2s;
+        }
+        .video-thumbnail:hover {
+            transform: scale(1.05);
+        }
+    </style>
+</head>
+<body class="bg-gray-900 min-h-screen">
+
+    <!-- Header -->
+    <div class="bg-gradient-to-r from-purple-600 to-blue-600 p-4">
+        <div class="max-w-7xl mx-auto flex flex-wrap items-center justify-between gap-4">
+            <div class="flex items-center gap-3">
+                <div class="bg-white p-2 rounded-lg">
+                    <i data-lucide="film" class="text-purple-600" style="width: 32px; height: 32px;"></i>
+                </div>
+                <div>
+                    <h1 class="text-white text-2xl font-bold">TAU TUBE</h1>
+                    <p class="text-purple-200 text-sm">Powered by TAU Africa Ecosystem</p>
+                </div>
+            </div>
+            
+            <div class="flex items-center gap-2 flex-wrap">
+                <div class="bg-white bg-opacity-20 backdrop-blur-sm px-4 py-2 rounded-lg flex items-center gap-2">
+                    <i data-lucide="award" class="text-yellow-300" style="width: 20px; height: 20px;"></i>
+                    <div>
+                        <p class="text-white font-bold"><span id="user-points">0</span> iKbp</p>
+                        <p class="text-purple-200 text-xs">Kabiru Points</p>
+                    </div>
+                </div>
+                
+                <button onclick="shareReferral()" class="bg-white text-purple-600 px-4 py-2 rounded-lg hover:bg-purple-50 flex items-center gap-2 font-semibold text-sm">
+                    <i data-lucide="share-2" style="width: 18px; height: 18px;"></i> Refer
+                </button>
+                
+                <button onclick="showUploadModal()" class="bg-yellow-400 text-gray-900 px-4 py-2 rounded-lg hover:bg-yellow-300 flex items-center gap-2 font-semibold text-sm">
+                    <i data-lucide="upload" style="width: 18px; height: 18px;"></i> Upload
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Breaking News Ticker -->
+    <div class="bg-red-600 text-white py-2 px-4 flex items-center gap-4 overflow-hidden">
+        <div class="flex items-center gap-2 font-bold whitespace-nowrap">
+            <i data-lucide="bell" style="width: 18px; height: 18px;"></i> BREAKING:
+        </div>
+        <div class="overflow-hidden flex-1">
+            <div class="animate-marquee whitespace-nowrap" id="news-ticker">
+                Loading news...
+            </div>
+        </div>
+    </div>
+
+    <!-- Navigation Tabs -->
+    <div class="bg-gray-800 border-b border-gray-700">
+        <div class="max-w-7xl mx-auto flex flex-wrap items-center justify-between px-4">
+            <div class="flex gap-1 flex-wrap">
+                <button onclick="switchTab('videos')" id="tab-videos" class="px-4 py-3 text-sm bg-purple-600 text-white">
+                    <i data-lucide="film" class="inline" style="width: 18px; height: 18px;"></i> Videos
+                </button>
+                <button onclick="switchTab('images')" id="tab-images" class="px-4 py-3 text-sm text-gray-400 hover:text-white">
+                    <i data-lucide="image" class="inline" style="width: 18px; height: 18px;"></i> Images
+                </button>
+                <button onclick="switchTab('audio')" id="tab-audio" class="px-4 py-3 text-sm text-gray-400 hover:text-white">
+                    <i data-lucide="mic" class="inline" style="width: 18px; height: 18px;"></i> Audio
+                </button>
+                <button onclick="switchTab('live')" id="tab-live" class="px-4 py-3 text-sm text-gray-400 hover:text-white flex items-center gap-2">
+                    <i data-lucide="radio" class="text-red-500" style="width: 18px; height: 18px;"></i> Live
+                </button>
+            </div>
+            
+            <div class="flex gap-2 py-2">
+                <button onclick="setViewMode('grid')" id="view-grid" class="p-2 text-purple-400 hover:text-white">
+                    <i data-lucide="grid" style="width: 20px; height: 20px;"></i>
+                </button>
+                <button onclick="setViewMode('list')" id="view-list" class="p-2 text-gray-400 hover:text-white">
+                    <i data-lucide="list" style="width: 20px; height: 20px;"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="max-w-7xl mx-auto p-4">
+        <div id="content-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            <!-- Content will be loaded here dynamically -->
+        </div>
+    </div>
+
+    <!-- Video Player Modal -->
+    <div id="video-modal" class="fixed inset-0 bg-black bg-opacity-95 z-50 hidden items-center justify-center p-4">
+        <div class="w-full max-w-5xl">
+            <div class="bg-black rounded-lg overflow-hidden">
+                <div class="relative aspect-video bg-black">
+                    <video id="video-player" class="w-full h-full" controls>
+                        <source id="video-source" src="" type="video/mp4">
+                    </video>
+                    <div id="live-badge" class="absolute top-4 left-4 bg-red-600 text-white px-3 py-2 rounded-lg font-bold hidden items-center gap-2">
+                        <i data-lucide="radio" style="width: 16px; height: 16px;"></i> LIVE
+                    </div>
+                </div>
+            </div>
+            
+            <div class="bg-gray-800 p-4 mt-2 rounded-lg">
+                <h2 id="video-title" class="text-white text-xl font-bold mb-2"></h2>
+                <div class="flex items-center justify-between mb-4">
+                    <div>
+                        <p id="video-author" class="text-gray-400"></p>
+                        <p id="video-views" class="text-gray-500 text-sm"></p>
+                    </div>
+                    <div class="flex gap-2">
+                        <button class="bg-purple-600 text-white px-4 py-2 rounded-lg hover:bg-purple-700">Subscribe</button>
+                        <button class="bg-gray-700 text-white px-4 py-2 rounded-lg hover:bg-gray-600">Like</button>
+                        <button class="bg-gray-700 text-white px-4 py-2 rounded-lg hover:bg-gray-600">Share</button>
+                    </div>
+                </div>
+                <button onclick="closeVideoModal()" class="w-full bg-gray-700 text-white py-2 rounded-lg hover:bg-gray-600">Close</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Upload Modal -->
+    <div id="upload-modal" class="fixed inset-0 bg-black bg-opacity-75 z-50 hidden items-center justify-center p-4">
+        <div class="bg-gray-800 rounded-lg p-6 w-full max-w-2xl max-h-[90vh] overflow-y-auto">
+            <h2 class="text-white text-2xl font-bold mb-4">Upload Content</h2>
+            
+            <form id="upload-form" class="space-y-4">
+                <div>
+                    <label class="text-gray-300 block mb-2">Content Type</label>
+                    <div class="grid grid-cols-3 gap-2">
+                        <button type="button" onclick="setUploadType('video')" id="upload-video-btn" class="bg-purple-600 text-white py-3 rounded-lg hover:bg-purple-700 flex items-center justify-center gap-2">
+                            <i data-lucide="film" style="width: 20px; height: 20px;"></i> Video
+                        </button>
+                        <button type="button" onclick="setUploadType('image')" id="upload-image-btn" class="bg-gray-700 text-white py-3 rounded-lg hover:bg-gray-600 flex items-center justify-center gap-2">
+                            <i data-lucide="image" style="width: 20px; height: 20px;"></i> Image
+                        </button>
+                        <button type="button" onclick="setUploadType('audio')" id="upload-audio-btn" class="bg-gray-700 text-white py-3 rounded-lg hover:bg-gray-600 flex items-center justify-center gap-2">
+                            <i data-lucide="mic" style="width: 20px; height: 20px;"></i> Audio
+                        </button>
+                    </div>
+                </div>
+
+                <div>
+                    <label class="text-gray-300 block mb-2">Title</label>
+                    <input type="text" id="upload-title" required class="w-full bg-gray-700 text-white p-3 rounded-lg" placeholder="Enter title...">
+                </div>
+
+                <div>
+                    <label class="text-gray-300 block mb-2">Description</label>
+                    <textarea id="upload-description" required class="w-full bg-gray-700 text-white p-3 rounded-lg h-24" placeholder="Enter description..."></textarea>
+                </div>
+
+                <div>
+                    <label class="text-gray-300 block mb-2">Upload File</label>
+                    <input type="file" id="upload-file" required accept="video/*,image/*,audio/*" class="hidden">
+                    <div onclick="document.getElementById('upload-file').click()" class="border-2 border-dashed border-gray-600 rounded-lg p-8 text-center cursor-pointer hover:border-purple-600">
+                        <i data-lucide="upload" class="mx-auto mb-2 text-gray-400" style="width: 48px; height: 48px;"></i>
+                        <p class="text-gray-400">Click to upload or drag and drop</p>
+                        <p class="text-gray-500 text-sm mt-2">Max file size: 500MB for videos, 50MB for images/audio</p>
+                        <p id="selected-file" class="text-purple-400 mt-2"></p>
+                    </div>
+                    <div id="upload-progress-container" class="hidden mt-4">
+                        <div class="bg-gray-700 rounded-full h-4 overflow-hidden">
+                            <div id="upload-progress-bar" class="bg-purple-600 h-full transition-all" style="width: 0%"></div>
+                        </div>
+                        <p id="upload-progress-text" class="text-gray-300 text-sm text-center mt-2">0%</p>
+                    </div>
+                </div>
+
+                <div class="flex gap-2">
+                    <button type="submit" class="flex-1 bg-purple-600 text-white py-3 rounded-lg hover:bg-purple-700 font-semibold">
+                        Upload & Publish
+                    </button>
+                    <button type="button" onclick="closeUploadModal()" class="flex-1 bg-gray-700 text-white py-3 rounded-lg hover:bg-gray-600">
+                        Cancel
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Referral Banner -->
+    <div class="fixed bottom-4 right-4 bg-gradient-to-r from-purple-600 to-blue-600 p-4 rounded-lg shadow-lg max-w-sm">
+        <div class="flex items-start gap-3">
+            <i data-lucide="trending-up" class="text-yellow-300" style="width: 24px; height: 24px;"></i>
+            <div>
+                <h3 class="text-white font-bold mb-1">Earn iKbp Rewards!</h3>
+                <p class="text-purple-100 text-sm mb-2">Share your referral code and earn 50 iKbp for each active user who joins!</p>
+                <div class="bg-white bg-opacity-20 p-2 rounded text-white font-mono text-sm" id="referral-code-display">
+                    TAU-XXXXXXXX
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- JavaScript -->
+    <script>
+        // Firebase Configuration
+        const FIREBASE_CONFIG = {
+            apiKey: "AIzaSyBcTzvl5lwpojRQM5lwyWe3hwp4upogUWw",
+            authDomain: "tau-main-app.firebaseapp.com",
+            projectId: "tau-main-app",
+            storageBucket: "tau-main-app.firebasestorage.app",
+            messagingSenderId: "69734421488",
+            appId: "1:69734421488:web:d13ae38f1c7d79cc854335"
+        };
+
+        const EMAIL_CONFIG = {
+            serviceId: 'service_xfira7g',
+            templateId: 'template_bqxztig',
+            publicKey: 'GhjI14eQVGgOli0j1',
+            adminEmail: 'grouptauafrica@gmail.com'
+        };
+
+        // Initialize Firebase
+        firebase.initializeApp(FIREBASE_CONFIG);
+        const auth = firebase.auth();
+        const db = firebase.firestore();
+        const storage = firebase.storage();
+
+        // Initialize EmailJS
+        emailjs.init(EMAIL_CONFIG.publicKey);
+
+        // Global state
+        let currentTab = 'videos';
+        let viewMode = 'grid';
+        let uploadType = 'video';
+        let userPoints = 0;
+        let referralCode = '';
+
+        // Initialize Lucide icons
+        document.addEventListener('DOMContentLoaded', () => {
+            lucide.createIcons();
+            loadInitialData();
+        });
+
+        // Load initial data
+        async function loadInitialData() {
+            // Generate referral code
+            referralCode = `TAU-${Math.random().toString(36).substr(2, 8).toUpperCase()}`;
+            document.getElementById('referral-code-display').textContent = referralCode;
+
+            // Load user points from localStorage
+            userPoints = parseInt(localStorage.getItem('ikbp_points') || '0');
+            document.getElementById('user-points').textContent = userPoints;
+
+            // Load breaking news
+            await loadBreakingNews();
+
+            // Load content
+            await loadContent();
+        }
+
+        // Load breaking news
+        async function loadBreakingNews() {
+            const ticker = document.getElementById('news-ticker');
+            // Sample news - replace with Firebase query
+            ticker.textContent = 'TAU Africa announces new partnership • Kabiru Ecosystem reaches 10,000 users • New features coming to TAU Main App';
+        }
+
+        // Switch tabs
+        function switchTab(tab) {
+            currentTab = tab;
+            
+            // Update button styles
+            ['videos', 'images', 'audio', 'live'].forEach(t => {
+                const btn = document.getElementById(`tab-${t}`);
+                if (t === tab) {
+                    btn.className = 'px-4 py-3 text-sm bg-purple-600 text-white';
+                } else {
+                    btn.className = 'px-4 py-3 text-sm text-gray-400 hover:text-white';
+                }
+            });
+
+            loadContent();
+        }
+
+        // Set view mode
+        function setViewMode(mode) {
+            viewMode = mode;
+            
+            document.getElementById('view-grid').className = mode === 'grid' ? 'p-2 text-purple-400 hover:text-white' : 'p-2 text-gray-400 hover:text-white';
+            document.getElementById('view-list').className = mode === 'list' ? 'p-2 text-purple-400 hover:text-white' : 'p-2 text-gray-400 hover:text-white';
+            
+            loadContent();
+        }
+
+        // Load content
+        async function loadContent() {
+            const container = document.getElementById('content-grid');
+            container.innerHTML = '<p class="text-white col-span-full text-center">Loading...</p>';
+
+            // Sample data - replace with Firebase queries
+            const sampleVideos = [
+                { id: 1, title: 'TAU Africa Launch Event', thumbnail: 'https://images.unsplash.com/photo-1492684223066-81342ee5ff30?w=400', duration: '15:30', views: 1234, author: 'TAU Official', isLive: false },
+                { id: 2, title: 'Community Update March 2024', thumbnail: 'https://images.unsplash.com/photo-1505373877841-8d25f7d46678?w=400', duration: '8:45', views: 856, author: 'TAU News', isLive: false },
+                { id: 3, title: 'Live: Breaking News', thumbnail: 'https://images.unsplash.com/photo-1504711434969-e33886168f5c?w=400', duration: 'LIVE', views: 3421, author: 'TAU Broadcasting', isLive: true }
+            ];
+
+            container.className = viewMode === 'grid' ? 'grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4' : 'grid grid-cols-1 gap-4';
+
+            if (currentTab === 'videos' || currentTab === 'live') {
+                const videos = currentTab === 'live' ? sampleVideos.filter(v => v.isLive) : sampleVideos;
+                container.innerHTML = videos.map(video => `
+                    <div class="bg-gray-800 rounded-lg overflow-hidden cursor-pointer video-thumbnail" onclick="playVideo(${video.id})">
+                        <div class="relative">
+                            <img src="${video.thumbnail}" alt="${video.title}" class="w-full h-48 object-cover">
+                            ${video.isLive ? `
+                                <div class="absolute top-2 left-2 bg-red-600 text-white px-2 py-1 rounded text-xs font-bold flex items-center gap-1">
+                                    <i data-lucide="radio" style="width: 12px; height: 12px;"></i> LIVE
+                                </div>
+                            ` : ''}
+                            <div class="absolute bottom-2 right-2 bg-black bg-opacity-75 text-white px-2 py-1 rounded text-xs">
+                                ${video.duration}
+                            </div>
+                        </div>
+                        <div class="p-3">
+                            <h3 class="text-white font-semibold">${video.title}</h3>
+                            <p class="text-gray-400 text-sm">${video.author}</p>
+                            <p class="text-gray-500 text-xs">${video.views.toLocaleString()} views</p>
+                        </div>
+                    </div>
+                `).join('');
+                lucide.createIcons();
+            }
+        }
+
+        // Play video
+        function playVideo(videoId) {
+            const modal = document.getElementById('video-modal');
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+            
+            // Sample video URL
+            document.getElementById('video-source').src = 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4';
+            document.getElementById('video-title').textContent = 'Sample Video Title';
+            document.getElementById('video-author').textContent = 'TAU Official';
+            document.getElementById('video-views').textContent = '1,234 views';
+            
+            const player = document.getElementById('video-player');
+            player.load();
+            player.play();
+
+            lucide.createIcons();
+        }
+
+        // Close video modal
+        function closeVideoModal() {
+            const modal = document.getElementById('video-modal');
+            modal.classList.add('hidden');
+            modal.classList.remove('flex');
+            
+            const player = document.getElementById('video-player');
+            player.pause();
+        }
+
+        // Show upload modal
+        function showUploadModal() {
+            document.getElementById('upload-modal').classList.remove('hidden');
+            document.getElementById('upload-modal').classList.add('flex');
+            lucide.createIcons();
+        }
+
+        // Close upload modal
+        function closeUploadModal() {
+            document.getElementById('upload-modal').classList.add('hidden');
+            document.getElementById('upload-modal').classList.remove('flex');
+            document.getElementById('upload-form').reset();
+            document.getElementById('selected-file').textContent = '';
+        }
+
+        // Set upload type
+        function setUploadType(type) {
+            uploadType = type;
+            
+            ['video', 'image', 'audio'].forEach(t => {
+                const btn = document.getElementById(`upload-${t}-btn`);
+                if (t === type) {
+                    btn.className = 'bg-purple-600 text-white py-3 rounded-lg hover:bg-purple-700 flex items-center justify-center gap-2';
+                } else {
+                    btn.className = 'bg-gray-700 text-white py-3 rounded-lg hover:bg-gray-600 flex items-center justify-center gap-2';
+                }
+            });
+            
+            lucide.createIcons();
+        }
+
+        // Handle file selection
+        document.addEventListener('DOMContentLoaded', () => {
+            document.getElementById('upload-file')?.addEventListener('change', (e) => {
+                const file = e.target.files[0];
+                if (file) {
+                    document.getElementById('selected-file').textContent = `Selected: ${file.name} (${(file.size / 1024 / 1024).toFixed(2)} MB)`;
+                }
+            });
+        });
+
+        // Handle upload form
+        document.addEventListener('DOMContentLoaded', () => {
+            document.getElementById('upload-form')?.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                
+                const file = document.getElementById('upload-file').files[0];
+                const title = document.getElementById('upload-title').value;
+                const description = document.getElementById('upload-description').value;
+                
+                if (!file) {
+                    alert('Please select a file');
+                    return;
+                }
+
+                await uploadFile(file, { title, description, type: uploadType });
+            });
+        });
+
+        // Upload file
+        async function uploadFile(file, metadata) {
+            try {
+                const user = auth.currentUser;
+                if (!user) {
+                    alert('Please log in to upload');
+                    return;
+                }
+
+                // Show progress
+                document.getElementById('upload-progress-container').classList.remove('hidden');
+
+                const timestamp = Date.now();
+                const storageRef = storage.ref(`${metadata.type}s/${user.uid}/${timestamp}_${file.name}`);
+                const uploadTask = storageRef.put(file);
+
+                uploadTask.on('state_changed',
+                    (snapshot) => {
+                        const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
+                        document.getElementById('upload-progress-bar').style.width = progress + '%';
+                        document.getElementById('upload-progress-text').textContent = Math.round(progress) + '%';
+                    },
+                    (error) => {
+                        console.error('Upload error:', error);
+                        alert('Upload failed: ' + error.message);
+                    },
+                    async () => {
+                        const downloadURL = await uploadTask.snapshot.ref.getDownloadURL();
+                        
+                        // Save to Firestore
+                        await db.collection(metadata.type + 's').add({
+                            uid: user.uid,
+                            title: metadata.title,
+                            description: metadata.description,
+                            url: downloadURL,
+                            views: 0,
+                            likes: 0,
+                            createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+                            status: 'published'
+                        });
+
+                        // Award points
+                        const points = metadata.type === 'video' ? 20 : metadata.type === 'audio' ? 10 : 5;
+                        userPoints += points;
+                        localStorage.setItem('ikbp_points', userPoints);
+                        document.getElementById('user-points').textContent = userPoints;
+
+                        alert('Upload successful! You earned ' + points + ' iKbp points!');
+                        closeUploadModal();
+                        loadContent();
+                    }
+                );
+
+            } catch (error) {
+                console.error('Upload error:', error);
+                alert('Upload failed: ' + error.message);
+            }
+        }
+
+        // Share referral
+        async function shareReferral() {
+            const referralLink = `https://tautube.africa/ref/${referralCode}`;
+            
+            if (navigator.share) {
+                try {
+                    await navigator.share({
+                        title: 'Join Tau Tube',
+                        text: 'Join me on Tau Tube and earn iKbp rewards!',
+                        url: referralLink
+                    });
+                } catch (err) {
+                    copyToClipboard(referralLink);
+                }
+            } else {
+                copyToClipboard(referralLink);
+            }
+
+            // Award points for sharing
+            userPoints += 10;
+            localStorage.setItem('ikbp_points', userPoints);
+            document.getElementById('user-points').textContent = userPoints;
+        }
+
+        function copyToClipboard(text) {
+            navigator.clipboard.writeText(text);
+            alert('Referral link copied to clipboard!');
+        }
+    </script>
+</body>
+          </html>
