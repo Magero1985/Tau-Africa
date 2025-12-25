@@ -438,7 +438,7 @@
             setupLoginMethodChange();
         });
 
-        // Enhanced Notification System - 25 second display, 60 second cycle
+        // Enhanced Notification System - 50 second display, 60 second cycle
         function startNotificationCycle() {
             let messageIndex = 0;
             const banner = document.getElementById('notification-banner');
@@ -448,10 +448,10 @@
                 bannerText.textContent = notificationMessages[messageIndex];
                 banner.style.display = 'block';
                 
-                // Hide after 25 seconds
+                // Hide after 50 seconds
                 setTimeout(() => {
                     banner.style.display = 'none';
-                }, 25000);
+             text-y 50,000);
 
                 messageIndex = (messageIndex + 1) % notificationMessages.length;
             }
