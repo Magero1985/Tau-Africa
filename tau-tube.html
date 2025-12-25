@@ -19,7 +19,7 @@
             100% { transform: translateX(-100%); }
         }
         .animate-marquee {
-            animation: marquee 30s linear infinite;
+            animation: marquee 60s linear infinite;
         }
         .video-thumbnail {
             transition: transform 0.2s;
@@ -848,7 +848,7 @@
             
             setTimeout(() => {
                 notification.classList.add('hidden');
-            }, 5000);
+            }, 20000);
         }
 
         function closeNotification() {
@@ -857,6 +857,112 @@
 
         function togglePointsDropdown() {
             showNotification('Your iKbp balance can be used for gifts, premium features, and rewards!');
+        }
+    </script>
+    <script>
+        document.getElementById('competition-form').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    
+    const memberId = document.getElementById('comp-member-id').value;
+    const name = document.getElementById('comp-name').value;
+    const email = document.getElementById('comp-email').value;
+    const phone = document.getElementById('comp-phone').value;
+    const category = document.getElementById('comp-category').value;
+    const motivation = document.getElementById('comp-motivation').value;
+    
+    try {
+        // Send email to TAU Africa
+        await emailjs.send(EMAIL_CONFIG.serviceId, EMAIL_CONFIG.templateId, {
+            to_email: EMAIL_CONFIG.adminEmail,
+            subject: `New Competition Registration - ${selectedCompetition.title}`,
+            message: `
+Competition Registration:
+------------------------
+Competition: ${selectedCompetition.title}
+TAU Member ID: ${memberId}
+Name: ${name}
+Email: ${email}
+Phone: ${phone}
+Category: ${category}
+Motivation: ${motivation}
+            `
+        });
+        
+        // Send confirmation to applicant
+        await emailjs.send(EMAIL_CONFIG.serviceId, EMAIL_CONFIG.templateId, {
+            to_email: email,
+            subject: 'Welcome to TAU Tube Competition!',
+            message: `Dear ${name},\n\nThank you for registering for ${selectedCompetition.title}!\n\nYour TAU Member ID: ${memberId}\n\nWe will review your application and contact you within 24-48 hours.\n\nGood luck!\n\nTAU Africa Team`
+        });
+        
+        showNotification('✅ Registration successful! Check your email for confirmation.');
+        closeCompetitionModal();
+        
+    } catch (error) {
+        showNotification('❌ Registration failed. Please try again.');
+    }
+});
+    </script>
+    <script>
+        function openKabiruTransfer() {
+    closeKabiruInfoModal();
+    document.getElementById('kabiru-transfer-modal').classList.remove('hidden');
+    document.getElementById('kabiru-transfer-modal').classList.add('flex');
+}
+
+function closeKabiruTransferModal() {
+    document.getElementById('kabiru-transfer-modal').classList.add('hidden');
+    document.getElementById('kabiru-transfer-modal').classList.remove('flex');
+}
+
+// Calculate iKb on input
+document.getElementById('transfer-amount').addEventListener('input', (e) => {
+    const ikbp = parseFloat(e.target.value) || 0;
+    const ikb = ikbp / 10000;
+    document.getElementById('transfer-ikb-amount').textContent = ikb.toFixed(4) + ' iKb';
+});
+
+document.getElementById('kabiru-transfer-form').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    
+    const amount = parseFloat(document.getElementById('transfer-amount').value);
+    
+    if (amount < 10000) {
+        showNotification('❌ Minimum transfer: 10,000 iKbp');
+        return;
+    }
+    
+    if (amount > userPoints) {
+        showNotification('❌ Insufficient balance');
+        return;
+    }
+    
+    try {
+        // Create transfer record in Firestore
+        await db.collection('kabiru_transfers').add({
+            userId: auth.currentUser?.uid || 'guest',
+            tauMemberId: tauMemberId,
+            ikbp: amount,
+            ikb: amount / 10000,
+            timestamp: firebase.firestore.FieldValue.serverTimestamp(),
+            status: 'pending'
+        });
+        
+        // Deduct from TAU Tube balance
+        userPoints -= amount;
+        localStorage.setItem('ikbp_points', userPoints);
+        updatePointsDisplay();
+        
+        showNotification(`✅ Transfer initiated! ${amount.toLocaleString()} iKbp sent to Kabiru Wallet`);
+        closeKabiruTransferModal();
+        
+    } catch (error) {
+        showNotification('❌ Transfer failed. Please try again.');
+    }
+});
+
+function openKabiruApp() {
+    window.open('../Kabiru-Mining-Portal/index.html', '_blank');
         }
     </script>
     </body>
