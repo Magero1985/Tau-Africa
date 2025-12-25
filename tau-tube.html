@@ -336,12 +336,12 @@
                 <div class="bg-gradient-to-r from-purple-600 to-teal-400 p-4 rounded-lg">
                     <h3 class="text-white font-bold mb-2">Standard Account Features:</h3>
                     <ul class="text-white text-sm space-y-1">
-                        <li>✓ Upload unlimited videos, images & audio</li>
-                        <li>✓ Live streaming capabilities</li>
-                        <li>✓ Earn iKbp rewards for content</li>
-                        <li>✓ Join competitions</li>
-                        <li>✓ Comment, like & share</li>
-                        <li>✓ Build your subscriber base</li>
+                        <li>âœ“ Upload unlimited videos, images & audio</li>
+                        <li>âœ“ Live streaming capabilities</li>
+                        <li>âœ“ Earn iKbp rewards for content</li>
+                        <li>âœ“ Join competitions</li>
+                        <li>âœ“ Comment, like & share</li>
+                        <li>âœ“ Build your subscriber base</li>
                     </ul>
                 </div>
 
@@ -387,7 +387,7 @@
     <div id="referral-banner" class="fixed bottom-0 left-0 right-0 bg-gradient-to-r from-purple-600 via-cyan-500 to-teal-400 py-2 px-4 z-40 hidden">
         <div class="overflow-hidden">
             <div class="animate-marquee whitespace-nowrap text-white font-semibold">
-                🎁 Earn iKbp Rewards! Share your referral code and earn 50 iKbp for each active user who joins! Your code: <span id="referral-code-banner">TAU-XXXXXXXX</span>
+                ðŸŽ Earn iKbp Rewards! Share your referral code and earn 50 iKbp for each active user who joins! Your code: <span id="referral-code-banner">TAU-XXXXXXXX</span>
             </div>
         </div>
     </div>
@@ -454,7 +454,7 @@
 
         async function loadBreakingNews() {
             const ticker = document.getElementById('news-ticker');
-            ticker.textContent = 'TAU Africa announces new partnership • Kabiru Ecosystem reaches 10,000 users • New features coming to TAU Main App • Join our content competitions and win amazing prizes!';
+            ticker.textContent = 'TAU Africa announces new partnership â€¢ Kabiru Ecosystem reaches 10,000 users â€¢ New features coming to TAU Main App â€¢ Join our content competitions and win amazing prizes!';
         }
 
         function switchTab(tab) {
@@ -512,8 +512,8 @@
                             <span class="bg-red-600 text-white px-3 py-1 rounded-full text-sm">${comp.deadline}</span>
                         </div>
                         <h3 class="text-white text-xl font-bold mb-2">${comp.title}</h3>
-                        <p class="text-yellow-400 font-semibold mb-3">🎁 Prize: ${comp.prize}</p>
-                        <p class="text-gray-400 text-sm mb-4">👥 ${comp.participants} participants</p>
+                        <p class="text-yellow-400 font-semibold mb-3">ðŸŽ Prize: ${comp.prize}</p>
+                        <p class="text-gray-400 text-sm mb-4">ðŸ‘¥ ${comp.participants} participants</p>
                         <button onclick="joinCompetition(${comp.id})" class="w-full bg-gradient-to-r from-purple-600 to-teal-400 text-white py-3 rounded-lg hover:opacity-90 font-semibold">
                             Join Competition
                         </button>
@@ -555,8 +555,8 @@
                             <p class="text-gray-400 text-sm">${video.author}</p>
                             <div class="flex items-center gap-3 text-gray-500 text-xs mt-1">
                                 <span>${video.views.toLocaleString()} views</span>
-                                <span>👍 ${video.likes}</span>
-                                <span>👥 ${video.subscribers}</span>
+                                <span>ðŸ‘ ${video.likes}</span>
+                                <span>ðŸ‘¥ ${video.subscribers}</span>
                             </div>
                         </div>
                     </div>
@@ -596,7 +596,7 @@
         function loadComments() {
             const commentsList = document.getElementById('comments-list');
             const sampleComments = [
-                { author: 'John Doe', text: 'Great content! Keep it up 👍', time: '2 hours ago' },
+                { author: 'John Doe', text: 'Great content! Keep it up ðŸ‘', time: '2 hours ago' },
                 { author: 'Jane Smith', text: 'Very informative, thank you!', time: '5 hours ago' }
             ];
 
@@ -656,7 +656,7 @@
         }
 
         function sendGift() {
-            showNotification('Gift sent! The creator will receive your support 🎁');
+            showNotification('Gift sent! The creator will receive your support ðŸŽ');
             userPoints -= 50;
             if (userPoints < 0) userPoints = 0;
             localStorage.setItem('ikbp_points', userPoints);
@@ -664,7 +664,7 @@
         }
 
         function joinCompetition(compId) {
-            showNotification('You have successfully joined the competition! Good luck! 🏆');
+            showNotification('You have successfully joined the competition! Good luck! ðŸ†');
         }
 
         function showUploadModal() {
@@ -790,7 +790,7 @@
                         localStorage.setItem('ikbp_points', userPoints);
                         document.getElementById('user-points').textContent = userPoints;
 
-                        showNotification(`Upload successful! You earned ${points} iKbp points! 🎉`);
+                        showNotification(`Upload successful! You earned ${points} iKbp points! ðŸŽ‰`);
                         closeUploadModal();
                         loadContent();
                     }
@@ -859,5 +859,4 @@
             showNotification('Your iKbp balance can be used for gifts, premium features, and rewards!');
         }
     </script>
-</body>
-    </html>
+    </body>
