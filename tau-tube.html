@@ -19,7 +19,7 @@
             100% { transform: translateX(-100%); }
         }
         .animate-marquee {
-            animation: marquee 25s linear infinite;
+            animation: marquee 30s linear infinite;
         }
         .video-thumbnail {
             transition: transform 0.2s;
@@ -37,27 +37,6 @@
             0% { transform: translateX(-100%); }
             100% { transform: translateX(100%); }
         }
-        .notification-banner {
-            position: fixed;
-            bottom: 0;
-            left: 0;
-            right: 0;
-            background: linear-gradient(90deg, #9333ea, #06b6d4);
-            color: white;
-            padding: 12px;
-            z-index: 100;
-            overflow: hidden;
-            box-shadow: 0 -4px 15px rgba(0,0,0,0.3);
-        }
-        .notification-text {
-            white-space: nowrap;
-            display: inline-block;
-            animation: scroll-text 25s linear;
-        }
-        @keyframes scroll-text {
-            0% { transform: translateX(100%); }
-            100% { transform: translateX(-100%); }
-        }
     </style>
 </head>
 <body class="bg-gray-900 min-h-screen">
@@ -73,11 +52,6 @@
                 <i data-lucide="x" style="width: 20px; height: 20px;"></i>
             </button>
         </div>
-    </div>
-
-    <!-- Scrolling Notification Banner -->
-    <div id="notification-banner" class="notification-banner" style="display: none;">
-        <div class="notification-text" id="banner-text"></div>
     </div>
 
     <!-- Header -->
@@ -165,75 +139,112 @@
                     </div>
                     <div>
                         <p id="account-name" class="text-white font-semibold">Guest User</p>
-                        <p id="account-id" class="text-gray-400 text-sm">Not logged in</p>
+                        <p class="text-gray-400 text-sm">Standard Account</p>
                     </div>
                 </div>
                 <button onclick="showAccountModal()" class="bg-gradient-to-r from-purple-600 to-teal-400 text-white px-6 py-2 rounded-lg hover:opacity-90 flex items-center gap-2 font-semibold">
-                    <i data-lucide="user-plus" style="width: 18px; height: 18px;"></i> Login / Register
+                    <i data-lucide="user-plus" style="width: 18px; height: 18px;"></i> Create TAU TUBE Account
                 </button>
             </div>
         </div>
     </div>
 
     <!-- Main Content -->
-    <div class="max-w-7xl mx-auto p-4" style="padding-bottom: 80px;">
+    <div class="max-w-7xl mx-auto p-4">
         <div id="content-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             <!-- Content will be loaded here dynamically -->
         </div>
     </div>
 
-    <!-- Competition Registration Modal -->
-    <div id="competition-modal" class="fixed inset-0 bg-black bg-opacity-75 z-50 hidden items-center justify-center p-4">
-        <div class="bg-gray-800 rounded-lg p-6 w-full max-w-2xl max-h-[90vh] overflow-y-auto">
-            <h2 class="text-white text-2xl font-bold mb-4">Join Competition</h2>
-            
-            <div class="bg-yellow-400 bg-opacity-20 border border-yellow-400 rounded-lg p-4 mb-4">
-                <p class="text-yellow-300 text-sm">
-                    <i data-lucide="info" class="inline" style="width: 16px; height: 16px;"></i>
-                    <strong>Important:</strong> You need a TAU Africa Member ID to participate. 
-                    <a href="https://magero1985.github.io/Tau-Africa/" target="_blank" class="underline hover:text-yellow-100">
-                        Register here if you don't have one.
-                    </a>
-                </p>
+    <!-- Video Player Modal -->
+    <div id="video-modal" class="fixed inset-0 bg-black bg-opacity-95 z-50 hidden items-center justify-center p-4" style="padding-bottom: 60px;">
+        <div class="w-full max-w-5xl">
+            <div class="bg-black rounded-lg overflow-hidden">
+                <div class="relative aspect-video bg-black">
+                    <video id="video-player" class="w-full h-full" controls preload="auto">
+                        <source id="video-source" src="" type="video/mp4">
+                    </video>
+                    <div id="live-badge" class="absolute top-4 left-4 bg-red-600 text-white px-3 py-2 rounded-lg font-bold hidden items-center gap-2">
+                        <i data-lucide="radio" style="width: 16px; height: 16px;"></i> LIVE
+                    </div>
+                </div>
             </div>
             
-            <form id="competition-form" class="space-y-4">
+            <div class="bg-gray-800 p-4 mt-2 rounded-lg">
+                <h2 id="video-title" class="text-white text-xl font-bold mb-2"></h2>
+                <div class="flex items-center justify-between mb-4 flex-wrap gap-2">
+                    <div>
+                        <p id="video-author" class="text-gray-400"></p>
+                        <p id="video-views" class="text-gray-500 text-sm"></p>
+                    </div>
+                    <div class="flex gap-2 flex-wrap">
+                        <button onclick="subscribeToChannel()" class="bg-purple-600 text-white px-4 py-2 rounded-lg hover:bg-purple-700 flex items-center gap-2">
+                            <i data-lucide="user-plus" style="width: 16px; height: 16px;"></i> Subscribe
+                        </button>
+                        <button onclick="likeVideo()" class="bg-gray-700 text-white px-4 py-2 rounded-lg hover:bg-gray-600 flex items-center gap-2">
+                            <i data-lucide="thumbs-up" style="width: 16px; height: 16px;"></i> Like
+                        </button>
+                        <button onclick="shareVideo()" class="bg-gray-700 text-white px-4 py-2 rounded-lg hover:bg-gray-600 flex items-center gap-2">
+                            <i data-lucide="share-2" style="width: 16px; height: 16px;"></i> Share
+                        </button>
+                        <button onclick="sendGift()" class="bg-yellow-400 text-gray-900 px-4 py-2 rounded-lg hover:bg-yellow-300 flex items-center gap-2">
+                            <i data-lucide="gift" style="width: 16px; height: 16px;"></i> Gift
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- Comments Section -->
+                <div class="border-t border-gray-700 pt-4 mt-4">
+                    <h3 class="text-white font-semibold mb-3">Comments</h3>
+                    <div class="flex gap-2 mb-4">
+                        <input type="text" id="comment-input" placeholder="Add a comment..." class="flex-1 bg-gray-700 text-white p-2 rounded-lg">
+                        <button onclick="postComment()" class="bg-purple-600 text-white px-4 py-2 rounded-lg hover:bg-purple-700">
+                            <i data-lucide="send" style="width: 16px; height: 16px;"></i>
+                        </button>
+                    </div>
+                    <div id="comments-list" class="space-y-3 max-h-64 overflow-y-auto">
+                        <!-- Comments will appear here -->
+                    </div>
+                </div>
+                
+                <button onclick="closeVideoModal()" class="w-full bg-gray-700 text-white py-2 rounded-lg hover:bg-gray-600 mt-4">Close</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Live Stream Modal -->
+    <div id="live-modal" class="fixed inset-0 bg-black bg-opacity-95 z-50 hidden items-center justify-center p-4">
+        <div class="bg-gray-800 rounded-lg p-6 w-full max-w-2xl">
+            <h2 class="text-white text-2xl font-bold mb-4">Start Live Stream</h2>
+            
+            <form id="live-form" class="space-y-4">
                 <div>
-                    <label class="text-gray-300 block mb-2">TAU Member ID *</label>
-                    <input type="text" id="comp-member-id" required class="w-full bg-gray-700 text-white p-3 rounded-lg" placeholder="TSK-XXXXXX-XXX or TLK-XXXXXX-XXX">
-                    <p class="text-gray-400 text-xs mt-1">Don't have one? <a href="https://magero1985.github.io/Tau-Africa/" target="_blank" class="text-purple-400 underline">Register at TAU Africa</a></p>
+                    <label class="text-gray-300 block mb-2">Stream Title</label>
+                    <input type="text" id="live-title" required class="w-full bg-gray-700 text-white p-3 rounded-lg" placeholder="Enter stream title...">
                 </div>
 
                 <div>
-                    <label class="text-gray-300 block mb-2">Full Name *</label>
-                    <input type="text" id="comp-name" required class="w-full bg-gray-700 text-white p-3 rounded-lg" placeholder="Your full name">
+                    <label class="text-gray-300 block mb-2">Description</label>
+                    <textarea id="live-description" required class="w-full bg-gray-700 text-white p-3 rounded-lg h-24" placeholder="What's your stream about?"></textarea>
                 </div>
 
                 <div>
-                    <label class="text-gray-300 block mb-2">Email *</label>
-                    <input type="email" id="comp-email" required class="w-full bg-gray-700 text-white p-3 rounded-lg" placeholder="your@email.com">
-                </div>
-
-                <div>
-                    <label class="text-gray-300 block mb-2">Phone Number *</label>
-                    <input type="tel" id="comp-phone" required class="w-full bg-gray-700 text-white p-3 rounded-lg" placeholder="+254...">
-                </div>
-
-                <div>
-                    <label class="text-gray-300 block mb-2">Competition Type *</label>
-                    <select id="comp-type" required class="w-full bg-gray-700 text-white p-3 rounded-lg">
-                        <option value="">Select competition</option>
-                        <option value="Best Video Creator">Best Video Creator of the Month</option>
-                        <option value="Audio Challenge">Audio Content Challenge</option>
-                        <option value="Photography">Photography Competition</option>
+                    <label class="text-gray-300 block mb-2">Category</label>
+                    <select id="live-category" class="w-full bg-gray-700 text-white p-3 rounded-lg">
+                        <option>Gaming</option>
+                        <option>Music</option>
+                        <option>Education</option>
+                        <option>Events</option>
+                        <option>Business Meeting</option>
+                        <option>Other</option>
                     </select>
                 </div>
 
                 <div class="flex gap-2">
-                    <button type="submit" class="flex-1 bg-purple-600 text-white py-3 rounded-lg hover:bg-purple-700 font-semibold">
-                        Submit Registration
+                    <button type="submit" class="flex-1 bg-red-600 text-white py-3 rounded-lg hover:bg-red-700 font-semibold flex items-center justify-center gap-2">
+                        <i data-lucide="radio" style="width: 20px; height: 20px;"></i> Go Live
                     </button>
-                    <button type="button" onclick="closeCompetitionModal()" class="flex-1 bg-gray-700 text-white py-3 rounded-lg hover:bg-gray-600">
+                    <button type="button" onclick="closeLiveModal()" class="flex-1 bg-gray-700 text-white py-3 rounded-lg hover:bg-gray-600">
                         Cancel
                     </button>
                 </div>
@@ -241,152 +252,144 @@
         </div>
     </div>
 
-    <!-- Account/Login Modal -->
-    <div id="account-modal" class="fixed inset-0 bg-black bg-opacity-75 z-50 hidden items-center justify-center p-4">
-        <div class="bg-gray-800 rounded-lg p-6 w-full max-w-md max-h-[90vh] overflow-y-auto">
-            <h2 class="text-white text-2xl font-bold mb-4" id="account-modal-title">Login / Register</h2>
+    <!-- Upload Modal -->
+    <div id="upload-modal" class="fixed inset-0 bg-black bg-opacity-75 z-50 hidden items-center justify-center p-4">
+        <div class="bg-gray-800 rounded-lg p-6 w-full max-w-2xl max-h-[90vh] overflow-y-auto">
+            <h2 class="text-white text-2xl font-bold mb-4">Upload Content</h2>
             
-            <!-- Login/Register Tabs -->
-            <div class="flex gap-2 mb-4">
-                <button onclick="switchAccountTab('login')" id="account-tab-login" class="flex-1 py-2 bg-purple-600 text-white rounded">Login</button>
-                <button onclick="switchAccountTab('register')" id="account-tab-register" class="flex-1 py-2 bg-gray-700 text-white rounded">Register</button>
-            </div>
+            <form id="upload-form" class="space-y-4">
+                <div>
+                    <label class="text-gray-300 block mb-2">Content Type</label>
+                    <div class="grid grid-cols-3 gap-2">
+                        <button type="button" onclick="setUploadType('video')" id="upload-video-btn" class="bg-purple-600 text-white py-3 rounded-lg hover:bg-purple-700 flex items-center justify-center gap-2">
+                            <i data-lucide="film" style="width: 20px; height: 20px;"></i> Video
+                        </button>
+                        <button type="button" onclick="setUploadType('image')" id="upload-image-btn" class="bg-gray-700 text-white py-3 rounded-lg hover:bg-gray-600 flex items-center justify-center gap-2">
+                            <i data-lucide="image" style="width: 20px; height: 20px;"></i> Image
+                        </button>
+                        <button type="button" onclick="setUploadType('audio')" id="upload-audio-btn" class="bg-gray-700 text-white py-3 rounded-lg hover:bg-gray-600 flex items-center justify-center gap-2">
+                            <i data-lucide="mic" style="width: 20px; height: 20px;"></i> Audio
+                        </button>
+                    </div>
+                </div>
 
-            <!-- Login Form -->
-            <div id="login-form-container">
-                <form id="login-form" class="space-y-4">
-                    <div>
-                        <label class="text-gray-300 block mb-2">Login Method</label>
-                        <select id="login-method" class="w-full bg-gray-700 text-white p-3 rounded-lg">
-                            <option value="email">Email</option>
-                            <option value="member-id">TAU Member ID</option>
-                        </select>
+                <div>
+                    <label class="text-gray-300 block mb-2">Title</label>
+                    <input type="text" id="upload-title" required class="w-full bg-gray-700 text-white p-3 rounded-lg" placeholder="Enter title...">
+                </div>
+
+                <div>
+                    <label class="text-gray-300 block mb-2">Description</label>
+                    <textarea id="upload-description" required class="w-full bg-gray-700 text-white p-3 rounded-lg h-24" placeholder="Enter description..."></textarea>
+                </div>
+
+                <div>
+                    <label class="text-gray-300 block mb-2">Upload File</label>
+                    <input type="file" id="upload-file" required accept="video/*,image/*,audio/*" class="hidden">
+                    <div onclick="document.getElementById('upload-file').click()" class="border-2 border-dashed border-gray-600 rounded-lg p-8 text-center cursor-pointer hover:border-purple-600">
+                        <i data-lucide="upload" class="mx-auto mb-2 text-gray-400" style="width: 48px; height: 48px;"></i>
+                        <p class="text-gray-400">Click to upload or drag and drop</p>
+                        <p class="text-gray-500 text-sm mt-2">Max file size: 500MB for videos, 50MB for images/audio</p>
+                        <p id="selected-file" class="text-purple-400 mt-2"></p>
                     </div>
-                    <div>
-                        <label class="text-gray-300 block mb-2" id="login-identifier-label">Email</label>
-                        <input type="text" id="login-identifier" required class="w-full bg-gray-700 text-white p-3 rounded-lg" placeholder="Enter email or Member ID">
+                    <div id="upload-progress-container" class="hidden mt-4">
+                        <div class="bg-gray-700 rounded-full h-4 overflow-hidden">
+                            <div id="upload-progress-bar" class="bg-purple-600 h-full transition-all" style="width: 0%"></div>
+                        </div>
+                        <p id="upload-progress-text" class="text-gray-300 text-sm text-center mt-2">0%</p>
                     </div>
-                    <div>
-                        <label class="text-gray-300 block mb-2">Password</label>
-                        <input type="password" id="login-password" required class="w-full bg-gray-700 text-white p-3 rounded-lg">
-                    </div>
-                    <button type="submit" class="w-full bg-purple-600 text-white py-3 rounded-lg hover:bg-purple-700 font-semibold">
-                        Login
+                </div>
+
+                <div class="flex gap-2">
+                    <button type="submit" class="flex-1 bg-purple-600 text-white py-3 rounded-lg hover:bg-purple-700 font-semibold">
+                        Upload & Publish
                     </button>
-                </form>
-            </div>
+                    <button type="button" onclick="closeUploadModal()" class="flex-1 bg-gray-700 text-white py-3 rounded-lg hover:bg-gray-600">
+                        Cancel
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
 
-            <!-- Register Form -->
-            <div id="register-form-container" style="display: none;">
-                <form id="register-form" class="space-y-4">
-                    <div>
-                        <label class="text-gray-300 block mb-2">Full Name</label>
-                        <input type="text" id="reg-name" required class="w-full bg-gray-700 text-white p-3 rounded-lg">
-                    </div>
-                    <div>
-                        <label class="text-gray-300 block mb-2">Email</label>
-                        <input type="email" id="reg-email" required class="w-full bg-gray-700 text-white p-3 rounded-lg">
-                    </div>
-                    <div>
-                        <label class="text-gray-300 block mb-2">TAU Member ID (Optional)</label>
-                        <input type="text" id="reg-member-id" class="w-full bg-gray-700 text-white p-3 rounded-lg" placeholder="TSK-XXXXXX-XXX">
-                        <p class="text-gray-400 text-xs mt-1">Have a TAU ID? Link it for bonuses!</p>
-                    </div>
-                    <div>
-                        <label class="text-gray-300 block mb-2">Password</label>
-                        <input type="password" id="reg-password" required class="w-full bg-gray-700 text-white p-3 rounded-lg">
-                    </div>
-                    <button type="submit" class="w-full bg-purple-600 text-white py-3 rounded-lg hover:bg-purple-700 font-semibold">
+    <!-- Account Creation Modal -->
+    <div id="account-modal" class="fixed inset-0 bg-black bg-opacity-75 z-50 hidden items-center justify-center p-4">
+        <div class="bg-gray-800 rounded-lg p-6 w-full max-w-md">
+            <h2 class="text-white text-2xl font-bold mb-4">Create TAU TUBE Account</h2>
+            
+            <form id="account-form" class="space-y-4">
+                <div>
+                    <label class="text-gray-300 block mb-2">Full Name</label>
+                    <input type="text" id="account-fullname" required class="w-full bg-gray-700 text-white p-3 rounded-lg" placeholder="Enter your name">
+                </div>
+
+                <div>
+                    <label class="text-gray-300 block mb-2">Email</label>
+                    <input type="email" id="account-email" required class="w-full bg-gray-700 text-white p-3 rounded-lg" placeholder="your@email.com">
+                </div>
+
+                <div>
+                    <label class="text-gray-300 block mb-2">Password</label>
+                    <input type="password" id="account-password" required class="w-full bg-gray-700 text-white p-3 rounded-lg" placeholder="Create password">
+                </div>
+
+                <div class="bg-gradient-to-r from-purple-600 to-teal-400 p-4 rounded-lg">
+                    <h3 class="text-white font-bold mb-2">Standard Account Features:</h3>
+                    <ul class="text-white text-sm space-y-1">
+                        <li>âœ“ Upload unlimited videos, images & audio</li>
+                        <li>âœ“ Live streaming capabilities</li>
+                        <li>âœ“ Earn iKbp rewards for content</li>
+                        <li>âœ“ Join competitions</li>
+                        <li>âœ“ Comment, like & share</li>
+                        <li>âœ“ Build your subscriber base</li>
+                    </ul>
+                </div>
+
+                <div class="flex gap-2">
+                    <button type="submit" class="flex-1 bg-gradient-to-r from-purple-600 to-teal-400 text-white py-3 rounded-lg hover:opacity-90 font-semibold">
                         Create Account
                     </button>
-                </form>
-            </div>
-
-            <button onclick="closeAccountModal()" class="w-full bg-gray-700 text-white py-2 rounded-lg hover:bg-gray-600 mt-4">
-                Close
-            </button>
+                    <button type="button" onclick="closeAccountModal()" class="flex-1 bg-gray-700 text-white py-3 rounded-lg hover:bg-gray-600">
+                        Cancel
+                    </button>
+                </div>
+            </form>
         </div>
     </div>
 
-    <!-- User Dashboard Modal -->
-    <div id="dashboard-modal" class="fixed inset-0 bg-black bg-opacity-75 z-50 hidden items-center justify-center p-4">
-        <div class="bg-gray-800 rounded-lg p-6 w-full max-w-2xl max-h-[90vh] overflow-y-auto">
-            <h2 class="text-white text-2xl font-bold mb-4">My Account</h2>
+    <!-- Share Modal -->
+    <div id="share-modal" class="fixed inset-0 bg-black bg-opacity-75 z-50 hidden items-center justify-center p-4">
+        <div class="bg-gray-800 rounded-lg p-6 w-full max-w-md">
+            <h2 class="text-white text-2xl font-bold mb-4">Share</h2>
             
-            <!-- Balance Section -->
-            <div class="grid grid-cols-2 gap-4 mb-4">
-                <div class="bg-gradient-to-r from-purple-600 to-cyan-500 p-4 rounded-lg">
-                    <p class="text-white text-sm opacity-80">iKbp Balance</p>
-                    <p class="text-white text-2xl font-bold" id="dash-ikbp">0</p>
-                    <p class="text-white text-xs">10 iKbp = 1 KSH</p>
-                </div>
-                <div class="bg-gradient-to-r from-yellow-500 to-orange-500 p-4 rounded-lg">
-                    <p class="text-white text-sm opacity-80">Equivalent</p>
-                    <p class="text-white text-2xl font-bold" id="dash-ksh">0 KSH</p>
-                    <p class="text-white text-xs">10,000 iKbp = 1 iKb</p>
-                </div>
+            <div class="space-y-3">
+                <button onclick="shareToWhatsApp()" class="w-full bg-green-600 text-white p-3 rounded-lg hover:bg-green-700 flex items-center justify-center gap-2">
+                    <i data-lucide="message-circle" style="width: 20px; height: 20px;"></i> WhatsApp
+                </button>
+                <button onclick="shareToFacebook()" class="w-full bg-blue-600 text-white p-3 rounded-lg hover:bg-blue-700 flex items-center justify-center gap-2">
+                    <i data-lucide="facebook" style="width: 20px; height: 20px;"></i> Facebook
+                </button>
+                <button onclick="shareToTwitter()" class="w-full bg-sky-500 text-white p-3 rounded-lg hover:bg-sky-600 flex items-center justify-center gap-2">
+                    <i data-lucide="twitter" style="width: 20px; height: 20px;"></i> Twitter
+                </button>
+                <button onclick="copyShareLink()" class="w-full bg-gray-700 text-white p-3 rounded-lg hover:bg-gray-600 flex items-center justify-center gap-2">
+                    <i data-lucide="copy" style="width: 20px; height: 20px;"></i> Copy Link
+                </button>
             </div>
-
-            <!-- Conversion Section -->
-            <div class="bg-gray-700 p-4 rounded-lg mb-4">
-                <h3 class="text-white font-bold mb-3 flex items-center gap-2">
-                    <i data-lucide="repeat" style="width: 20px; height: 20px;"></i>
-                    Convert iKbp to iKb
-                </h3>
-                <p class="text-gray-300 text-sm mb-3">Convert 10,000 iKbp = 1 iKb for use in Kabiru Mining App</p>
-                <div class="flex gap-2">
-                    <input type="number" id="convert-amount" placeholder="10000" class="flex-1 bg-gray-600 text-white p-2 rounded" min="10000" step="10000">
-                    <button onclick="convertToIKb()" class="bg-purple-600 text-white px-4 py-2 rounded hover:bg-purple-700">
-                        Convert
-                    </button>
-                </div>
-                <p class="text-gray-400 text-xs mt-2">Minimum: 10,000 iKbp</p>
-            </div>
-
-            <!-- Transfer to Kabiru -->
-            <div class="bg-gray-700 p-4 rounded-lg mb-4">
-                <h3 class="text-white font-bold mb-3 flex items-center gap-2">
-                    <i data-lucide="send" style="width: 20px; height: 20px;"></i>
-                    Transfer to Kabiru Wallet
-                </h3>
-                <p class="text-gray-300 text-sm mb-3">Transfer iKbp to Kabiru Mining App for withdrawals and more features</p>
-                <div class="space-y-2">
-                    <input type="number" id="transfer-amount" placeholder="Amount in iKbp" class="w-full bg-gray-600 text-white p-2 rounded">
-                    <input type="text" id="kabiru-wallet-id" placeholder="Your Kabiru Wallet ID or Email" class="w-full bg-gray-600 text-white p-2 rounded">
-                    <button onclick="transferToKabiru()" class="w-full bg-teal-500 text-white px-4 py-2 rounded hover:bg-teal-600 font-semibold">
-                        Transfer to Kabiru
-                    </button>
-                </div>
-                <p class="text-yellow-300 text-xs mt-2">
-                    <i data-lucide="info" class="inline" style="width: 12px; height: 12px;"></i>
-                    Don't have Kabiru account? <a href="https://magero1985.github.io/Tau-Africa/Kabiru-Mining-Portal/" target="_blank" class="underline">Sign up here</a>
-                </p>
-            </div>
-
-            <!-- Referral Section -->
-            <div class="bg-gray-700 p-4 rounded-lg mb-4">
-                <h3 class="text-white font-bold mb-3 flex items-center gap-2">
-                    <i data-lucide="users" style="width: 20px; height: 20px;"></i>
-                    Referral Link
-                </h3>
-                <div class="flex gap-2">
-                    <input type="text" id="referral-link" readonly class="flex-1 bg-gray-600 text-white p-2 rounded text-sm" value="https://magero1985.github.io/Tau-Africa/tau-tube.html">
-                    <button onclick="copyReferralLink()" class="bg-purple-600 text-white px-4 py-2 rounded hover:bg-purple-700">
-                        <i data-lucide="copy" style="width: 16px; height: 16px;"></i>
-                    </button>
-                </div>
-                <p class="text-gray-400 text-xs mt-2">Share and earn 50 iKbp per active referral!</p>
-            </div>
-
-            <button onclick="closeDashboard()" class="w-full bg-gray-700 text-white py-2 rounded-lg hover:bg-gray-600">
+            
+            <button onclick="closeShareModal()" class="w-full bg-gray-700 text-white py-2 rounded-lg hover:bg-gray-600 mt-4">
                 Close
             </button>
         </div>
     </div>
 
-    <!-- Video Player Modal (keeping existing) -->
-    <div id="video-modal" class="fixed inset-0 bg-black bg-opacity-95 z-50 hidden items-center justify-center p-4" style="padding-bottom: 80px;">
-        <!-- Same as original -->
+    <!-- Referral Banner (Occasional sliding text) -->
+    <div id="referral-banner" class="fixed bottom-0 left-0 right-0 bg-gradient-to-r from-purple-600 via-cyan-500 to-teal-400 py-2 px-4 z-40 hidden">
+        <div class="overflow-hidden">
+            <div class="animate-marquee whitespace-nowrap text-white font-semibold">
+                ðŸŽ Earn iKbp Rewards! Share your referral code and earn 50 iKbp for each active user who joins! Your code: <span id="referral-code-banner">TAU-XXXXXXXX</span>
+            </div>
+        </div>
     </div>
 
     <!-- JavaScript -->
@@ -414,467 +417,44 @@
 
         emailjs.init(EMAIL_CONFIG.publicKey);
 
-        let currentUser = null;
         let currentTab = 'videos';
         let viewMode = 'grid';
+        let uploadType = 'video';
         let userPoints = 0;
         let referralCode = '';
-
-        const notificationMessages = [
-            "Welcome to TAU TUBE! Earn iKbp rewards by watching and uploading content. Start building your balance today!",
-            "New competition starting soon! Register now with your TAU Member ID for a chance to win amazing prizes.",
-            "Transfer your iKbp to Kabiru Wallet for withdrawals. Conversion: 10,000 iKbp = 1 iKb = 100,000 KSH",
-            "Refer friends and earn bonuses! Share your referral link and get 50 iKbp for each active user who joins.",
-            "Convert your iKbp to iKb in your account. Rate: 10 iKbp = 1 KSH | 10,000 iKbp = 1 iKb",
-            "Watch videos daily to maximize your iKbp earnings! Every view counts towards your rewards.",
-            "Complete your TAU Africa registration to unlock all features and boost your mining rate.",
-            "New videos uploaded! Check out the latest content from our creators and start earning rewards."
-        ];
+        let currentVideoId = null;
+        let shareUrl = '';
 
         document.addEventListener('DOMContentLoaded', () => {
             lucide.createIcons();
             loadInitialData();
-            startNotificationCycle();
-            setupLoginMethodChange();
+            startReferralBannerRotation();
         });
-
-        // Enhanced Notification System - 25 second display, 60 second cycle
-        function startNotificationCycle() {
-            let messageIndex = 0;
-            const banner = document.getElementById('notification-banner');
-            const bannerText = document.getElementById('banner-text');
-
-            function showNextMessage() {
-                bannerText.textContent = notificationMessages[messageIndex];
-                banner.style.display = 'block';
-                
-                // Hide after 25 seconds
-                setTimeout(() => {
-                    banner.style.display = 'none';
-                25000);
-
-                messageIndex = (messageIndex + 1) % notificationMessages.length;
-            }
-
-            // Show first message immediately
-            showNextMessage();
-            
-            // Show next message every 60 seconds
-            setInterval(showNextMessage, 60000);
-        }
 
         async function loadInitialData() {
             referralCode = `TAU-${Math.random().toString(36).substr(2, 8).toUpperCase()}`;
+            document.getElementById('referral-code-banner').textContent = referralCode;
 
             userPoints = parseInt(localStorage.getItem('ikbp_points') || '0');
             document.getElementById('user-points').textContent = userPoints;
 
             await loadBreakingNews();
             await loadContent();
+        }
 
-            // Check for logged in user
-            auth.onAuthStateChanged(user => {
-                if (user) {
-                    currentUser = user;
-                    updateUserDisplay();
-                }
-            });
+        function startReferralBannerRotation() {
+            setInterval(() => {
+                const banner = document.getElementById('referral-banner');
+                banner.classList.remove('hidden');
+                setTimeout(() => {
+                    banner.classList.add('hidden');
+                }, 10000);
+            }, 60000);
         }
 
         async function loadBreakingNews() {
             const ticker = document.getElementById('news-ticker');
-            ticker.textContent = 'TAU Africa announces new partnership • Kabiru Ecosystem reaches 10,000 users • New features coming to TAU Main App • Join our content competitions and win amazing prizes!';
-        }
-
-        function setupLoginMethodChange() {
-            const loginMethod = document.getElementById('login-method');
-            if (loginMethod) {
-                loginMethod.addEventListener('change', (e) => {
-                    const label = document.getElementById('login-identifier-label');
-                    const input = document.getElementById('login-identifier');
-                    if (e.target.value === 'member-id') {
-                        label.textContent = 'TAU Member ID';
-                        input.placeholder = 'TSK-XXXXXX-XXX or TLK-XXXXXX-XXX';
-                    } else {
-                        label.textContent = 'Email';
-                        input.placeholder = 'your@email.com';
-                    }
-                });
-            }
-        }
-
-        function switchAccountTab(tab) {
-            const loginContainer = document.getElementById('login-form-container');
-            const registerContainer = document.getElementById('register-form-container');
-            const loginTab = document.getElementById('account-tab-login');
-            const registerTab = document.getElementById('account-tab-register');
-
-            if (tab === 'login') {
-                loginContainer.style.display = 'block';
-                registerContainer.style.display = 'none';
-                loginTab.className = 'flex-1 py-2 bg-purple-600 text-white rounded';
-                registerTab.className = 'flex-1 py-2 bg-gray-700 text-white rounded';
-            } else {
-                loginContainer.style.display = 'none';
-                registerContainer.style.display = 'block';
-                loginTab.className = 'flex-1 py-2 bg-purple-600 text-white rounded';
-            }
-        }
-
-        // Login Form Handler
-        document.getElementById('login-form')?.addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const method = document.getElementById('login-method').value;
-            const identifier = document.getElementById('login-identifier').value;
-            const password = document.getElementById('login-password').value;
-
-            try {
-                let email = identifier;
-                
-                // If using Member ID, look up email from Firestore
-                if (method === 'member-id') {
-                    const memberQuery = await db.collection('members')
-                        .where('id', '==', identifier)
-                        .limit(1)
-                        .get();
-                    
-                    if (memberQuery.empty) {
-                        showNotification('Member ID not found. Please check and try again.');
-                        return;
-                    }
-                    
-                    email = memberQuery.docs[0].data().email;
-                }
-
-                const userCredential = await auth.signInWithEmailAndPassword(email, password);
-                currentUser = userCredential.user;
-                
-                // Load user data
-                await loadUserData();
-                
-                showNotification('Login successful! Welcome back.');
-                closeAccountModal();
-                updateUserDisplay();
-                
-            } catch (error) {
-                console.error('Login error:', error);
-                showNotification('Login failed: ' + error.message);
-            }
-        });
-
-        // Register Form Handler
-        document.getElementById('register-form')?.addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const name = document.getElementById('reg-name').value;
-            const email = document.getElementById('reg-email').value;
-            const memberId = document.getElementById('reg-member-id').value;
-            const password = document.getElementById('reg-password').value;
-
-            try {
-                // Create Firebase auth account
-                const userCredential = await auth.createUserWithEmailAndPassword(email, password);
-                currentUser = userCredential.user;
-
-                // Update profile
-                await currentUser.updateProfile({ displayName: name });
-
-                // Create user document
-                await db.collection('users').doc(currentUser.uid).set({
-                    name: name,
-                    email: email,
-                    tauMemberId: memberId || null,
-                    ikbpBalance: memberId ? 100 : 0, // Bonus for linking Member ID
-                    createdAt: firebase.firestore.FieldValue.serverTimestamp(),
-                    referralCode: `TAU-${Math.random().toString(36).substr(2, 8).toUpperCase()}`
-                });
-
-                userPoints = memberId ? 100 : 0;
-                localStorage.setItem('ikbp_points', userPoints);
-                document.getElementById('user-points').textContent = userPoints;
-
-                showNotification(memberId ? 
-                    'Account created! You earned 100 iKbp for linking your TAU Member ID!' : 
-                    'Account created successfully!');
-                
-                closeAccountModal();
-                updateUserDisplay();
-
-            } catch (error) {
-                console.error('Registration error:', error);
-                showNotification('Registration failed: ' + error.message);
-            }
-        });
-
-        // Competition Form Handler
-        document.getElementById('competition-form')?.addEventListener('submit', async (e) => {
-            e.preventDefault();
-            
-            const memberId = document.getElementById('comp-member-id').value;
-            const name = document.getElementById('comp-name').value;
-            const email = document.getElementById('comp-email').value;
-            const phone = document.getElementById('comp-phone').value;
-            const competitionType = document.getElementById('comp-type').value;
-
-            // Validate Member ID format
-            if (!memberId.match(/^(TSK|TLK)-\d{6}-\d{3}$/)) {
-                showNotification('Invalid Member ID format. Use: TSK-XXXXXX-XXX or TLK-XXXXXX-XXX');
-                return;
-            }
-
-            try {
-                // Send email via EmailJS
-                await emailjs.send(EMAIL_CONFIG.serviceId, EMAIL_CONFIG.templateId, {
-                    to_email: EMAIL_CONFIG.adminEmail,
-                    subject: 'TAU TUBE Competition Registration',
-                    message: `
-                        New Competition Registration:
-                        
-                        TAU Member ID: ${memberId}
-                        Name: ${name}
-                        Email: ${email}
-                        Phone: ${phone}
-                        Competition: ${competitionType}
-                        Date: ${new Date().toLocaleString()}
-                    `
-                }, EMAIL_CONFIG.publicKey);
-
-                // Also send confirmation to participant
-                await emailjs.send(EMAIL_CONFIG.serviceId, EMAIL_CONFIG.templateId, {
-                    to_email: email,
-                    subject: 'Welcome to TAU TUBE Competition!',
-                    message: `
-                        Dear ${name},
-                        
-                        Welcome to participation in ${competitionType}!
-                        
-                        Your registration has been received. We will contact you with further details soon.
-                        
-                        Competition Details:
-                        - Member ID: ${memberId}
-                        - Competition: ${competitionType}
-                        
-                        Good luck!
-                        
-                        TAU TUBE Team
-                    `
-                }, EMAIL_CONFIG.publicKey);
-
-                showNotification('Welcome to participation! Registration submitted successfully.');
-                closeCompetitionModal();
-                document.getElementById('competition-form').reset();
-
-            } catch (error) {
-                console.error('Competition registration error:', error);
-                showNotification('Registration failed. Please try again.');
-            }
-        });
-
-        async function loadUserData() {
-            if (!currentUser) return;
-
-            try {
-                const userDoc = await db.collection('users').doc(currentUser.uid).get();
-                if (userDoc.exists) {
-                    const userData = userDoc.data();
-                    userPoints = userData.ikbpBalance || 0;
-                    referralCode = userData.referralCode || '';
-                    
-                    localStorage.setItem('ikbp_points', userPoints);
-                    document.getElementById('user-points').textContent = userPoints;
-                }
-            } catch (error) {
-                console.error('Error loading user data:', error);
-            }
-        }
-
-        function updateUserDisplay() {
-            if (currentUser) {
-                document.getElementById('account-name').textContent = currentUser.displayName || currentUser.email;
-                document.getElementById('account-id').textContent = currentUser.email;
-                
-                const accountBtn = document.querySelector('button[onclick="showAccountModal()"]');
-                accountBtn.innerHTML = '<i data-lucide="user" style="width: 18px; height: 18px;"></i> My Account';
-                accountBtn.onclick = showDashboard;
-                
-                lucide.createIcons();
-            }
-        }
-
-        function showDashboard() {
-            document.getElementById('dashboard-modal').classList.remove('hidden');
-            document.getElementById('dashboard-modal').classList.add('flex');
-            
-            // Update dashboard values
-            document.getElementById('dash-ikbp').textContent = userPoints.toLocaleString();
-            document.getElementById('dash-ksh').textContent = (userPoints / 10).toLocaleString();
-            
-            const referralLink = `https://magero1985.github.io/Tau-Africa/tau-tube.html?ref=${referralCode || 'SHARE'}`;
-            document.getElementById('referral-link').value = referralLink;
-            
-            lucide.createIcons();
-        }
-
-        function closeDashboard() {
-            document.getElementById('dashboard-modal').classList.add('hidden');
-            document.getElementById('dashboard-modal').classList.remove('flex');
-        }
-
-        async function convertToIKb() {
-            const amount = parseInt(document.getElementById('convert-amount').value);
-            
-            if (!amount || amount < 10000) {
-                showNotification('Minimum conversion: 10,000 iKbp');
-                return;
-            }
-
-            if (amount > userPoints) {
-                showNotification('Insufficient iKbp balance');
-                return;
-            }
-
-            if (amount % 10000 !== 0) {
-                showNotification('Amount must be multiple of 10,000 iKbp');
-                return;
-            }
-
-            const ikb = amount / 10000;
-            
-            if (!confirm(`Convert ${amount.toLocaleString()} iKbp to ${ikb} iKb?`)) {
-                return;
-            }
-
-            try {
-                userPoints -= amount;
-                
-                // Update Firestore
-                await db.collection('users').doc(currentUser.uid).update({
-                    ikbpBalance: userPoints,
-                    ikbBalance: firebase.firestore.FieldValue.increment(ikb)
-                });
-
-                localStorage.setItem('ikbp_points', userPoints);
-                document.getElementById('user-points').textContent = userPoints;
-                
-                showNotification(`Successfully converted to ${ikb} iKb!`);
-                showDashboard(); // Refresh dashboard
-                
-            } catch (error) {
-                console.error('Conversion error:', error);
-                showNotification('Conversion failed. Please try again.');
-            }
-        }
-
-        async function transferToKabiru() {
-            const amount = parseInt(document.getElementById('transfer-amount').value);
-            const walletId = document.getElementById('kabiru-wallet-id').value.trim();
-
-            if (!amount || amount <= 0) {
-                showNotification('Please enter a valid amount');
-                return;
-            }
-
-            if (!walletId) {
-                showNotification('Please enter Kabiru Wallet ID');
-                return;
-            }
-
-            if (amount > userPoints) {
-                showNotification('Insufficient iKbp balance');
-                return;
-            }
-
-            if (!confirm(`Transfer ${amount.toLocaleString()} iKbp to Kabiru wallet: ${walletId}?`)) {
-                return;
-            }
-
-            try {
-                // Create transfer record
-                await db.collection('kabiru_transfers').add({
-                    fromUser: currentUser.uid,
-                    fromEmail: currentUser.email,
-                    toWallet: walletId,
-                    amount: amount,
-                    timestamp: firebase.firestore.FieldValue.serverTimestamp(),
-                    status: 'pending'
-                });
-
-                userPoints -= amount;
-                
-                // Update user balance
-                await db.collection('users').doc(currentUser.uid).update({
-                    ikbpBalance: userPoints
-                });
-
-                localStorage.setItem('ikbp_points', userPoints);
-                document.getElementById('user-points').textContent = userPoints;
-                
-                showNotification(`Transfer initiated! ${amount.toLocaleString()} iKbp will be credited to Kabiru wallet.`);
-                document.getElementById('transfer-amount').value = '';
-                document.getElementById('kabiru-wallet-id').value = '';
-                showDashboard(); // Refresh dashboard
-                
-            } catch (error) {
-                console.error('Transfer error:', error);
-                showNotification('Transfer failed. Please try again.');
-            }
-        }
-
-        function copyReferralLink() {
-            const input = document.getElementById('referral-link');
-            input.select();
-            document.execCommand('copy');
-            showNotification('Referral link copied to clipboard!');
-        }
-
-        function shareReferral() {
-            const link = `https://magero1985.github.io/Tau-Africa/tau-tube.html?ref=${referralCode || 'SHARE'}`;
-            
-            if (navigator.share) {
-                navigator.share({
-                    title: 'Join TAU TUBE',
-                    text: 'Join me on TAU TUBE and earn iKbp rewards!',
-                    url: link
-                });
-            } else {
-                const tempInput = document.createElement('input');
-                tempInput.value = link;
-                document.body.appendChild(tempInput);
-                tempInput.select();
-                document.execCommand('copy');
-                document.body.removeChild(tempInput);
-                showNotification('Referral link copied! Share it with friends.');
-            }
-        }
-
-        function showAccountModal() {
-            document.getElementById('account-modal').classList.remove('hidden');
-            document.getElementById('account-modal').classList.add('flex');
-            switchAccountTab('login');
-            lucide.createIcons();
-        }
-
-        function closeAccountModal() {
-            document.getElementById('account-modal').classList.add('hidden');
-            document.getElementById('account-modal').classList.remove('flex');
-        }
-
-        function joinCompetition(compId) {
-            document.getElementById('competition-modal').classList.remove('hidden');
-            document.getElementById('competition-modal').classList.add('flex');
-            lucide.createIcons();
-        }
-
-        function closeCompetitionModal() {
-            document.getElementById('competition-modal').classList.add('hidden');
-            document.getElementById('competition-modal').classList.remove('flex');
-        }
-
-        function showUploadModal() {
-            showNotification('Upload feature coming soon!');
-        }
-
-        function togglePointsDropdown() {
-            showNotification(`Your balance: ${userPoints.toLocaleString()} iKbp = ${(userPoints/10).toLocaleString()} KSH`);
+            ticker.textContent = 'TAU Africa announces new partnership â€¢ Kabiru Ecosystem reaches 10,000 users â€¢ New features coming to TAU Main App â€¢ Join our content competitions and win amazing prizes!';
         }
 
         function switchTab(tab) {
@@ -932,8 +512,8 @@
                             <span class="bg-red-600 text-white px-3 py-1 rounded-full text-sm">${comp.deadline}</span>
                         </div>
                         <h3 class="text-white text-xl font-bold mb-2">${comp.title}</h3>
-                        <p class="text-yellow-400 font-semibold mb-3">🏆 Prize: ${comp.prize}</p>
-                        <p class="text-gray-400 text-sm mb-4">👥 ${comp.participants} participants</p>
+                        <p class="text-yellow-400 font-semibold mb-3">ðŸŽ Prize: ${comp.prize}</p>
+                        <p class="text-gray-400 text-sm mb-4">ðŸ‘¥ ${comp.participants} participants</p>
                         <button onclick="joinCompetition(${comp.id})" class="w-full bg-gradient-to-r from-purple-600 to-teal-400 text-white py-3 rounded-lg hover:opacity-90 font-semibold">
                             Join Competition
                         </button>
@@ -946,25 +526,337 @@
 
         function loadMediaContent() {
             const container = document.getElementById('content-grid');
-            container.className = viewMode === 'grid' ? 'grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4' : 'grid grid-cols-1 gap-4';
             
-            container.innerHTML = '<div class="col-span-full text-center text-gray-400 py-8">Content coming soon...</div>';
+            const sampleVideos = [
+                { id: 1, title: 'TAU Africa Launch Event', thumbnail: 'https://images.unsplash.com/photo-1492684223066-81342ee5ff30?w=400', duration: '15:30', views: 1234, author: 'TAU Official', isLive: false, likes: 245, subscribers: 1500 },
+                { id: 2, title: 'Community Update March 2024', thumbnail: 'https://images.unsplash.com/photo-1505373877841-8d25f7d46678?w=400', duration: '8:45', views: 856, author: 'TAU News', isLive: false, likes: 189, subscribers: 890 },
+                { id: 3, title: 'Live: Breaking News', thumbnail: 'https://images.unsplash.com/photo-1504711434969-e33886168f5c?w=400', duration: 'LIVE', views: 3421, author: 'TAU Broadcasting', isLive: true, likes: 567, subscribers: 2300 }
+            ];
+
+            container.className = viewMode === 'grid' ? 'grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4' : 'grid grid-cols-1 gap-4';
+
+            if (currentTab === 'videos' || currentTab === 'live') {
+                const videos = currentTab === 'live' ? sampleVideos.filter(v => v.isLive) : sampleVideos;
+                container.innerHTML = videos.map(video => `
+                    <div class="bg-gray-800 rounded-lg overflow-hidden cursor-pointer video-thumbnail" onclick="playVideo(${video.id})">
+                        <div class="relative">
+                            <img src="${video.thumbnail}" alt="${video.title}" class="w-full h-48 object-cover">
+                            ${video.isLive ? `
+                                <div class="absolute top-2 left-2 bg-red-600 text-white px-2 py-1 rounded text-xs font-bold flex items-center gap-1">
+                                    <i data-lucide="radio" style="width: 12px; height: 12px;"></i> LIVE
+                                </div>
+                            ` : ''}
+                            <div class="absolute bottom-2 right-2 bg-black bg-opacity-75 text-white px-2 py-1 rounded text-xs">
+                                ${video.duration}
+                            </div>
+                        </div>
+                        <div class="p-3">
+                            <h3 class="text-white font-semibold">${video.title}</h3>
+                            <p class="text-gray-400 text-sm">${video.author}</p>
+                            <div class="flex items-center gap-3 text-gray-500 text-xs mt-1">
+                                <span>${video.views.toLocaleString()} views</span>
+                                <span>ðŸ‘ ${video.likes}</span>
+                                <span>ðŸ‘¥ ${video.subscribers}</span>
+                            </div>
+                        </div>
+                    </div>
+                `).join('');
+                lucide.createIcons();
+            }
+        }
+
+        function playVideo(videoId) {
+            currentVideoId = videoId;
+            const modal = document.getElementById('video-modal');
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+            
+            document.getElementById('video-source').src = 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4';
+            document.getElementById('video-title').textContent = 'Sample Video Title';
+            document.getElementById('video-author').textContent = 'TAU Official';
+            document.getElementById('video-views').textContent = '1,234 views';
+            
+            const player = document.getElementById('video-player');
+            player.load();
+            player.play().catch(err => console.log('Autoplay prevented'));
+
+            loadComments();
+            lucide.createIcons();
+        }
+
+        function closeVideoModal() {
+            const modal = document.getElementById('video-modal');
+            modal.classList.add('hidden');
+            modal.classList.remove('flex');
+            
+            const player = document.getElementById('video-player');
+            player.pause();
+        }
+
+        function loadComments() {
+            const commentsList = document.getElementById('comments-list');
+            const sampleComments = [
+                { author: 'John Doe', text: 'Great content! Keep it up ðŸ‘', time: '2 hours ago' },
+                { author: 'Jane Smith', text: 'Very informative, thank you!', time: '5 hours ago' }
+            ];
+
+            commentsList.innerHTML = sampleComments.map(comment => `
+                <div class="bg-gray-700 p-3 rounded-lg">
+                    <div class="flex items-start gap-2">
+                        <div class="w-8 h-8 bg-gradient-to-r from-purple-600 to-teal-400 rounded-full flex items-center justify-center flex-shrink-0">
+                            <i data-lucide="user" class="text-white" style="width: 16px; height: 16px;"></i>
+                        </div>
+                        <div class="flex-1">
+                            <div class="flex items-center gap-2 mb-1">
+                                <p class="text-white font-semibold text-sm">${comment.author}</p>
+                                <span class="text-gray-500 text-xs">${comment.time}</span>
+                            </div>
+                            <p class="text-gray-300 text-sm">${comment.text}</p>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+            
+            lucide.createIcons();
+        }
+
+        function postComment() {
+            const input = document.getElementById('comment-input');
+            const text = input.value.trim();
+            
+            if (!text) return;
+
+            showNotification('Comment posted successfully!');
+            input.value = '';
+            
+            userPoints += 5;
+            localStorage.setItem('ikbp_points', userPoints);
+            document.getElementById('user-points').textContent = userPoints;
+        }
+
+        function subscribeToChannel() {
+            showNotification('Subscribed successfully! +10 iKbp');
+            userPoints += 10;
+            localStorage.setItem('ikbp_points', userPoints);
+            document.getElementById('user-points').textContent = userPoints;
+        }
+
+        function likeVideo() {
+            showNotification('Video liked! +2 iKbp');
+            userPoints += 2;
+            localStorage.setItem('ikbp_points', userPoints);
+            document.getElementById('user-points').textContent = userPoints;
+        }
+
+        function shareVideo() {
+            shareUrl = `https://tautube.africa/video/${currentVideoId}`;
+            document.getElementById('share-modal').classList.remove('hidden');
+            document.getElementById('share-modal').classList.add('flex');
+            lucide.createIcons();
+        }
+
+        function sendGift() {
+            showNotification('Gift sent! The creator will receive your support ðŸŽ');
+            userPoints -= 50;
+            if (userPoints < 0) userPoints = 0;
+            localStorage.setItem('ikbp_points', userPoints);
+            document.getElementById('user-points').textContent = userPoints;
+        }
+
+        function joinCompetition(compId) {
+            showNotification('You have successfully joined the competition! Good luck! ðŸ†');
+        }
+
+        function showUploadModal() {
+            document.getElementById('upload-modal').classList.remove('hidden');
+            document.getElementById('upload-modal').classList.add('flex');
+            lucide.createIcons();
+        }
+
+        function closeUploadModal() {
+            document.getElementById('upload-modal').classList.add('hidden');
+            document.getElementById('upload-modal').classList.remove('flex');
+            document.getElementById('upload-form').reset();
+            document.getElementById('selected-file').textContent = '';
+        }
+
+        function showAccountModal() {
+            document.getElementById('account-modal').classList.remove('hidden');
+            document.getElementById('account-modal').classList.add('flex');
+            lucide.createIcons();
+        }
+
+        function closeAccountModal() {
+            document.getElementById('account-modal').classList.add('hidden');
+            document.getElementById('account-modal').classList.remove('flex');
+        }
+
+        function closeShareModal() {
+            document.getElementById('share-modal').classList.add('hidden');
+            document.getElementById('share-modal').classList.remove('flex');
+        }
+
+        function setUploadType(type) {
+            uploadType = type;
+            
+            ['video', 'image', 'audio'].forEach(t => {
+                const btn = document.getElementById(`upload-${t}-btn`);
+                if (t === type) {
+                    btn.className = 'bg-purple-600 text-white py-3 rounded-lg hover:bg-purple-700 flex items-center justify-center gap-2';
+                } else {
+                    btn.className = 'bg-gray-700 text-white py-3 rounded-lg hover:bg-gray-600 flex items-center justify-center gap-2';
+                }
+            });
+            
+            lucide.createIcons();
+        }
+
+        document.getElementById('upload-file')?.addEventListener('change', (e) => {
+            const file = e.target.files[0];
+            if (file) {
+                document.getElementById('selected-file').textContent = `Selected: ${file.name} (${(file.size / 1024 / 1024).toFixed(2)} MB)`;
+            }
+        });
+
+        document.getElementById('upload-form')?.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const file = document.getElementById('upload-file').files[0];
+            const title = document.getElementById('upload-title').value;
+            const description = document.getElementById('upload-description').value;
+            
+            if (!file) {
+                alert('Please select a file');
+                return;
+            }
+
+            await uploadFile(file, { title, description, type: uploadType });
+        });
+
+        document.getElementById('account-form')?.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const name = document.getElementById('account-fullname').value;
+            const email = document.getElementById('account-email').value;
+            const password = document.getElementById('account-password').value;
+            
+            try {
+                await auth.createUserWithEmailAndPassword(email, password);
+                document.getElementById('account-name').textContent = name;
+                closeAccountModal();
+                showNotification('Account created successfully! Welcome to TAU TUBE! +100 iKbp');
+                
+                userPoints += 100;
+                localStorage.setItem('ikbp_points', userPoints);
+                document.getElementById('user-points').textContent = userPoints;
+            } catch (error) {
+                alert('Error creating account: ' + error.message);
+            }
+        });
+
+        async function uploadFile(file, metadata) {
+            try {
+                document.getElementById('upload-progress-container').classList.remove('hidden');
+
+                const timestamp = Date.now();
+                const storageRef = storage.ref(`${metadata.type}s/${timestamp}_${file.name}`);
+                const uploadTask = storageRef.put(file);
+
+                uploadTask.on('state_changed',
+                    (snapshot) => {
+                        const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
+                        document.getElementById('upload-progress-bar').style.width = progress + '%';
+                        document.getElementById('upload-progress-text').textContent = Math.round(progress) + '%';
+                    },
+                    (error) => {
+                        console.error('Upload error:', error);
+                        alert('Upload failed: ' + error.message);
+                    },
+                    async () => {
+                        const downloadURL = await uploadTask.snapshot.ref.getDownloadURL();
+                        
+                        await db.collection(metadata.type + 's').add({
+                            title: metadata.title,
+                            description: metadata.description,
+                            url: downloadURL,
+                            views: 0,
+                            likes: 0,
+                            createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+                            status: 'published'
+                        });
+
+                        const points = metadata.type === 'video' ? 20 : metadata.type === 'audio' ? 10 : 5;
+                        userPoints += points;
+                        localStorage.setItem('ikbp_points', userPoints);
+                        document.getElementById('user-points').textContent = userPoints;
+
+                        showNotification(`Upload successful! You earned ${points} iKbp points! ðŸŽ‰`);
+                        closeUploadModal();
+                        loadContent();
+                    }
+                );
+
+            } catch (error) {
+                console.error('Upload error:', error);
+                alert('Upload failed: ' + error.message);
+            }
+        }
+
+        async function shareReferral() {
+            const referralLink = `https://tautube.africa/ref/${referralCode}`;
+            shareUrl = referralLink;
+            
+            document.getElementById('share-modal').classList.remove('hidden');
+            document.getElementById('share-modal').classList.add('flex');
+            lucide.createIcons();
+        }
+
+        function shareToWhatsApp() {
+            const text = encodeURIComponent(`Join me on TAU TUBE and earn iKbp rewards! ${shareUrl}`);
+            window.open(`https://wa.me/?text=${text}`, '_blank');
+            awardSharePoints();
+        }
+
+        function shareToFacebook() {
+            window.open(`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(shareUrl)}`, '_blank');
+            awardSharePoints();
+        }
+
+        function shareToTwitter() {
+            const text = encodeURIComponent('Join me on TAU TUBE and earn iKbp rewards!');
+            window.open(`https://twitter.com/intent/tweet?text=${text}&url=${encodeURIComponent(shareUrl)}`, '_blank');
+            awardSharePoints();
+        }
+
+        function copyShareLink() {
+            navigator.clipboard.writeText(shareUrl);
+            showNotification('Link copied to clipboard!');
+            awardSharePoints();
+        }
+
+        function awardSharePoints() {
+            userPoints += 10;
+            localStorage.setItem('ikbp_points', userPoints);
+            document.getElementById('user-points').textContent = userPoints;
+            closeShareModal();
         }
 
         function showNotification(message) {
-            const toast = document.getElementById('notification-toast');
-            const text = document.getElementById('notification-text');
-            text.textContent = message;
-            toast.classList.remove('hidden');
+            const notification = document.getElementById('notification-toast');
+            document.getElementById('notification-text').textContent = message;
+            notification.classList.remove('hidden');
             
             setTimeout(() => {
-                toast.classList.add('hidden');
-            }, 8000);
+                notification.classList.add('hidden');
+            }, 5000);
         }
 
         function closeNotification() {
             document.getElementById('notification-toast').classList.add('hidden');
         }
+
+        function togglePointsDropdown() {
+            showNotification('Your iKbp balance can be used for gifts, premium features, and rewards!');
+        }
     </script>
-</body>
-        </html>
+    </body>
