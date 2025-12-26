@@ -1217,13 +1217,13 @@ href="https://magero1985.github.io/Tau-Africa/Kabiru-Mining-Portal/" target="_bl
         function loadMediaContent() {
             const container = document.getElementById('content-grid');
             
-            // SAMPLE VIDEOS - REPLACE THESE WITH YOUR OWN
+            // CORRECTED: Direct playback links for Google Drive
             const sampleVideos = [
                 { 
                     id: 1, 
                     title: 'TAU Africa Event 2021', 
                     thumbnail: 'https://images.unsplash.com/photo-1492684223066-81342ee5ff30?w=400', 
-                    videoUrl: 'https://drive.google.com/file/d/1ms70TIjEnSL6zdhASZ0GX0ni94LffaK5/view?usp=drivesdk',
+                    videoUrl: 'https://drive.google.com/uc?id=1ms70TIjEnSL6zdhASZ0GX0ni94LffaK5&export=download',
                     duration: '07:08', 
                     views: 1234, 
                     author: 'TAU Official', 
@@ -1234,8 +1234,8 @@ href="https://magero1985.github.io/Tau-Africa/Kabiru-Mining-Portal/" target="_bl
                 { 
                     id: 2, 
                     title: 'Tau starting from 0 2021', 
-                    thumbnail: 'https://drive.google.com/file/d/1RiqAsw8nCvpQD1CbKSfPyESlaTlM0PC3/view?usp=drivesdk', 
-                    videoUrl: 'https://drive.google.com/file/d/18Ch-FQBatzi72Jwp-M6ZKD-W7VWUPwaU/view?usp=drivesdk',
+                    thumbnail: 'https://drive.google.com/uc?id=1RiqAsw8nCvpQD1CbKSfPyESlaTlM0PC3', 
+                    videoUrl: 'https://drive.google.com/uc?id=18Ch-FQBatzi72Jwp-M6ZKD-W7VWUPwaU&export=download',
                     duration: '1:14', 
                     views: 856, 
                     author: 'Tau Foundation', 
@@ -1246,15 +1246,18 @@ href="https://magero1985.github.io/Tau-Africa/Kabiru-Mining-Portal/" target="_bl
                 { 
                     id: 3, 
                     title: 'Live: Breaking News: Kabiru point system', 
-                    thumbnail: 'https://drive.google.com/file/d/19N2migHaXdz1yAqlxj-CDKN1PBgPj2ya/view?usp=drivesdk', 
-                    videoUrl: 'https://drive.google.com/file/d/14tKOoL4GSnSkFWToamhELgy9gn1wNtAK/view?usp=drivesdk',
+                    thumbnail: 'https://drive.google.com/uc?id=19N2migHaXdz1yAqlxj-CDKN1PBgPj2ya', 
+                    videoUrl: 'https://drive.google.com/uc?id=14tKOoL4GSnSkFWToamhELgy9gn1wNtAK&export=download',
                     duration: 'LIVE', 
                     views: 3421, 
-                    author: 'TAU Broadcasting from Tau Center Nairobi', 
+                    author: 'TAU Broadcasting', 
                     isLive: true, 
                     likes: 567, 
                     subscribers: 2300 
                 }
+            ];
+
+            // Rest of your function logic remains the same...
             ];
 
             container.className = viewMode === 'grid' ? 'grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4' : 'grid grid-cols-1 gap-4';
