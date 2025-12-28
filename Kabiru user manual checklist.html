@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>KABIRU Mining Ecosystem - Production Manual</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    <style>
+        :root {
+            --primary-blue: #1a1a2e;
+            --secondary-blue: #16213e;
+            --tau-gold: #FFD700;
+            --accent-gold: #FFA500;
+            --text-white: #ffffff;
+            --text-gray: #bdc3c7;
+            --success-green: #2ecc71;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: var(--text-white);
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 0;
+        }
+
+        /* Controls for UI only, hidden in PDF */
+        .controls {
+            max-width: 900px;
+            margin: 20px auto 0;
+            display: flex;
+            justify-content: flex-end;
+            padding: 0 20px;
+        }
+
+        .download-btn {
+            background: var(--tau-gold);
+            color: var(--primary-blue);
+            border: none;
+            padding: 12px 25px;
+            border-radius: 50px;
+            font-weight: bold;
+            cursor: pointer;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .download-btn:hover {
+            transform: translateY(-2px);
+            background: var(--accent-gold);
+        }
+
+        .page {
+            max-width: 900px;
+            margin: 20px auto 40px;
+            background: var(--primary-blue);
+            box-shadow: 0 0 30px rgba(0,0,0,0.3);
+            padding: 50px;
+            border-radius: 12px;
+        }
+
+        header {
+            text-align: center;
+            border-bottom: 2px solid var(--tau-gold);
+            padding-bottom: 20px;
+            margin-bottom: 30px;
+        }
+
+        .logo-text {
+            font-size: 32px;
+            font-weight: bold;
+            color: var(--tau-gold);
+            letter-spacing: 2px;
+            text-transform: uppercase;
+        }
+
+        h1, h2, h3 { color: var(--tau-gold); margin-top: 30px; }
+
+        .philosophy-box {
+            background: var(--secondary-blue);
+            padding: 25px;
+            border-left: 5px solid var(--accent-gold);
+            margin: 20px 0;
+            font-style: italic;
+            border-radius: 0 10px 10px 0;
+        }
+
+        .level-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 25px 0;
+            background: rgba(255,255,255,0.05);
+            border-radius: 10px;
+            overflow: hidden;
+        }
+
+        .level-table th, .level-table td {
+            padding: 15px;
+            border: 1px solid rgba(255, 215, 0, 0.2);
+            text-align: left;
+        }
+
+        .level-table th { background: var(--secondary-blue); color: var(--tau-gold); }
+
+        .highlight { color: var(--accent-gold); font-weight: bold; }
+
+        .phase-container {
+            margin: 30px 0;
+            padding: 25px;
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 15px;
+            background: rgba(255,255,255,0.02);
+        }
+
+        .step-badge {
+            background: var(--tau-gold);
+            color: var(--primary-blue);
+            padding: 3px 12px;
+            border-radius: 6px;
+            font-weight: bold;
+            margin-right: 10px;
+            font-size: 0.9em;
+        }
+
+        .footer {
+            margin-top: 60px;
+            text-align: center;
+            font-size: 13px;
+            color: var(--text-gray);
+            border-top: 1px solid rgba(255,255,255,0.1);
+            padding-top: 25px;
+        }
+
+        /* Hide specific elements during PDF generation */
+        .no-pdf { display: none !important; }
+    </style>
+</head>
+<body>
+
+<div class="controls">
+    <button class="download-btn" onclick="generatePDF()">
+        <span>📄</span> Download Official PDF Manual
+    </button>
+</div>
+
+<div id="manual-content" class="page">
+    <header>
+        <div class="logo-text">TAU AFRICA FOUNDATION</div>
+        <h1>KABIRU MINING ECOSYSTEM</h1>
+        <p>Complete User Kit & Production Training Manual v1.0</p>
+    </header>
+
+    <section>
+        <h2>1. Vision & Ecosystem Philosophy</h2>
+        <div class="philosophy-box">
+            "To build economic independence and sovereignty structures for families, communities, and generations through the simple factor of digital Value Declarations."
+        </div>
+        <p>KABIRU is the economic engine of the TAU Africa Ecosystem. It converts dormant personal/community values into active digital currency (iKb).</p>
+    </section>
+
+    <section class="phase-container">
+        <h2>2. Step-by-Step Onboarding Flow</h2>
+        <p><span class="step-badge">Registration</span> Join the <b>TAU Africa Main App</b> to generate your <b>Member ID</b>. This is your passport for all peripheral utility apps.</p>
+        <p><span class="step-badge">Input</span> Virtually input values (assets, businesses, or family legacies) into the project via the Main Portal.</p>
+        <p><span class="step-badge">Validation</span> Values undergo a <b>Vigorous 3-Stage Validation</b> (VAL1, VAL2, and VAL3) before arriving in the Mining App's <i>Value Bank</i>.</p>
+    </section>
+
+    <section>
+        <h2>3. Mining Levels & Processor Rates</h2>
+        <p>Mining rights are granted based on the total KSH equivalent of validated values in your Value Bank:</p>
+        <table class="level-table">
+            <thead>
+                <tr>
+                    <th>Mining Level</th>
+                    <th>Value Range (KSH)</th>
+                    <th>Mining Rate (Daily)</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td><b>Level 1 (Basic)</b></td>
+                    <td>1 Million < Value < 6 Million</td>
+                    <td class="highlight">0.005 iKb</td>
+                </tr>
+                <tr>
+                    <td><b>Level 2 (Community)</b></td>
+                    <td>5 Million < Value < 12 Million</td>
+                    <td class="highlight">0.01 iKb</td>
+                </tr>
+                <tr>
+                    <td><b>Level 3 (Sovereign)</b></td>
+                    <td>12 Million < Value < 24 Million</td>
+                    <td class="highlight">0.1 iKb</td>
+                </tr>
+            </tbody>
+        </table>
+        <p><i>Note: Users must manually restart the mining processor every 24 hours to continue production.</i></p>
+    </section>
+
+    <section>
+        <h2>4. Wallets, Conversions & Withdrawals</h2>
+        <p>The <b>Liquid Pool</b> manages cash-to-digital currency conversion.</p>
+        <ul>
+            <li><b>Standard Rate:</b> 1 iKb = 100,000 Local Currency Units (KSH, UGX, BFR, TSH).</li>
+            <li><b>Withdrawals:</b> Users can activate cash withdrawals every 30 days, coinciding with the 30-day declaration cycle.</li>
+            <li><b>Minimum Transfer:</b> 10,000 iKbp or 0.0001 iKb.</li>
+        </ul>
+    </section>
+
+    <section>
+        <h2>5. Peripheral Utility Integration</h2>
+        <p>Use utility apps to accumulate resources into your TAU Main Account:</p>
+        <ul>
+            <li><b>TAU Tube:</b> Earn iKbp (points) via content consumption and media creation.</li>
+            <li><b>TAU Marketplace:</b> Advertise and trade goods globally using KABIRU value structures.</li>
+            <li><b>TAU Education/Health/Transport:</b> Life-system apps for essential service generation and payment.</li>
+        </ul>
+    </section>
+
+    <div class="footer">
+        <p>© 2025 TAU Africa Foundation - Technical Engine by Valenta Company</p>
+        <p>This manual is for Production Environment training and official ecosystem use.</p>
+    </div>
+</div>
+
+<script>
+    function generatePDF() {
+        const element = document.getElementById('manual-content');
+        const opt = {
+            margin:       [0.5, 0.5],
+            filename:     'KABIRU_Mining_Manual_TAU_Africa.pdf',
+            image:        { type: 'jpeg', quality: 0.98 },
+            html2canvas:  { scale: 2, useCORS: true },
+            jsPDF:        { unit: 'in', format: 'letter', orientation: 'portrait' }
+        };
+
+        // New Promise-based usage:
+        html2pdf().set(opt).from(element).save();
+    }
+</script>
+
+</body>
+</html>
