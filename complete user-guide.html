@@ -18,12 +18,13 @@
             font-size: 11pt;
         }
 
-        .container {
-            max-width: 210mm;
-            margin: 0 auto;
-            padding: 20mm;
-            background: white;
-        }
+        .print-container {
+    max-width: 95%;        /* Use 95% of screen width */
+    width: 1400px;         /* But cap at 1400px on large screens */
+    margin: 0 auto;
+    background: white;
+    padding: 40px;
+}
 
         .header {
             text-align: center;
@@ -259,29 +260,36 @@
             font-size: 10pt;
         }
 
-        @media print {
-            body {
-                background: white;
-            }
-            
-            .container {
-                max-width: 100%;
-                padding: 0;
-            }
+        .print-container {
+    max-width: 95%;        /* Use 95% of screen width */
+    width: 1400px;         /* But cap at 1400px on large screens */
+    margin: 0 auto;
+    background: white;
+    padding: 40px;
+}
 
-            section {
-                page-break-before: auto;
-                page-break-after: auto;
-            }
+/* Adjust for tablets */
+@media (max-width: 1024px) {
+    .print-container {
+        max-width: 100%;
+        padding: 30px;
+    }
+}
 
-            h2 {
-                page-break-after: avoid;
-            }
+/* Adjust for phones */
+@media (max-width: 768px) {
+    .print-container {
+        padding: 20px;
+    }
+}
 
-            .step, .info-box, table {
-                page-break-inside: avoid;
-            }
-        }
+/* Keep A4 size only when printing */
+@media print {
+    .print-container {
+        max-width: 210mm;
+        padding: 20mm;
+    }
+}
     </style>
 </head>
 <body>
@@ -973,12 +981,13 @@
             font-size: 11pt;
         }
 
-        .container {
-            max-width: 210mm;
-            margin: 0 auto;
-            padding: 20mm;
-            background: white;
-        }
+        .print-container {
+    max-width: 95%;        /* Use 95% of screen width */
+    width: 1400px;         /* But cap at 1400px on large screens */
+    margin: 0 auto;
+    background: white;
+    padding: 40px;
+}
 
         .header {
             text-align: center;
@@ -1453,13 +1462,13 @@
             background: white;
             font-size: 11pt;
         }
-
-        .container {
-            max-width: 210mm;
-            margin: 0 auto;
-            padding: 20mm;
-            background: white;
-        }
+.print-container {
+    max-width: 95%;        /* Use 95% of screen width */
+    width: 1400px;         /* But cap at 1400px on large screens */
+    margin: 0 auto;
+    background: white;
+    padding: 40px;
+}
 
         .header {
             text-align: center;
@@ -1641,13 +1650,36 @@
             font-size: 10pt;
         }
 
-        @media print {
-            body { background: white; }
-            .container { max-width: 100%; padding: 0; }
-            section { page-break-before: auto; page-break-after: auto; }
-            h2 { page-break-after: avoid; }
-            .step, .info-box, table { page-break-inside: avoid; }
-        }
+        .print-container {
+    max-width: 95%;        /* Use 95% of screen width */
+    width: 1400px;         /* But cap at 1400px on large screens */
+    margin: 0 auto;
+    background: white;
+    padding: 40px;
+}
+
+/* Adjust for tablets */
+@media (max-width: 1024px) {
+    .print-container {
+        max-width: 100%;
+        padding: 30px;
+    }
+}
+
+/* Adjust for phones */
+@media (max-width: 768px) {
+    .print-container {
+        padding: 20px;
+    }
+}
+
+/* Keep A4 size only when printing */
+@media print {
+    .print-container {
+        max-width: 210mm;
+        padding: 20mm;
+    }
+}
     </style>
 </head>
 <body>
@@ -1928,12 +1960,13 @@
             font-size: 11pt;
         }
 
-        .container {
-            max-width: 210mm;
-            margin: 0 auto;
-            padding: 20mm;
-            background: white;
-        }
+        .print-container {
+    max-width: 95%;        /* Use 95% of screen width */
+    width: 1400px;         /* But cap at 1400px on large screens */
+    margin: 0 auto;
+    background: white;
+    padding: 40px;
+}
 
         .header {
             text-align: center;
@@ -2115,13 +2148,36 @@
             font-size: 10pt;
         }
 
-        @media print {
-            body { background: white; }
-            .container { max-width: 100%; padding: 0; }
-            section { page-break-before: auto; page-break-after: auto; }
-            h2 { page-break-after: avoid; }
-            .step, .info-box, table { page-break-inside: avoid; }
-        }
+        .print-container {
+    max-width: 95%;        /* Use 95% of screen width */
+    width: 1400px;         /* But cap at 1400px on large screens */
+    margin: 0 auto;
+    background: white;
+    padding: 40px;
+}
+
+/* Adjust for tablets */
+@media (max-width: 1024px) {
+    .print-container {
+        max-width: 100%;
+        padding: 30px;
+    }
+}
+
+/* Adjust for phones */
+@media (max-width: 768px) {
+    .print-container {
+        padding: 20px;
+    }
+}
+
+/* Keep A4 size only when printing */
+@media print {
+    .print-container {
+        max-width: 210mm;
+        padding: 20mm;
+    }
+}
     </style>
 </head>
 <body>
@@ -2470,13 +2526,13 @@
             background: white;
             font-size: 11pt;
         }
-
-        .container {
-            max-width: 210mm;
-            margin: 0 auto;
-            padding: 20mm;
-            background: white;
-        }
+.print-container {
+    max-width: 95%;        /* Use 95% of screen width */
+    width: 1400px;         /* But cap at 1400px on large screens */
+    margin: 0 auto;
+    background: white;
+    padding: 40px;
+}
 
         .header {
             text-align: center;
@@ -2658,13 +2714,36 @@
             font-size: 10pt;
         }
 
-        @media print {
-            body { background: white; }
-            .container { max-width: 100%; padding: 0; }
-            section { page-break-before: auto; page-break-after: auto; }
-            h2 { page-break-after: avoid; }
-            .step, .info-box, table { page-break-inside: avoid; }
-        }
+        .print-container {
+    max-width: 95%;        /* Use 95% of screen width */
+    width: 1400px;         /* But cap at 1400px on large screens */
+    margin: 0 auto;
+    background: white;
+    padding: 40px;
+}
+
+/* Adjust for tablets */
+@media (max-width: 1024px) {
+    .print-container {
+        max-width: 100%;
+        padding: 30px;
+    }
+}
+
+/* Adjust for phones */
+@media (max-width: 768px) {
+    .print-container {
+        padding: 20px;
+    }
+}
+
+/* Keep A4 size only when printing */
+@media print {
+    .print-container {
+        max-width: 210mm;
+        padding: 20mm;
+    }
+}
     </style>
 </head>
 <body>
@@ -3206,11 +3285,13 @@
             font-size: 11pt;
         }
 
-        .container {
-            max-width: 210mm;
-            margin: 0 auto;
-            padding: 20mm;
-            background: white;
+       .print-container {
+    max-width: 95%;        /* Use 95% of screen width */
+    width: 1400px;         /* But cap at 1400px on large screens */
+    margin: 0 auto;
+    background: white;
+    padding: 40px;
+}ound: white;
         }
 
         .header {
@@ -3377,13 +3458,36 @@
             margin-bottom: 15px;
         }
 
-        @media print {
-            body { background: white; }
-            .container { max-width: 100%; padding: 0; }
-            section { page-break-before: auto; page-break-after: auto; }
-            h2 { page-break-after: avoid; }
-            .info-box, table { page-break-inside: avoid; }
-        }
+        .print-container {
+    max-width: 95%;        /* Use 95% of screen width */
+    width: 1400px;         /* But cap at 1400px on large screens */
+    margin: 0 auto;
+    background: white;
+    padding: 40px;
+}
+
+/* Adjust for tablets */
+@media (max-width: 1024px) {
+    .print-container {
+        max-width: 100%;
+        padding: 30px;
+    }
+}
+
+/* Adjust for phones */
+@media (max-width: 768px) {
+    .print-container {
+        padding: 20px;
+    }
+}
+
+/* Keep A4 size only when printing */
+@media print {
+    .print-container {
+        max-width: 210mm;
+        padding: 20mm;
+    }
+}
     </style>
 </head>
 <body>
