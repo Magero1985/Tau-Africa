@@ -4326,9 +4326,9 @@ function createTaskRegistrationModal() {
                 
                 <div class="form-group">
                     <label>Phone Number (M-PESA) *</label>
-                    <input type="tel" name="phone" required placeholder="254XXXXXXXXX" pattern="254[0-9]{9}">
-                    <small>Format: 254XXXXXXXXX (include country code)</small>
-                </div>
+                    <input type="tel" name="phone" required placeholder="+XXX XXXXXXXXX (e.g., +254712345678)" pattern="\+[0-9]{1,4}[0-9]{6,14}">
+<small>Include country code (e.g., +254 for Kenya, +1 for USA, +44 for UK)</small>
+    </div>
                 
                 <div class="form-group">
                     <label>Country/Location *</label>
@@ -4491,8 +4491,9 @@ function createTalkRegistrationModal() {
                 </div>
                 
                 <div class="form-group">
-                    <label>Phone Number (M-PESA) *</label>
-                    <input type="tel" name="phone" required placeholder="254XXXXXXXXX" pattern="254[0-9]{9}">
+                    <label>Phone Number (Mobile money) *</label>
+                    <input type="tel" name="phone" required placeholder="+XXX XXXXXXXXX (e.g., +254712345678)" pattern="\+[0-9]{1,4}[0-9]{6,14}">
+<small>Include country code (e.g., +254 for Kenya, +1 for USA, +44 for UK)</small>
                 </div>
                 
                 <div class="form-group">
@@ -4629,9 +4630,10 @@ function createJobCreationModal() {
                 </div>
                 
                 <div class="form-group">
-                    <label>Phone Number (M-PESA) *</label>
-                    <input type="tel" name="phone" required placeholder="254XXXXXXXXX">
-                </div>
+                    <label>Phone Number (Mobile money) *</label>
+                    <input type="tel" name="phone" required placeholder="+XXX XXXXXXXXX (e.g., +254712345678)" pattern="\+[0-9]{1,4}[0-9]{6,14}">
+<small>Include country code (e.g., +254 for Kenya, +1 for USA, +44 for UK)</small>
+</div>
                 
                 <div class="form-group">
                     <label>Location *</label>
