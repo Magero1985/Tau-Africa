@@ -2079,12 +2079,210 @@ TAU Africa Registration System
 })();
   </script>
 <script>
-// ===== M-PESA PAYMENT INTEGRATION =====//
+    // ============================================
+// ENHANCED PAYMENT SYSTEM - M-PESA + VISA
+// Replace the existing payment functions (around line 1055-1155)
+// ============================================
 
-    function initiateMpesaPayment(amount, phoneNumber, formData, successCallback) {
-    showPaymentModal(amount, phoneNumber, formData, successCallback);
+function initiateMpesaPayment(amount, phoneNumber, formData, successCallback) {
+    // Check if phone starts with +254 (Kenya)
+    const isKenyan = phoneNumber.startsWith('+254') || phoneNumber.startsWith('254');
+    
+    if (isKenyan) {
+        // Show M-PESA payment for Kenyan numbers
+        showPaymentModal(amount, phoneNumber, formData, successCallback);
+    } else {
+        // Show multi-payment options for international users
+        showMultiPaymentModal(amount, phoneNumber, formData, successCallback);
+    }
 }
 
+// Enhanced payment modal with multiple options
+function showMultiPaymentModal(amount, phoneNumber, formData, successCallback) {
+    const paymentModal = document.createElement('div');
+    paymentModal.className = 'payment-modal';
+    paymentModal.innerHTML = `
+        <div class="payment-widget" style="max-width: 500px;">
+            <h3>💳 Payment Options</h3>
+            <div style="background: #e3f2fd; padding: 15px; border-radius: 10px; margin: 15px 0;">
+                <strong>Amount: KSH ${amount}</strong><br>
+                <small>Phone: ${phoneNumber}</small>
+            </div>
+            
+            <!-- PAYMENT METHOD SELECTION -->
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 20px;">
+                <button class="btn" onclick="selectPaymentMethod('mpesa')" id="mpesaBtn" style="background: #27ae60;">
+                    📱 M-PESA
+                </button>
+                <button class="btn" onclick="selectPaymentMethod('visa')" id="visaBtn" style="background: #3498db;">
+                    💳 Visa/Card
+                </button>
+            </div>
+            
+            <!-- M-PESA PAYMENT FORM -->
+            <div id="mpesaPaymentForm" style="display: none;">
+                <div style="background: #fff3cd; padding: 15px; border-radius: 10px; margin-bottom: 15px;">
+                    <strong>📱 M-PESA Payment (Kenya Only)</strong>
+                    <p style="margin: 10px 0 0 0; font-size: 14px;">
+                        1. Go to M-PESA menu<br>
+                        2. Select "Lipa na M-PESA"<br>
+                        3. Select "Pay Bill"<br>
+                        4. Enter Business Number: <strong>4087777</strong><br>
+                        5. Account Number: <strong>TAU${Date.now().toString().slice(-6)}</strong><br>
+                        6. Amount: <strong>KSH ${amount}</strong><br>
+                        7. Enter your M-PESA PIN
+                    </p>
+                </div>
+                
+                <input type="text" class="payment-input" placeholder="Enter M-PESA Transaction Code (e.g., QGX1234567)" id="mpesaCode" maxlength="10">
+                <small style="color: #666; display: block; margin: 5px 0 15px 0;">
+                    You'll receive an SMS with the code after payment
+                </small>
+                
+                <button class="btn" onclick="confirmPayment('mpesa', ${amount})" style="width: 100%; background: #27ae60;">
+                    ✅ Confirm M-PESA Payment
+                </button>
+            </div>
+            
+            <!-- VISA/CARD PAYMENT FORM -->
+            <div id="visaPaymentForm" style="display: none;">
+                <div style="background: #e3f2fd; padding: 15px; border-radius: 10px; margin-bottom: 15px;">
+                    <strong>💳 Card Payment Instructions</strong>
+                    <p style="margin: 10px 0 0 0; font-size: 14px;">
+                        <strong>Bank Details:</strong><br>
+                        Bank: Equity Bank<br>
+                        Account: TAU AFRICA ECOSYSTEM<br>
+                        Account No: 1234567890<br>
+                        Swift Code: EQBLKENA<br>
+                        Amount: <strong>KSH ${amount}</strong>
+                    </p>
+                    <p style="margin: 10px 0 0 0; font-size: 12px; color: #e74c3c;">
+                        OR use online payment gateway (Stripe/PayPal)
+                    </p>
+                </div>
+                
+                <div class="form-group">
+                    <label>Payment Method</label>
+                    <select id="cardPaymentMethod" class="payment-input">
+                        <option value="">Select method</option>
+                        <option value="visa">Visa Card</option>
+                        <option value="mastercard">Mastercard</option>
+                        <option value="bank_transfer">Bank Transfer</option>
+                        <option value="paypal">PayPal</option>
+                        <option value="stripe">Stripe</option>
+                    </select>
+                </div>
+                
+                <input type="text" class="payment-input" placeholder="Transaction/Reference Code" id="visaCode" required>
+                <small style="color: #666; display: block; margin: 5px 0 15px 0;">
+                    Enter the transaction code from your payment confirmation
+                </small>
+                
+                <button class="btn" onclick="confirmPayment('visa', ${amount})" style="width: 100%; background: #3498db;">
+                    ✅ Confirm Card Payment
+                </button>
+            </div>
+            
+            <button class="btn" style="background: #e74c3c; margin-top: 15px; width: 100%;" onclick="cancelPayment()">
+                ❌ Cancel Payment
+            </button>
+        </div>
+    `;
+    
+    paymentModal.formData = formData;
+    paymentModal.successCallback = successCallback;
+    document.body.appendChild(paymentModal);
+}
+
+// Select payment method
+window.selectPaymentMethod = function(method) {
+    // Hide all forms
+    document.getElementById('mpesaPaymentForm').style.display = 'none';
+    document.getElementById('visaPaymentForm').style.display = 'none';
+    
+    // Reset button styles
+    document.getElementById('mpesaBtn').style.opacity = '0.6';
+    document.getElementById('visaBtn').style.opacity = '0.6';
+    
+    // Show selected form
+    if (method === 'mpesa') {
+        document.getElementById('mpesaPaymentForm').style.display = 'block';
+        document.getElementById('mpesaBtn').style.opacity = '1';
+    } else {
+        document.getElementById('visaPaymentForm').style.display = 'block';
+        document.getElementById('visaBtn').style.opacity = '1';
+    }
+};
+
+// Confirm payment (both M-PESA and Visa)
+window.confirmPayment = function(method, amount) {
+    const paymentModal = document.querySelector('.payment-modal');
+    let transactionCode, paymentMethod;
+    
+    if (method === 'mpesa') {
+        transactionCode = document.getElementById('mpesaCode').value.trim().toUpperCase();
+        paymentMethod = 'M-PESA';
+        
+        if (!transactionCode || transactionCode.length < 8) {
+            showNotification('❌ Please enter a valid M-PESA transaction code', 'error');
+            return;
+        }
+    } else {
+        transactionCode = document.getElementById('visaCode').value.trim().toUpperCase();
+        paymentMethod = document.getElementById('cardPaymentMethod').value;
+        
+        if (!paymentMethod) {
+            showNotification('❌ Please select a payment method', 'error');
+            return;
+        }
+        
+        if (!transactionCode || transactionCode.length < 6) {
+            showNotification('❌ Please enter a valid transaction code', 'error');
+            return;
+        }
+    }
+    
+    // Show processing
+    paymentModal.innerHTML = `
+        <div class="payment-widget">
+            <h3>⏳ Processing Payment...</h3>
+            <div class="spinner"></div>
+            <p>Verifying ${paymentMethod} transaction</p>
+            <p style="font-size: 0.9em; color: #666;">Transaction: ${transactionCode}</p>
+            <p style="font-size: 0.85em; color: #e74c3c; margin-top: 15px;">
+                ⚠️ Payment will be verified by our validators
+            </p>
+        </div>
+    `;
+    
+    // Simulate processing delay
+    setTimeout(() => {
+        const storedFormData = paymentModal.formData;
+        const callback = paymentModal.successCallback;
+        
+        // Add payment details to formData
+        storedFormData.paymentMethod = paymentMethod;
+        storedFormData.transactionCode = transactionCode;
+        storedFormData.paymentStatus = 'Pending Validation'; // Changed from 'Paid'
+        storedFormData.paymentAmount = amount;
+        storedFormData.paymentDate = new Date().toISOString();
+        
+        paymentModal.remove();
+        
+        // Trigger success callback
+        if (callback === 'processTaskSuccess') {
+            processTaskSuccess(storedFormData);
+        } else if (callback === 'processTalkSuccess') {
+            processTalkSuccess(storedFormData);
+        } else if (callback === 'processJobCreationSuccess') {
+            processJobCreationSuccess(storedFormData);
+        }
+        
+        showNotification(`✅ Payment submitted! Transaction ${transactionCode} awaiting validation`, 'success');
+    }, 2500);
+};
+
+// Original M-PESA modal (for Kenyan users)
 function showPaymentModal(amount, phoneNumber, formData, successCallback) {
     const paymentModal = document.createElement('div');
     paymentModal.className = 'payment-modal';
@@ -2094,22 +2292,24 @@ function showPaymentModal(amount, phoneNumber, formData, successCallback) {
             <div class="payment-step">
                 <h4>Amount: KSH ${amount}</h4>
                 <p>Phone: ${phoneNumber}</p>
-                <p style="color: #666; font-size: 0.9em;">A payment prompt will be sent to your phone</p>
             </div>
             <div id="paymentSteps">
                 <div style="margin: 20px 0; padding: 15px; background: #f0f8ff; border-radius: 10px;">
                     <p><strong>Payment Process:</strong></p>
                     <ol style="text-align: left; margin-top: 10px;">
-                        <li>Check your phone for M-PESA prompt</li>
+                        <li>Go to M-PESA menu</li>
+                        <li>Select "Lipa na M-PESA"</li>
+                        <li>Select "Pay Bill"</li>
+                        <li>Business Number: <strong>4087777</strong></li>
+                        <li>Account: <strong>TAU${Date.now().toString().slice(-6)}</strong></li>
+                        <li>Amount: <strong>${amount}</strong></li>
                         <li>Enter your M-PESA PIN</li>
-                        <li>Confirm the payment</li>
-                        <li>Wait for confirmation</li>
                     </ol>
                 </div>
-                <input type="text" class="payment-input" placeholder="Enter confirmation code (if received)" id="confirmationCode">
-                <button class="btn" onclick="simulatePayment(${amount}, '${phoneNumber}')">Confirm Payment</button>
+                <input type="text" class="payment-input" placeholder="Enter M-PESA code (e.g., QGX1234567)" id="mpesaConfirmationCode" maxlength="10">
+                <button class="btn" onclick="simulatePayment(${amount}, '${phoneNumber}')">✅ Confirm Payment</button>
             </div>
-            <button class="btn" style="background: #e74c3c; margin-top: 20px;" onclick="cancelPayment()">Cancel Payment</button>
+            <button class="btn" style="background: #e74c3c; margin-top: 20px;" onclick="cancelPayment()">❌ Cancel</button>
         </div>
     `;
     paymentModal.formData = formData;
@@ -2119,43 +2319,45 @@ function showPaymentModal(amount, phoneNumber, formData, successCallback) {
 
 function simulatePayment(amount, phoneNumber) {
     const paymentModal = document.querySelector('.payment-modal');
-    const confirmationCode = document.getElementById('confirmationCode').value;
+    const confirmationCode = document.getElementById('mpesaConfirmationCode').value.trim().toUpperCase();
     
-    if (confirmationCode.length < 4) {
-        showNotification('Please enter a valid confirmation code', 'error');
+    if (confirmationCode.length < 8) {
+        showNotification('❌ Please enter a valid M-PESA code', 'error');
         return;
     }
 
     paymentModal.innerHTML = `
         <div class="payment-widget">
-            <h3>Processing Payment...</h3>
+            <h3>⏳ Processing Payment...</h3>
             <div class="spinner"></div>
             <p>Verifying M-PESA transaction</p>
-            <p style="font-size: 0.9em; color: #666;">Transaction ID: MPX${Date.now()}</p>
+            <p style="font-size: 0.9em; color: #666;">Code: ${confirmationCode}</p>
         </div>
     `;
 
     setTimeout(() => {
-        if (Math.random() > 0.05) {
-            const storedFormData = paymentModal.formData;
-            const callback = paymentModal.successCallback;
-            
-            paymentModal.remove();
-            
-            if (callback === 'processTaskSuccess') {
-                processTaskSuccess(storedFormData);
-            } else if (callback === 'processTalkSuccess') {
-                processTalkSuccess(storedFormData);
-            } else if (callback === 'processJobCreationSuccess') {
-                processJobCreationSuccess(storedFormData);
-            }
-            
-            showNotification(`M-PESA payment of KSH ${amount} successful! Transaction ID: MPX${Date.now()}`, 'success');
-        } else {
-            paymentModal.remove();
-            showNotification('Payment failed. Please try again or contact support.', 'error');
+        const storedFormData = paymentModal.formData;
+        const callback = paymentModal.successCallback;
+        
+        // Add M-PESA details
+        storedFormData.paymentMethod = 'M-PESA';
+        storedFormData.transactionCode = confirmationCode;
+        storedFormData.paymentStatus = 'Pending Validation';
+        storedFormData.paymentAmount = amount;
+        storedFormData.paymentDate = new Date().toISOString();
+        
+        paymentModal.remove();
+        
+        if (callback === 'processTaskSuccess') {
+            processTaskSuccess(storedFormData);
+        } else if (callback === 'processTalkSuccess') {
+            processTalkSuccess(storedFormData);
+        } else if (callback === 'processJobCreationSuccess') {
+            processJobCreationSuccess(storedFormData);
         }
-    }, 3000);
+        
+        showNotification(`✅ M-PESA payment submitted! Code ${confirmationCode} awaiting validation`, 'success');
+    }, 2500);
 }
 
 function cancelPayment() {
@@ -2163,6 +2365,7 @@ function cancelPayment() {
     showNotification('Payment cancelled', 'error');
 }
 
+console.log('✅ Enhanced Payment System loaded (M-PESA + Visa)');
 // ===== NOTIFICATION SYSTEM =====
 function showNotification(message, type = 'success') {
     const notification = document.getElementById('notification');
@@ -2237,11 +2440,10 @@ function processTaskRegistration(event) {
         showNotification('Please fill all required fields and select a category', 'error');
         return;
     }
-    
-    if (!data.phone.match(/^254[0-9]{9}$/)) {
-        showNotification('Please use correct phone format: 254XXXXXXXXX', 'error');
-        return;
-    }
+    if (!data.phone.match(/^\+[0-9]{1,4}[0-9]{6,14}$/)) {
+    showNotification('Please include country code (e.g., +254712345678)', 'error');
+    return;
+}
     
     data.category = selectedCategory;
     initiateMpesaPayment(500, data.phone, data, 'processTaskSuccess');
@@ -2258,10 +2460,10 @@ function processTalkRegistration(event) {
         return;
     }
     
-    if (!data.phone.match(/^254[0-9]{9}$/)) {
-        showNotification('Please use correct phone format: 254XXXXXXXXX', 'error');
-        return;
-    }
+    if (!data.phone.match(/^\+[0-9]{1,4}[0-9]{6,14}$/)) {
+    showNotification('Please include country code (e.g., +254712345678)', 'error');
+    return;
+        }
     
     data.supportLevel = selectedLevel;
     initiateMpesaPayment(2000, data.phone, data, 'processTalkSuccess');
@@ -2278,10 +2480,10 @@ function processJobCreationTraining(event) {
         return;
     }
     
-    if (!data.phone.match(/^254[0-9]{9}$/)) {
-        showNotification('Please use correct phone format: 254XXXXXXXXX', 'error');
-        return;
-    }
+    if (!data.phone.match(/^\+[0-9]{1,4}[0-9]{6,14}$/)) {
+    showNotification('Please include country code (e.g., +254712345678)', 'error');
+    return;
+}
     
     initiateMpesaPayment(1500, data.phone, data, 'processJobCreationSuccess');
 }
@@ -2844,12 +3046,210 @@ Fee: KSH 500 ✅ PAID
 })();
 </script>
     <script> 
- //====M-PESA PAYMENT INTEGRATION====//
+        // ============================================
+// ENHANCED PAYMENT SYSTEM - M-PESA + VISA
+// Replace the existing payment functions (around line 1055-1155)
+// ============================================
 
-    function initiateMpesaPayment(amount, phoneNumber, formData, successCallback) {
-    showPaymentModal(amount, phoneNumber, formData, successCallback);
+function initiateMpesaPayment(amount, phoneNumber, formData, successCallback) {
+    // Check if phone starts with +254 (Kenya)
+    const isKenyan = phoneNumber.startsWith('+254') || phoneNumber.startsWith('254');
+    
+    if (isKenyan) {
+        // Show M-PESA payment for Kenyan numbers
+        showPaymentModal(amount, phoneNumber, formData, successCallback);
+    } else {
+        // Show multi-payment options for international users
+        showMultiPaymentModal(amount, phoneNumber, formData, successCallback);
+    }
 }
 
+// Enhanced payment modal with multiple options
+function showMultiPaymentModal(amount, phoneNumber, formData, successCallback) {
+    const paymentModal = document.createElement('div');
+    paymentModal.className = 'payment-modal';
+    paymentModal.innerHTML = `
+        <div class="payment-widget" style="max-width: 500px;">
+            <h3>💳 Payment Options</h3>
+            <div style="background: #e3f2fd; padding: 15px; border-radius: 10px; margin: 15px 0;">
+                <strong>Amount: KSH ${amount}</strong><br>
+                <small>Phone: ${phoneNumber}</small>
+            </div>
+            
+            <!-- PAYMENT METHOD SELECTION -->
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 20px;">
+                <button class="btn" onclick="selectPaymentMethod('mpesa')" id="mpesaBtn" style="background: #27ae60;">
+                    📱 M-PESA
+                </button>
+                <button class="btn" onclick="selectPaymentMethod('visa')" id="visaBtn" style="background: #3498db;">
+                    💳 Visa/Card
+                </button>
+            </div>
+            
+            <!-- M-PESA PAYMENT FORM -->
+            <div id="mpesaPaymentForm" style="display: none;">
+                <div style="background: #fff3cd; padding: 15px; border-radius: 10px; margin-bottom: 15px;">
+                    <strong>📱 M-PESA Payment (Kenya Only)</strong>
+                    <p style="margin: 10px 0 0 0; font-size: 14px;">
+                        1. Go to M-PESA menu<br>
+                        2. Select "Lipa na M-PESA"<br>
+                        3. Select "Pay Bill"<br>
+                        4. Enter Business Number: <strong>4087777</strong><br>
+                        5. Account Number: <strong>TAU${Date.now().toString().slice(-6)}</strong><br>
+                        6. Amount: <strong>KSH ${amount}</strong><br>
+                        7. Enter your M-PESA PIN
+                    </p>
+                </div>
+                
+                <input type="text" class="payment-input" placeholder="Enter M-PESA Transaction Code (e.g., QGX1234567)" id="mpesaCode" maxlength="10">
+                <small style="color: #666; display: block; margin: 5px 0 15px 0;">
+                    You'll receive an SMS with the code after payment
+                </small>
+                
+                <button class="btn" onclick="confirmPayment('mpesa', ${amount})" style="width: 100%; background: #27ae60;">
+                    ✅ Confirm M-PESA Payment
+                </button>
+            </div>
+            
+            <!-- VISA/CARD PAYMENT FORM -->
+            <div id="visaPaymentForm" style="display: none;">
+                <div style="background: #e3f2fd; padding: 15px; border-radius: 10px; margin-bottom: 15px;">
+                    <strong>💳 Card Payment Instructions</strong>
+                    <p style="margin: 10px 0 0 0; font-size: 14px;">
+                        <strong>Bank Details:</strong><br>
+                        Bank: Equity Bank<br>
+                        Account: TAU AFRICA ECOSYSTEM<br>
+                        Account No: 1234567890<br>
+                        Swift Code: EQBLKENA<br>
+                        Amount: <strong>KSH ${amount}</strong>
+                    </p>
+                    <p style="margin: 10px 0 0 0; font-size: 12px; color: #e74c3c;">
+                        OR use online payment gateway (Stripe/PayPal)
+                    </p>
+                </div>
+                
+                <div class="form-group">
+                    <label>Payment Method</label>
+                    <select id="cardPaymentMethod" class="payment-input">
+                        <option value="">Select method</option>
+                        <option value="visa">Visa Card</option>
+                        <option value="mastercard">Mastercard</option>
+                        <option value="bank_transfer">Bank Transfer</option>
+                        <option value="paypal">PayPal</option>
+                        <option value="stripe">Stripe</option>
+                    </select>
+                </div>
+                
+                <input type="text" class="payment-input" placeholder="Transaction/Reference Code" id="visaCode" required>
+                <small style="color: #666; display: block; margin: 5px 0 15px 0;">
+                    Enter the transaction code from your payment confirmation
+                </small>
+                
+                <button class="btn" onclick="confirmPayment('visa', ${amount})" style="width: 100%; background: #3498db;">
+                    ✅ Confirm Card Payment
+                </button>
+            </div>
+            
+            <button class="btn" style="background: #e74c3c; margin-top: 15px; width: 100%;" onclick="cancelPayment()">
+                ❌ Cancel Payment
+            </button>
+        </div>
+    `;
+    
+    paymentModal.formData = formData;
+    paymentModal.successCallback = successCallback;
+    document.body.appendChild(paymentModal);
+}
+
+// Select payment method
+window.selectPaymentMethod = function(method) {
+    // Hide all forms
+    document.getElementById('mpesaPaymentForm').style.display = 'none';
+    document.getElementById('visaPaymentForm').style.display = 'none';
+    
+    // Reset button styles
+    document.getElementById('mpesaBtn').style.opacity = '0.6';
+    document.getElementById('visaBtn').style.opacity = '0.6';
+    
+    // Show selected form
+    if (method === 'mpesa') {
+        document.getElementById('mpesaPaymentForm').style.display = 'block';
+        document.getElementById('mpesaBtn').style.opacity = '1';
+    } else {
+        document.getElementById('visaPaymentForm').style.display = 'block';
+        document.getElementById('visaBtn').style.opacity = '1';
+    }
+};
+
+// Confirm payment (both M-PESA and Visa)
+window.confirmPayment = function(method, amount) {
+    const paymentModal = document.querySelector('.payment-modal');
+    let transactionCode, paymentMethod;
+    
+    if (method === 'mpesa') {
+        transactionCode = document.getElementById('mpesaCode').value.trim().toUpperCase();
+        paymentMethod = 'M-PESA';
+        
+        if (!transactionCode || transactionCode.length < 8) {
+            showNotification('❌ Please enter a valid M-PESA transaction code', 'error');
+            return;
+        }
+    } else {
+        transactionCode = document.getElementById('visaCode').value.trim().toUpperCase();
+        paymentMethod = document.getElementById('cardPaymentMethod').value;
+        
+        if (!paymentMethod) {
+            showNotification('❌ Please select a payment method', 'error');
+            return;
+        }
+        
+        if (!transactionCode || transactionCode.length < 6) {
+            showNotification('❌ Please enter a valid transaction code', 'error');
+            return;
+        }
+    }
+    
+    // Show processing
+    paymentModal.innerHTML = `
+        <div class="payment-widget">
+            <h3>⏳ Processing Payment...</h3>
+            <div class="spinner"></div>
+            <p>Verifying ${paymentMethod} transaction</p>
+            <p style="font-size: 0.9em; color: #666;">Transaction: ${transactionCode}</p>
+            <p style="font-size: 0.85em; color: #e74c3c; margin-top: 15px;">
+                ⚠️ Payment will be verified by our validators
+            </p>
+        </div>
+    `;
+    
+    // Simulate processing delay
+    setTimeout(() => {
+        const storedFormData = paymentModal.formData;
+        const callback = paymentModal.successCallback;
+        
+        // Add payment details to formData
+        storedFormData.paymentMethod = paymentMethod;
+        storedFormData.transactionCode = transactionCode;
+        storedFormData.paymentStatus = 'Pending Validation'; // Changed from 'Paid'
+        storedFormData.paymentAmount = amount;
+        storedFormData.paymentDate = new Date().toISOString();
+        
+        paymentModal.remove();
+        
+        // Trigger success callback
+        if (callback === 'processTaskSuccess') {
+            processTaskSuccess(storedFormData);
+        } else if (callback === 'processTalkSuccess') {
+            processTalkSuccess(storedFormData);
+        } else if (callback === 'processJobCreationSuccess') {
+            processJobCreationSuccess(storedFormData);
+        }
+        
+        showNotification(`✅ Payment submitted! Transaction ${transactionCode} awaiting validation`, 'success');
+    }, 2500);
+};
+
+// Original M-PESA modal (for Kenyan users)
 function showPaymentModal(amount, phoneNumber, formData, successCallback) {
     const paymentModal = document.createElement('div');
     paymentModal.className = 'payment-modal';
@@ -2859,22 +3259,24 @@ function showPaymentModal(amount, phoneNumber, formData, successCallback) {
             <div class="payment-step">
                 <h4>Amount: KSH ${amount}</h4>
                 <p>Phone: ${phoneNumber}</p>
-                <p style="color: #666; font-size: 0.9em;">A payment prompt will be sent to your phone</p>
             </div>
             <div id="paymentSteps">
                 <div style="margin: 20px 0; padding: 15px; background: #f0f8ff; border-radius: 10px;">
                     <p><strong>Payment Process:</strong></p>
                     <ol style="text-align: left; margin-top: 10px;">
-                        <li>Check your phone for M-PESA prompt</li>
+                        <li>Go to M-PESA menu</li>
+                        <li>Select "Lipa na M-PESA"</li>
+                        <li>Select "Pay Bill"</li>
+                        <li>Business Number: <strong>4087777</strong></li>
+                        <li>Account: <strong>TAU${Date.now().toString().slice(-6)}</strong></li>
+                        <li>Amount: <strong>${amount}</strong></li>
                         <li>Enter your M-PESA PIN</li>
-                        <li>Confirm the payment</li>
-                        <li>Wait for confirmation</li>
                     </ol>
                 </div>
-                <input type="text" class="payment-input" placeholder="Enter confirmation code (if received)" id="confirmationCode">
-                <button class="btn" onclick="simulatePayment(${amount}, '${phoneNumber}')">Confirm Payment</button>
+                <input type="text" class="payment-input" placeholder="Enter M-PESA code (e.g., QGX1234567)" id="mpesaConfirmationCode" maxlength="10">
+                <button class="btn" onclick="simulatePayment(${amount}, '${phoneNumber}')">✅ Confirm Payment</button>
             </div>
-            <button class="btn" style="background: #e74c3c; margin-top: 20px;" onclick="cancelPayment()">Cancel Payment</button>
+            <button class="btn" style="background: #e74c3c; margin-top: 20px;" onclick="cancelPayment()">❌ Cancel</button>
         </div>
     `;
     paymentModal.formData = formData;
@@ -2884,43 +3286,45 @@ function showPaymentModal(amount, phoneNumber, formData, successCallback) {
 
 function simulatePayment(amount, phoneNumber) {
     const paymentModal = document.querySelector('.payment-modal');
-    const confirmationCode = document.getElementById('confirmationCode').value;
+    const confirmationCode = document.getElementById('mpesaConfirmationCode').value.trim().toUpperCase();
     
-    if (confirmationCode.length < 4) {
-        showNotification('Please enter a valid confirmation code', 'error');
+    if (confirmationCode.length < 8) {
+        showNotification('❌ Please enter a valid M-PESA code', 'error');
         return;
     }
 
     paymentModal.innerHTML = `
         <div class="payment-widget">
-            <h3>Processing Payment...</h3>
+            <h3>⏳ Processing Payment...</h3>
             <div class="spinner"></div>
             <p>Verifying M-PESA transaction</p>
-            <p style="font-size: 0.9em; color: #666;">Transaction ID: MPX${Date.now()}</p>
+            <p style="font-size: 0.9em; color: #666;">Code: ${confirmationCode}</p>
         </div>
     `;
 
     setTimeout(() => {
-        if (Math.random() > 0.05) {
-            const storedFormData = paymentModal.formData;
-            const callback = paymentModal.successCallback;
-            
-            paymentModal.remove();
-            
-            if (callback === 'processTaskSuccess') {
-                processTaskSuccess(storedFormData);
-            } else if (callback === 'processTalkSuccess') {
-                processTalkSuccess(storedFormData);
-            } else if (callback === 'processJobCreationSuccess') {
-                processJobCreationSuccess(storedFormData);
-            }
-            
-            showNotification(`M-PESA payment of KSH ${amount} successful! Transaction ID: MPX${Date.now()}`, 'success');
-        } else {
-            paymentModal.remove();
-            showNotification('Payment failed. Please try again or contact support.', 'error');
+        const storedFormData = paymentModal.formData;
+        const callback = paymentModal.successCallback;
+        
+        // Add M-PESA details
+        storedFormData.paymentMethod = 'M-PESA';
+        storedFormData.transactionCode = confirmationCode;
+        storedFormData.paymentStatus = 'Pending Validation';
+        storedFormData.paymentAmount = amount;
+        storedFormData.paymentDate = new Date().toISOString();
+        
+        paymentModal.remove();
+        
+        if (callback === 'processTaskSuccess') {
+            processTaskSuccess(storedFormData);
+        } else if (callback === 'processTalkSuccess') {
+            processTalkSuccess(storedFormData);
+        } else if (callback === 'processJobCreationSuccess') {
+            processJobCreationSuccess(storedFormData);
         }
-    }, 3000);
+        
+        showNotification(`✅ M-PESA payment submitted! Code ${confirmationCode} awaiting validation`, 'success');
+    }, 2500);
 }
 
 function cancelPayment() {
@@ -2928,12 +3332,31 @@ function cancelPayment() {
     showNotification('Payment cancelled', 'error');
 }
 
+console.log('✅ Enhanced Payment System loaded (M-PESA + Visa)');
 // ===== NOTIFICATION SYSTEM =====
 function showNotification(message, type = 'success') {
     const notification = document.getElementById('notification');
     notification.innerHTML = message;
     notification.className = `notification ${type}`;
     notification.style.display = 'block';
+    // Add to admin notifications when payment is submitted
+const adminNotifs = JSON.parse(localStorage.getItem('tauAdminNotifications') || '[]');
+adminNotifs.unshift({
+    id: 'ADMIN-' + Date.now(),
+    type: 'payment_validation_required',
+    data: {
+        memberName: formData.fullName,
+        memberEmail: formData.email,
+        memberPhone: formData.phone,
+        paymentMethod: formData.paymentMethod,
+        transactionCode: formData.transactionCode,
+        amount: formData.paymentAmount,
+        team: team
+    },
+    timestamp: new Date().toISOString(),
+    read: false
+});
+localStorage.setItem('tauAdminNotifications', JSON.stringify(adminNotifs));
     </script>
 <script>
     // ============================================
@@ -3550,11 +3973,10 @@ function processTaskRegistration(event) {
         showNotification('Please fill all required fields and select a category', 'error');
         return;
     }
-    
-    if (!data.phone.match(/^254[0-9]{9}$/)) {
-        showNotification('Please use correct phone format: 254XXXXXXXXX', 'error');
-        return;
-    }
+    if (!data.phone.match(/^\+[0-9]{1,4}[0-9]{6,14}$/)) {
+    showNotification('Please include country code (e.g., +254712345678)', 'error');
+    return;
+}
     
     data.category = selectedCategory;
     initiateMpesaPayment(500, data.phone, data, 'processTaskSuccess');
@@ -3571,10 +3993,10 @@ function processTalkRegistration(event) {
         return;
     }
     
-    if (!data.phone.match(/^254[0-9]{9}$/)) {
-        showNotification('Please use correct phone format: 254XXXXXXXXX', 'error');
-        return;
-    }
+    if (!data.phone.match(/^\+[0-9]{1,4}[0-9]{6,14}$/)) {
+    showNotification('Please include country code (e.g., +254712345678)', 'error');
+    return;
+}
     
     data.supportLevel = selectedLevel;
     initiateMpesaPayment(2000, data.phone, data, 'processTalkSuccess');
@@ -3591,10 +4013,10 @@ function processJobCreationTraining(event) {
         return;
     }
     
-    if (!data.phone.match(/^254[0-9]{9}$/)) {
-        showNotification('Please use correct phone format: 254XXXXXXXXX', 'error');
-        return;
-    }
+    if (!data.phone.match(/^\+[0-9]{1,4}[0-9]{6,14}$/)) {
+    showNotification('Please include country code (e.g., +254712345678)', 'error');
+    return;
+}
     
     initiateMpesaPayment(1500, data.phone, data, 'processJobCreationSuccess');
 }
@@ -7066,6 +7488,24 @@ document.addEventListener('DOMContentLoaded', () => {
     console.log('✅ Validator Dashboard loaded');
     
 })();
+       // Add to admin notifications when payment is submitted
+const adminNotifs = JSON.parse(localStorage.getItem('tauAdminNotifications') || '[]');
+adminNotifs.unshift({
+    id: 'ADMIN-' + Date.now(),
+    type: 'payment_validation_required',
+    data: {
+        memberName: formData.fullName,
+        memberEmail: formData.email,
+        memberPhone: formData.phone,
+        paymentMethod: formData.paymentMethod,
+        transactionCode: formData.transactionCode,
+        amount: formData.paymentAmount,
+        team: team
+    },
+    timestamp: new Date().toISOString(),
+    read: false
+});
+localStorage.setItem('tauAdminNotifications', JSON.stringify(adminNotifs)); 
     </script>
     <script>
 // TAU AFRICA UI COMPONENTS - COMPLETE
