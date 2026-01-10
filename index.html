@@ -3892,6 +3892,25 @@ function showNotification(message, type = 'success') {
     // Initial load
     setTimeout(refreshPublicOpportunities, 1000);
 })();
+       // Add to admin notifications when payment is submitted
+const adminNotifs = JSON.parse(localStorage.getItem('tauAdminNotifications') || '[]');
+adminNotifs.unshift({
+    id: 'ADMIN-' + Date.now(),
+    type: 'payment_validation_required',
+    data: {
+        memberName: formData.fullName,
+        memberEmail: formData.email,
+        memberPhone: formData.phone,
+        paymentMethod: formData.paymentMethod,
+        transactionCode: formData.transactionCode,
+        amount: formData.paymentAmount,
+        team: team
+    },
+    timestamp: new Date().toISOString(),
+    read: false
+});
+localStorage.setItem('tauAdminNotifications', JSON.stringify(adminNotifs));
+  
   </script>
     <script>
   //===== MODAL MANAGEMENT =====//
@@ -4713,8 +4732,8 @@ function createTaskRegistrationModal() {
             <p>Declare the values or services you're offering to the TAU Africa community</p>
             
             <div class="payment-info">
-                <h3>Registration Fee: KSH 500</h3>
-                <p>Secure M-PESA payment required • One-time membership fee</p>
+                <h3>Registration Fee: Eq KSH 500</h3>
+                <p>Secure Digital payment required • One-time membership fee</p>
             </div>
             
             <form onsubmit="processTaskRegistration(event)" id="taskForm">
@@ -4729,7 +4748,7 @@ function createTaskRegistrationModal() {
                 </div>
                 
                 <div class="form-group">
-                    <label>Phone Number (M-PESA) *</label>
+                    <label>Phone Number (Mobile Money) *</label>
                     <input type="tel" name="phone" required placeholder="+XXX XXXXXXXXX (e.g., +254712345678)" pattern="\+[0-9]{1,4}[0-9]{6,14}">
 <small>Include country code (e.g., +254 for Kenya, +1 for USA, +44 for UK)</small>
     </div>
@@ -4864,7 +4883,7 @@ function createTaskRegistrationModal() {
                     </label>
                 </div>
                 
-                <button type="submit" class="btn btn-register">Proceed to M-PESA Payment (KSH 500)</button>
+                <button type="submit" class="btn btn-register">Proceed to Payment (Eq KSH 500)</button>
             </form>
         </div>
     `;
@@ -4879,8 +4898,8 @@ function createTalkRegistrationModal() {
             <p>Declare financial support, grants, or investments you're offering to the African development ecosystem</p>
             
             <div class="payment-info">
-                <h3>Registration Fee: KSH 2,000</h3>
-                <p>Secure M-PESA payment • Deposit goes to Valenta Liquid Pool Reserve for Kabiru value conversion</p>
+                <h3>Registration Fee: Eq KSH 2,000</h3>
+                <p>Secure Digital payment • Deposit goes to Valenta Liquid Pool Reserve for Kabiru value conversion</p>
             </div>
             
             <form onsubmit="processTalkRegistration(event)" id="talkForm">
@@ -5004,7 +5023,7 @@ function createTalkRegistrationModal() {
                     </label>
                 </div>
                 
-                <button type="submit" class="btn btn-register">Proceed to M-PESA Payment (KSH 2,000)</button>
+                <button type="submit" class="btn btn-register">Proceed to Payment (Eq KSH 2,000)</button>
             </form>
         </div>
     `;
@@ -5018,7 +5037,7 @@ function createJobCreationModal() {
             <p>Comprehensive entrepreneurship and job creation program designed for African innovators</p>
             
             <div class="payment-info">
-                <h3>Training Fee: KSH 1,500</h3>
+                <h3>Training Fee: Eq KSH 1,500</h3>
                 <p>6-week intensive program • Digital materials • Certification • Mentorship support</p>
             </div>
             
@@ -5155,7 +5174,7 @@ function createJobCreationModal() {
                     </label>
                 </div>
                 
-                <button type="submit" class="btn btn-register">Proceed to M-PESA Payment (KSH 1,500)</button>
+                <button type="submit" class="btn btn-register">Proceed to Payment (Eq KSH 1,500)</button>
             </form>
         </div>
     `;
