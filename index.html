@@ -3339,25 +3339,7 @@ function showNotification(message, type = 'success') {
     notification.innerHTML = message;
     notification.className = `notification ${type}`;
     notification.style.display = 'block';
-    // Add to admin notifications when payment is submitted
-const adminNotifs = JSON.parse(localStorage.getItem('tauAdminNotifications') || '[]');
-adminNotifs.unshift({
-    id: 'ADMIN-' + Date.now(),
-    type: 'payment_validation_required',
-    data: {
-        memberName: formData.fullName,
-        memberEmail: formData.email,
-        memberPhone: formData.phone,
-        paymentMethod: formData.paymentMethod,
-        transactionCode: formData.transactionCode,
-        amount: formData.paymentAmount,
-        team: team
-    },
-    timestamp: new Date().toISOString(),
-    read: false
-});
-localStorage.setItem('tauAdminNotifications', JSON.stringify(adminNotifs));
-    </script>
+   </script>
 <script>
     // ============================================
 // FIXED VALUE SUBMISSION - ALLOWS EVERYONE
