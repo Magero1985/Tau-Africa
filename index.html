@@ -14665,74 +14665,95 @@ console.log('✅ Admin bridge button fixed');
     
 })();
 </script>
-    <div id="validationDashboard" class="modal" style="display:none; background: #f4f7f6; z-index: 99999;">
-    <div style="max-width: 1000px; margin: 40px auto; padding: 20px; background: white; border-radius: 15px; box-shadow: 0 10px 30px rgba(0,0,0,0.1);">
-        <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #eee; padding-bottom: 20px;">
-            <h2>💳 Membership Payment Validation</h2>
-            <button onclick="document.getElementById('validationDashboard').style.display='none'" class="btn" style="background:#e74c3c">Close Panel</button>
+    <div id="validationDashboard" class="modal" style="display:none; position: fixed; inset: 0; background: #f4f7f6; z-index: 10000; overflow-y: auto;">
+    <div style="padding: 15px; padding-bottom: 80px;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; sticky: top;">
+            <h3 style="margin:0;">New Memberships</h3>
+            <button onclick="document.getElementById('validationDashboard').style.display='none'" 
+                    style="background:#e74c3c; color:white; border:none; padding:8px 15px; border-radius:8px;">Close</button>
         </div>
         
-        <div id="pendingList" style="margin-top: 20px;">
+        <div id="pendingList">
             </div>
     </div>
 </div>
 
 <script>
-// SECRET FUNCTION TO OPEN THE VALIDATION PAGE
-window.openValidationPage = function() {
-    const dashboard = document.getElementById('validationDashboard');
-    dashboard.style.display = 'block';
+function openValidationPage() {
+    document.getElementById('validationDashboard').style.display = 'block';
     refreshPendingList();
-};
+}
 
 function refreshPendingList() {
+    // Looks for members in your local storage
     const members = JSON.parse(localStorage.getItem('tauAfricaDB') || '[]');
+    // Filter for those who haven't been activated yet
     const pending = members.filter(m => m.status === 'Pending' || m.paymentStatus === 'Pending');
-    const container = document.getElementById('pendingList');
     
+    // Update the notification badge
+    const badge = document.getElementById('pendingBadge');
+    if(badge) {
+        badge.innerText = pending.length;
+        badge.style.display = pending.length > 0 ? 'block' : 'none';
+    }
+
+    const container = document.getElementById('pendingList');
     if (pending.length === 0) {
-        container.innerHTML = '<p style="text-align:center; padding: 40px; color: #666;">No new payments waiting for validation.</p>';
+        container.innerHTML = '<div style="text-align:center; margin-top:50px; color:#999;">No pending payments! 🎉</div>';
         return;
     }
 
     container.innerHTML = pending.map(m => `
-        <div style="border: 1px solid #ddd; padding: 15px; border-radius: 10px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; background: #fff;">
-            <div>
-                <strong>${m.fullName}</strong> (${m.team})<br>
-                <small>📧 ${m.email} | 📱 ${m.phone}</small><br>
-                <span style="color: #27ae60; font-weight: bold;">TX Code: ${m.transactionCode || 'N/A'}</span>
+        <div style="background:white; border-radius:12px; padding:15px; margin-bottom:15px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); border-left: 5px solid #3498db;">
+            <div style="margin-bottom:10px;">
+                <strong style="font-size:1.1em;">${m.fullName}</strong><br>
+                <small style="color:#666;">${m.phone} | ${m.team}</small><br>
+                <div style="background:#f0f9ff; padding:5px; border-radius:5px; margin-top:5px; color:#2980b9; font-family:monospace; font-weight:bold;">
+                    TX: ${m.transactionCode || 'NO CODE'}
+                </div>
             </div>
-            <div>
-                <button onclick="approveMember('${m.email}')" class="btn" style="background: #2ecc71;">✅ Validate & Activate</button>
-                <button onclick="rejectMember('${m.email}')" class="btn" style="background: #e74c3c; padding: 10px;">✖</button>
-            </div>
+            <button onclick="approveMember('${m.email}')" 
+                    style="width:100%; background:#27ae60; color:white; border:none; padding:12px; border-radius:8px; font-weight:bold; font-size:16px;">
+                ✅ Approve & Send ID
+            </button>
         </div>
     `).join('');
 }
 
 async function approveMember(email) {
+    if(!confirm('Validate payment and issue Member ID?')) return;
+
     let members = JSON.parse(localStorage.getItem('tauAfricaDB') || '[]');
     const idx = members.findIndex(m => m.email === email);
     
     if (idx !== -1) {
-        showNotification('🔄 Activating member and sending email...', 'info');
-        
-        // 1. Update Status
+        // 1. Mark as Active
         members[idx].status = 'Active';
         members[idx].paymentStatus = 'Paid';
         
-        // 2. Save back to database
+        // 2. Generate Member ID (Tau Number)
+        const tauID = "TAU-" + Math.floor(1000 + Math.random() * 9000);
+        members[idx].memberID = tauID;
+        
+        // 3. Save to storage
         localStorage.setItem('tauAfricaDB', JSON.stringify(members));
         
-        // 3. Trigger Welcome Email
-        if (window.sendWelcomeEmail) {
-            await window.sendWelcomeEmail(members[idx]);
+        // 4. Try to send email (using your existing EmailJS setup)
+        try {
+            if (window.sendWelcomeEmail) {
+                await window.sendWelcomeEmail(members[idx]);
+            }
+            alert('Member Activated: ' + tauID + ' and email sent!');
+        } catch (e) {
+            alert('Member Activated but email failed. Manually send ID: ' + tauID);
         }
         
-        showNotification('✅ Member Activated! Welcome email sent.', 'success');
         refreshPendingList();
     }
 }
+
+// Auto-check for new registrations every 30 seconds
+setInterval(refreshPendingList, 30000);
 </script>
 </body>
 </html>
