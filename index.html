@@ -828,7 +828,7 @@ To join in these categories, please use KABIRU SERVICE CENTER portal</p>
 </div>
 
 <!-- Add this for admin validation dashboard access -->
-<button onclick="window.location.href='bridge.html'" class="admin-bridge-btn" style="background: #e67e22; border: none; color: white; padding: 10px 20px; border-radius: 8px; cursor: pointer;">
+<button onclick="window.location.href='https://magero1985.github.io/Tau-Africa/bridge.html'" class="admin-bridge-btn" style="background: #e67e22; border: none; color: white; padding: 10px 20px; border-radius: 8px; cursor: pointer;">
     📊 Admin Bridge
 </button>
 </div>
@@ -14816,7 +14816,7 @@ async function approveMember(email, docId) {
         });
 
         alert('✅ Success! Member ' + tauID + ' is now active.');
-        refreshPendingList(); // Reload the list
+        loadPendingMembers(); // Reload the list
     } catch (e) {
         alert('❌ Error activating member: ' + e.message);
     }
