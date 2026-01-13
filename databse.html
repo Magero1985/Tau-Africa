@@ -485,27 +485,29 @@
         }
     }
     
-    async function deleteMember(id) {
-        if (!confirm('Delete this member? This cannot be undone.')) return;
+    window.deleteMember = async function(email) {
+    if (!confirm('🚨 Are you sure? This will PERMANENTLY delete this member from the Cloud and Local storage.')) return;
+    
+    try {
+        showNotification('🗑️ Deleting from Cloud...', 'info');
         
-        try {
-            const member = membersDB.find(m => m.id === id);
-            
-            if (member?.firestoreId && db) {
-                await db.collection('members').doc(member.firestoreId).delete();
-            }
-            
-            membersDB = membersDB.filter(m => m.id !== id);
-            localStorage.setItem('tauAfricaDB', JSON.stringify(membersDB));
-            
-            updateStats();
-            renderMembers();
-            showNotification('✅ Member deleted', 'success');
-        } catch (error) {
-            console.error('Delete error:', error);
-            showNotification('❌ Delete failed', 'error');
-        }
+        // 1. Find the document in Firebase and delete it
+        const snapshot = await db.collection('members').where('email', '==', email).get();
+        const batch = db.batch();
+        snapshot.forEach(doc => batch.delete(doc.ref));
+        await batch.commit();
+
+        // 2. Update the local list
+        membersDB = membersDB.filter(m => m.email !== email);
+        localStorage.setItem('tauAfricaDB', JSON.stringify(membersDB));
+        
+        renderMembers();
+        updateStats();
+        showNotification('✅ Member permanently deleted', 'success');
+    } catch (e) {
+        showNotification('❌ Delete failed: ' + e.message, 'error');
     }
+};
     
     // ============================================
     // UI FUNCTIONS
@@ -916,59 +918,27 @@
 })();
 </script>
     <script>
-// ============================================
-// ENHANCED MEMBER DELETION
-// ============================================
-window.deleteMember = async function(memberId) {
-    if (!confirm(`⚠️ Delete member ${memberId}? This cannot be undone!`)) {
-        return;
-    }
-    
-    if (!confirm('Are you absolutely sure? This will delete all member data!')) {
-        return;
-    }
+window.deleteMember = async function(email) {
+    if (!confirm('🚨 Are you sure? This will PERMANENTLY delete this member from the Cloud and Local storage.')) return;
     
     try {
-        // Delete from localStorage
-        const members = JSON.parse(localStorage.getItem('tauAfricaDB') || '[]');
-        const filtered = members.filter(m => m.id !== memberId);
-        localStorage.setItem('tauAfricaDB', JSON.stringify(filtered));
+        showNotification('🗑️ Deleting from Cloud...', 'info');
         
-        // Delete from Firestore
-        if (typeof firebase !== 'undefined' && firebase.apps.length > 0) {
-            const db = firebase.firestore();
-            
-            await db.collection('members').doc(memberId).delete();
-            await db.collection('memberVerification').doc(memberId).delete();
-            
-            // Delete related data
-            const notifDoc = await db.collection('notifications').doc(memberId).get();
-            if (notifDoc.exists) {
-                await notifDoc.ref.delete();
-            }
-        }
+        // 1. Find the document in Firebase and delete it
+        const snapshot = await db.collection('members').where('email', '==', email).get();
+        const batch = db.batch();
+        snapshot.forEach(doc => batch.delete(doc.ref));
+        await batch.commit();
+
+        // 2. Update the local list
+        membersDB = membersDB.filter(m => m.email !== email);
+        localStorage.setItem('tauAfricaDB', JSON.stringify(membersDB));
         
-        // Delete from credentials
-        const creds = JSON.parse(localStorage.getItem('tauCredentials') || '{}');
-        delete creds[memberId];
-        localStorage.setItem('tauCredentials', JSON.stringify(creds));
-        
-        // Delete from notifications
-        const notifs = JSON.parse(localStorage.getItem('tauNotifications') || '{}');
-        delete notifs[memberId];
-        localStorage.setItem('tauNotifications', JSON.stringify(notifs));
-        
-        showNotification(`✅ Member ${memberId} deleted successfully!`, 'success');
-        
-        // Refresh display
-        if (typeof renderMembers === 'function') renderMembers();
-        if (typeof updateStats === 'function') updateStats();
-        
-        console.log('✅ Member deleted:', memberId);
-        
-    } catch (error) {
-        console.error('Delete error:', error);
-        showNotification('❌ Deletion failed: ' + error.message, 'error');
+        renderMembers();
+        updateStats();
+        showNotification('✅ Member permanently deleted', 'success');
+    } catch (e) {
+        showNotification('❌ Delete failed: ' + e.message, 'error');
     }
 };
     </script>
