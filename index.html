@@ -14665,5 +14665,74 @@ console.log('✅ Admin bridge button fixed');
     
 })();
 </script>
+    <div id="validationDashboard" class="modal" style="display:none; background: #f4f7f6; z-index: 99999;">
+    <div style="max-width: 1000px; margin: 40px auto; padding: 20px; background: white; border-radius: 15px; box-shadow: 0 10px 30px rgba(0,0,0,0.1);">
+        <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #eee; padding-bottom: 20px;">
+            <h2>💳 Membership Payment Validation</h2>
+            <button onclick="document.getElementById('validationDashboard').style.display='none'" class="btn" style="background:#e74c3c">Close Panel</button>
+        </div>
+        
+        <div id="pendingList" style="margin-top: 20px;">
+            </div>
+    </div>
+</div>
+
+<script>
+// SECRET FUNCTION TO OPEN THE VALIDATION PAGE
+window.openValidationPage = function() {
+    const dashboard = document.getElementById('validationDashboard');
+    dashboard.style.display = 'block';
+    refreshPendingList();
+};
+
+function refreshPendingList() {
+    const members = JSON.parse(localStorage.getItem('tauAfricaDB') || '[]');
+    const pending = members.filter(m => m.status === 'Pending' || m.paymentStatus === 'Pending');
+    const container = document.getElementById('pendingList');
+    
+    if (pending.length === 0) {
+        container.innerHTML = '<p style="text-align:center; padding: 40px; color: #666;">No new payments waiting for validation.</p>';
+        return;
+    }
+
+    container.innerHTML = pending.map(m => `
+        <div style="border: 1px solid #ddd; padding: 15px; border-radius: 10px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; background: #fff;">
+            <div>
+                <strong>${m.fullName}</strong> (${m.team})<br>
+                <small>📧 ${m.email} | 📱 ${m.phone}</small><br>
+                <span style="color: #27ae60; font-weight: bold;">TX Code: ${m.transactionCode || 'N/A'}</span>
+            </div>
+            <div>
+                <button onclick="approveMember('${m.email}')" class="btn" style="background: #2ecc71;">✅ Validate & Activate</button>
+                <button onclick="rejectMember('${m.email}')" class="btn" style="background: #e74c3c; padding: 10px;">✖</button>
+            </div>
+        </div>
+    `).join('');
+}
+
+async function approveMember(email) {
+    let members = JSON.parse(localStorage.getItem('tauAfricaDB') || '[]');
+    const idx = members.findIndex(m => m.email === email);
+    
+    if (idx !== -1) {
+        showNotification('🔄 Activating member and sending email...', 'info');
+        
+        // 1. Update Status
+        members[idx].status = 'Active';
+        members[idx].paymentStatus = 'Paid';
+        
+        // 2. Save back to database
+        localStorage.setItem('tauAfricaDB', JSON.stringify(members));
+        
+        // 3. Trigger Welcome Email
+        if (window.sendWelcomeEmail) {
+            await window.sendWelcomeEmail(members[idx]);
+        }
+        
+        showNotification('✅ Member Activated! Welcome email sent.', 'success');
+        refreshPendingList();
+    }
+}
+</script>
 </body>
 </html>
