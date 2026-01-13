@@ -8393,9 +8393,9 @@ function openAdminDatabase() {
         if (!dbWindow) {
             showNotification('⚠️ Please allow popups for this site', 'error');
             // Fallback: Open in same tab
-            window.location.href = 'databse.html';
+            window.location.href = 'bridge.html';
         } else {
-            showNotification('✅ Opening Admin Dashboard...', 'success');
+            showNotification('✅ Opening Admin bridge...', 'success');
         }
     } else {
         // User doesn't have access - show access request
@@ -8499,11 +8499,11 @@ window.openAdminBridge = function() {
     const code = prompt('Enter Admin Access Code:');
     if (code === 'TAU2025ADMIN') {
         // FIXED: Corrected spelling from 'databse.html' to 'database.html'
-        const bridgeWindow = window.open('database.html', 'tauBridge', 'width=1400,height=900');
+        const bridgeWindow = window.open('bridge.html', 'tauBridge', 'width=1400,height=900');
         
         if (!bridgeWindow) {
             showNotification('⚠️ Please allow popups to open the admin page', 'error');
-            window.location.href = 'database.html'; // Fallback to current tab
+            window.location.href = 'bridge.html'; // Fallback to current tab
         }
     } else {
         showNotification('❌ Invalid Access Code', 'error');
@@ -8511,7 +8511,7 @@ window.openAdminBridge = function() {
 };
     // Check admin access
     const ADMIN_IDS = ['TSK-000000-001', 'TLK-000000-001'];
-    const ADMIN_EMAILS = ['admin@tauafrica.org', 'grouptauafrica@gmail.com'];
+    const ADMIN_EMAILS = ['jonuasa@gmail.com','admin@tauafrica.org', 'grouptauafrica@gmail.com'];
     
     const hasAccess = currentMember && (
         ADMIN_IDS.includes(currentMember.id) ||
@@ -8576,7 +8576,7 @@ function requestAdminAccess(event) {
     if (code === correctCode) {
         closeAllModals();
         const dbWindow = window.open('databse.html', '_blank', 'width=1400,height=900');
-        if (!dbWindow) window.location.href = 'databse.html';
+        if (!dbWindow) window.location.href = 'bridge.html';
         showNotification('✅ Access granted!', 'success');
     } else {
         showNotification('❌ Invalid access code', 'error');
