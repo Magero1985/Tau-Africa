@@ -14755,5 +14755,71 @@ async function approveMember(email) {
 // Auto-check for new registrations every 30 seconds
 setInterval(refreshPendingList, 30000);
 </script>
+ <script>
+// Function to open the hidden Validation Panel
+window.openValidationPage = function() {
+    document.getElementById('validationDashboard').style.display = 'block';
+    refreshPendingList();
+};
+
+// Function to fetch and show pending members
+async function refreshPendingList() {
+    const container = document.getElementById('pendingList');
+    container.innerHTML = '<p style="text-align:center;">Loading pending members...</p>';
+
+    try {
+        // Fetch from Firebase (Collection: 'members' where status is 'Pending')
+        const snapshot = await db.collection('members').where('paymentStatus', '==', 'Pending').get();
+        let pending = [];
+        snapshot.forEach(doc => pending.push({ id: doc.id, ...doc.data() }));
+
+        if (pending.length === 0) {
+            container.innerHTML = '<div style="text-align:center; margin-top:50px; color:#999;">No pending payments! 🎉</div>';
+            return;
+        }
+
+        container.innerHTML = pending.map(m => `
+            <div style="background:white; border-radius:12px; padding:15px; margin-bottom:15px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); border-left: 5px solid #e67e22;">
+                <div style="margin-bottom:10px;">
+                    <strong style="font-size:1.1em; color: #2c3e50;">${m.fullName || 'Unknown'}</strong><br>
+                    <small style="color:#666;">${m.phone} | ${m.team}</small><br>
+                    <div style="background:#fff7ed; padding:8px; border-radius:5px; margin-top:5px; color:#c2410c; font-family:monospace; font-weight:bold; border: 1px solid #fed7aa;">
+                        TX CODE: ${m.transactionCode || 'N/A'}
+                    </div>
+                </div>
+                <button onclick="approveMember('${m.email}', '${m.id}')" 
+                        style="width:100%; background:#27ae60; color:white; border:none; padding:12px; border-radius:8px; font-weight:bold; font-size:16px;">
+                    ✅ Approve & Issue ID
+                </button>
+            </div>
+        `).join('');
+    } catch (error) {
+        console.error("Error loading pending list:", error);
+        container.innerHTML = '<p style="color:red;">Error loading data. Check internet connection.</p>';
+    }
+}
+
+// Function to Approve a member, Generate ID, and Send Email
+async function approveMember(email, docId) {
+    if(!confirm('Confirm payment validation? This will activate the member and send their Welcome Email.')) return;
+
+    try {
+        const tauID = "TAU-" + Math.floor(1000 + Math.random() * 9000);
+        
+        // Update Firebase
+        await db.collection('members').doc(docId).update({
+            status: 'Active',
+            paymentStatus: 'Paid',
+            memberID: tauID,
+            activationDate: new Date().toISOString()
+        });
+
+        alert('✅ Success! Member ' + tauID + ' is now active.');
+        refreshPendingList(); // Reload the list
+    } catch (e) {
+        alert('❌ Error activating member: ' + e.message);
+    }
+}
+</script>
 </body>
 </html>
