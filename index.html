@@ -3143,6 +3143,169 @@ function trackReferralFirestore(referralCode, newMemberId) {
 }
 
 console.log('✅ TauDB.sync fixed - guaranteed save');
+// ============================================
+// TAU AFRICA - MINIMAL FIX (SAFE)
+// Add this AFTER your existing database code
+// ============================================
+
+(function() {
+    'use strict';
+    
+    console.log('🔧 Applying Minimal TAU Fix...');
+    
+    // ============================================
+    // FIX 1: ENSURE iKbp BALANCE STARTS AT 500
+    // ============================================
+    
+    // Save reference to original sync function
+    const originalSync = window.TauDB?.sync;
+    
+    if (originalSync) {
+        window.TauDB.sync = async function(formData, team, referralCode) {
+            // Call original function
+            const result = await originalSync.call(this, formData, team, referralCode);
+            
+            if (result.success && result.member) {
+                // Ensure member has 500 iKbp
+                const members = JSON.parse(localStorage.getItem('tauAfricaDB') || '[]');
+                const memberIndex = members.findIndex(m => m.id === result.memberId);
+                
+                if (memberIndex !== -1) {
+                    // Add iKbp balance if missing
+                    if (!members[memberIndex].iKbpBalance) {
+                        members[memberIndex].iKbpBalance = 500;
+                        localStorage.setItem('tauAfricaDB', JSON.stringify(members));
+                        console.log('✅ Added 500 iKbp to new member:', result.memberId);
+                    }
+                }
+            }
+            
+            return result;
+        };
+    }
+    
+    // ============================================
+    // FIX 2: PROPER BALANCE UPDATE FUNCTION
+    // ============================================
+    
+    window.TauDB.updateBalance = function(memberId, amount) {
+        try {
+            const members = JSON.parse(localStorage.getItem('tauAfricaDB') || '[]');
+            const memberIndex = members.findIndex(m => m.id === memberId);
+            
+            if (memberIndex !== -1) {
+                members[memberIndex].iKbpBalance = 
+                    (members[memberIndex].iKbpBalance || 0) + amount;
+                
+                localStorage.setItem('tauAfricaDB', JSON.stringify(members));
+                
+                // Update session
+                const currentMember = JSON.parse(sessionStorage.getItem('tauCurrentUser') || 'null');
+                if (currentMember && currentMember.id === memberId) {
+                    sessionStorage.setItem('tauCurrentUser', JSON.stringify(members[memberIndex]));
+                }
+                
+                console.log(`💰 Balance updated: ${memberId} +${amount} iKbp`);
+                return true;
+            }
+            return false;
+        } catch (error) {
+            console.error('❌ Balance update error:', error);
+            return false;
+        }
+    };
+    
+    // ============================================
+    // FIX 3: OPTIMIZED KNOWLEDGE APP URL
+    // ============================================
+    
+    window.openKnowledgeAppForMember = function() {
+        const currentMember = window.TauDB?.getCurrentMember();
+        
+        if (!currentMember) {
+            showNotification('Please login to access member features', 'error');
+            if (typeof showRealMemberLogin === 'function') {
+                showRealMemberLogin();
+            }
+            return;
+        }
+        
+        // OPTIMIZED URL (short)
+        const url = `https://magero1985.github.io/Tau-Africa/knowledge-App.html?memberId=${currentMember.id}`;
+        
+        console.log('🌐 Opening Knowledge App:', url);
+        window.open(url, '_blank');
+        showNotification('Opening Knowledge App...', 'info');
+    };
+    
+    // ============================================
+    // FIX 4: QUICK STATS UPDATER
+    // ============================================
+    
+    function updateQuickStats() {
+        try {
+            const member = window.TauDB?.getCurrentMember();
+            
+            // Update balance display if element exists
+            const balanceElement = document.getElementById('memberBalanceDisplay');
+            if (balanceElement && member) {
+                balanceElement.textContent = member.iKbpBalance || 0;
+            }
+            
+            // Get level progress
+            const levelProgress = JSON.parse(localStorage.getItem('tauLevelProgress') || '{}');
+            const memberProgress = levelProgress[member?.id] || {};
+            
+            // Update quick stats elements
+            const elements = {
+                'totalEarnedDisplay': memberProgress.totalEarned || 0,
+                'levelsCompletedDisplay': memberProgress.levelsCompleted || 0,
+                'correctAnswersDisplay': memberProgress.correctAnswers || 0
+            };
+            
+            Object.entries(elements).forEach(([id, value]) => {
+                const element = document.getElementById(id);
+                if (element) element.textContent = value;
+            });
+            
+        } catch (error) {
+            console.error('❌ Quick stats update error:', error);
+        }
+    }
+    
+    // ============================================
+    // FIX 5: POST-REGISTRATION JOURNEY
+    // ============================================
+    
+    // Override success handlers to show journey
+    const originalProcessTaskSuccess = window.processTaskSuccess;
+    window.processTaskSuccess = async function(formData) {
+        const result = await originalProcessTaskSuccess(formData);
+        
+        // Show journey modal after 2 seconds
+        setTimeout(() => {
+            const member = window.TauDB?.getCurrentMember();
+            if (member) {
+                showNotification(`🎉 Welcome! You have ${member.iKbpBalance || 500} iKbp`, 'success');
+            }
+        }, 2000);
+        
+        return result;
+    };
+    
+    // ============================================
+    // INITIALIZE
+    // ============================================
+    
+    // Auto-update stats every 3 seconds
+    setInterval(updateQuickStats, 3000);
+    
+    // Initial update
+    setTimeout(updateQuickStats, 1000);
+    
+    console.log('✅ Minimal TAU Fix Applied');
+    
+})();
     
     // ========================================
     // PART 5: OVERRIDE SUCCESS HANDLERS
@@ -16057,5 +16220,158 @@ window.copyReferralLink = function(referralCode) {
     });
 };
     </script>
+    <script>
+// Add this sync system
+
+// Earnings Sync Receiver
+window.TauEarningsSync = {
+    
+    // Check for earnings on page load
+    init: function() {
+        this.checkURLForEarnings();
+        this.checkLocalStorageForEarnings();
+        
+        // Auto-check every 30 seconds
+        setInterval(() => this.checkLocalStorageForEarnings(), 30000);
+        
+        console.log('💰 Earnings Sync System Ready');
+    },
+    
+    // Check URL parameters (from Knowledge App)
+    checkURLForEarnings: function() {
+        const urlParams = new URLSearchParams(window.location.search);
+        
+        if (urlParams.has('sync') && urlParams.has('earned')) {
+            const earned = parseInt(urlParams.get('earned'));
+            const memberId = urlParams.get('memberId') || window.TauDB?.getCurrentMember()?.id;
+            
+            if (earned > 0 && memberId) {
+                this.processEarnings(memberId, earned, 'knowledge_app_redirect');
+                
+                // Clean URL
+                window.history.replaceState({}, '', window.location.pathname);
+            }
+        }
+    },
+    
+    // Check localStorage for queued earnings
+    checkLocalStorageForEarnings: function() {
+        const syncQueue = JSON.parse(localStorage.getItem('tauEarningsSync') || '[]');
+        const currentMember = window.TauDB?.getCurrentMember();
+        
+        if (currentMember && syncQueue.length > 0) {
+            // Filter earnings for current member
+            const memberEarnings = syncQueue.filter(e => e.memberId === currentMember.id);
+            
+            if (memberEarnings.length > 0) {
+                const total = memberEarnings.reduce((sum, e) => sum + e.amount, 0);
+                
+                // Process earnings
+                this.processEarnings(currentMember.id, total, 'auto_sync');
+                
+                // Remove processed earnings
+                const remaining = syncQueue.filter(e => e.memberId !== currentMember.id);
+                localStorage.setItem('tauEarningsSync', JSON.stringify(remaining));
+                
+                console.log(`✅ Auto-synced ${total} iKbp for ${currentMember.id}`);
+            }
+        }
+    },
+    
+    // Process and add earnings
+    processEarnings: function(memberId, amount, source) {
+        // Update balance
+        if (window.TauDB?.updateBalance) {
+            window.TauDB.updateBalance(memberId, amount);
+        }
+        
+        // Create transaction record
+        this.recordTransaction(memberId, amount, source);
+        
+        // Show notification
+        this.showEarningsNotification(amount, source);
+        
+        // Update UI
+        this.updateEarningsDisplay();
+        
+        // Log transaction
+        console.log(`💸 Earnings processed: ${memberId} +${amount} iKbp (${source})`);
+    },
+    
+    // Record transaction for history
+    recordTransaction: function(memberId, amount, source) {
+        const transactions = JSON.parse(localStorage.getItem('tauTransactions') || '[]');
+        transactions.push({
+            memberId: memberId,
+            amount: amount,
+            type: 'earnings',
+            source: source,
+            timestamp: new Date().toISOString(),
+            status: 'completed'
+        });
+        localStorage.setItem('tauTransactions', JSON.stringify(transactions));
+    },
+    
+    // Show earnings notification
+    showEarningsNotification: function(amount, source) {
+        if (typeof showNotification === 'function') {
+            const sourceName = source === 'knowledge_app' ? 'Knowledge App' : 
+                             source === 'auto_sync' ? 'Auto Sync' : 'System';
+            
+            showNotification(`💰 +${amount} iKbp from ${sourceName}`, 'success');
+        }
+    },
+    
+    // Update earnings display
+    updateEarningsDisplay: function() {
+        // Update balance in header
+        const member = window.TauDB?.getCurrentMember();
+        if (member) {
+            const balanceElements = document.querySelectorAll('.balance-display, #memberBalanceDisplay');
+            balanceElements.forEach(el => {
+                if (el) el.textContent = member.iKbpBalance || 0;
+            });
+        }
+        
+        // Refresh quick stats
+        if (typeof updateQuickStats === 'function') {
+            updateQuickStats();
+        }
+    },
+    
+    // Manual sync button
+    addSyncButton: function() {
+        const syncBtn = document.createElement('button');
+        syncBtn.innerHTML = '🔄 Sync Earnings';
+        syncBtn.style.cssText = `
+            position: fixed;
+            bottom: 200px;
+            right: 30px;
+            background: linear-gradient(45deg, #2ecc71, #27ae60);
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 25px;
+            cursor: pointer;
+            z-index: 100;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+            font-weight: bold;
+        `;
+        syncBtn.onclick = () => {
+            this.checkLocalStorageForEarnings();
+            showNotification('🔄 Checking for earnings...', 'info');
+        };
+        document.body.appendChild(syncBtn);
+    }
+};
+
+// Initialize on page load
+document.addEventListener('DOMContentLoaded', () => {
+    setTimeout(() => {
+        window.TauEarningsSync.init();
+        window.TauEarningsSync.addSyncButton();
+    }, 2000);
+});
+</script>
 </body>
 </html>
