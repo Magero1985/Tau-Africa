@@ -808,7 +808,7 @@ To join in these categories, please use KABIRU SERVICE CENTER portal</p>
 <div class="section" style="grid-column: 1 / -1; margin-top: 40px;">
     <h2 class="section-title">🎮 TAU KNOWLEDGE CHALLENGE</h2>
     <p style="text-align: center; margin-bottom: 25px; color: #666;">
-        Complete levels to learn about TAU Africa and earn iKbp!
+        Complete levels to learn about TAU AFRICA ECOSYSTEM and earn iKbp!
     </p>
     
     <!-- Progress Bar - CLEAN -->
@@ -16338,31 +16338,6 @@ window.TauEarningsSync = {
             updateQuickStats();
         }
     },
-    
-    // Manual sync button
-    addSyncButton: function() {
-        const syncBtn = document.createElement('button');
-        syncBtn.innerHTML = '🔄 Sync Earnings';
-        syncBtn.style.cssText = `
-            position: fixed;
-            bottom: 200px;
-            right: 30px;
-            background: linear-gradient(45deg, #2ecc71, #27ae60);
-            color: white;
-            border: none;
-            padding: 12px 20px;
-            border-radius: 25px;
-            cursor: pointer;
-            z-index: 100;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
-            font-weight: bold;
-        `;
-        syncBtn.onclick = () => {
-            this.checkLocalStorageForEarnings();
-            showNotification('🔄 Checking for earnings...', 'info');
-        };
-        document.body.appendChild(syncBtn);
-    }
 };
 
 // Initialize on page load
