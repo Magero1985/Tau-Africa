@@ -1,0 +1,1015 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pan African Knowledge Challenge</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            color: #f1f1f1;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding: 20px;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 15px;
+            border: 2px solid #e1701a;
+        }
+
+        h1 {
+            color: #f7a440;
+            font-size: 2.8rem;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+        }
+
+        .subtitle {
+            color: #f7d560;
+            font-size: 1.2rem;
+            margin-bottom: 20px;
+        }
+
+        .game-container {
+            display: flex;
+            flex-direction: column;
+            gap: 25px;
+        }
+
+        .player-info {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .info-card {
+            background: rgba(30, 60, 114, 0.7);
+            padding: 15px;
+            border-radius: 10px;
+            text-align: center;
+            border: 1px solid #4cc9f0;
+        }
+
+        .info-card h3 {
+            color: #4cc9f0;
+            margin-bottom: 8px;
+            font-size: 1.1rem;
+        }
+
+        .info-card p {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #f7a440;
+        }
+
+        .progress-bar {
+            height: 20px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            overflow: hidden;
+            margin-top: 5px;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #f7a440, #e1701a);
+            width: 0%;
+            transition: width 0.5s ease;
+        }
+
+        .level-indicator {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin: 20px 0;
+            flex-wrap: wrap;
+        }
+
+        .level-dot {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.1);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 1.2rem;
+            transition: all 0.3s ease;
+        }
+
+        .level-dot.active {
+            background: #e1701a;
+            color: white;
+            transform: scale(1.1);
+            box-shadow: 0 0 15px rgba(225, 112, 26, 0.7);
+        }
+
+        .level-dot.completed {
+            background: #4361ee;
+            color: white;
+        }
+
+        .question-container {
+            background: rgba(20, 33, 61, 0.8);
+            padding: 25px;
+            border-radius: 15px;
+            border: 2px solid #4361ee;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+        }
+
+        .question-header {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .question-text {
+            font-size: 1.4rem;
+            line-height: 1.5;
+            margin-bottom: 25px;
+            color: #f1f1f1;
+            min-height: 80px;
+        }
+
+        .options-container {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 12px;
+            margin-bottom: 25px;
+        }
+
+        .option {
+            background: rgba(67, 97, 238, 0.2);
+            padding: 15px 20px;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: 2px solid transparent;
+            font-size: 1.1rem;
+        }
+
+        .option:hover {
+            background: rgba(67, 97, 238, 0.4);
+            transform: translateY(-3px);
+        }
+
+        .option.selected {
+            background: rgba(225, 112, 26, 0.3);
+            border-color: #e1701a;
+        }
+
+        .option.correct {
+            background: rgba(76, 201, 240, 0.3);
+            border-color: #4cc9f0;
+        }
+
+        .option.wrong {
+            background: rgba(239, 71, 111, 0.3);
+            border-color: #ef476f;
+        }
+
+        .buttons {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 20px;
+        }
+
+        .btn {
+            padding: 12px 30px;
+            border: none;
+            border-radius: 8px;
+            font-size: 1.1rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .btn-next {
+            background: linear-gradient(90deg, #4361ee, #3a56d4);
+            color: white;
+        }
+
+        .btn-next:hover {
+            background: linear-gradient(90deg, #3a56d4, #2f48b9);
+            transform: translateY(-3px);
+            box-shadow: 0 5px 15px rgba(67, 97, 238, 0.4);
+        }
+
+        .btn-next:disabled {
+            background: #666;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
+        .btn-submit {
+            background: linear-gradient(90deg, #e1701a, #d16617);
+            color: white;
+        }
+
+        .btn-submit:hover {
+            background: linear-gradient(90deg, #d16617, #c15c14);
+            transform: translateY(-3px);
+            box-shadow: 0 5px 15px rgba(225, 112, 26, 0.4);
+        }
+
+        .result-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+
+        .modal-content {
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            padding: 40px;
+            border-radius: 20px;
+            max-width: 500px;
+            width: 90%;
+            text-align: center;
+            border: 3px solid #e1701a;
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
+        }
+
+        .modal-content h2 {
+            color: #f7a440;
+            margin-bottom: 20px;
+            font-size: 2.2rem;
+        }
+
+        .modal-content p {
+            font-size: 1.3rem;
+            margin-bottom: 25px;
+            line-height: 1.5;
+        }
+
+        .celebration {
+            font-size: 3rem;
+            margin-bottom: 20px;
+        }
+
+        .start-screen {
+            text-align: center;
+            padding: 40px 20px;
+        }
+
+        .btn-start {
+            background: linear-gradient(90deg, #e1701a, #f7a440);
+            color: white;
+            font-size: 1.5rem;
+            padding: 20px 50px;
+            margin-top: 30px;
+            border-radius: 12px;
+            border: none;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .btn-start:hover {
+            transform: scale(1.05);
+            box-shadow: 0 10px 25px rgba(225, 112, 26, 0.5);
+        }
+
+        .timer {
+            color: #4cc9f0;
+            font-weight: bold;
+            font-size: 1.2rem;
+        }
+
+        .hint {
+            margin-top: 15px;
+            color: #f7d560;
+            font-style: italic;
+            font-size: 0.9rem;
+        }
+
+        @media (max-width: 768px) {
+            .player-info {
+                grid-template-columns: 1fr;
+            }
+            
+            .level-dot {
+                width: 35px;
+                height: 35px;
+                font-size: 1rem;
+            }
+            
+            .question-text {
+                font-size: 1.2rem;
+            }
+            
+            .buttons {
+                flex-direction: column;
+                gap: 15px;
+            }
+            
+            .btn {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Pan African Knowledge Challenge</h1>
+            <div class="subtitle">Test your knowledge of African history, culture, and achievements across 10 challenging levels</div>
+        </div>
+
+        <div id="startScreen" class="start-screen">
+            <h2>Welcome to the Challenge!</h2>
+            <p>Journey through 10 levels of Pan African knowledge, with each level containing 10 questions of increasing difficulty.</p>
+            <p>Test your understanding of African history, culture, politics, and achievements.</p>
+            <p>Complete all 100 questions to become a Pan African Master!</p>
+            <button class="btn-start" onclick="startGame()">Begin Your Journey</button>
+        </div>
+
+        <div id="gameScreen" class="game-container" style="display: none;">
+            <div class="player-info">
+                <div class="info-card">
+                    <h3>Current Level</h3>
+                    <p id="currentLevel">1</p>
+                </div>
+                <div class="info-card">
+                    <h3>Question</h3>
+                    <p id="currentQuestion">1/10</p>
+                    <div class="progress-bar">
+                        <div id="questionProgress" class="progress-fill"></div>
+                    </div>
+                </div>
+                <div class="info-card">
+                    <h3>Score</h3>
+                    <p id="score">0</p>
+                </div>
+                <div class="info-card">
+                    <h3>Time</h3>
+                    <p class="timer" id="timer">∞</p>
+                </div>
+            </div>
+
+            <div class="level-indicator" id="levelIndicator">
+                <!-- Levels will be generated by JavaScript -->
+            </div>
+
+            <div class="question-container">
+                <div class="question-header">
+                    <h2>Level <span id="levelDisplay">1</span> - Question <span id="questionNumber">1</span></h2>
+                    <div class="timer">Difficulty: <span id="difficulty">Easy</span></div>
+                </div>
+                
+                <div class="question-text" id="questionText">
+                    Loading question...
+                </div>
+                
+                <div class="options-container" id="optionsContainer">
+                    <!-- Options will be generated by JavaScript -->
+                </div>
+                
+                <div id="hintArea" class="hint"></div>
+                
+                <div class="buttons">
+                    <button class="btn btn-submit" id="submitBtn" onclick="submitAnswer()" disabled>Submit Answer</button>
+                    <button class="btn btn-next" id="nextBtn" onclick="nextQuestion()" disabled>Next Question →</button>
+                </div>
+            </div>
+        </div>
+
+        <div id="resultModal" class="result-modal">
+            <div class="modal-content">
+                <div class="celebration" id="celebrationEmoji">🎉</div>
+                <h2 id="resultTitle">Level Complete!</h2>
+                <p id="resultMessage">You have successfully completed this level!</p>
+                <p id="resultScore">Your score: <span id="finalScore">0</span></p>
+                <div style="margin-top: 30px;">
+                    <button class="btn btn-next" onclick="closeResult()" id="nextLevelBtn">Proceed to Next Level</button>
+                </div>
+            </div>
+        </div>
+
+        <div id="gameCompleteModal" class="result-modal">
+            <div class="modal-content">
+                <div class="celebration">🏆</div>
+                <h2>Congratulations!</h2>
+                <p>You have successfully completed all 10 levels of the Pan African Knowledge Challenge!</p>
+                <p>You are now a certified Pan African Master with a deep understanding of African history, culture, and achievements.</p>
+                <p id="finalGameScore">Final Score: <span id="totalScore">0</span></p>
+                <div style="margin-top: 30px;">
+                    <button class="btn btn-start" onclick="restartGame()">Play Again</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Game state
+        let gameState = {
+            currentLevel: 1,
+            currentQuestion: 1,
+            score: 0,
+            selectedOption: null,
+            correctAnswer: null,
+            questionsAnswered: 0,
+            timer: 30,
+            timerInterval: null,
+            gameStarted: false,
+            levelQuestions: [],
+            difficultyMultipliers: [1, 1.2, 1.5, 1.8, 2.0, 2.3, 2.7, 3.1, 3.6, 4.0]
+        };
+
+        // Pan African questions database
+        const questionsDatabase = {
+            level1: [
+                {
+                    question: "Which ancient African civilization built the Great Pyramids of Giza?",
+                    options: ["Kingdom of Kush", "Ancient Egyptians", "Kingdom of Aksum", "Carthaginian Empire"],
+                    correct: 1,
+                    hint: "This civilization flourished along the Nile River.",
+                    category: "History"
+                },
+                {
+                    question: "Which African country was never colonized by European powers?",
+                    options: ["Ethiopia", "South Africa", "Nigeria", "Kenya"],
+                    correct: 0,
+                    hint: "This country successfully resisted Italian colonization at the Battle of Adwa.",
+                    category: "History"
+                },
+                {
+                    question: "Who was the first president of Ghana?",
+                    options: ["Jerry Rawlings", "Kwame Nkrumah", "John Kufuor", "John Atta Mills"],
+                    correct: 1,
+                    hint: "He led Ghana to independence in 1957.",
+                    category: "Politics"
+                },
+                {
+                    question: "Which river is the longest in Africa?",
+                    options: ["Congo River", "Niger River", "Nile River", "Zambezi River"],
+                    correct: 2,
+                    hint: "It flows through 11 countries and is approximately 6,650 km long.",
+                    category: "Geography"
+                },
+                {
+                    question: "The Swahili language is primarily spoken in which African region?",
+                    options: ["West Africa", "Southern Africa", "East Africa", "North Africa"],
+                    correct: 2,
+                    hint: "It's a Bantu language with Arabic influences.",
+                    category: "Culture"
+                },
+                {
+                    question: "Which African leader won the Nobel Peace Prize in 1993?",
+                    options: ["Nelson Mandela", "Julius Nyerere", "Kofi Annan", "Wangari Maathai"],
+                    correct: 0,
+                    hint: "He was the first black president of South Africa.",
+                    category: "Politics"
+                },
+                {
+                    question: "The ancient city of Timbuktu is located in which modern-day country?",
+                    options: ["Mali", "Niger", "Chad", "Sudan"],
+                    correct: 0,
+                    hint: "It was a major center of learning during the Mali Empire.",
+                    category: "History"
+                },
+                {
+                    question: "Which African country is known as the 'Pearl of Africa'?",
+                    options: ["Tanzania", "Uganda", "Rwanda", "Zambia"],
+                    correct: 1,
+                    hint: "Winston Churchill gave it this nickname.",
+                    category: "Geography"
+                },
+                {
+                    question: "Who wrote the novel 'Things Fall Apart'?",
+                    options: ["Wole Soyinka", "Chinua Achebe", "Ngũgĩ wa Thiong'o", "Chimamanda Ngozi Adichie"],
+                    correct: 1,
+                    hint: "This Nigerian author is considered the father of modern African literature.",
+                    category: "Literature"
+                },
+                {
+                    question: "The Ashanti Empire was located in present-day which country?",
+                    options: ["Nigeria", "Ghana", "Ivory Coast", "Benin"],
+                    correct: 1,
+                    hint: "This empire was known for its gold trade and military prowess.",
+                    category: "History"
+                }
+            ],
+            level2: [
+                {
+                    question: "Which African empire was known as the 'Land of Gold'?",
+                    options: ["Mali Empire", "Songhai Empire", "Ghana Empire", "Benin Empire"],
+                    correct: 2,
+                    hint: "This empire controlled gold trade in West Africa from the 6th to 13th centuries.",
+                    category: "History"
+                },
+                {
+                    question: "Who was the Ethiopian emperor who modernized the country in the early 20th century?",
+                    options: ["Haile Selassie", "Menelik II", "Tewodros II", "Yohannes IV"],
+                    correct: 1,
+                    hint: "He established Ethiopia's first modern schools, hospitals, and infrastructure.",
+                    category: "History"
+                },
+                {
+                    question: "The 'Year of Africa' when 17 African nations gained independence was:",
+                    options: ["1957", "1960", "1963", "1965"],
+                    correct: 1,
+                    hint: "This was a pivotal year in the decolonization of Africa.",
+                    category: "History"
+                },
+                {
+                    question: "Which African country is the largest producer of cocoa?",
+                    options: ["Ghana", "Nigeria", "Ivory Coast", "Cameroon"],
+                    correct: 2,
+                    hint: "This West African country produces about 40% of the world's cocoa.",
+                    category: "Economy"
+                },
+                {
+                    question: "The ancient Nubian civilization was located in present-day:",
+                    options: ["Egypt and Sudan", "Ethiopia and Eritrea", "Libya and Tunisia", "Morocco and Algeria"],
+                    correct: 0,
+                    hint: "Nubia was located along the Nile, south of Ancient Egypt.",
+                    category: "History"
+                },
+                {
+                    question: "Who founded the Organization of African Unity (OAU) in 1963?",
+                    options: ["Kwame Nkrumah", "Haile Selassie", "Julius Nyerere", "Gamal Abdel Nasser"],
+                    correct: 1,
+                    hint: "The Ethiopian emperor played a key role in establishing this pan-African organization.",
+                    category: "Politics"
+                },
+                {
+                    question: "The 'Mfecane' refers to a period of widespread disruption and migration in which region?",
+                    options: ["West Africa", "Horn of Africa", "Southern Africa", "Central Africa"],
+                    correct: 2,
+                    hint: "This period occurred in the early 19th century among Bantu-speaking communities.",
+                    category: "History"
+                },
+                {
+                    question: "Which African city hosted the first FIFA World Cup on the continent?",
+                    options: ["Cairo, Egypt", "Johannesburg, South Africa", "Lagos, Nigeria", "Nairobi, Kenya"],
+                    correct: 1,
+                    hint: "The 2010 World Cup was held in South Africa.",
+                    category: "Sports"
+                },
+                {
+                    question: "The 'Berber' people are indigenous to which region of Africa?",
+                    options: ["Southern Africa", "West Africa", "North Africa", "East Africa"],
+                    correct: 2,
+                    hint: "They have inhabited North Africa since at least 3000 BCE.",
+                    category: "Culture"
+                },
+                {
+                    question: "Who was the first African woman to win the Nobel Peace Prize?",
+                    options: ["Wangari Maathai", "Ellen Johnson Sirleaf", "Leymah Gbowee", "Miriam Makeba"],
+                    correct: 0,
+                    hint: "She won in 2004 for her contribution to sustainable development, democracy, and peace.",
+                    category: "Politics"
+                }
+            ],
+            // Levels 3-10 would continue with increasing difficulty
+            // For this example, we'll generate placeholder questions for remaining levels
+        };
+
+        // Generate questions for levels 3-10
+        function generateQuestionsForLevel(level) {
+            const categories = ["History", "Politics", "Geography", "Culture", "Economy", "Science", "Arts", "Sports"];
+            const questionTemplates = [
+                {template: "Which African country was the first to gain independence in the {decade}s?", decade: ""},
+                {template: "The {event} took place in which African country?", event: ""},
+                {template: "Who was the founder of the {organization}?", organization: ""},
+                {template: "The {language} language is primarily spoken in which African region?", language: ""},
+                {template: "Which African scientist made significant contributions to {field}?", field: ""},
+                {template: "The {empire} reached its peak during which century?", empire: ""},
+                {template: "Which African musician is known for {achievement}?", achievement: ""},
+                {template: "The {resource} is a major export of which African country?", resource: ""}
+            ];
+
+            let questions = [];
+            for (let i = 0; i < 10; i++) {
+                const category = categories[i % categories.length];
+                const template = questionTemplates[i % questionTemplates.length];
+                const question = `Level ${level}, Question ${i+1}: Advanced question about ${category}.`;
+                
+                questions.push({
+                    question: question,
+                    options: ["Option A", "Option B", "Option C", "Option D"],
+                    correct: Math.floor(Math.random() * 4),
+                    hint: `Hint for level ${level} question.`,
+                    category: category,
+                    difficulty: level
+                });
+            }
+            return questions;
+        }
+
+        // Initialize the game
+        function initGame() {
+            // Generate questions for all levels if not already in database
+            for (let level = 3; level <= 10; level++) {
+                const levelKey = `level${level}`;
+                if (!questionsDatabase[levelKey]) {
+                    questionsDatabase[levelKey] = generateQuestionsForLevel(level);
+                }
+            }
+            
+            // Create level indicators
+            const levelIndicator = document.getElementById('levelIndicator');
+            levelIndicator.innerHTML = '';
+            
+            for (let i = 1; i <= 10; i++) {
+                const levelDot = document.createElement('div');
+                levelDot.className = 'level-dot';
+                levelDot.id = `level${i}`;
+                levelDot.textContent = i;
+                levelIndicator.appendChild(levelDot);
+            }
+            
+            updateLevelIndicator();
+        }
+
+        // Start the game
+        function startGame() {
+            document.getElementById('startScreen').style.display = 'none';
+            document.getElementById('gameScreen').style.display = 'flex';
+            
+            gameState.gameStarted = true;
+            gameState.currentLevel = 1;
+            gameState.currentQuestion = 1;
+            gameState.score = 0;
+            gameState.questionsAnswered = 0;
+            
+            updateGameDisplay();
+            loadQuestion();
+            startTimer();
+        }
+
+        // Load a question
+        function loadQuestion() {
+            const levelKey = `level${gameState.currentLevel}`;
+            gameState.levelQuestions = questionsDatabase[levelKey];
+            
+            if (!gameState.levelQuestions || gameState.levelQuestions.length === 0) {
+                console.error(`No questions found for ${levelKey}`);
+                return;
+            }
+            
+            const questionIndex = gameState.currentQuestion - 1;
+            const question = gameState.levelQuestions[questionIndex];
+            
+            if (!question) {
+                console.error(`No question found at index ${questionIndex}`);
+                return;
+            }
+            
+            document.getElementById('questionText').textContent = question.question;
+            document.getElementById('difficulty').textContent = getDifficultyText(gameState.currentLevel);
+            
+            // Update progress
+            const progressPercent = (gameState.currentQuestion / 10) * 100;
+            document.getElementById('questionProgress').style.width = `${progressPercent}%`;
+            
+            // Load options
+            const optionsContainer = document.getElementById('optionsContainer');
+            optionsContainer.innerHTML = '';
+            
+            gameState.correctAnswer = question.correct;
+            
+            question.options.forEach((option, index) => {
+                const optionElement = document.createElement('div');
+                optionElement.className = 'option';
+                optionElement.textContent = option;
+                optionElement.onclick = () => selectOption(index, optionElement);
+                optionsContainer.appendChild(optionElement);
+            });
+            
+            // Update hint
+            document.getElementById('hintArea').textContent = `Category: ${question.category} | ${question.hint}`;
+            
+            // Reset buttons
+            document.getElementById('submitBtn').disabled = true;
+            document.getElementById('nextBtn').disabled = true;
+            
+            // Reset selected option
+            gameState.selectedOption = null;
+            
+            // Reset timer
+            resetTimer();
+        }
+
+        // Select an option
+        function selectOption(index, element) {
+            // Remove selection from all options
+            document.querySelectorAll('.option').forEach(opt => {
+                opt.classList.remove('selected');
+                opt.classList.remove('correct', 'wrong');
+            });
+            
+            // Add selection to clicked option
+            element.classList.add('selected');
+            gameState.selectedOption = index;
+            
+            // Enable submit button
+            document.getElementById('submitBtn').disabled = false;
+        }
+
+        // Submit answer
+        function submitAnswer() {
+            if (gameState.selectedOption === null) return;
+            
+            const options = document.querySelectorAll('.option');
+            const correctIndex = gameState.correctAnswer;
+            
+            // Mark correct and wrong answers
+            options.forEach((option, index) => {
+                if (index === correctIndex) {
+                    option.classList.add('correct');
+                } else if (index === gameState.selectedOption && index !== correctIndex) {
+                    option.classList.add('wrong');
+                }
+            });
+            
+            // Calculate score
+            const timeBonus = Math.max(0, gameState.timer) * 2;
+            const difficultyMultiplier = gameState.difficultyMultipliers[gameState.currentLevel - 1];
+            const basePoints = 100;
+            
+            if (gameState.selectedOption === correctIndex) {
+                // Correct answer
+                const pointsEarned = Math.round((basePoints + timeBonus) * difficultyMultiplier);
+                gameState.score += pointsEarned;
+                
+                // Show feedback
+                document.getElementById('hintArea').innerHTML = 
+                    `<span style="color: #4cc9f0">✓ Correct! +${pointsEarned} points (Time bonus: +${timeBonus})</span>`;
+            } else {
+                // Wrong answer
+                document.getElementById('hintArea').innerHTML = 
+                    `<span style="color: #ef476f">✗ Incorrect. The correct answer was: ${options[correctIndex].textContent}</span>`;
+            }
+            
+            gameState.questionsAnswered++;
+            
+            // Update score display
+            document.getElementById('score').textContent = gameState.score;
+            
+            // Disable submit button, enable next button
+            document.getElementById('submitBtn').disabled = true;
+            document.getElementById('nextBtn').disabled = false;
+            
+            // Stop timer
+            clearInterval(gameState.timerInterval);
+        }
+
+        // Move to next question
+        function nextQuestion() {
+            if (gameState.currentQuestion < 10) {
+                gameState.currentQuestion++;
+                updateGameDisplay();
+                loadQuestion();
+            } else {
+                // Level complete
+                completeLevel();
+            }
+        }
+
+        // Complete level
+        function completeLevel() {
+            clearInterval(gameState.timerInterval);
+            
+            // Update level indicator
+            document.getElementById(`level${gameState.currentLevel}`).classList.add('completed');
+            
+            // Check if game is complete
+            if (gameState.currentLevel >= 10) {
+                completeGame();
+                return;
+            }
+            
+            // Show level completion modal
+            document.getElementById('resultTitle').textContent = `Level ${gameState.currentLevel} Complete!`;
+            document.getElementById('resultMessage').textContent = 
+                `You answered ${gameState.questionsAnswered} out of 10 questions correctly.`;
+            document.getElementById('finalScore').textContent = gameState.score;
+            
+            // Change celebration emoji based on performance
+            const correctPercentage = (gameState.questionsAnswered / 10) * 100;
+            let emoji = "🎉";
+            if (correctPercentage >= 90) emoji = "🏆";
+            else if (correctPercentage >= 70) emoji = "⭐";
+            else if (correctPercentage >= 50) emoji = "✓";
+            else emoji = "↻";
+            
+            document.getElementById('celebrationEmoji').textContent = emoji;
+            
+            // Update next level button text
+            if (gameState.currentLevel < 10) {
+                document.getElementById('nextLevelBtn').textContent = `Proceed to Level ${gameState.currentLevel + 1}`;
+            } else {
+                document.getElementById('nextLevelBtn').textContent = "View Final Results";
+            }
+            
+            document.getElementById('resultModal').style.display = 'flex';
+        }
+
+        // Complete entire game
+        function completeGame() {
+            document.getElementById('totalScore').textContent = gameState.score;
+            document.getElementById('gameCompleteModal').style.display = 'flex';
+        }
+
+        // Move to next level
+        function nextLevel() {
+            gameState.currentLevel++;
+            gameState.currentQuestion = 1;
+            gameState.questionsAnswered = 0;
+            
+            updateGameDisplay();
+            loadQuestion();
+            startTimer();
+            
+            closeResult();
+        }
+
+        // Close result modal
+        function closeResult() {
+            document.getElementById('resultModal').style.display = 'none';
+        }
+
+        // Restart game
+        function restartGame() {
+            document.getElementById('gameCompleteModal').style.display = 'none';
+            document.getElementById('gameScreen').style.display = 'none';
+            document.getElementById('startScreen').style.display = 'block';
+            
+            // Reset all level indicators
+            document.querySelectorAll('.level-dot').forEach(dot => {
+                dot.classList.remove('active', 'completed');
+            });
+            
+            gameState.gameStarted = false;
+        }
+
+        // Update game display
+        function updateGameDisplay() {
+            document.getElementById('currentLevel').textContent = gameState.currentLevel;
+            document.getElementById('currentQuestion').textContent = `${gameState.currentQuestion}/10`;
+            document.getElementById('levelDisplay').textContent = gameState.currentLevel;
+            document.getElementById('questionNumber').textContent = gameState.currentQuestion;
+            document.getElementById('score').textContent = gameState.score;
+            
+            updateLevelIndicator();
+        }
+
+        // Update level indicator
+        function updateLevelIndicator() {
+            // Remove active class from all
+            document.querySelectorAll('.level-dot').forEach(dot => {
+                dot.classList.remove('active');
+            });
+            
+            // Add active class to current level
+            const currentLevelDot = document.getElementById(`level${gameState.currentLevel}`);
+            if (currentLevelDot) {
+                currentLevelDot.classList.add('active');
+            }
+        }
+
+        // Timer functions
+        function startTimer() {
+            gameState.timer = 30; // 30 seconds per question
+            updateTimerDisplay();
+            
+            clearInterval(gameState.timerInterval);
+            gameState.timerInterval = setInterval(() => {
+                gameState.timer--;
+                updateTimerDisplay();
+                
+                if (gameState.timer <= 0) {
+                    clearInterval(gameState.timerInterval);
+                    if (gameState.selectedOption === null) {
+                        // Auto-submit with no answer selected
+                        submitAnswer();
+                    }
+                }
+            }, 1000);
+        }
+
+        function resetTimer() {
+            gameState.timer = 30;
+            updateTimerDisplay();
+            startTimer();
+        }
+
+        function updateTimerDisplay() {
+            const timerElement = document.getElementById('timer');
+            if (gameState.timer <= 10) {
+                timerElement.style.color = '#ef476f'; // Red for low time
+            } else if (gameState.timer <= 20) {
+                timerElement.style.color = '#f7a440'; // Orange for medium time
+            } else {
+                timerElement.style.color = '#4cc9f0'; // Blue for normal time
+            }
+            timerElement.textContent = `${gameState.timer}s`;
+        }
+
+        // Helper function to get difficulty text
+        function getDifficultyText(level) {
+            if (level <= 2) return "Easy";
+            if (level <= 4) return "Medium";
+            if (level <= 7) return "Hard";
+            return "Expert";
+        }
+
+        // Initialize the game when page loads
+        window.onload = function() {
+            initGame();
+        };
+</script>
+<script>
+// Add this function to your Knowledge App JavaScript:
+
+  function syncEarningsToMainApp(userId, earnediKbp) {
+    // Get current member from TAU Main App
+    const currentMember = window.TauDB?.getCurrentMember();
+    
+    if (currentMember) {
+        // Member is logged into TAU Main App
+        if (window.TauDB?.updateBalance) {
+            window.TauDB.updateBalance(currentMember.id, earnediKbp);
+            
+            // Show success message
+            showNotification(`✅ ${earnediKbp} iKbp added to your TAU account!`, 'success');
+            
+            // Create activity record
+            const activity = {
+                type: 'Knowledge App Completion',
+                title: `Completed Level ${currentLevel}`,
+                description: `Earned ${earnediKbp} iKbp from Knowledge App`,
+                reward: earnediKbp
+            };
+            
+            if (window.TauDB?.addActivity) {
+                window.TauDB.addActivity(currentMember.id, activity);
+            }
+            
+            return true;
+        }
+    } else {
+        // User not logged in - store for later redemption
+        const pendingEarnings = JSON.parse(localStorage.getItem('tauPendingEarnings') || '[]');
+        pendingEarnings.push({
+            userId: userId,
+            iKbp: earnediKbp,
+            date: new Date().toISOString(),
+            source: 'Knowledge App Level ' + currentLevel
+        });
+        localStorage.setItem('tauPendingEarnings', JSON.stringify(pendingEarnings));
+        
+        // Show message to register
+        showNotification(`🎮 Earned ${earnediKbp} iKbp! Register with TAU to claim them.`, 'info');
+        return false;
+    }
+}
+
+// Modify the completeLevel function to use sync:
+function completeLevel() {
+    const levelData = userProgress.levels[currentLevel];
+    const reward = calculateLevelReward(currentLevel);
+    
+    // SYNC TO TAU MAIN APP
+    const syncSuccess = syncEarningsToMainApp(userProgress.userId, reward);
+    
+    if (syncSuccess) {
+        showNotification(`🎉 Level ${currentLevel} Completed! ${reward} iKbp synced to your TAU account.`, 'success');
+    } else {
+        showNotification(`🎉 Level ${currentLevel} Completed! ${reward} iKbp earned (pending registration).`, 'success');
+    }
+    
+    // Rest of existing code...
+}
+    </script>
+</body>
+</html>
