@@ -337,6 +337,199 @@
     </style>
 </head>
 <body>
+    <!-- TAU Connection Banner -->
+<div id="tauConnectionBanner" style="display: none; 
+     background: linear-gradient(45deg, #4169e1, #2ecc71); 
+     color: white; padding: 15px 20px; border-radius: 10px; 
+     margin: 20px; text-align: center;">
+    
+    <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap;">
+        <div style="text-align: left;">
+            <strong>🔗 Connected to TAU Africa</strong>
+            <div style="font-size: 12px; opacity: 0.9;" id="memberInfo">
+                Loading member info...
+            </div>
+        </div>
+        <div>
+            <button onclick="syncEarningsToTAU()" style="background: white; color: #4169e1; 
+                    border: none; padding: 8px 15px; border-radius: 20px; cursor: pointer; 
+                    font-weight: bold; margin-right: 10px;">
+                💰 Sync Earnings
+            </button>
+            <button onclick="openTAUMainApp()" style="background: rgba(255,255,255,0.2); 
+                    color: white; border: 1px solid white; padding: 8px 15px; 
+                    border-radius: 20px; cursor: pointer;">
+                Open TAU App
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- Guest Mode Banner -->
+<div id="guestModeBanner" style="display: none; 
+     background: linear-gradient(45deg, #ffd700, #f39c12); 
+     color: #333; padding: 15px 20px; border-radius: 10px; 
+     margin: 20px; text-align: center;">
+    
+    <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap;">
+        <div style="text-align: left;">
+            <strong>🌍 Playing as Guest</strong>
+            <div style="font-size: 12px; opacity: 0.8;">
+                Earn iKbp now, claim when you register!
+            </div>
+        </div>
+        <div>
+            <button onclick="registerWithTAU()" style="background: #333; color: #ffd700; 
+                    border: none; padding: 8px 20px; border-radius: 20px; cursor: pointer; 
+                    font-weight: bold;">
+                🎯 Register with TAU
+            </button>
+        </div>
+    </div>
+</div>
+
+<script>
+// ============================================
+// TAU CONNECTION HANDLER for Knowledge App
+// ============================================
+
+function checkTAUConnection() {
+    const urlParams = new URLSearchParams(window.location.search);
+    const type = urlParams.get('type');
+    const memberId = urlParams.get('memberId');
+    const guestId = urlParams.get('guestId');
+    const progress = urlParams.get('progress');
+    
+    if (type === 'member' && memberId) {
+        // Connected as TAU member
+        showTAUConnectionBanner(memberId, urlParams);
+        
+        // Load any existing progress
+        if (progress) {
+            try {
+                const userProgress = JSON.parse(decodeURIComponent(progress));
+                window.TauLevels?.setUserProgress?.(userProgress);
+            } catch (e) {
+                console.log('Could not load progress from URL');
+            }
+        }
+        
+        return { type: 'member', id: memberId };
+        
+    } else if (type === 'guest' && guestId) {
+        // Playing as guest
+        showGuestModeBanner(guestId);
+        
+        // Load guest progress
+        const guestProgress = localStorage.getItem(`tauGuestProgress_${guestId}`);
+        if (guestProgress) {
+            try {
+                const progress = JSON.parse(guestProgress);
+                window.TauLevels?.setUserProgress?.(progress);
+            } catch (e) {
+                console.log('Could not load guest progress');
+            }
+        }
+        
+        return { type: 'guest', id: guestId };
+        
+    } else {
+        // No connection - default to guest
+        const defaultGuestId = 'GUEST-' + Date.now().toString(36).toUpperCase();
+        showGuestModeBanner(defaultGuestId);
+        return { type: 'guest', id: defaultGuestId };
+    }
+}
+
+function showTAUConnectionBanner(memberId, urlParams) {
+    const banner = document.getElementById('tauConnectionBanner');
+    const memberInfo = document.getElementById('memberInfo');
+    
+    // Extract member info from URL
+    const name = urlParams.get('name') || 'Member';
+    const email = urlParams.get('email') || '';
+    const team = urlParams.get('team') || '';
+    const level = urlParams.get('level') || '1';
+    
+    memberInfo.innerHTML = `
+        ${name} | ${team ? team + ' Team' : ''} | Level ${level}
+        ${email ? `<br><small>${email}</small>` : ''}
+    `;
+    
+    banner.style.display = 'block';
+    document.getElementById('guestModeBanner').style.display = 'none';
+}
+
+function showGuestModeBanner(guestId) {
+    const banner = document.getElementById('guestModeBanner');
+    
+    // Store guest ID in localStorage for this session
+    localStorage.setItem('currentGuestId', guestId);
+    
+    banner.style.display = 'block';
+    document.getElementById('tauConnectionBanner').style.display = 'none';
+}
+
+function syncEarningsToTAU() {
+    // Get current earnings from level system
+    const totalEarned = window.TauLevels?.getTotalEarned?.() || 0;
+    const currentLevel = window.TauLevels?.getCurrentLevel?.() || 1;
+    
+    if (totalEarned > 0) {
+        // Show confirmation
+        const confirmed = confirm(`Sync ${totalEarned} iKbp to your TAU account?`);
+        
+        if (confirmed) {
+            // In real implementation, this would make an API call
+            // For now, just show message
+            alert(`✅ ${totalEarned} iKbp will be added to your TAU account.\n\nNote: In production, this would sync automatically.`);
+            
+            // Redirect to TAU app to complete sync
+            window.open('https://magero1985.github.io/Tau-Africa/', '_blank');
+        }
+    } else {
+        alert('No earnings to sync yet! Complete some levels first.');
+    }
+}
+
+function openTAUMainApp() {
+    window.open('https://magero1985.github.io/Tau-Africa/', '_blank');
+}
+
+function registerWithTAU() {
+    // Get guest earnings to show as incentive
+    const guestId = localStorage.getItem('currentGuestId');
+    const guestEarnings = localStorage.getItem(`tauGuestProgress_${guestId}`);
+    let totalEarned = 0;
+    
+    if (guestEarnings) {
+        try {
+            const progress = JSON.parse(guestEarnings);
+            totalEarned = progress.totalEarned || 0;
+        } catch (e) {}
+    }
+    
+    // Show incentive message
+    if (totalEarned > 0) {
+        const message = `You've earned ${totalEarned} iKbp as a guest!\n\n`;
+        const incentive = `Register with TAU to claim your ${totalEarned} iKbp and start earning real rewards!`;
+        
+        if (confirm(message + incentive)) {
+            window.open('https://magero1985.github.io/Tau-Africa/', '_blank');
+        }
+    } else {
+        window.open('https://magero1985.github.io/Tau-Africa/', '_blank');
+    }
+}
+
+// Initialize on page load
+document.addEventListener('DOMContentLoaded', function() {
+    setTimeout(() => {
+        const connection = checkTAUConnection();
+        console.log('TAU Connection:', connection);
+    }, 500);
+});
+</script>
     <div class="container">
         <div class="header">
             <h1>Pan African Knowledge Challenge</h1>
