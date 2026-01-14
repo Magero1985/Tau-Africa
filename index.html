@@ -1218,6 +1218,21 @@ document.head.appendChild(style);
         🌍
     </div>
     </div>
+    <div id="payment-validation-section" class="content-box">
+    <div class="card">
+        <h2>💳 Registration Payment Validation</h2>
+        <p>Verify transaction codes and approve new member access</p>
+        
+        <div style="margin-top: 15px; position: relative;">
+            <input type="text" id="validationSearch" placeholder="Search by Name or TX Code..." 
+                   onkeyup="filterValidationList()"
+                   style="width: 100%; padding: 12px; border: 2px solid #667eea; border-radius: 10px; font-size: 16px;">
+        </div>
+    </div>
+    
+    <div id="pending-members-list" class="item-list">
+        </div>
+    </div>
 
 <!-- Firebase SDK -->
 <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
@@ -15181,119 +15196,140 @@ console.log('✅ Admin bridge button fixed');
     
     console.log('✅ UI improvements loaded');
     console.log('  ✅ Login status indicator active');
-    console.log('  ✅ Member dashboard cleaned up');
-    console.log('  ✅ No more duplicate buttons');
-    
-})();
+    console.log('  ✅ Member dashboard cleaned'); 
 </script>
- <script>
-    // Function to handle the Payment Validation Button
+    
+<script>
+// Global variable to store fetched members for searching
+let allPendingMembers = [];
+
 window.openValidationSection = function() {
-    // 1. Clear active states from all tabs and boxes
     document.querySelectorAll('.content-box').forEach(box => {
         box.classList.remove('active');
         box.style.display = 'none';
     });
-    document.querySelectorAll('.tab').forEach(tab => tab.classList.remove('active'));
-
-    // 2. Show the Payment Validation section
     const valSection = document.getElementById('payment-validation-section');
     if (valSection) {
         valSection.classList.add('active');
         valSection.style.display = 'block';
-        loadPendingMembers(); // Trigger the Firebase load
+        loadPendingMembers(); 
     }
 };
 
-// Function to fetch data from Firebase
 async function loadPendingMembers() {
     const listContainer = document.getElementById('pending-members-list');
-    listContainer.innerHTML = '<p style="text-align: center; padding: 20px;">⏳ Loading Pending Payments...</p>';
+    listContainer.innerHTML = '<p style="text-align:center; padding:20px;">⏳ Accessing Database...</p>';
     
     try {
-        // Ensure db is initialized (Firebase)
         const snapshot = await db.collection('members')
             .where('status', '==', 'Pending')
             .get();
             
-        if (snapshot.empty) {
-            listContainer.innerHTML = '<p style="text-align: center; color: #999; padding: 20px;">No pending validations found.</p>';
-            return;
-        }
-
-        let html = '';
-        snapshot.forEach(doc => {
-            const m = doc.data();
-            html += `
-                <div class="item" style="border-left: 4px solid #2ecc71;">
-                    <h4>${m.fullName}</h4>
-                    <p><strong>Email:</strong> ${m.email}</p>
-                    <p><strong>TX Code:</strong> <span style="color: #764ba2; font-weight: bold;">${m.transactionCode || 'N/A'}</span></p>
-                    <div style="margin-top: 10px;">
-                        <button onclick="approveMember('${m.email}', '${doc.id}')" class="btn btn-small btn-success">
-                            ✅ Approve Payment
-                        </button>
-                    </div>
-                </div>`;
-        });
-        listContainer.innerHTML = html;
+        allPendingMembers = [];
+        snapshot.forEach(doc => allPendingMembers.push({id: doc.id, ...doc.data()}));
+        
+        renderValidationList(allPendingMembers);
     } catch (error) {
-        console.error("Load error:", error);
-        listContainer.innerHTML = `<div class="alert alert-warning">Error loading data: ${error.message}</div>`;
+        console.error("Firebase Error:", error);
+        notify('Failed to load members', 'error');
     }
 }
 
-// Placeholder for Approve Member Function
-window.approveMember = async function(email, docId) {
-    if(confirm(`Confirm payment for ${email}?`)) {
+function renderValidationList(members) {
+    const listContainer = document.getElementById('pending-members-list');
+    if (members.length === 0) {
+        listContainer.innerHTML = '<p style="text-align:center; padding:20px; color:#666;">No pending registrations match your search.</p>';
+        return;
+    }
+
+    listContainer.innerHTML = members.map(m => `
+        <div class="item validation-card" style="border-left: 4px solid #764ba2; margin-bottom:15px;" data-search="${m.fullName.toLowerCase()} ${m.transactionCode?.toLowerCase()}">
+            <h4>${m.fullName}</h4>
+            <p><strong>TX Code:</strong> <span style="color:#e67e22; font-weight:bold;">${m.transactionCode || 'No Code'}</span></p>
+            <p style="font-size:0.85rem; color:#666;">Email: ${m.email}</p>
+            
+            <div style="margin: 10px 0;">
+                <label style="font-size: 11px; font-weight: bold; color: #764ba2;">REASON FOR DECLINE:</label>
+                <select id="reason-${m.id}" style="width:100%; padding:8px; border-radius:5px; border:1px solid #ddd;">
+                    <option value="Invalid Transaction Code">Invalid Transaction Code</option>
+                    <option value="Incomplete Payment Amount">Incomplete Payment Amount</option>
+                    <option value="Duplicate Application">Duplicate Application</option>
+                    <option value="Payment Not Received">Payment Not Received</option>
+                </select>
+            </div>
+
+            <div style="display: flex; gap: 10px; margin-top:10px;">
+                <button onclick="approveMember('${m.id}', '${m.fullName}')" class="btn btn-small btn-success" style="flex:1;">✅ Approve</button>
+                <button onclick="declineMember('${m.id}', '${m.fullName}')" class="btn btn-small btn-danger" style="flex:1;">❌ Decline</button>
+            </div>
+        </div>
+    `).join('');
+}
+
+// Client-side search filtering
+function filterValidationList() {
+    const searchTerm = document.getElementById('validationSearch').value.toLowerCase();
+    const filtered = allPendingMembers.filter(m => 
+        m.fullName.toLowerCase().includes(searchTerm) || 
+        (m.transactionCode && m.transactionCode.toLowerCase().includes(searchTerm))
+    );
+    renderValidationList(filtered);
+}
+
+window.approveMember = async function(docId, name) {
+    if(confirm(`Approve payment and activate ${name}?`)) {
         try {
-            await db.collection('members').doc(docId).update({
+            const memberRef = db.collection('members').doc(docId);
+            const memberData = (await memberRef.get()).data();
+            
+            await memberRef.update({ 
                 status: 'Approved',
-                validatedAt: new Date().toISOString()
+                validatedAt: new Date().toISOString() 
             });
-            notify('Member approved successfully!', 'success');
-            loadPendingMembers(); // Refresh list
-        } catch (error) {
-            notify('Error approving member: ' + error.message, 'error');
-        }
-    }
-    }
-    
-async function approveMember(email) {
-    if(!confirm('Validate payment and issue Member ID?')) return;
 
-    let members = JSON.parse(localStorage.getItem('tauAfricaDB') || '[]');
-    const idx = members.findIndex(m => m.email === email);
-    
-    if (idx !== -1) {
-        // 1. Mark as Active
-        members[idx].status = 'Active';
-        members[idx].paymentStatus = 'Paid';
-        
-        // 2. Generate Member ID (Tau Number)
-        const tauID = "TAU-" + Math.floor(1000 + Math.random() * 9000);
-        members[idx].memberID = tauID;
-        
-        // 3. Save to storage
-        localStorage.setItem('tauAfricaDB', JSON.stringify(members));
-        
-        // 4. Try to send email (using your existing EmailJS setup)
+            // Trigger Activation Email via your 'mail' collection
+            await db.collection('mail').add({
+                to: memberData.email,
+                message: {
+                    subject: '🚀 Welcome to TAU Africa - Account Activated!',
+                    html: `<h3>Congratulations ${name}!</h3>
+                           <p>Your payment has been validated. Your account is now <strong>ACTIVE</strong>.</p>
+                           <p>You can now log in using your credentials.</p>`
+                }
+            });
+
+            notify(`✅ ${name} activated & Email queued!`, 'success');
+            loadPendingMembers();
+        } catch (e) { notify('Approval failed', 'error'); }
+    }
+};
+
+window.declineMember = async function(docId, name) {
+    const reason = document.getElementById(`reason-${docId}`).value;
+    if(confirm(`Decline ${name}? Reason: ${reason}`)) {
         try {
-            if (window.sendWelcomeEmail) {
-                await window.sendWelcomeEmail(members[idx]);
-            }
-            alert('Member Activated: ' + tauID + ' and email sent!');
-        } catch (e) {
-            alert('Member Activated but email failed. Manually send ID: ' + tauID);
-        }
-        
-        refreshPendingList();
-    }
-}
+            const memberRef = db.collection('members').doc(docId);
+            const memberData = (await memberRef.get()).data();
 
-// Auto-check for new registrations every 30 seconds
-setInterval(refreshPendingList, 30000);
-</script>
+            // Send Decline Email
+            await db.collection('mail').add({
+                to: memberData.email,
+                message: {
+                    subject: 'Update: TAU Africa Registration',
+                    html: `<p>Hello ${name},</p>
+                           <p>We could not validate your registration.</p>
+                           <p><strong>Reason:</strong> ${reason}</p>
+                           <p>Please contact support or re-apply with correct info.</p>`
+                }
+            });
+
+            await memberRef.delete();
+            notify(`❌ ${name} declined and removed.`, 'error');
+            loadPendingMembers();
+        } catch (e) { notify('Decline failed', 'error'); }
+    }
+};
+    </script>
  <script>
 // ============================================
 // COMPREHENSIVE ACCOUNT LEVEL SYSTEM
@@ -15609,8 +15645,8 @@ setInterval(refreshPendingList, 30000);
                 id: 'TAU9',
                 question: "What does AUFFI stand for?",
                 options: [
-                    "African Unity Foundation for Investment",
-                    "African United Financial Institution",
+                    "African Unity Forum Foundation Initiative",
+                    "African Freedom Fund Initiative",
                     "AUFFI is the Pan-African Trust Graph System representing spiritual unity",
                     "All United Friends for Innovation"
                 ],
