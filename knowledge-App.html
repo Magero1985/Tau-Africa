@@ -1252,5 +1252,88 @@ function claimEarningsToTAU() {
     }
 }
 </script>
+    <script>
+        // knowledge-App.html - Add this sync system
+
+// Earning System for Knowledge App
+window.KnowledgeEarnings = {
+    
+    // Store earnings locally
+    earn: function(amount, activityName) {
+        const memberId = getMemberIdFromURL(); // Get from URL params
+        
+        // 1. Store in Knowledge App
+        const earnings = JSON.parse(localStorage.getItem('knowledgeEarnings') || '[]');
+        earnings.push({
+            memberId: memberId,
+            amount: amount,
+            activity: activityName,
+            timestamp: new Date().toISOString(),
+            synced: false
+        });
+        localStorage.setItem('knowledgeEarnings', JSON.stringify(earnings));
+        
+        // 2. Queue for sync to Main App
+        this.queueForSync(memberId, amount, activityName);
+        
+        // 3. Show confirmation
+        this.showConfirmation(amount, activityName);
+    },
+    
+    // Queue for Main App sync
+    queueForSync: function(memberId, amount, activityName) {
+        // Store in shared storage
+        const syncQueue = JSON.parse(localStorage.getItem('tauEarningsSync') || '[]');
+        syncQueue.push({
+            memberId: memberId,
+            amount: amount,
+            activity: activityName,
+            timestamp: new Date().toISOString(),
+            source: 'knowledge_app'
+        });
+        localStorage.setItem('tauEarningsSync', JSON.stringify(syncQueue));
+        
+        console.log(`📤 Earnings queued for sync: ${amount} iKbp`);
+    },
+    
+    // Manual sync button
+    syncNow: function() {
+        const memberId = getMemberIdFromURL();
+        const earnings = JSON.parse(localStorage.getItem('knowledgeEarnings') || '[]');
+        const unsynced = earnings.filter(e => !e.synced && e.memberId === memberId);
+        
+        if (unsynced.length > 0) {
+            const total = unsynced.reduce((sum, e) => sum + e.amount, 0);
+            
+            // Open Main App with sync parameters
+            const syncUrl = `https://magero1985.github.io/Tau-Africa/?sync=true&earned=${total}&memberId=${memberId}`;
+            window.open(syncUrl, '_blank');
+            
+            // Mark as synced
+            unsynced.forEach(e => e.synced = true);
+            localStorage.setItem('knowledgeEarnings', JSON.stringify(earnings));
+            
+            alert(`✅ ${total} iKbp queued for sync!`);
+        } else {
+            alert('No new earnings to sync.');
+        }
+    },
+    
+    // Show confirmation
+    showConfirmation: function(amount, activityName) {
+        // Show popup notification
+        const notification = document.createElement('div');
+        notification.innerHTML = `
+            <div style="position: fixed; top: 20px; right: 20px; background: #2ecc71; color: white; 
+                        padding: 15px; border-radius: 10px; z-index: 10000; box-shadow: 0 5px 15px rgba(0,0,0,0.3);">
+                <strong>💰 +${amount} iKbp Earned!</strong><br>
+                <small>${activityName}</small>
+            </div>
+        `;
+        document.body.appendChild(notification);
+        setTimeout(() => notification.remove(), 5000);
+    }
+};
+    </script>
 </body>
 </html>
