@@ -1451,6 +1451,24 @@ async function loadPendingForValidation() {
         alert("Failed to load members: " + error.message);
     }
 } 
+            window.openValidationSection = function() {
+    // 1. Hide all other sections
+    document.querySelectorAll('.content-box').forEach(box => {
+        box.classList.remove('active');
+        box.style.display = 'none';
+    });
+
+    // 2. Show the Payment Validation section
+    const valSection = document.getElementById('payment-validation-section');
+    if (valSection) {
+        valSection.classList.add('active');
+        valSection.style.display = 'block';
+        // 3. Trigger the data load
+        loadPendingMembers(); 
+    } else {
+        notify('❌ Validation Section not found in HTML', 'error');
+    }
+};
 </script>
 </body>
 </html>
