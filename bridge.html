@@ -1399,5 +1399,58 @@ console.log('💡 Run TauDiagnostics.testRegistration() to test signup');
     });
 })();
         </script>
+        <script>
+function openValidationSection() {
+    // 1. Switch tab to the content box for validation
+    document.querySelectorAll('.content-box').forEach(box => box.style.display = 'none');
+    
+    // 2. Create or show the validation container
+    let container = document.getElementById('validation-container');
+    if (!container) {
+        container = document.createElement('div');
+        container.id = 'validation-container';
+        container.className = 'content-box active';
+        document.querySelector('.container').appendChild(container);
+    }
+    container.style.display = 'block';
+    
+    // 3. Load the pending members from Firebase
+    loadPendingForValidation();
+}
+
+async function loadPendingForValidation() {
+    const container = document.getElementById('validation-container');
+    container.innerHTML = '<h3>⏳ Loading Pending Payments...</h3>';
+    
+    try {
+        const snapshot = await db.collection('members')
+            .where('status', '==', 'Pending')
+            .get();
+            
+        if (snapshot.empty) {
+            container.innerHTML = '<p>No pending validations found.</p>';
+            return;
+        }
+
+        let html = '<h2>Pending Validations</h2><div class="grid">';
+        snapshot.forEach(doc => {
+            const m = doc.data();
+            html += `
+                <div class="card" style="border: 1px solid #ddd; padding: 15px; margin-bottom: 10px;">
+                    <p><strong>Name:</strong> ${m.fullName}</p>
+                    <p><strong>TX Code:</strong> ${m.transactionCode || 'N/A'}</p>
+                    <button onclick="approveMember('${m.email}', '${doc.id}')" class="btn" style="background:#27ae60;">
+                        ✅ Approve Payment
+                    </button>
+                </div>`;
+        });
+        html += '</div>';
+        container.innerHTML = html;
+    } catch (error) {
+        console.error("Load error:", error);
+        alert("Failed to load members: " + error.message);
+    }
+} 
+</script>
 </body>
-    </html>
+</html>
