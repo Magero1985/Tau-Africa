@@ -801,6 +801,48 @@ To join in these categories, please use KABIRU SERVICE CENTER portal</p>
             <button class="btn-kabiru" onclick="window.open('https://magero1985.github.io/Kabiru-Mining-Portal-/', '_blank')">Access Kabiru Mining App</button>
         </div>
     </div>
+    
+<!-- ========================================================== -->
+<!-- ADD THE ACCOUNT LEVEL SYSTEM RIGHT HERE (COPY THIS ENTIRE SECTION) -->
+<!-- ========================================================== -->
+<div class="container" id="accountLevelSystem" style="margin-top: 50px;">
+    <div class="section" style="grid-column: 1 / -1;">
+        <h2 class="section-title">🎮 ACCOUNT LEVEL CHALLENGE</h2>
+        <p style="text-align: center; margin-bottom: 20px;">Complete levels to earn iKbp! Each level gets progressively harder and more rewarding.</p>
+        
+        <!-- Level Progress Bar -->
+        <div style="background: #f0f0f0; border-radius: 20px; height: 20px; margin: 30px 0; position: relative;">
+            <div id="levelProgress" style="background: linear-gradient(45deg, #4169e1, #2ecc71); width: 0%; height: 100%; border-radius: 20px; transition: width 1s;"></div>
+            <div style="position: absolute; top: -25px; left: 0; right: 0; display: flex; justify-content: space-between;">
+                ${Array.from({length: 10}, (_, i) => `
+                    <div style="text-align: center;">
+                        <div style="width: 30px; height: 30px; background: ${i === 0 ? '#2ecc71' : '#95a5a6'}; border-radius: 50%; margin: 0 auto 5px; line-height: 30px; color: white; font-weight: bold;">${i+1}</div>
+                        <small>${(i+1)*50} iKbp</small>
+                    </div>
+                `).join('')}
+            </div>
+        </div>
+        
+        <!-- Current Level Display -->
+        <div style="text-align: center; margin: 30px 0;">
+            <div style="display: inline-block; background: linear-gradient(45deg, #4169e1, #2ecc71); color: white; padding: 15px 30px; border-radius: 15px;">
+                <h3 id="currentLevel">Level 1</h3>
+                <p id="levelReward">Reward: 50 iKbp</p>
+            </div>
+        </div>
+        
+        <!-- Level Challenge Container -->
+        <div id="levelChallengeContainer" style="background: white; border-radius: 15px; padding: 30px; box-shadow: 0 5px 15px rgba(0,0,0,0.1);">
+            <!-- Content will be loaded by JavaScript -->
+        </div>
+        
+        <!-- Level Navigation -->
+        <div style="display: flex; justify-content: space-between; margin-top: 30px;">
+            <button id="prevLevelBtn" class="btn" onclick="changeLevel(-1)" style="background: #95a5a6;" disabled>⬅️ Previous Level</button>
+            <button id="nextLevelBtn" class="btn" onclick="changeLevel(1)" style="background: #4169e1;">Next Level ➡️</button>
+        </div>
+    </div>
+</div>
 
 <!-- Notification -->
     <div id="notification" class="notification"></div>
@@ -14822,5 +14864,891 @@ async function approveMember(email, docId) {
     }
 }
 </script>
+<script>
+// ============================================
+// COMPREHENSIVE ACCOUNT LEVEL SYSTEM
+// ============================================
+
+(function() {
+    'use strict';
+    
+    console.log('🎮 Loading Account Level System...');
+    
+    // Level Configuration
+    const LEVEL_CONFIG = {
+        totalLevels: 10,
+        baseReward: 50,
+        rewardMultiplier: 1.2,
+        questionsPerLevel: 5
+    };
+    
+    // User Progress Storage
+    const PROGRESS_KEY = 'tauLevelProgress';
+    const LEVELS_KEY = 'tauLevelQuestions';
+    const CURRENT_LEVEL_KEY = 'tauCurrentLevel';
+    
+    let currentLevel = 1;
+    let userProgress = {};
+    let currentQuestions = [];
+    
+    // Initialize the system
+    function initLevelSystem() {
+        // Load user progress
+        userProgress = JSON.parse(localStorage.getItem(PROGRESS_KEY) || '{}');
+        
+        // Set current level
+        currentLevel = parseInt(localStorage.getItem(CURRENT_LEVEL_KEY)) || 1;
+        
+        // Initialize progress for new users
+        if (!userProgress.levels) {
+            userProgress = {
+                userId: generateUserId(),
+                levels: {},
+                totalEarned: 0,
+                startDate: new Date().toISOString(),
+                lastActive: new Date().toISOString()
+            };
+            localStorage.setItem(PROGRESS_KEY, JSON.stringify(userProgress));
+        }
+        
+        // Initialize level 1 if not exists
+        if (!userProgress.levels[1]) {
+            initializeLevel(1);
+        }
+        
+        // Load questions for current level
+        loadLevelQuestions(currentLevel);
+        
+        // Update UI
+        updateLevelDisplay();
+        updateProgressBar();
+        loadLevelChallenge();
+        
+        console.log('✅ Level System Initialized - User:', userProgress.userId, 'Level:', currentLevel);
+    }
+    
+    // Generate unique user ID
+    function generateUserId() {
+        return 'USER-' + Date.now().toString(36).toUpperCase() + '-' + Math.random().toString(36).substr(2, 4).toUpperCase();
+    }
+    
+    // Initialize a level
+    function initializeLevel(level) {
+        if (!userProgress.levels[level]) {
+            userProgress.levels[level] = {
+                level: level,
+                started: new Date().toISOString(),
+                completed: false,
+                score: 0,
+                totalQuestions: LEVEL_CONFIG.questionsPerLevel,
+                correctAnswers: 0,
+                attempts: 0,
+                reward: calculateLevelReward(level),
+                earned: 0,
+                questions: generateLevelQuestions(level)
+            };
+            saveProgress();
+        }
+    }
+    
+    // Calculate reward for level
+    function calculateLevelReward(level) {
+        return Math.round(LEVEL_CONFIG.baseReward * Math.pow(LEVEL_CONFIG.rewardMultiplier, level - 1));
+    }
+    
+    // Generate questions for each level
+    function generateLevelQuestions(level) {
+        const questions = [];
+        
+        if (level <= 2) {
+            // LEVEL 1 & 2: Pan-African Random Questions
+            questions.push(...generatePanAfricanQuestions(level === 1 ? 'easy' : 'medium'));
+        } else if (level >= 3 && level <= 4) {
+            // LEVEL 3 & 4: TAU Africa Ecosystem Questions
+            questions.push(...generateTauAfricaQuestions(level === 3 ? 'easy' : 'medium'));
+        } else if (level >= 5 && level <= 6) {
+            // LEVEL 5 & 6: Kabiru Mining Questions
+            questions.push(...generateKabiruQuestions(level === 5 ? 'easy' : 'medium'));
+        } else if (level >= 7 && level <= 8) {
+            // LEVEL 7 & 8: Advanced Ecosystem Questions
+            questions.push(...generateAdvancedEcosystemQuestions(level === 7 ? 'hard' : 'expert'));
+        } else if (level >= 9 && level <= 10) {
+            // LEVEL 9 & 10: Leadership & Vision Questions
+            questions.push(...generateLeadershipQuestions(level === 9 ? 'hard' : 'expert'));
+        }
+        
+        // Shuffle and limit questions
+        return shuffleArray(questions).slice(0, LEVEL_CONFIG.questionsPerLevel);
+    }
+    
+    // ============================================
+    // QUESTION GENERATORS
+    // ============================================
+    
+    // Pan-African Questions (Levels 1-2)
+    function generatePanAfricanQuestions(difficulty) {
+        const questions = [
+            {
+                id: 'PA1',
+                question: "Which African country was never colonized?",
+                options: ["Ethiopia", "Kenya", "Nigeria", "South Africa"],
+                correctAnswer: 0,
+                explanation: "Ethiopia successfully resisted colonization during the Scramble for Africa, except for a brief period under Italian occupation (1936-1941).",
+                difficulty: 'easy',
+                category: 'Pan-African History'
+            },
+            {
+                id: 'PA2',
+                question: "Who is considered the founding father of Pan-Africanism?",
+                options: ["W.E.B. Du Bois", "Marcus Garvey", "Kwame Nkrumah", "All of the above"],
+                correctAnswer: 3,
+                explanation: "All three figures played crucial roles in developing Pan-Africanism, though W.E.B. Du Bois is often called the 'father of Pan-Africanism.'",
+                difficulty: 'medium',
+                category: 'Pan-African History'
+            },
+            {
+                id: 'PA3',
+                question: "What is the approximate population of Africa?",
+                options: ["500 million", "1.2 billion", "1.4 billion", "2 billion"],
+                correctAnswer: 2,
+                explanation: "Africa's population is approximately 1.4 billion people as of 2023, making it the second most populous continent.",
+                difficulty: 'easy',
+                category: 'African Demographics'
+            },
+            {
+                id: 'PA4',
+                question: "Which African language has the most native speakers?",
+                options: ["Swahili", "Arabic", "Hausa", "Yoruba"],
+                correctAnswer: 0,
+                explanation: "Swahili has approximately 150 million speakers across East Africa and is widely used as a lingua franca.",
+                difficulty: 'medium',
+                category: 'African Languages'
+            },
+            {
+                id: 'PA5',
+                question: "What year was the African Union (AU) established?",
+                options: ["1963 (as OAU)", "1994", "2002", "2010"],
+                correctAnswer: 2,
+                explanation: "The African Union was officially launched in Durban, South Africa on July 9, 2002, succeeding the Organization of African Unity (OAU).",
+                difficulty: 'medium',
+                category: 'Pan-African Organizations'
+            }
+        ];
+        
+        // Add more questions for variety
+        questions.push(
+            {
+                id: 'PA6',
+                question: "Which African country has the largest economy?",
+                options: ["South Africa", "Nigeria", "Egypt", "Kenya"],
+                correctAnswer: 1,
+                explanation: "Nigeria has Africa's largest economy with a GDP of approximately $450 billion.",
+                difficulty: 'easy',
+                category: 'African Economics'
+            },
+            {
+                id: 'PA7',
+                question: "What is the primary goal of Agenda 2063?",
+                options: [
+                    "African economic integration",
+                    "Ending all conflicts in Africa",
+                    "Creating a United States of Africa",
+                    "Achieving sustainable development"
+                ],
+                correctAnswer: 3,
+                explanation: "Agenda 2063 is Africa's strategic framework for achieving inclusive and sustainable development.",
+                difficulty: 'medium',
+                category: 'Pan-African Vision'
+            }
+        );
+        
+        return questions;
+    }
+    
+    // TAU Africa Ecosystem Questions (Levels 3-4)
+    function generateTauAfricaQuestions(difficulty) {
+        return [
+            {
+                id: 'TAU1',
+                question: "What does TAU stand for in TAU Africa?",
+                options: [
+                    "Technical African Unity",
+                    "Trans-African Union",
+                    "The name represents the Greek letter Tau (τ) symbolizing awakening",
+                    "Total African Unity"
+                ],
+                correctAnswer: 2,
+                explanation: "TAU represents the Greek letter Tau (τ) symbolizing awakening, rebirth, and the Pan-African spiritual and economic awakening.",
+                difficulty: 'easy',
+                category: 'TAU Fundamentals'
+            },
+            {
+                id: 'TAU2',
+                question: "What are the two main membership teams in TAU Africa?",
+                options: [
+                    "Basic and Premium",
+                    "TASK and TALK",
+                    "Starter and Pro",
+                    "Free and Paid"
+                ],
+                correctAnswer: 1,
+                explanation: "TAU Africa has TASK Team (KSH 500) for service providers and TALK Team (KSH 2,000) for financial supporters/investors.",
+                difficulty: 'easy',
+                category: 'Membership'
+            },
+            {
+                id: 'TAU3',
+                question: "What is the vision of TAU Africa International?",
+                options: [
+                    "To create jobs in Africa",
+                    "Community • Value • Corporate • Sovereignty",
+                    "To build Africa's largest cryptocurrency",
+                    "To unite all African countries politically"
+                ],
+                correctAnswer: 1,
+                explanation: "The core vision is Community, Value, Corporate, and Sovereignty - building Africa's digital and economic sovereignty.",
+                difficulty: 'medium',
+                category: 'Vision & Mission'
+            },
+            {
+                id: 'TAU4',
+                question: "What benefits do TASK Team members receive?",
+                options: [
+                    "Only access to training",
+                    "500 iKbp welcome bonus + referral earnings + access to activities",
+                    "Free business registration",
+                    "Guaranteed employment"
+                ],
+                correctAnswer: 1,
+                explanation: "TASK Team members receive 500 iKbp welcome bonus, can earn 500 iKbp per referral, and access all activities and tasks.",
+                difficulty: 'medium',
+                category: 'Member Benefits'
+            },
+            {
+                id: 'TAU5',
+                question: "How can members earn iKbp in the TAU ecosystem?",
+                options: [
+                    "Only through referrals",
+                    "Through activities, tasks, value submission, and referrals",
+                    "By making payments",
+                    "Through social media sharing only"
+                ],
+                correctAnswer: 1,
+                explanation: "Members earn iKbp through multiple channels: completing activities (100-500 iKbp), tasks (200-5000 iKbp), submitting values, and referrals (500 iKbp each).",
+                difficulty: 'medium',
+                category: 'Earning System'
+            },
+            {
+                id: 'TAU6',
+                question: "What is the registration fee for TALK Team?",
+                options: ["KSH 500", "KSH 1,000", "KSH 2,000", "Free"],
+                correctAnswer: 2,
+                explanation: "TALK Team registration fee is KSH 2,000, which goes to Valenta Liquid Pool Reserve for Kabiru value conversion.",
+                difficulty: 'easy',
+                category: 'Membership'
+            },
+            {
+                id: 'TAU7',
+                question: "What is the purpose of TAU Africa Foundation?",
+                options: [
+                    "To manage member payments",
+                    "To provide sustainable development programs and community empowerment",
+                    "To develop the mobile app",
+                    "To handle legal matters"
+                ],
+                correctAnswer: 1,
+                explanation: "TAU Africa Foundation focuses on sustainable development programs and empowering African communities through strategic partnerships.",
+                difficulty: 'medium',
+                category: 'Organization Structure'
+            },
+            {
+                id: 'TAU8',
+                question: "What is Valenta Holdings?",
+                options: [
+                    "A cryptocurrency exchange",
+                    "TAU's holding company building Kabiru Digital Currency",
+                    "A training institute",
+                    "A payment processor"
+                ],
+                correctAnswer: 1,
+                explanation: "Valenta Holdings is TAU's corporate vehicle building Kabiru Digital Currency and the entire digital ecosystem.",
+                difficulty: 'medium',
+                category: 'Organization Structure'
+            },
+            {
+                id: 'TAU9',
+                question: "What does AUFFI stand for?",
+                options: [
+                    "African Unity Foundation for Investment",
+                    "African United Financial Institution",
+                    "AUFFI is the Pan-African Trust Graph System representing spiritual unity",
+                    "All United Friends for Innovation"
+                ],
+                correctAnswer: 2,
+                explanation: "AUFFI is the Pan-African Trust Graph System representing the spiritual and community wing of TAU Africa.",
+                difficulty: 'medium',
+                category: 'Organization Structure'
+            },
+            {
+                id: 'TAU10',
+                question: "How does TAU Africa ensure value validation?",
+                options: [
+                    "Through automated algorithms",
+                    "Through three validation levels: System-Care, System-Validator, System-Agents",
+                    "By government verification",
+                    "Through social media validation"
+                ],
+                correctAnswer: 1,
+                explanation: "TAU uses three validation levels: 1st Validation (System-Care), 2nd Validation (System-Validator), and 3rd Validation (System-Agents).",
+                difficulty: 'hard',
+                category: 'Value System'
+            }
+        ];
+    }
+    
+    // Kabiru Mining Questions (Levels 5-6)
+    function generateKabiruQuestions(difficulty) {
+        return [
+            {
+                id: 'KAB1',
+                question: "What is Kabiru Digital Currency?",
+                options: [
+                    "Just another cryptocurrency",
+                    "A meme coin for Africa",
+                    "Africa's sovereign digital value currency built on real values",
+                    "A stablecoin pegged to USD"
+                ],
+                correctAnswer: 2,
+                explanation: "Kabiru is Africa's sovereign digital value currency built by harnessing real human and environmental values.",
+                difficulty: 'easy',
+                category: 'Kabiru Fundamentals'
+            },
+            {
+                id: 'KAB2',
+                question: "How do you earn iKbp (Kabiru points)?",
+                options: [
+                    "Only by buying them",
+                    "By mining real values through the ecosystem",
+                    "Through government handouts",
+                    "By trading stocks"
+                ],
+                correctAnswer: 1,
+                explanation: "iKbp are earned by mining real values - completing activities, tasks, and validating values in the ecosystem.",
+                difficulty: 'easy',
+                category: 'Mining Process'
+            },
+            {
+                id: 'KAB3',
+                question: "What is the conversion rate between iKbp and cash?",
+                options: [
+                    "1 iKbp = 1 KSH",
+                    "10 iKbp = 1 KSH",
+                    "100 iKbp = 1 KSH",
+                    "1 iKbp = 0.1 KSH"
+                ],
+                correctAnswer: 1,
+                explanation: "10 iKbp = 1 KSH. So 500 iKbp welcome bonus = KSH 50.",
+                difficulty: 'medium',
+                category: 'Value Conversion'
+            },
+            {
+                id: 'KAB4',
+                question: "What can you do with iKb (actual Kabiru tokens)?",
+                options: [
+                    "Only hold them",
+                    "Trade on external exchanges immediately",
+                    "Convert to other currencies through TAU ecosystem",
+                    "Use for shopping anywhere"
+                ],
+                correctAnswer: 2,
+                explanation: "iKb can be converted to other currencies through TAU's ecosystem and eventually used for Pan-African trade.",
+                difficulty: 'medium',
+                category: 'Token Utility'
+            },
+            {
+                id: 'KAB5',
+                question: "What is the relationship between values and Kabiru mining?",
+                options: [
+                    "No relationship",
+                    "Real values (skills, services, products) are mined to create Kabiru",
+                    "Only digital values count",
+                    "Only agricultural values matter"
+                ],
+                correctAnswer: 1,
+                explanation: "Kabiru is mined by proving and validating real values - skills, services, products, labor, etc.",
+                difficulty: 'hard',
+                category: 'Value Mining'
+            }
+        ];
+    }
+    
+    // Advanced Ecosystem Questions (Levels 7-8)
+    function generateAdvancedEcosystemQuestions(difficulty) {
+        return [
+            {
+                id: 'ADV1',
+                question: "What is the Trust Graph System?",
+                options: [
+                    "A social media network",
+                    "Blockchain-based trust verification system for the ecosystem",
+                    "A financial audit system",
+                    "A member ranking system"
+                ],
+                correctAnswer: 1,
+                explanation: "The Trust Graph System is a blockchain-based system for verifying trust and value across the ecosystem.",
+                difficulty: 'hard',
+                category: 'Technology'
+            },
+            {
+                id: 'ADV2',
+                question: "How does TAU Africa ensure sovereignty?",
+                options: [
+                    "Through political lobbying",
+                    "By creating Africa's own digital currency and economic systems",
+                    "By protesting",
+                    "Through international treaties"
+                ],
+                correctAnswer: 1,
+                explanation: "Sovereignty is achieved by building Africa's own digital currency (Kabiru) and self-sustaining economic systems.",
+                difficulty: 'hard',
+                category: 'Sovereignty'
+            },
+            {
+                id: 'ADV3',
+                question: "What is the role of System-Agents?",
+                options: [
+                    "Customer service only",
+                    "3rd Validation level - validating value chain and logistics",
+                    "Marketing agents",
+                    "Technical support"
+                ],
+                correctAnswer: 1,
+                explanation: "System-Agents handle 3rd Validation level, focusing on value chain validation and logistics.",
+                difficulty: 'hard',
+                category: 'Validation System'
+            }
+        ];
+    }
+    
+    // Leadership Questions (Levels 9-10)
+    function generateLeadershipQuestions(difficulty) {
+        return [
+            {
+                id: 'LEAD1',
+                question: "What is the ultimate vision for African economic sovereignty?",
+                options: [
+                    "To copy Western economic models",
+                    "To create self-sustaining Pan-African economic systems independent of external control",
+                    "To become the world's cheapest labor market",
+                    "To focus only on natural resources"
+                ],
+                correctAnswer: 1,
+                explanation: "The vision is self-sustaining economic systems where Africa controls its own resources, currency, and trade.",
+                difficulty: 'expert',
+                category: 'Visionary Leadership'
+            }
+        ];
+    }
+    
+    // Utility Functions
+    function shuffleArray(array) {
+        for (let i = array.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [array[i], array[j]] = [array[j], array[i]];
+        }
+        return array;
+    }
+    
+    function loadLevelQuestions(level) {
+        const storedQuestions = JSON.parse(localStorage.getItem(LEVELS_KEY) || '{}');
+        
+        if (!storedQuestions[level]) {
+            // Generate new questions for this level
+            storedQuestions[level] = generateLevelQuestions(level);
+            localStorage.setItem(LEVELS_KEY, JSON.stringify(storedQuestions));
+        }
+        
+        currentQuestions = storedQuestions[level];
+        return currentQuestions;
+    }
+    
+    // ============================================
+    // UI FUNCTIONS
+    // ============================================
+    
+    function updateLevelDisplay() {
+        const levelElement = document.getElementById('currentLevel');
+        const rewardElement = document.getElementById('levelReward');
+        
+        if (levelElement && rewardElement) {
+            levelElement.textContent = `Level ${currentLevel}`;
+            rewardElement.textContent = `Reward: ${calculateLevelReward(currentLevel)} iKbp`;
+        }
+    }
+    
+    function updateProgressBar() {
+        const progressElement = document.getElementById('levelProgress');
+        if (!progressElement) return;
+        
+        // Calculate progress percentage
+        const progressPercentage = ((currentLevel - 1) / LEVEL_CONFIG.totalLevels) * 100;
+        progressElement.style.width = `${progressPercentage}%`;
+    }
+    
+    function loadLevelChallenge() {
+        const container = document.getElementById('levelChallengeContainer');
+        if (!container) return;
+        
+        const levelData = userProgress.levels[currentLevel];
+        
+        if (!levelData) {
+            initializeLevel(currentLevel);
+            loadLevelChallenge(); // Recursive call
+            return;
+        }
+        
+        // Check if level is completed
+        if (levelData.completed) {
+            container.innerHTML = `
+                <div style="text-align: center; padding: 40px;">
+                    <div style="font-size: 60px; color: #2ecc71;">✅</div>
+                    <h2>Level ${currentLevel} Completed!</h2>
+                    <p>You earned ${levelData.earned} iKbp</p>
+                    <div style="background: #e8f5e9; padding: 20px; border-radius: 10px; margin: 20px 0;">
+                        <h3>Score: ${levelData.correctAnswers}/${levelData.totalQuestions}</h3>
+                        <p>Completion Date: ${new Date(levelData.completed).toLocaleDateString()}</p>
+                    </div>
+                    ${currentLevel < LEVEL_CONFIG.totalLevels ? 
+                        `<button class="btn" onclick="startNextLevel()" style="background: #2ecc71;">Start Level ${currentLevel + 1}</button>` :
+                        `<button class="btn" onclick="showFinalAchievement()" style="background: #ffd700;">🎉 View Final Achievement</button>`
+                    }
+                </div>
+            `;
+            return;
+        }
+        
+        // Load current question
+        const currentQuestionIndex = levelData.currentQuestion || 0;
+        const question = currentQuestions[currentQuestionIndex];
+        
+        if (!question) {
+            console.error('Question not found:', currentQuestionIndex);
+            return;
+        }
+        
+        // Check if user has already answered this question
+        const userAnswer = levelData.userAnswers?.[question.id];
+        
+        container.innerHTML = `
+            <div style="margin-bottom: 20px;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+                    <h3>Question ${currentQuestionIndex + 1} of ${LEVEL_CONFIG.questionsPerLevel}</h3>
+                    <span style="background: #4169e1; color: white; padding: 5px 15px; border-radius: 20px;">
+                        ${question.category}
+                    </span>
+                </div>
+                
+                <div style="background: #f8f9fa; padding: 25px; border-radius: 10px; margin-bottom: 25px;">
+                    <h4 style="margin: 0 0 20px 0; font-size: 1.2rem;">${question.question}</h4>
+                    
+                    ${userAnswer !== undefined ? `
+                        <!-- Show results if already answered -->
+                        <div style="margin-top: 20px;">
+                            <p><strong>Your Answer:</strong> ${question.options[userAnswer]}</p>
+                            <p><strong>Correct Answer:</strong> ${question.options[question.correctAnswer]}</p>
+                            <div style="background: ${userAnswer === question.correctAnswer ? '#e8f5e9' : '#ffebee'}; padding: 15px; border-radius: 8px; margin-top: 10px;">
+                                <p><strong>Explanation:</strong> ${question.explanation}</p>
+                            </div>
+                            <button class="btn" onclick="nextQuestion()" style="margin-top: 15px;">
+                                ${currentQuestionIndex < LEVEL_CONFIG.questionsPerLevel - 1 ? 'Next Question' : 'Complete Level'}
+                            </button>
+                        </div>
+                    ` : `
+                        <!-- Show options if not answered -->
+                        <div id="questionOptions">
+                            ${question.options.map((option, index) => `
+                                <div style="margin: 10px 0;">
+                                    <label style="display: block; padding: 15px; background: white; border: 2px solid #ddd; border-radius: 10px; cursor: pointer; transition: all 0.3s;">
+                                        <input type="radio" name="answer" value="${index}" style="margin-right: 10px;">
+                                        ${option}
+                                    </label>
+                                </div>
+                            `).join('')}
+                        </div>
+                        
+                        <button class="btn" onclick="submitAnswer(${currentQuestionIndex})" style="width: 100%; margin-top: 20px;">
+                            Submit Answer
+                        </button>
+                    `}
+                </div>
+                
+                <div style="display: flex; justify-content: space-between; margin-top: 20px;">
+                    <div>
+                        <small>Score: ${levelData.correctAnswers || 0}/${levelData.totalQuestions}</small>
+                    </div>
+                    <div>
+                        <small>Level Reward: ${calculateLevelReward(currentLevel)} iKbp</small>
+                    </div>
+                </div>
+            </div>
+        `;
+        
+        // Add click handlers for options
+        if (!userAnswer) {
+            const options = container.querySelectorAll('#questionOptions label');
+            options.forEach(label => {
+                label.addEventListener('click', function() {
+                    // Remove selection from all options
+                    options.forEach(l => {
+                        l.style.background = 'white';
+                        l.style.borderColor = '#ddd';
+                    });
+                    
+                    // Select this option
+                    this.style.background = '#e3f2fd';
+                    this.style.borderColor = '#4169e1';
+                    
+                    // Check the radio button
+                    const radio = this.querySelector('input[type="radio"]');
+                    radio.checked = true;
+                });
+            });
+        }
+    }
+    
+    // ============================================
+    // GLOBAL FUNCTIONS
+    // ============================================
+    
+    window.submitAnswer = function(questionIndex) {
+        const selectedOption = document.querySelector('input[name="answer"]:checked');
+        
+        if (!selectedOption) {
+            showNotification('❌ Please select an answer!', 'error');
+            return;
+        }
+        
+        const answerIndex = parseInt(selectedOption.value);
+        const question = currentQuestions[questionIndex];
+        const isCorrect = answerIndex === question.correctAnswer;
+        
+        // Update level progress
+        const levelData = userProgress.levels[currentLevel];
+        
+        if (!levelData.userAnswers) {
+            levelData.userAnswers = {};
+        }
+        
+        if (!levelData.userAnswers[question.id]) {
+            // First attempt at this question
+            levelData.userAnswers[question.id] = answerIndex;
+            levelData.attempts++;
+            
+            if (isCorrect) {
+                levelData.correctAnswers++;
+                levelData.score += 100;
+                showNotification('✅ Correct Answer! +100 points', 'success');
+            } else {
+                showNotification('❌ Incorrect Answer', 'error');
+            }
+            
+            // Move to next question or complete level
+            levelData.currentQuestion = questionIndex + 1;
+            
+            // Check if level is complete
+            if (questionIndex >= LEVEL_CONFIG.questionsPerLevel - 1) {
+                completeLevel();
+            } else {
+                // Save and reload
+                saveProgress();
+                loadLevelChallenge();
+            }
+        }
+    };
+    
+    window.nextQuestion = function() {
+        const levelData = userProgress.levels[currentLevel];
+        
+        if (levelData.currentQuestion >= LEVEL_CONFIG.questionsPerLevel) {
+            completeLevel();
+        } else {
+            saveProgress();
+            loadLevelChallenge();
+        }
+    };
+    
+    function completeLevel() {
+        const levelData = userProgress.levels[currentLevel];
+        
+        // Calculate reward based on performance
+        const performance = levelData.correctAnswers / levelData.totalQuestions;
+        let reward = calculateLevelReward(currentLevel);
+        
+        if (performance >= 0.8) reward = Math.round(reward * 1.2); // 20% bonus for 80%+ score
+        else if (performance >= 0.6) reward = Math.round(reward * 1.1); // 10% bonus for 60%+ score
+        else if (performance < 0.4) reward = Math.round(reward * 0.8); // 20% penalty for <40% score
+        
+        // Update level data
+        levelData.completed = new Date().toISOString();
+        levelData.earned = reward;
+        levelData.reward = reward;
+        
+        // Update user total
+        userProgress.totalEarned += reward;
+        userProgress.lastActive = new Date().toISOString();
+        
+        // Award iKbp to member account
+        awardiKbpToMember(reward);
+        
+        // Save progress
+        saveProgress();
+        
+        // Show completion message
+        showNotification(`🎉 Level ${currentLevel} Completed! Earned ${reward} iKbp`, 'success');
+        
+        // Reload challenge to show completion screen
+        loadLevelChallenge();
+        updateProgressBar();
+    }
+    
+    function awardiKbpToMember(amount) {
+        // Get current member from session
+        const currentMember = window.TauDB?.getCurrentMember();
+        
+        if (currentMember && window.TauDB?.updateBalance) {
+            window.TauDB.updateBalance(currentMember.id, amount);
+            
+            // Create notification
+            if (typeof createNotification === 'function') {
+                createNotification(
+                    currentMember.id,
+                    '🎮 Level Completed!',
+                    `You earned ${amount} iKbp from Level ${currentLevel}`,
+                    'success'
+                );
+            }
+        } else {
+            // Store in temporary storage for public users
+            const publicEarnings = JSON.parse(localStorage.getItem('tauPublicEarnings') || '{}');
+            const userId = userProgress.userId;
+            
+            if (!publicEarnings[userId]) {
+                publicEarnings[userId] = { iKbpBalance: 0 };
+            }
+            
+            publicEarnings[userId].iKbpBalance += amount;
+            localStorage.setItem('tauPublicEarnings', JSON.stringify(publicEarnings));
+            
+            console.log(`💰 Public user earned ${amount} iKbp`);
+        }
+    }
+    
+    window.startNextLevel = function() {
+        if (currentLevel < LEVEL_CONFIG.totalLevels) {
+            currentLevel++;
+            localStorage.setItem(CURRENT_LEVEL_KEY, currentLevel.toString());
+            initializeLevel(currentLevel);
+            updateLevelDisplay();
+            updateProgressBar();
+            loadLevelQuestions(currentLevel);
+            loadLevelChallenge();
+        }
+    };
+    
+    window.changeLevel = function(direction) {
+        const newLevel = currentLevel + direction;
+        
+        if (newLevel >= 1 && newLevel <= LEVEL_CONFIG.totalLevels) {
+            currentLevel = newLevel;
+            localStorage.setItem(CURRENT_LEVEL_KEY, currentLevel.toString());
+            
+            // Initialize level if not exists
+            initializeLevel(currentLevel);
+            
+            // Update UI
+            updateLevelDisplay();
+            updateProgressBar();
+            loadLevelQuestions(currentLevel);
+            loadLevelChallenge();
+            
+            // Update navigation buttons
+            document.getElementById('prevLevelBtn').disabled = currentLevel === 1;
+            document.getElementById('nextLevelBtn').disabled = currentLevel === LEVEL_CONFIG.totalLevels;
+            
+            showNotification(`📚 Now viewing Level ${currentLevel}`, 'info');
+        }
+    };
+    
+    window.showFinalAchievement = function() {
+        const modal = document.createElement('div');
+        modal.className = 'modal';
+        modal.style.display = 'block';
+        modal.innerHTML = `
+            <div class="modal-content" style="text-align: center;">
+                <span class="close" onclick="this.parentElement.parentElement.remove()">&times;</span>
+                
+                <div style="font-size: 80px; margin: 20px 0;">🏆</div>
+                <h2 style="color: #ffd700;">MASTER ACHIEVEMENT UNLOCKED!</h2>
+                
+                <div style="background: linear-gradient(45deg, #ffd700, #ffed4e); padding: 30px; border-radius: 15px; margin: 20px 0;">
+                    <h3 style="color: #333;">TAU Africa Ecosystem Expert</h3>
+                    <p style="color: #333; font-size: 1.2rem;">You've mastered all 10 levels!</p>
+                </div>
+                
+                <div style="background: #f8f9fa; padding: 20px; border-radius: 10px; margin: 20px 0;">
+                    <h4>Total Earned: ${userProgress.totalEarned} iKbp</h4>
+                    <p>${(userProgress.totalEarned / 10).toFixed(2)} KSH value</p>
+                </div>
+                
+                <div style="margin: 20px 0;">
+                    <h4>Your Journey:</h4>
+                    <p>Started: ${new Date(userProgress.startDate).toLocaleDateString()}</p>
+                    <p>Completed all levels on: ${new Date().toLocaleDateString()}</p>
+                </div>
+                
+                <button class="btn" onclick="this.parentElement.parentElement.remove()" style="background: #2ecc71;">
+                    Continue to TAU Ecosystem
+                </button>
+            </div>
+        `;
+        document.body.appendChild(modal);
+    };
+    
+    function saveProgress() {
+        localStorage.setItem(PROGRESS_KEY, JSON.stringify(userProgress));
+    }
+    
+    // Initialize on page load
+    setTimeout(initLevelSystem, 2000);
+    
+    // Export to global scope
+    window.TauLevels = {
+        getCurrentLevel: () => currentLevel,
+        getUserProgress: () => userProgress,
+        getLevelReward: calculateLevelReward,
+        startNextLevel: window.startNextLevel,
+        changeLevel: window.changeLevel,
+        resetProgress: function() {
+            localStorage.removeItem(PROGRESS_KEY);
+            localStorage.removeItem(CURRENT_LEVEL_KEY);
+            localStorage.removeItem(LEVELS_KEY);
+            initLevelSystem();
+            showNotification('Progress reset successfully', 'success');
+        }
+    };
+    
+    console.log('✅ Account Level System Ready');
+    console.log('💡 Access: window.TauLevels');
+    
+})();
+
+// Copy referral link function
+window.copyReferralLink = function(referralCode) {
+    const referralLink = `${window.location.origin}?ref=${referralCode}`;
+    navigator.clipboard.writeText(referralLink).then(() => {
+        showNotification('✅ Referral link copied to clipboard!', 'success');
+    });
+};
+    </script>
 </body>
 </html>
