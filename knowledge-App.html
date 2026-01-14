@@ -1,3 +1,15 @@
+// At the START of the Knowledge App
+const urlParams = new URLSearchParams(window.location.search);
+const memberId = urlParams.get('memberId');
+const guestId = urlParams.get('guestId');
+
+if (memberId) {
+    // Connected to TAU member - auto-sync earnings
+    console.log('Connected to TAU Member:', memberId);
+} else if (guestId) {
+    // Public user - store for later claim
+    console.log('Public user playing:', guestId);
+}
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -1010,6 +1022,41 @@ function completeLevel() {
     
     // Rest of existing code...
 }
-    </script>
+    
+    // In Knowledge App
+function claimEarningsToTAU() {
+    const pending = JSON.parse(localStorage.getItem('knowledgeAppEarnings') || '[]');
+    const total = pending.reduce((sum, item) => sum + item.iKbp, 0);
+    
+    if (total > 0) {
+        // Show modal to register
+        const modal = document.createElement('div');
+        modal.className = 'modal';
+        modal.innerHTML = `
+            <div class="modal-content">
+                <h2>🎁 Claim Your ${total} iKbp!</h2>
+                <p>You've earned iKbp from the Knowledge App. Register with TAU Africa to add them to your account.</p>
+                
+                <div style="background: #fff3cd; padding: 15px; border-radius: 10px; margin: 15px 0;">
+                    <strong>Steps to claim:</strong>
+                    <ol style="text-align: left; margin: 10px 0;">
+                        <li>Register for TASK (KSH 500) or TALK (KSH 2,000)</li>
+                        <li>Login to your TAU account</li>
+                        <li>Return here to sync your earnings</li>
+                    </ol>
+                </div>
+                
+                <button class="btn" onclick="window.open('/index.html', '_blank')">
+                    Go Register Now
+                </button>
+                <button class="btn" onclick="saveEarningsForLater()">
+                    Save For Later
+                </button>
+            </div>
+        `;
+        document.body.appendChild(modal);
+    }
+}
+</script>
 </body>
 </html>
