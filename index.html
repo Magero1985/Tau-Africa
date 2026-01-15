@@ -956,15 +956,7 @@ To join in these categories, please use KABIRU SERVICE CENTER portal</p>
         </div>
     </div>
 </div>
-    <div id="payment-validation-section" class="content-box">
-    <div class="card">
-        <h2>💳 Payment Validation</h2>
-        <p>Approve new member registrations and payments</p>
-    </div>
-    <div id="pending-members-list" class="item-list">
-        </div>
-    </div>
-
+    
 <script>
 // ============================================
 // KNOWLEDGE APP CONNECTION FUNCTIONS
@@ -1201,11 +1193,9 @@ document.head.appendChild(style);
 <div class="floating-btn" onclick="showValidatorInterface()" title="Validator Access" style="bottom: 170px; right: 30px; background: linear-gradient(45deg, #9b59b6, #8e44ad);">
     🔐
 </div>
-
-<!-- Add this for admin validation dashboard access -->
-<button onclick="window.location.href='https://magero1985.github.io/Tau-Africa/bridge.html'" class="admin-bridge-btn" style="background: #e67e22; border: none; color: white; padding: 10px 20px; border-radius: 8px; cursor: pointer;">
-    📊 Admin Bridge
-</button>
+    <div class="floating-btn" onclick="openPaymentValidationModal()" title="👮 Admin Payment Validation" style="bottom: 240px; right: 30px; background: linear-gradient(45deg, #d35400, #e67e22);">
+    🛡️
+    </div>
 </div>
     <!-- AI Chat Window -->
     <div class="ai-chat-window" id="aiChatWindow">
@@ -16382,5 +16372,212 @@ document.addEventListener('DOMContentLoaded', () => {
     setInterval(ensureLoginIndicator, 2000);
 })();
     </script>
+        <script>
+// ==========================================
+// ADMIN PAYMENT VALIDATION SYSTEM
+// ==========================================
+
+// 1. Open the Validation Interface
+window.openPaymentValidationModal = function() {
+    // Optional: Add simple password protection
+    const pass = prompt("Enter Admin Code:");
+    if(pass !== "TAU2025ADMIN") { // Change this code
+        alert("⛔ Access Denied");
+        return;
+    }
+
+    closeAllModals();
+    const modal = document.createElement('div');
+    modal.className = 'modal';
+    modal.style.display = 'block';
+    modal.innerHTML = `
+        <div class="modal-content" style="max-width: 900px; height: 85vh; display:flex; flex-direction:column;">
+            <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid #eee; padding-bottom:15px; margin-bottom:15px;">
+                <div>
+                    <h2 style="margin:0; color:#2c3e50;">🛡️ Payment Validation</h2>
+                    <p style="margin:5px 0 0; color:#7f8c8d; font-size:14px;">Approve pending members to activate accounts & send emails.</p>
+                </div>
+                <span class="close" onclick="this.parentElement.parentElement.parentElement.remove()" style="font-size:28px;">&times;</span>
+            </div>
+
+            <div style="background:#f8f9fa; padding:15px; border-radius:10px; margin-bottom:15px; display:flex; gap:10px;">
+                <input type="text" id="adminSearch" placeholder="Search by Name, Phone, or Transaction Code..." 
+                       style="flex:1; padding:10px; border:1px solid #ddd; border-radius:5px;"
+                       onkeyup="filterPendingMembers()">
+                <button class="btn" onclick="loadPendingMembers()" style="padding:10px 20px;">🔄 Refresh</button>
+            </div>
+
+            <div id="pendingMembersContainer" style="flex:1; overflow-y:auto; padding-right:5px;">
+                <div style="text-align:center; padding:40px;">
+                    <div class="spinner"></div>
+                    <p>Loading pending registrations...</p>
+                </div>
+            </div>
+        </div>
+    `;
+    document.body.appendChild(modal);
+    loadPendingMembers();
+};
+
+// 2. Fetch Pending Members (Firestore + LocalStorage fallback)
+window.loadPendingMembers = async function() {
+    const container = document.getElementById('pendingMembersContainer');
+    if(!container) return;
+
+    let pendingMembers = [];
+
+    // Try Firestore first
+    if (typeof firebase !== 'undefined' && firebase.apps.length) {
+        try {
+            const db = firebase.firestore();
+            const snapshot = await db.collection('members')
+                .where('paymentStatus', '==', 'Pending Validation') // Ensure this matches your registration status
+                .get();
+            
+            snapshot.forEach(doc => {
+                pendingMembers.push({ ...doc.data(), source: 'cloud' });
+            });
+        } catch (e) {
+            console.warn("Firestore fetch error, checking local:", e);
+        }
+    }
+
+    // Merge with LocalStorage (for offline registrations)
+    const localMembers = JSON.parse(localStorage.getItem('tauAfricaDB') || '[]');
+    const localPending = localMembers.filter(m => m.paymentStatus === 'Pending Validation');
+    
+    // Combine and deduplicate based on ID
+    const merged = [...pendingMembers, ...localPending].filter((v,i,a)=>a.findIndex(v2=>(v2.id===v.id))===i);
+
+    renderPendingList(merged);
+};
+
+// 3. Render the List
+function renderPendingList(members) {
+    const container = document.getElementById('pendingMembersContainer');
+    if (members.length === 0) {
+        container.innerHTML = `
+            <div style="text-align:center; padding:40px; color:#666;">
+                <h3>✅ All Caught Up!</h3>
+                <p>No pending payment validations found.</p>
+            </div>`;
+        return;
+    }
+
+    container.innerHTML = members.map(m => `
+        <div class="pending-card" data-search="${(m.fullName+m.phone+m.transactionCode).toLowerCase()}" 
+             style="background:white; border-left:5px solid #f39c12; padding:20px; margin-bottom:15px; border-radius:8px; box-shadow:0 2px 10px rgba(0,0,0,0.05); display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:15px;">
+            
+            <div style="flex:1; min-width:250px;">
+                <h3 style="margin:0; color:#2c3e50;">${m.fullName}</h3>
+                <div style="font-size:12px; color:#7f8c8d; margin-bottom:8px;">${m.team} Team • ID: ${m.id}</div>
+                <div style="display:grid; grid-template-columns:auto 1fr; gap:5px 15px; font-size:14px;">
+                    <strong>📱 Phone:</strong> <span>${m.phone}</span>
+                    <strong>💰 Amount:</strong> <span style="color:#27ae60; font-weight:bold;">KSH ${m.fee || 0}</span>
+                    <strong>🧾 Tx Code:</strong> <span style="background:#eee; padding:2px 6px; border-radius:4px;">${m.transactionCode || 'N/A'}</span>
+                    <strong>📅 Date:</strong> <span>${new Date(m.accountCreated || Date.now()).toLocaleDateString()}</span>
+                </div>
+            </div>
+
+            <div style="display:flex; gap:10px;">
+                <button onclick="rejectPayment('${m.id}')" class="btn" style="background:#e74c3c; padding:10px 20px;">❌ Reject</button>
+                <button onclick="validatePayment('${m.id}')" class="btn" style="background:#27ae60; padding:10px 20px;">✅ Validate & Activate</button>
+            </div>
+        </div>
+    `).join('');
+}
+
+// 4. Search Filter
+window.filterPendingMembers = function() {
+    const term = document.getElementById('adminSearch').value.toLowerCase();
+    document.querySelectorAll('.pending-card').forEach(card => {
+        card.style.display = card.dataset.search.includes(term) ? 'flex' : 'none';
+    });
+};
+
+// 5. VALIDATE LOGIC (Triggers Email & Activation)
+window.validatePayment = async function(memberId) {
+    if (!confirm("Are you sure you want to approve this payment? This will ACTIVATE the account and send Welcome Emails.")) return;
+
+    showNotification("⏳ Activating account and sending emails...", "info");
+
+    // A. Find Member Data
+    let memberData = null;
+    const localMembers = JSON.parse(localStorage.getItem('tauAfricaDB') || '[]');
+    const localIndex = localMembers.findIndex(m => m.id === memberId);
+    
+    if (localIndex >= 0) memberData = localMembers[localIndex];
+
+    // B. Update Status to ACTIVE
+    if (memberData) {
+        memberData.paymentStatus = 'Paid';
+        memberData.status = 'Active';
+        memberData.validatedAt = new Date().toISOString();
+        
+        // Save Local
+        localMembers[localIndex] = memberData;
+        localStorage.setItem('tauAfricaDB', JSON.stringify(localMembers));
+    }
+
+    // Update Firestore
+    if (typeof firebase !== 'undefined' && firebase.apps.length) {
+        try {
+            await firebase.firestore().collection('members').doc(memberId).update({
+                paymentStatus: 'Paid',
+                status: 'Active',
+                validatedAt: firebase.firestore.FieldValue.serverTimestamp()
+            });
+        } catch(e) { console.error("Firestore update failed", e); }
+    }
+
+    // C. SEND EMAILS (The logic you wanted moved here)
+    if (memberData) {
+        try {
+            // 1. Send Welcome Email to Member
+            await window.sendWelcomeEmail(memberData);
+            
+            // 2. Send Notification to Admin
+            await window.sendEmailToAdmin(memberData, "ACCOUNT ACTIVATED - PAYMENT VERIFIED");
+            
+            showNotification(`✅ ${memberData.fullName} Activated! Emails Sent.`, "success");
+            
+            // Remove from list visually
+            loadPendingMembers();
+            
+        } catch (error) {
+            console.error(error);
+            showNotification("⚠️ Account activated but emails failed.", "error");
+        }
+    } else {
+        showNotification("❌ Error: Member data not found.", "error");
+    }
+};
+
+// 6. Reject Logic
+window.rejectPayment = async function(memberId) {
+    const reason = prompt("Enter reason for rejection (will be saved in notes):");
+    if (!reason) return;
+
+    // Update Local
+    const localMembers = JSON.parse(localStorage.getItem('tauAfricaDB') || '[]');
+    const index = localMembers.findIndex(m => m.id === memberId);
+    if(index >= 0) {
+        localMembers[index].paymentStatus = 'Rejected: ' + reason;
+        localStorage.setItem('tauAfricaDB', JSON.stringify(localMembers));
+    }
+
+    // Update Firestore
+    if (typeof firebase !== 'undefined') {
+        firebase.firestore().collection('members').doc(memberId).update({
+            paymentStatus: 'Rejected',
+            rejectionReason: reason
+        });
+    }
+
+    showNotification("❌ Payment Rejected.", "info");
+    loadPendingMembers();
+};
+
+        </script>
 </body>
 </html>
