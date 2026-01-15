@@ -20,6 +20,18 @@
     <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
     
     <style>
+        /* Find your style block and add this at the end */
+.step-label, .progress-label, .milestone-text {
+    display: none !important;
+}
+
+/* Optional: Center the icons since text is gone */
+.step {
+    margin-bottom: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
         /* Safari/iOS Compatibility Fixes */
 * {
     -webkit-tap-highlight-color: transparent;
