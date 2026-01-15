@@ -15877,37 +15877,54 @@ window.declineMember = async function(docId, name) {
         progressElement.style.width = `${progressPercentage}%`;
     }
     
-    function loadLevelChallenge() {
-        const container = document.getElementById('levelChallengeContainer');
-        if (!container) return;
+    window.handleKnowledgeSync = async function(earnedPoints, level) {
+    const user = firebase.auth().currentUser;
+    
+    // 1. CLEAR LOGIC: If starting fresh or new user login
+    if (level === 0) {
+        localStorage.removeItem('tau_knowledge_progress');
+        return;
+    }
+
+    // 2. SEAMLESS SYNC: Add iKbp to Member Account
+    if (user) {
+        const memberRef = firebase.firestore().collection('members').doc(user.uid);
         
-        const levelData = userProgress.levels[currentLevel];
-        
-        if (!levelData) {
-            initializeLevel(currentLevel);
-            loadLevelChallenge(); // Recursive call
+        try {
+            // Update balance and save level progress
+            await memberRef.update({
+                iKbpBalance: firebase.firestore.FieldValue.increment(earnedPoints),
+                lastCompletedLevel: level,
+                challengeCompleted: level >= 10
+            });
+
+            // Notification per level
+            showNotification(`🎯 Level ${level} Verified! +${earnedPoints} iKbp added to your TAU account.`, 'success');
+            
+            // If Level 10 is reached
+            if (level >= 10) {
+                alert("🎉 Congratulations! You've reached Level 10.\n\nYour challenge is complete. Join the Knowledge Portal for unlimited earning opportunities!");
+            }
+        } catch (e) {
+            console.error("Sync Error:", e);
+        }
+    } else {
+        // Public User Notification
+        showNotification(`🎮 Level ${level} Complete! Login to sync these ${earnedPoints} iKbp.`, 'info');
+    }
+};
+// Update the "Start Challenge" button to check for registration
+window.startLevelChallenge = function() {
+    const user = firebase.auth().currentUser;
+    if (!user) {
+        if(confirm("You are playing in Guest Mode. Points won't save to a TAU account. Login/Register now?")) {
+            showRealMemberLogin();
             return;
         }
-        
-        // Check if level is completed
-        if (levelData.completed) {
-            container.innerHTML = `
-                <div style="text-align: center; padding: 40px;">
-                    <div style="font-size: 60px; color: #2ecc71;">✅</div>
-                    <h2>Level ${currentLevel} Completed!</h2>
-                    <p>You earned ${levelData.earned} iKbp</p>
-                    <div style="background: #e8f5e9; padding: 20px; border-radius: 10px; margin: 20px 0;">
-                        <h3>Score: ${levelData.correctAnswers}/${levelData.totalQuestions}</h3>
-                        <p>Completion Date: ${new Date(levelData.completed).toLocaleDateString()}</p>
-                    </div>
-                    ${currentLevel < LEVEL_CONFIG.totalLevels ? 
-                        `<button class="btn" onclick="startNextLevel()" style="background: #2ecc71;">Start Level ${currentLevel + 1}</button>` :
-                        `<button class="btn" onclick="showFinalAchievement()" style="background: #ffd700;">🎉 View Final Achievement</button>`
-                    }
-                </div>
-            `;
-            return;
-        }
+    }
+    // Proceed to game...
+    initiateGameLevel();
+};
         
         // Load current question
         const currentQuestionIndex = levelData.currentQuestion || 0;
