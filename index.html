@@ -15282,31 +15282,41 @@ function filterValidationList() {
     renderValidationList(filtered);
 }
 
-window.approveMember = async function(docId, name) {
-    if(confirm(`Approve payment and activate ${name}?`)) {
+window.approveMember = async function(docId) {
+    if (!confirm("Confirm payment validation and activate this member?")) return;
+
+    const memberRef = firebase.firestore().collection('members').doc(docId);
+    const doc = await memberRef.get();
+
+    if (doc.exists) {
+        const memberData = doc.data();
+        const memberId = memberData.phone; // Member ID is the phone number
+        const tempPass = memberData.phone.slice(-4); // Last 4 digits
+
         try {
-            const memberRef = db.collection('members').doc(docId);
-            const memberData = (await memberRef.get()).data();
-            
+            // 1. Update Firestore Status
             await memberRef.update({ 
                 status: 'Approved',
-                validatedAt: new Date().toISOString() 
+                validatedAt: new Date().toISOString()
             });
 
-            // Trigger Activation Email via your 'mail' collection
-            await db.collection('mail').add({
-                to: memberData.email,
-                message: {
-                    subject: '🚀 Welcome to TAU Africa - Account Activated!',
-                    html: `<h3>Congratulations ${name}!</h3>
-                           <p>Your payment has been validated. Your account is now <strong>ACTIVE</strong>.</p>
-                           <p>You can now log in using your credentials.</p>`
-                }
+            // 2. Send WELCOME EMAIL to Member via EmailJS
+            // Make sure your EmailJS Template has these variables: {{to_name}}, {{to_email}}, {{member_id}}, {{password}}
+            await emailjs.send("service_tau", "template_welcome", {
+                to_name: memberData.fullName,
+                to_email: memberData.email,
+                member_id: memberId,
+                password: tempPass,
+                login_link: "https://magero1985.github.io/Tau-Africa/"
             });
 
-            notify(`✅ ${name} activated & Email queued!`, 'success');
+            showNotification(`✅ ${memberData.fullName} Activated & Welcome Email Sent!`, "success");
             loadPendingMembers();
-        } catch (e) { notify('Approval failed', 'error'); }
+            
+        } catch (error) {
+            console.error(error);
+            showNotification("⚠️ Status updated, but email failed to send.", "warning");
+        }
     }
 };
 
@@ -16049,39 +16059,42 @@ window.declineMember = async function(docId, name) {
         }
     };
     
-    function completeLevel() {
-        const levelData = userProgress.levels[currentLevel];
-        
-        // Calculate reward based on performance
-        const performance = levelData.correctAnswers / levelData.totalQuestions;
-        let reward = calculateLevelReward(currentLevel);
-        
-        if (performance >= 0.8) reward = Math.round(reward * 1.2); // 20% bonus for 80%+ score
-        else if (performance >= 0.6) reward = Math.round(reward * 1.1); // 10% bonus for 60%+ score
-        else if (performance < 0.4) reward = Math.round(reward * 0.8); // 20% penalty for <40% score
-        
-        // Update level data
-        levelData.completed = new Date().toISOString();
-        levelData.earned = reward;
-        levelData.reward = reward;
-        
-        // Update user total
-        userProgress.totalEarned += reward;
-        userProgress.lastActive = new Date().toISOString();
-        
-        // Award iKbp to member account
-        awardiKbpToMember(reward);
-        
-        // Save progress
-        saveProgress();
-        
-        // Show completion message
-        showNotification(`🎉 Level ${currentLevel} Completed! Earned ${reward} iKbp`, 'success');
-        
-        // Reload challenge to show completion screen
-        loadLevelChallenge();
-        updateProgressBar();
+    window.handleGameCompletion = async function(score, levelReached) {
+    const user = firebase.auth().currentUser;
+    const isAccountUser = !!user;
+
+    // 1. If Level 10 is reached
+    if (levelReached >= 10) {
+        alert(`🎉 CONGRATULATIONS!\n\nYou have completed Level 10. You have accrued ${score} iKbps.\n\nTo continue earning unlimited rewards, please visit the main Knowledge Portal.`);
+        // Disable game buttons
+        document.querySelectorAll('.game-btn').forEach(b => b.disabled = true);
     }
+
+    // 2. Handling Earnings & Restrictions
+    if (isAccountUser) {
+        const memberRef = firebase.firestore().collection('members').doc(user.uid);
+        const doc = await memberRef.get();
+        const data = doc.data();
+
+        // Prevent repeat: Check if they already finished the challenge
+        if (data.knowledgeChallengeCompleted) {
+            alert("You have already completed this challenge once. Visit the Portal to earn more!");
+            return;
+        }
+
+        // Update Global Balance
+        await memberRef.update({
+            iKbpBalance: firebase.firestore.FieldValue.increment(score),
+            knowledgeChallengeCompleted: levelReached >= 10,
+            lastGameLevel: levelReached
+        });
+        
+        showNotification(`💰 ${score} iKbps synced to your account!`, "success");
+    } else {
+        // Public User logic
+        alert("Great job! You played for fun. To earn and save iKbps, please create a TAU account. Note: Account holders start the earning program from Level 1.");
+    }
+};
     
     function awardiKbpToMember(amount) {
         // Get current member from session
