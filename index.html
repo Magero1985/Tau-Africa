@@ -16743,5 +16743,128 @@ style.innerHTML = `
 `;
 document.head.appendChild(style);
 </script>
+    <script>
+        // Function to toggle the Quick Menu Panel
+function toggleAccountPanel() {
+    let panel = document.getElementById('quickActionPanel');
+    if (panel) {
+        panel.remove();
+        return;
+    }
+
+    panel = document.createElement('div');
+    panel.id = 'quickActionPanel';
+    panel.style.cssText = `
+        position: fixed; bottom: 85px; left: 25px; z-index: 9999;
+        background: white; width: 220px; border-radius: 15px;
+        box-shadow: 0 5px 25px rgba(0,0,0,0.2); padding: 15px;
+        display: flex; flex-direction: column; gap: 10px;
+    `;
+
+    panel.innerHTML = `
+        <h4 style="margin:0; color:#4169e1; border-bottom:1px solid #eee; padding-bottom:5px;">Quick Actions</h4>
+        <button onclick="showSection('wallet')" class="btn-menu">🏠 My Wallet</button>
+        <button onclick="showSection('knowledge')" class="btn-menu">🧠 Play & Earn</button>
+        <button onclick="firebase.auth().signOut()" style="color:red; background:none; border:none; text-align:left; cursor:pointer;">Logout</button>
+    `;
+    document.body.appendChild(panel);
+}
+
+// Helper to switch tabs via the Quick Menu
+function showSection(tabId) {
+    const panel = document.getElementById('quickActionPanel');
+    if (panel) panel.remove(); // Close menu
+    
+    // Call your existing tab switcher function
+    if (typeof showTab === 'function') {
+        showTab(tabId);
+    } else {
+        window.location.hash = tabId; // Fallback
+    }
+    // ==========================================================
+// 🚀 ADDED: AUTH LISTENER & MENU INTERACTION
+// ==========================================================
+
+// 1. Firebase Auth Listener: Overwrites "Guest" data with "Member" data on login
+if (typeof firebase !== 'undefined') {
+    firebase.auth().onAuthStateChanged(async (user) => {
+        if (user) {
+            console.log("Member authenticated:", user.uid);
+            try {
+                // Fetch real data from Firestore
+                const doc = await firebase.firestore().collection('members').doc(user.uid).get();
+                if (doc.exists) {
+                    const data = doc.data();
+                    // Sync to variables used by the Knowledge Game
+                    window.userCurrentLevel = data.lastCompletedLevel || 1;
+                    window.userBalance = data.iKbpBalance || 0;
+                    
+                    // Update global session for the platform
+                    sessionStorage.setItem('tauCurrentUser', JSON.stringify(data));
+                }
+            } catch (err) {
+                console.error("Auth sync error:", err);
+            }
+        } else {
+            // Revert to Guest status
+            window.userCurrentLevel = 1;
+            window.userBalance = 0;
+        }
+        // Force refresh the floating menu appearance
+        if (typeof ensureLoginIndicator === 'function') ensureLoginIndicator();
+    });
+}
+
+// 2. Dashboard Interaction: This makes the floating menu actually open something
+window.showQuickMenu = function(member) {
+    let panel = document.getElementById('quickActionPanel');
+    if (panel) { panel.remove(); return; }
+
+    panel = document.createElement('div');
+    panel.id = 'quickActionPanel';
+    panel.style.cssText = `
+        position: fixed; bottom: 85px; left: 20px; z-index: 1000000;
+        background: white; width: 250px; border-radius: 15px;
+        box-shadow: 0 5px 25px rgba(0,0,0,0.3); padding: 15px;
+        display: flex; flex-direction: column; gap: 10px; border: 1px solid #4169e1;
+    `;
+
+    panel.innerHTML = `
+        <div style="padding-bottom:10px; border-bottom:1px solid #eee; margin-bottom:5px;">
+            <strong style="color:#4169e1;">Quick Access</strong>
+            <div style="font-size:12px; color:#666;">Balance: ${member.iKbpBalance || 0} iKbp</div>
+        </div>
+        <button onclick="window.location.hash='dashboard'; document.getElementById('quickActionPanel').remove();" class="btn" style="width:100%; text-align:left;">🏠 My Dashboard</button>
+        <button onclick="window.location.hash='knowledge-section'; document.getElementById('quickActionPanel').remove();" class="btn" style="width:100%; text-align:left;">🧠 Knowledge Game</button>
+        <button onclick="firebase.auth().signOut().then(() => location.reload())" style="color:red; background:none; border:none; padding:10px; cursor:pointer; text-align:left;">🚪 Logout</button>
+    `;
+    document.body.appendChild(panel);
+};
+
+// 3. Start Level Logic: Prevents repeats and ensures correct starting level
+window.startLevelChallenge = function() {
+    const user = firebase.auth().currentUser;
+    const currentLevel = window.userCurrentLevel || 1;
+
+    if (!user) {
+        alert("⚠️ GUEST MODE: You are playing for fun. To earn rewards that sync to your TAU account, please login first.");
+    }
+
+    if (currentLevel > 10) {
+        alert("🎉 You have completed all 10 Levels! Visit the Knowledge Portal for further earning opportunities.");
+        return;
+    }
+
+    // Launch the game at the specific level
+    console.log(`Starting Level ${currentLevel}`);
+    if (typeof openKnowledgeGame === 'function') {
+        openKnowledgeGame(currentLevel);
+    } else {
+        // Fallback: If your game uses a different function name, update it here
+        initiateLevel(currentLevel); 
+    }
+};
+}
+    </script>
 </body>
 </html>
