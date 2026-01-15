@@ -641,6 +641,24 @@ input[type="date"] {
             font-size: 14px;
             min-width: 120px;
         }
+        /* FORCE VISIBILITY FOR LOGIN INDICATOR */
+#loginStatusIndicator {
+    position: fixed !important;
+    top: 20px !important;
+    left: 20px !important;
+    z-index: 999999 !important; /* Highest Priority */
+    background: rgba(255, 255, 255, 0.95);
+    padding: 8px 15px;
+    border-radius: 50px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    cursor: pointer;
+    border: 2px solid #2ecc71;
+    animation: fadeIn 1s ease-in-out;
+}
+@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
     </style>
 </head>
 <body>
@@ -16330,5 +16348,39 @@ document.addEventListener('DOMContentLoaded', () => {
     }, 2000);
 });
 </script>
+ <script>
+(function() {
+    // Force Create Indicator
+    function ensureLoginIndicator() {
+        if (document.getElementById('loginStatusIndicator')) return;
+
+        const currentMember = window.TauDB?.getCurrentMember();
+        const div = document.createElement('div');
+        div.id = 'loginStatusIndicator';
+        div.onclick = window.showRealMemberLogin; // Default to login action
+
+        if (currentMember) {
+            div.innerHTML = `
+                <div style="width:10px; height:10px; background:#2ecc71; border-radius:50%;"></div>
+                <div>
+                    <div style="font-weight:bold; font-size:12px; color:#333;">${currentMember.fullName}</div>
+                    <div style="font-size:10px; color:#666;">${currentMember.id}</div>
+                </div>
+            `;
+            div.onclick = () => window.showRealMemberDashboard(currentMember);
+        } else {
+            div.innerHTML = `
+                <div style="width:10px; height:10px; background:#e74c3c; border-radius:50%; animation:pulse 2s infinite;"></div>
+                <div style="font-weight:bold; font-size:12px; color:#333;">Not Logged In</div>
+            `;
+        }
+        document.body.appendChild(div);
+    }
+
+    // Run immediately and every 2 seconds to ensure it stays
+    ensureLoginIndicator();
+    setInterval(ensureLoginIndicator, 2000);
+})();
+    </script>
 </body>
 </html>
