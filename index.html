@@ -16668,52 +16668,80 @@ window.rejectPayment = async function(memberId) {
         </script>
     <script>
     // ============================================
-// RESTORED FLOATING QUICK MENU
+// FULLY FUNCTIONAL QUICK MENU & DASHBOARD
 // ============================================
-function createLoginStatusIndicator() {
-    const existing = document.getElementById('loginStatusIndicator');
+function renderQuickMenu() {
+    const user = firebase.auth().currentUser;
+    const existing = document.getElementById('tauQuickMenu');
     if (existing) existing.remove();
 
-    const currentMember = window.TauDB?.getCurrentMember();
-    const indicator = document.createElement('div');
-    indicator.id = 'loginStatusIndicator';
-    
-    // Style for the floating button
-    indicator.style.cssText = `
-        position: fixed; bottom: 30px; left: 30px; z-index: 999999;
-        background: white; padding: 10px 20px; border-radius: 50px;
-        box-shadow: 0 4px 15px rgba(0,0,0,0.2); display: flex;
+    // The Floating Trigger Button
+    const trigger = document.createElement('div');
+    trigger.id = 'tauQuickMenu';
+    trigger.style.cssText = `
+        position: fixed; bottom: 25px; left: 25px; z-index: 9999;
+        background: white; padding: 10px 18px; border-radius: 50px;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.3); display: flex;
         align-items: center; gap: 10px; cursor: pointer; border: 2px solid #4169e1;
     `;
 
-    if (currentMember) {
-        // Logged In View
-        indicator.innerHTML = `
-            <div style="width: 10px; height: 10px; background: #2ecc71; border-radius: 50%;"></div>
-            <div style="display: flex; flex-direction: column;">
-                <span style="font-weight: bold; font-size: 14px;">${currentMember.fullName.split(' ')[0]}</span>
-                <span style="font-size: 12px; color: #4169e1;">💰 ${currentMember.iKbpBalance || 0} iKbp</span>
+    if (user) {
+        // Fetch balance from the member data global if available
+        const bal = window.currentMemberData?.iKbpBalance || 0;
+        trigger.innerHTML = `
+            <div style="width: 12px; height: 12px; background: #2ecc71; border-radius: 50%;"></div>
+            <div style="display:flex; flex-direction:column;">
+                <span style="font-size:12px; font-weight:bold; color:#333;">ACCOUNT ACTIVE</span>
+                <span style="font-size:11px; color:#4169e1;">💰 ${bal} iKbp</span>
             </div>
         `;
-        indicator.onclick = () => showRealMemberDashboard(currentMember);
+        trigger.onclick = toggleAccountPanel; // Opens the quick features
     } else {
-        // Guest View
-        indicator.innerHTML = `
-            <div style="width: 10px; height: 10px; background: #e74c3c; border-radius: 50%; animation: pulse 1.5s infinite;"></div>
-            <span style="font-weight: bold; font-size: 14px;">Guest Mode (Login)</span>
+        trigger.innerHTML = `
+            <div style="width: 12px; height: 12px; background: #e74c3c; border-radius: 50%;"></div>
+            <span style="font-size:13px; font-weight:bold;">GUEST: LOGIN</span>
         `;
-        indicator.onclick = () => showRealMemberLogin();
+        trigger.onclick = () => { showTab('login'); }; // Redirects to login tab
     }
-
-    document.body.appendChild(indicator);
+    document.body.appendChild(trigger);
 }
 
-// Ensure it re-renders on login/logout
-const originalLogout = window.TauDB.logout;
-window.TauDB.logout = function() {
-    originalLogout();
-    createLoginStatusIndicator();
-};
+// The Panel that opens when clicking the button
+function toggleAccountPanel() {
+    let panel = document.getElementById('quickActionPanel');
+    if (panel) {
+        panel.remove();
+        return;
+    }
+
+    panel = document.createElement('div');
+    panel.id = 'quickActionPanel';
+    panel.style.cssText = `
+        position: fixed; bottom: 85px; left: 25px; z-index: 9998;
+        background: white; width: 220px; border-radius: 15px;
+        box-shadow: 0 5px 25px rgba(0,0,0,0.2); padding: 15px;
+        display: flex; flex-direction: column; gap: 10px;
+        animation: slideUp 0.3s ease;
+    `;
+
+    panel.innerHTML = `
+        <h4 style="margin:0; color:#4169e1; border-bottom:1px solid #eee; padding-bottom:5px;">Quick Access</h4>
+        <button onclick="showTab('dashboard')" class="btn-menu">🏠 My Wallet</button>
+        <button onclick="showTab('knowledge')" class="btn-menu">🧠 Knowledge Game</button>
+        <button onclick="showTab('profile')" class="btn-menu">👤 My Profile</button>
+        <button onclick="handleLogout()" style="color:red; background:none; border:none; text-align:left; cursor:pointer; padding:5px;">Logout</button>
+    `;
+    document.body.appendChild(panel);
+}
+
+// Add these styles to your <style> section
+const style = document.createElement('style');
+style.innerHTML = `
+    @keyframes slideUp { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+    .btn-menu { background: #f8f9fa; border: none; padding: 10px; text-align: left; border-radius: 8px; cursor: pointer; font-weight: 500; transition: 0.2s; }
+    .btn-menu:hover { background: #eef2ff; color: #4169e1; }
+`;
+document.head.appendChild(style);
 </script>
 </body>
 </html>
