@@ -16340,36 +16340,41 @@ document.addEventListener('DOMContentLoaded', () => {
 </script>
  <script>
 (function() {
-    // Force Create Indicator
     function ensureLoginIndicator() {
-        if (document.getElementById('loginStatusIndicator')) return;
+        // Remove the old one if it exists to refresh the UI state
+        const old = document.getElementById('loginStatusIndicator');
+        if (old) old.remove();
 
         const currentMember = window.TauDB?.getCurrentMember();
         const div = document.createElement('div');
         div.id = 'loginStatusIndicator';
-        div.onclick = window.showRealMemberLogin; // Default to login action
-
+        
         if (currentMember) {
+            // LOGGED IN STATE: Shows Name & Email
             div.innerHTML = `
-                <div style="width:10px; height:10px; background:#2ecc71; border-radius:50%;"></div>
-                <div>
-                    <div style="font-weight:bold; font-size:12px; color:#333;">${currentMember.fullName}</div>
-                    <div style="font-size:10px; color:#666;">${currentMember.id}</div>
+                <div style="width:10px; height:10px; background:#2ecc71; border-radius:50%; box-shadow: 0 0 5px #2ecc71;"></div>
+                <div style="text-align: left;">
+                    <div style="font-weight:bold; font-size:12px; color:#2a5298; line-height:1.2;">${currentMember.fullName}</div>
+                    <div style="font-size:10px; color:#666;">${currentMember.email}</div>
                 </div>
             `;
-            div.onclick = () => window.showRealMemberDashboard(currentMember);
+            // Re-enables the "Quick Menu" with dashboard/profile/logout options
+            div.onclick = (e) => { e.stopPropagation(); window.showQuickMenu(currentMember); };
         } else {
+            // LOGGED OUT STATE: Shows "Not Logged In" pulsing
             div.innerHTML = `
                 <div style="width:10px; height:10px; background:#e74c3c; border-radius:50%; animation:pulse 2s infinite;"></div>
                 <div style="font-weight:bold; font-size:12px; color:#333;">Not Logged In</div>
             `;
+            // Shows the Login/Register selection menu
+            div.onclick = (e) => { e.stopPropagation(); window.showLoginRegisterMenu(); };
         }
         document.body.appendChild(div);
     }
 
-    // Run immediately and every 2 seconds to ensure it stays
     ensureLoginIndicator();
-    setInterval(ensureLoginIndicator, 2000);
+    // Refresh every 5 seconds to catch login/logout events
+    setInterval(ensureLoginIndicator, 5000);
 })();
     </script>
         <script>
@@ -16533,9 +16538,49 @@ window.validatePayment = async function(memberId) {
     // C. SEND EMAILS (The logic you wanted moved here)
     if (memberData) {
         try {
-            // 1. Send Welcome Email to Member
-            await window.sendWelcomeEmail(memberData);
-            
+            window.sendWelcomeEmail = function(member) {
+    if (!member || !member.email) {
+        console.error("❌ Cannot send email: Member data missing.");
+        return Promise.resolve(false);
+    }
+
+    const templateParams = {
+        to_email: member.email,        // FIXED: was formData.email
+        to_name: member.fullName,      // FIXED: was formData.fullName
+        subject: '🎉 Account Activated - Welcome to TAU Africa',
+        message: `
+Hello ${member.fullName},
+
+Congratulations! Your payment has been validated and your account is now ACTIVE.
+
+-----------------------------------------
+CRITICAL ACCOUNT DETAILS:
+-----------------------------------------
+👤 MEMBER ID: ${member.id} 
+🛡️ TEAM: ${member.team}
+🔗 REFERRAL CODE: ${member.referralCode || 'N/A'}
+📅 ACTIVATION DATE: ${new Date().toLocaleDateString()}
+-----------------------------------------
+
+You can now use your Member ID (${member.id}) to link with all other applications in the TAU Africa Ecosystem.
+
+Welcome to the community!
+
+Best Regards,
+TAU Africa Admin Team
+        `
+    };
+
+    return emailjs.send('service_tau', 'template_tau', templateParams)
+        .then(() => {
+            console.log("✅ Welcome Email sent with Member ID:", member.id);
+            return true;
+        })
+        .catch((error) => {
+            console.error("❌ Email failed:", error);
+            return false;
+        });
+};
             // 2. Send Notification to Admin
             await window.sendEmailToAdmin(memberData, "ACCOUNT ACTIVATED - PAYMENT VERIFIED");
             
