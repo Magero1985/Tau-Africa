@@ -16775,11 +16775,6 @@ if (typeof firebase !== 'undefined') {
         if (typeof ensureLoginIndicator === 'function') ensureLoginIndicator();
     });
 }
-    // ==========================================================
-// 🚀 UNIFIED TAU CORE LOGIC (CLEANED)
-// ==========================================================
-
-// 1. REPAIR FLOATING INDICATOR VISIBILITY & CLICKING
 window.ensureLoginIndicator = function() {
     let indicator = document.getElementById('loginStatusIndicator');
     if (!indicator) {
@@ -16788,15 +16783,25 @@ window.ensureLoginIndicator = function() {
         document.body.appendChild(indicator);
     }
 
-    // Get real-time data from Firestore/Session
     const currentMember = JSON.parse(sessionStorage.getItem('tauCurrentUser')) || window.TauDB?.getCurrentMember();
     
+    // FORCED VISIBILITY STYLES
     indicator.style.cssText = `
-        position: fixed; bottom: 30px; left: 30px; z-index: 999999;
-        background: white; padding: 10px 20px; border-radius: 50px;
-        box-shadow: 0 4px 15px rgba(0,0,0,0.3); display: flex;
-        align-items: center; gap: 10px; cursor: pointer; border: 2px solid #4169e1;
-        visibility: visible !important; display: flex !important;
+        position: fixed !important; 
+        bottom: 30px !important; 
+        left: 30px !important; 
+        z-index: 2147483647 !important; /* Maximum possible z-index */
+        background: white !important; 
+        padding: 10px 20px !important; 
+        border-radius: 50px !important;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.5) !important; 
+        display: flex !important;
+        align-items: center !important; 
+        gap: 10px !important; 
+        cursor: pointer !important; 
+        border: 2px solid #4169e1 !important;
+        visibility: visible !important;
+        opacity: 1 !important;
     `;
 
     if (currentMember && currentMember.fullName) {
@@ -16804,17 +16809,20 @@ window.ensureLoginIndicator = function() {
             <div style="width: 12px; height: 12px; background: #2ecc71; border-radius: 50%;"></div>
             <span style="font-weight: bold; font-size: 14px; color: #333;">${currentMember.fullName.split(' ')[0]} (💰${currentMember.iKbpBalance || 0})</span>
         `;
-        indicator.onclick = () => window.showQuickMenu(currentMember);
+        indicator.onclick = function(e) { 
+            e.preventDefault();
+            e.stopPropagation();
+            window.showQuickMenu(currentMember); 
+        };
     } else {
         indicator.innerHTML = `
             <div style="width: 12px; height: 12px; background: #e74c3c; border-radius: 50%;"></div>
             <span style="font-weight: bold; font-size: 14px; color: #333;">Guest: Login</span>
         `;
-        indicator.onclick = () => showTab('login');
+        indicator.onclick = function() { showTab('login'); };
     }
 };
 
-// 2. REPAIR QUICK MENU MODAL
 window.showQuickMenu = function(member) {
     let panel = document.getElementById('quickActionPanel');
     if (panel) { panel.remove(); return; }
@@ -16822,43 +16830,49 @@ window.showQuickMenu = function(member) {
     panel = document.createElement('div');
     panel.id = 'quickActionPanel';
     panel.style.cssText = `
-        position: fixed; bottom: 90px; left: 30px; z-index: 1000000;
-        background: white; width: 240px; border-radius: 15px;
-        box-shadow: 0 5px 25px rgba(0,0,0,0.4); padding: 15px;
-        display: flex; flex-direction: column; gap: 8px; border: 1px solid #4169e1;
+        position: fixed !important; bottom: 90px !important; left: 30px !important; 
+        z-index: 2147483647 !important; background: white !important; 
+        width: 240px !important; border-radius: 15px !important;
+        box-shadow: 0 5px 25px rgba(0,0,0,0.4) !important; padding: 15px !important;
+        display: flex !important; flex-direction: column !important; 
+        gap: 10px !important; border: 1px solid #4169e1 !important;
     `;
 
     panel.innerHTML = `
-        <div style="padding-bottom:8px; border-bottom:1px solid #eee; margin-bottom:5px;">
-            <strong style="color:#4169e1;">Quick Menu</strong>
+        <div style="border-bottom:1px solid #eee; padding-bottom:10px; margin-bottom:5px;">
+            <strong style="color:#4169e1;">TAU Quick Menu</strong>
         </div>
-        <button onclick="showTab('dashboard'); document.getElementById('quickActionPanel').remove();" class="btn" style="width:100%; text-align:left; background:#f8f9fa; color:#333; margin:2px 0;">🏠 My Dashboard</button>
-        <button onclick="showTab('knowledge-section'); document.getElementById('quickActionPanel').remove();" class="btn" style="width:100%; text-align:left; background:#f8f9fa; color:#333; margin:2px 0;">🧠 In-App Challenge</button>
+        <button onclick="showTab('dashboard'); document.getElementById('quickActionPanel').remove();" style="width:100%; text-align:left; padding:10px; background:#f8f9fa; border:none; border-radius:8px; cursor:pointer;">🏠 Dashboard</button>
+        <button onclick="showTab('knowledge-section'); document.getElementById('quickActionPanel').remove();" style="width:100%; text-align:left; padding:10px; background:#f8f9fa; border:none; border-radius:8px; cursor:pointer;">🧠 In-App Game</button>
         <button onclick="firebase.auth().signOut().then(() => location.reload())" style="color:red; background:none; border:none; padding:10px; cursor:pointer; text-align:left;">🚪 Logout</button>
     `;
     document.body.appendChild(panel);
 };
-
 // 3. REPAIR IN-APP GAME REDIRECTION
 window.startLevelChallenge = function() {
     const user = firebase.auth().currentUser;
     const currentLevel = window.userCurrentLevel || 1;
 
+    // 1. Level 10 Completion check
     if (currentLevel > 10) {
-        alert("🎉 Level 10 Complete! You've finished the TAU Challenge. Please use the Knowledge Portal App for further earnings.");
+        alert("🎉 TAU Challenge Complete! Use the Knowledge Portal App for more.");
         return;
     }
 
-    // This forces the app to stay IN-APP if the div exists
-    const inAppContainer = document.querySelector('.knowledge-container') || document.getElementById('knowledge-challenge-ui');
+    // 2. FORCE IN-APP DISPLAY
+    // We target the section ID directly. If it's hidden, we show it.
+    const internalTab = document.getElementById('knowledge-section');
     
-    if (inAppContainer) {
-        console.log("Starting In-App Challenge at Level:", currentLevel);
-        showTab('knowledge-section'); // Force switch to the internal tab
-        if (typeof startNewGame === 'function') startNewGame(currentLevel);
-        else if (typeof initGame === 'function') initGame(currentLevel);
+    if (internalTab) {
+        showTab('knowledge-section'); // This triggers your app's internal navigation
+        
+        // Trigger the internal game start
+        if (typeof initGame === 'function') initGame(currentLevel);
+        else if (typeof startNewGame === 'function') startNewGame(currentLevel);
+        
+        console.log("In-App Game Started at Level", currentLevel);
     } else {
-        // Only opens external if internal is missing
+        // Only if the internal section is completely missing from HTML
         const mode = user ? 'member' : 'guest';
         window.open(`https://magero1985.github.io/Tau-Africa/knowledge-App.html?mode=${mode}&level=${currentLevel}`, '_blank');
     }
