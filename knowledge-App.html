@@ -945,62 +945,65 @@ window.TauLevels.setUserProgress = function(progress) {
             startTimer();
         }
 
-        // Load a question
         function loadQuestion() {
-            const levelKey = `level${gameState.currentLevel}`;
-            gameState.levelQuestions = questionsDatabase[levelKey];
-            
-            if (!gameState.levelQuestions || gameState.levelQuestions.length === 0) {
-                console.error(`No questions found for ${levelKey}`);
-                return;
-            }
-            
-            const questionIndex = gameState.currentQuestion - 1;
-            const question = gameState.levelQuestions[questionIndex];
-            
-            if (!question) {
-                console.error(`No question found at index ${questionIndex}`);
-                return;
-            }
-            
-            document.getElementById('questionText').textContent = question.question;
-            document.getElementById('difficulty').textContent = getDifficultyText(gameState.currentLevel);
-            
-            // Update progress
-            const progressPercent = (gameState.currentQuestion / 10) * 100;
-            document.getElementById('questionProgress').style.width = `${progressPercent}%`;
-            
-            // Load options
-            const optionsContainer = document.getElementById('optionsContainer');
-            optionsContainer.innerHTML = '';
-            
-            gameState.correctAnswer = question.correct;
-            
-            question.options.forEach((option, index) => {
-                const optionElement = document.createElement('div');
-                optionElement.className = 'option';
-                optionElement.textContent = option;
-                optionElement.onclick = () => selectOption(index, optionElement);
-                optionsContainer.appendChild(optionElement);
-            });
-            
-            // Update hint
-            document.getElementById('hintArea').textContent = `Category: ${question.category} | ${question.hint}`;
-            
-            // Reset buttons
-            document.getElementById('submitBtn').disabled = true;
-            document.getElementById('nextBtn').disabled = true;
-            
-            // Reset selected option
-            gameState.selectedOption = null;
-            
-            // Reset timer
-            resetTimer();
-        }
-
-        // Select an option
-        // Select an option
+    const levelKey = `level${gameState.currentLevel}`;
+    gameState.levelQuestions = questionsDatabase[levelKey];
+    
+    if (!gameState.levelQuestions || gameState.levelQuestions.length === 0) {
+        console.error(`No questions found for ${levelKey}`);
+        return;
+    }
+    
+    const questionIndex = gameState.currentQuestion - 1;
+    const question = gameState.levelQuestions[questionIndex];
+    
+    if (!question) {
+        console.error(`No question found at index ${questionIndex}`);
+        return;
+    }
+    
+    document.getElementById('questionText').textContent = question.question;
+    document.getElementById('difficulty').textContent = getDifficultyText(gameState.currentLevel);
+    
+    // Update progress
+    const progressPercent = (gameState.currentQuestion / 10) * 100;
+    document.getElementById('questionProgress').style.width = `${progressPercent}%`;
+    
+    // Load options
+    const optionsContainer = document.getElementById('optionsContainer');
+    optionsContainer.innerHTML = '';
+    
+    gameState.correctAnswer = question.correct;
+    
+    question.options.forEach((option, index) => {
+        const optionElement = document.createElement('div');
+        optionElement.className = 'option';
+        optionElement.textContent = option;
+        optionElement.onclick = () => selectOption(index, optionElement);
+        optionsContainer.appendChild(optionElement);
+    });
+    
+    // Update hint
+    document.getElementById('hintArea').textContent = `Category: ${question.category} | ${question.hint}`;
+    
+    // Reset buttons
+    document.getElementById('submitBtn').disabled = true;
+    document.getElementById('nextBtn').disabled = true;
+    
+    // Reset selected option
+    gameState.selectedOption = null;
+    
+    // Reset timer
+    resetTimer();
+    
+    // ADD THIS LINE: Make sure options are clickable
+    document.querySelectorAll('.option').forEach(option => {
+        option.style.pointerEvents = 'auto';
+    });
+}
+// Select an option
 function selectOption(index, element) {
+    // Don't allow selection if already answered
     if (document.getElementById('submitBtn').disabled) return;
     
     // Remove selected class from all options
@@ -1015,8 +1018,13 @@ function selectOption(index, element) {
     // Enable submit button
     document.getElementById('submitBtn').disabled = false;
     
+    // Remove previous timeouts to prevent multiple submissions
+    if (window.answerTimeout) {
+        clearTimeout(window.answerTimeout);
+    }
+    
     // AUTO-SUBMIT: Submit answer after 1 second delay
-    setTimeout(() => {
+    window.answerTimeout = setTimeout(() => {
         if (!document.getElementById('submitBtn').disabled) {
             submitAnswer();
         }
@@ -1039,7 +1047,13 @@ function submitAnswer() {
     const options = document.querySelectorAll('.option');
     const correctIndex = gameState.correctAnswer;
     
-    // Mark correct and wrong answers
+    // Clear any pending timeout
+    if (window.answerTimeout) {
+        clearTimeout(window.answerTimeout);
+        window.answerTimeout = null;
+    }
+    
+    // IMMEDIATE VISUAL FEEDBACK
     options.forEach((option, index) => {
         if (index === correctIndex) {
             option.classList.add('correct');
@@ -1048,15 +1062,15 @@ function submitAnswer() {
         }
     });
     
-    // Calculate score
-    const timeBonus = Math.max(0, gameState.timer) * 2;
-    const difficultyMultiplier = gameState.difficultyMultipliers[gameState.currentLevel - 1];
-    const basePoints = 100;
-    
     // Disable all options to prevent further clicks
     options.forEach(option => {
         option.style.pointerEvents = 'none';
     });
+    
+    // Calculate score
+    const timeBonus = Math.max(0, gameState.timer) * 2;
+    const difficultyMultiplier = gameState.difficultyMultipliers[gameState.currentLevel - 1];
+    const basePoints = 100;
     
     if (gameState.selectedOption === correctIndex) {
         // Correct answer - Award iKbp
@@ -1102,7 +1116,7 @@ function submitAnswer() {
             completeLevel();
         }
     }, 2000);
-}
+        }
         // Complete level
 function completeLevel() {
     clearInterval(gameState.timerInterval);
