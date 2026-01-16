@@ -470,27 +470,6 @@ function showGuestModeBanner(guestId) {
     document.getElementById('tauConnectionBanner').style.display = 'none';
 }
 
-function syncEarningsToTAU() {
-    // Get current earnings from level system
-    const totalEarned = window.TauLevels?.getTotalEarned?.() || 0;
-    const currentLevel = window.TauLevels?.getCurrentLevel?.() || 1;
-    
-    if (totalEarned > 0) {
-        // Show confirmation
-        const confirmed = confirm(`Sync ${totalEarned} iKbp to your TAU account?`);
-        
-        if (confirmed) {
-            // In real implementation, this would make an API call
-            // For now, just show message
-            alert(`✅ ${totalEarned} iKbp will be added to your TAU account.\n\nNote: In production, this would sync automatically.`);
-            
-            // Redirect to TAU app to complete sync
-            window.open('https://magero1985.github.io/Tau-Africa/', '_blank');
-        }
-    } else {
-        alert('No earnings to sync yet! Complete some levels first.');
-    }
-}
 
 function openTAUMainApp() {
     window.open('https://magero1985.github.io/Tau-Africa/', '_blank');
@@ -1043,6 +1022,17 @@ function selectOption(index, element) {
         }
     }, 1000);
 }
+        // Move to next question
+function nextQuestion() {
+    if (gameState.currentQuestion < 10) {
+        gameState.currentQuestion++;
+        updateGameDisplay();
+        loadQuestion();
+    } else {
+        // Level complete
+        completeLevel();
+    }
+}
 function submitAnswer() {
     if (gameState.selectedOption === null) return;
     
@@ -1113,26 +1103,82 @@ function submitAnswer() {
         }
     }, 2000);
 }
+        // Complete level
+function completeLevel() {
+    clearInterval(gameState.timerInterval);
+    
+    // Calculate level performance
+    const correctPercentage = (gameState.questionsAnswered / 10) * 100;
+    const leveliKbp = iKbpTracker.getCurrentLevelEarnings();
+    
+    // Show celebration based on performance
+    let celebrationMessage = "";
+    let celebrationEmoji = "🎉";
+    
+    if (correctPercentage >= 90) {
+        celebrationMessage = "Outstanding! You're a Pan African expert!";
+        celebrationEmoji = "🏆";
+    } else if (correctPercentage >= 70) {
+        celebrationMessage = "Great job! You know your African history well!";
+        celebrationEmoji = "⭐";
+    } else if (correctPercentage >= 50) {
+        celebrationMessage = "Good work! Keep learning about Africa!";
+        celebrationEmoji = "👍";
+    } else {
+        celebrationMessage = "Good attempt! Review and try again for better results!";
+        celebrationEmoji = "📚";
+    }
+    
+    // Add iKbp message if earned
+    if (leveliKbp > 0) {
+        celebrationMessage += `\n\n💰 You earned ${leveliKbp} iKbp this level!`;
+    }
+    
+    // Update level indicator
+    document.getElementById(`level${gameState.currentLevel}`).classList.add('completed');
+    
+    // Check if game is complete
+    if (gameState.currentLevel >= 10) {
+        completeGame();
+        return;
+    }
+    
+    // Show level completion modal with celebration
+    document.getElementById('resultTitle').textContent = `Level ${gameState.currentLevel} Complete! ${celebrationEmoji}`;
+    document.getElementById('resultMessage').innerHTML = celebrationMessage.replace(/\n/g, '<br>');
+    document.getElementById('finalScore').textContent = gameState.score;
+    
+    // Update celebration emoji
+    document.getElementById('celebrationEmoji').textContent = celebrationEmoji;
+    
+    // Update next level button text
+    document.getElementById('nextLevelBtn').textContent = `Proceed to Level ${gameState.currentLevel + 1}`;
+    
+    document.getElementById('resultModal').style.display = 'flex';
+}
 
         // Complete entire game
         function completeGame() {
             document.getElementById('totalScore').textContent = gameState.score;
             document.getElementById('gameCompleteModal').style.display = 'flex';
         }
-
-        // Move to next level
-        function nextLevel() {
-            gameState.currentLevel++;
-            gameState.currentQuestion = 1;
-            gameState.questionsAnswered = 0;
-            
-            updateGameDisplay();
-            loadQuestion();
-            startTimer();
-            
-            closeResult();
+        
+// Move to next level
+function nextLevel() {
+    gameState.currentLevel++;
+    gameState.currentQuestion = 1;
+    gameState.questionsAnswered = 0;
+    gameState.selectedOption = null;
+    gameState.correctAnswer = null;
     
-        // Close result modal
+    updateGameDisplay();
+    loadQuestion();
+    startTimer();
+    
+    closeResult();
+}
+
+// Close result modal
 function closeResult() {
     document.getElementById('resultModal').style.display = 'none';
     
@@ -1285,42 +1331,8 @@ window.onload = function() {
         alert('No earnings to sync yet! Complete some questions first.\n\nTip: Answer questions correctly to earn iKbp!');
     }
  }
-    
-    // In Knowledge App
-function claimEarningsToTAU() {
-    const pending = JSON.parse(localStorage.getItem('knowledgeAppEarnings') || '[]');
-    const total = pending.reduce((sum, item) => sum + item.iKbp, 0);
-    
-    if (total > 0) {
-        // Show modal to register
-        const modal = document.createElement('div');
-        modal.className = 'modal';
-        modal.innerHTML = `
-            <div class="modal-content">
-                <h2>🎁 Claim Your ${total} iKbp!</h2>
-                <p>You've earned iKbp from the Knowledge App. Register with TAU Africa to add them to your account.</p>
-                
-                <div style="background: #fff3cd; padding: 15px; border-radius: 10px; margin: 15px 0;">
-                    <strong>Steps to claim:</strong>
-                    <ol style="text-align: left; margin: 10px 0;">
-                        <li>Register for TASK (KSH 500) or TALK (KSH 2,000)</li>
-                        <li>Login to your TAU account</li>
-                        <li>Return here to sync your earnings</li>
-                    </ol>
-                </div>
-                
-                <button class="btn" onclick="window.open('/index.html', '_blank')">
-                    Go Register Now
-                </button>
-                <button class="btn" onclick="saveEarningsForLater()">
-                    Save For Later
-                </button>
-            </div>
-        `;
-        document.body.appendChild(modal);
-    }
-}
 </script>
+
     <script>
         // Debug function to check if everything is working
 function debugGame() {
