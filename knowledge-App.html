@@ -601,7 +601,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 <p id="resultMessage">You have successfully completed this level!</p>
                 <p id="resultScore">Your score: <span id="finalScore">0</span></p>
                 <div style="margin-top: 30px;">
-                    <button class="btn btn-next" onclick="closeResult()" id="nextLevelBtn">Proceed to Next Level</button>
+                    <button class="btn btn-next" onclick="nextLevel()" id="nextLevelBtn">Proceed to Next Level</button>
                 </div>
             </div>
         </div>
@@ -611,7 +611,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 <div class="celebration">🏆</div>
                 <h2>Congratulations!</h2>
                 <p>You have successfully completed all 10 levels of the Pan African Knowledge Challenge!</p>
-                <p>You are now a certified Pan African Master with a deep understanding of African history, culture, and achievements.</p>
+                <p>You are now a certified Pan African Master with a deep understanding of African history, culture, and achievements, please proceed to TAU Africa Ecosystemt to participate.</p>
                 <p id="finalGameScore">Final Score: <span id="totalScore">0</span></p>
                 <div style="margin-top: 30px;">
                     <button class="btn btn-start" onclick="restartGame()">Play Again</button>
@@ -1114,45 +1114,6 @@ function submitAnswer() {
     }, 2000);
 }
 
-        // Complete level
-        function completeLevel() {
-            clearInterval(gameState.timerInterval);
-            
-            // Update level indicator
-            document.getElementById(`level${gameState.currentLevel}`).classList.add('completed');
-            
-            // Check if game is complete
-            if (gameState.currentLevel >= 10) {
-                completeGame();
-                return;
-            }
-            
-            // Show level completion modal
-            document.getElementById('resultTitle').textContent = `Level ${gameState.currentLevel} Complete!`;
-            document.getElementById('resultMessage').textContent = 
-                `You answered ${gameState.questionsAnswered} out of 10 questions correctly.`;
-            document.getElementById('finalScore').textContent = gameState.score;
-            
-            // Change celebration emoji based on performance
-            const correctPercentage = (gameState.questionsAnswered / 10) * 100;
-            let emoji = "🎉";
-            if (correctPercentage >= 90) emoji = "🏆";
-            else if (correctPercentage >= 70) emoji = "⭐";
-            else if (correctPercentage >= 50) emoji = "✓";
-            else emoji = "↻";
-            
-            document.getElementById('celebrationEmoji').textContent = emoji;
-            
-            // Update next level button text
-            if (gameState.currentLevel < 10) {
-                document.getElementById('nextLevelBtn').textContent = `Proceed to Level ${gameState.currentLevel + 1}`;
-            } else {
-                document.getElementById('nextLevelBtn').textContent = "View Final Results";
-            }
-            
-            document.getElementById('resultModal').style.display = 'flex';
-        }
-
         // Complete entire game
         function completeGame() {
             document.getElementById('totalScore').textContent = gameState.score;
@@ -1170,12 +1131,15 @@ function submitAnswer() {
             startTimer();
             
             closeResult();
-        }
-
+    
         // Close result modal
-        function closeResult() {
-            document.getElementById('resultModal').style.display = 'none';
-        }
+function closeResult() {
+    document.getElementById('resultModal').style.display = 'none';
+    
+    // IMPORTANT: Reset game state for next level
+    gameState.questionsAnswered = 0;
+    gameState.selectedOption = null;
+}
 
         // Restart game
         function restartGame() {
@@ -1320,76 +1284,7 @@ window.onload = function() {
     } else {
         alert('No earnings to sync yet! Complete some questions first.\n\nTip: Answer questions correctly to earn iKbp!');
     }
-}
-// Complete level
-function completeLevel() {
-    clearInterval(gameState.timerInterval);
-    
-    // Calculate level performance
-    const correctPercentage = (gameState.questionsAnswered / 10) * 100;
-    const leveliKbp = iKbpTracker.getCurrentLevelEarnings();
-    
-    // Show celebration based on performance
-    let celebrationMessage = "";
-    let celebrationEmoji = "🎉";
-    
-    if (correctPercentage >= 90) {
-        celebrationMessage = "Outstanding! You're a Pan African expert!";
-        celebrationEmoji = "🏆";
-    } else if (correctPercentage >= 70) {
-        celebrationMessage = "Great job! You know your African history well!";
-        celebrationEmoji = "⭐";
-    } else if (correctPercentage >= 50) {
-        celebrationMessage = "Good work! Keep learning about Africa!";
-        celebrationEmoji = "👍";
-    } else {
-        celebrationMessage = "Good attempt! Review and try again for better results!";
-        celebrationEmoji = "📚";
-    }
-    
-    // Add iKbp message if earned
-    if (leveliKbp > 0) {
-        celebrationMessage += `\n\n💰 You earned ${leveliKbp} iKbp this level!`;
-    }
-    
-    // Update level indicator
-    document.getElementById(`level${gameState.currentLevel}`).classList.add('completed');
-    
-    // Check if game is complete
-    if (gameState.currentLevel >= 10) {
-        completeGame();
-        return;
-    }
-    
-    // Show level completion modal with celebration
-    document.getElementById('resultTitle').textContent = `Level ${gameState.currentLevel} Complete! ${celebrationEmoji}`;
-    document.getElementById('resultMessage').innerHTML = celebrationMessage.replace(/\n/g, '<br>');
-    document.getElementById('finalScore').textContent = gameState.score;
-    
-    // Update celebration emoji
-    document.getElementById('celebrationEmoji').textContent = celebrationEmoji;
-    
-    // Update next level button text
-    document.getElementById('nextLevelBtn').textContent = `Proceed to Level ${gameState.currentLevel + 1}`;
-    
-    document.getElementById('resultModal').style.display = 'flex';
-        }
-// Modify the completeLevel function to use sync:
-function completeLevel() {
-    const levelData = userProgress.levels[currentLevel];
-    const reward = calculateLevelReward(currentLevel);
-    
-    // SYNC TO TAU MAIN APP
-    const syncSuccess = syncEarningsToMainApp(userProgress.userId, reward);
-    
-    if (syncSuccess) {
-        showNotification(`🎉 Level ${currentLevel} Completed! ${reward} iKbp synced to your TAU account.`, 'success');
-    } else {
-        showNotification(`🎉 Level ${currentLevel} Completed! ${reward} iKbp earned (pending registration).`, 'success');
-    }
-    
-    // Rest of existing code...
-}
+ }
     
     // In Knowledge App
 function claimEarningsToTAU() {
@@ -1427,87 +1322,30 @@ function claimEarningsToTAU() {
 }
 </script>
     <script>
-        // knowledge-App.html - Add this sync system
+        // Debug function to check if everything is working
+function debugGame() {
+    console.log('Game State:', gameState);
+    console.log('iKbp Tracker:', iKbpTracker);
+    console.log('Questions loaded:', gameState.levelQuestions?.length || 0);
+    console.log('Current question:', gameState.currentQuestion);
+    console.log('Selected option:', gameState.selectedOption);
+    
+    // Test buttons
+    const submitBtn = document.getElementById('submitBtn');
+    const nextBtn = document.getElementById('nextBtn');
+    console.log('Submit button disabled:', submitBtn.disabled);
+    console.log('Next button disabled:', nextBtn.disabled);
+    
+    alert('Check console for debug info');
+}
 
-// Earning System for Knowledge App
-window.KnowledgeEarnings = {
-    
-    // Store earnings locally
-    earn: function(amount, activityName) {
-        const memberId = getMemberIdFromURL(); // Get from URL params
-        
-        // 1. Store in Knowledge App
-        const earnings = JSON.parse(localStorage.getItem('knowledgeEarnings') || '[]');
-        earnings.push({
-            memberId: memberId,
-            amount: amount,
-            activity: activityName,
-            timestamp: new Date().toISOString(),
-            synced: false
-        });
-        localStorage.setItem('knowledgeEarnings', JSON.stringify(earnings));
-        
-        // 2. Queue for sync to Main App
-        this.queueForSync(memberId, amount, activityName);
-        
-        // 3. Show confirmation
-        this.showConfirmation(amount, activityName);
-    },
-    
-    // Queue for Main App sync
-    queueForSync: function(memberId, amount, activityName) {
-        // Store in shared storage
-        const syncQueue = JSON.parse(localStorage.getItem('tauEarningsSync') || '[]');
-        syncQueue.push({
-            memberId: memberId,
-            amount: amount,
-            activity: activityName,
-            timestamp: new Date().toISOString(),
-            source: 'knowledge_app'
-        });
-        localStorage.setItem('tauEarningsSync', JSON.stringify(syncQueue));
-        
-        console.log(`📤 Earnings queued for sync: ${amount} iKbp`);
-    },
-    
-    // Manual sync button
-    syncNow: function() {
-        const memberId = getMemberIdFromURL();
-        const earnings = JSON.parse(localStorage.getItem('knowledgeEarnings') || '[]');
-        const unsynced = earnings.filter(e => !e.synced && e.memberId === memberId);
-        
-        if (unsynced.length > 0) {
-            const total = unsynced.reduce((sum, e) => sum + e.amount, 0);
-            
-            // Open Main App with sync parameters
-            const syncUrl = `https://magero1985.github.io/Tau-Africa/?sync=true&earned=${total}&memberId=${memberId}`;
-            window.open(syncUrl, '_blank');
-            
-            // Mark as synced
-            unsynced.forEach(e => e.synced = true);
-            localStorage.setItem('knowledgeEarnings', JSON.stringify(earnings));
-            
-            alert(`✅ ${total} iKbp queued for sync!`);
-        } else {
-            alert('No new earnings to sync.');
-        }
-    },
-    
-    // Show confirmation
-    showConfirmation: function(amount, activityName) {
-        // Show popup notification
-        const notification = document.createElement('div');
-        notification.innerHTML = `
-            <div style="position: fixed; top: 20px; right: 20px; background: #2ecc71; color: white; 
-                        padding: 15px; border-radius: 10px; z-index: 10000; box-shadow: 0 5px 15px rgba(0,0,0,0.3);">
-                <strong>💰 +${amount} iKbp Earned!</strong><br>
-                <small>${activityName}</small>
-            </div>
-        `;
-        document.body.appendChild(notification);
-        setTimeout(() => notification.remove(), 5000);
+// Call debug on F12 key press
+document.addEventListener('keydown', function(e) {
+    if (e.key === 'F12') {
+        e.preventDefault();
+        debugGame();
     }
-};
+});
     </script>
 </body>
 </html>
