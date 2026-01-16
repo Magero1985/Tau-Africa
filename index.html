@@ -16628,11 +16628,10 @@ window.rejectPayment = async function(memberId) {
 
 </script>
     <script>
-        // ==========================================================
-// 🛡️ FINAL UNIFIED TAU SYSTEM (CLEAN & CONFLICT-FREE)
+         // ==========================================================
+// 🛡️ FINAL REPAIR: INDICATOR & IN-APP GAME REDIRECTION
 // ==========================================================
 
-// 1. FIX VISIBILITY: Force the button to show regardless of CSS
 window.ensureLoginIndicator = function() {
     let indicator = document.getElementById('loginStatusIndicator');
     if (!indicator) {
@@ -16641,20 +16640,20 @@ window.ensureLoginIndicator = function() {
         document.body.appendChild(indicator);
     }
 
-    // Attempt to get user from all possible storage sources
-    const currentMember = JSON.parse(sessionStorage.getItem('tauCurrentUser')) || 
-                          JSON.parse(localStorage.getItem('tauCurrentUser')) ||
-                          window.currentMemberData;
+    // 1. DATA FIX: Check all possible storage for the member data
+    const currentMember = window.TauDB?.getCurrentMember() || 
+                          JSON.parse(sessionStorage.getItem('tauCurrentUser')) ||
+                          JSON.parse(localStorage.getItem('tauAfricaMember'));
 
-    // FORCED CSS: Higher Z-Index and fixed visibility
+    // 2. VISIBILITY FIX: Forced Z-Index and Display
     indicator.style.cssText = `
         position: fixed !important; bottom: 30px !important; left: 30px !important;
         z-index: 9999999 !important; background: white !important; 
         padding: 12px 22px !important; border-radius: 50px !important;
-        box-shadow: 0 4px 20px rgba(0,0,0,0.4) !important; display: flex !important;
+        box-shadow: 0 4px 25px rgba(0,0,0,0.4) !important; display: flex !important;
         align-items: center !important; gap: 10px !important; cursor: pointer !important;
         border: 2px solid #4169e1 !important; visibility: visible !important;
-        opacity: 1 !important; transition: all 0.3s ease !important;
+        opacity: 1 !important;
     `;
 
     if (currentMember && currentMember.fullName) {
@@ -16662,7 +16661,7 @@ window.ensureLoginIndicator = function() {
             <div style="width: 12px; height: 12px; background: #2ecc71; border-radius: 50%;"></div>
             <span style="font-weight: bold; font-size: 14px; color: #333;">${currentMember.fullName.split(' ')[0]} (💰${currentMember.iKbpBalance || 0})</span>
         `;
-        indicator.onclick = () => window.showQuickMenu(currentMember);
+        indicator.onclick = (e) => { e.stopPropagation(); window.showQuickMenu(currentMember); };
     } else {
         indicator.innerHTML = `
             <div style="width: 12px; height: 12px; background: #e74c3c; border-radius: 50%;"></div>
@@ -16672,7 +16671,6 @@ window.ensureLoginIndicator = function() {
     }
 };
 
-// 2. FIX INTERACTION: The Menu Panel
 window.showQuickMenu = function(member) {
     let panel = document.getElementById('quickActionPanel');
     if (panel) { panel.remove(); return; }
@@ -16688,46 +16686,48 @@ window.showQuickMenu = function(member) {
 
     panel.innerHTML = `
         <div style="border-bottom:1px solid #eee; padding-bottom:8px; margin-bottom:8px;">
-            <strong style="color:#4169e1;">TAU Quick Menu</strong>
+            <strong style="color:#4169e1;">Quick Actions</strong>
         </div>
-        <button onclick="showTab('dashboard'); document.getElementById('quickActionPanel').remove();" style="width:100%; text-align:left; padding:12px; background:#f4f7fe; border:none; border-radius:8px; cursor:pointer; margin-bottom:5px;">🏠 Dashboard</button>
-        <button onclick="showTab('knowledge-section'); document.getElementById('quickActionPanel').remove();" style="width:100%; text-align:left; padding:12px; background:#f4f7fe; border:none; border-radius:8px; cursor:pointer; margin-bottom:5px;">🧠 TAU In-App Challenge</button>
-        <button onclick="firebase.auth().signOut().then(() => location.reload())" style="color:#e74c3c; background:none; border:none; padding:10px; cursor:pointer; font-weight:bold;">🚪 Logout</button>
+        <button onclick="showTab('dashboard'); document.getElementById('quickActionPanel').remove();" style="width:100%; text-align:left; padding:12px; background:#f4f7fe; border:none; border-radius:8px; cursor:pointer; margin-bottom:5px; font-weight:500;">🏠 My Wallet</button>
+        <button onclick="showTab('knowledge-section'); document.getElementById('quickActionPanel').remove();" style="width:100%; text-align:left; padding:12px; background:#f4f7fe; border:none; border-radius:8px; cursor:pointer; margin-bottom:5px; font-weight:500;">🧠 In-App TAU Challenge</button>
+        <button onclick="firebase.auth().signOut().then(() => { localStorage.clear(); location.reload(); })" style="color:#e74c3c; background:none; border:none; padding:10px; cursor:pointer; font-weight:bold;">🚪 Logout</button>
     `;
     document.body.appendChild(panel);
 };
 
-// 3. FIX REDIRECTION: Force In-App TAU Challenge
+// 3. REDIRECTION FIX: Stay In-App
 window.startLevelChallenge = function() {
     const user = firebase.auth().currentUser;
+    // Get level from database or session
     const currentLevel = window.userCurrentLevel || 1;
 
     if (currentLevel > 10) {
-        alert("🎉 TAU Challenge Complete! Use the Knowledge Portal App for more.");
+        alert("🎉 Level 10 Complete! You've finished the TAU Challenge.");
         return;
     }
 
-    // This forces the app to STAY IN-APP if the section exists
-    if (document.getElementById('knowledge-section')) {
-        showTab('knowledge-section');
-        // Ensure your internal game starter function is called
+    // TARGET THE SPECIFIC SECTION ID IN YOUR HTML
+    const inAppTarget = document.getElementById('knowledge-section');
+    
+    if (inAppTarget) {
+        showTab('knowledge-section'); // Switch visible tab
+        // Initialize the local game logic
         if (typeof initGame === 'function') initGame(currentLevel);
         else if (typeof startNewGame === 'function') startNewGame(currentLevel);
     } else {
-        // Fallback only
+        // Fallback
         const mode = user ? 'member' : 'guest';
         window.open(`https://magero1985.github.io/Tau-Africa/knowledge-App.html?mode=${mode}&level=${currentLevel}`, '_blank');
     }
 };
 
-// 4. RUN ON LOAD:
+// Start the system
 document.addEventListener('DOMContentLoaded', () => {
-    // Wait for Firebase/DB to initialize then show indicator
-    setTimeout(window.ensureLoginIndicator, 2500);
+    setTimeout(window.ensureLoginIndicator, 2000);
 });
-
-// Update the indicator when the user clicks anywhere (sync balance)
-document.addEventListener('click', window.ensureLoginIndicator);
-    </script>
+// Sync when clicking in app
+document.addEventListener('click', () => {
+   if (typeof window.ensureLoginIndicator === 'function') window.ensureLoginIndicator();
+});</script>
 </body>
 </html>
