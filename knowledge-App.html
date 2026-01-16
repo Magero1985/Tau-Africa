@@ -926,7 +926,7 @@ if (memberId) {
         }
 
         // Select an option
-        function selectOption(index) {
+       function selectOption(index) {
     if (state.answered) return;
     state.answered = true;
 
@@ -936,15 +936,16 @@ if (memberId) {
     if (index === q.correct) {
         options[index].classList.add('correct');
         state.score += 10;
-        // REAL-TIME: Add to unsynced earnings immediately
-        TauKnowledgeTracker.addEarning(10, `Level ${state.currentLevel + 1} Question`);
+        // Immediate Earning Save
+        TauKnowledgeTracker.addEarning(10, `Lvl ${state.currentLevel + 1} Q${state.currentQuestion + 1}`);
     } else {
         options[index].classList.add('wrong');
         options[q.correct].classList.add('correct');
     }
 
-    // AUTO-NEXT: Wait 1.5 seconds then proceed automatically
+    // AUTO-NEXT LOGIC (1.5 seconds)
     setTimeout(() => {
+        state.answered = false; // Reset for next question
         if (state.currentQuestion < questions[state.currentLevel].length - 1) {
             state.currentQuestion++;
             renderQuestion();
@@ -952,7 +953,7 @@ if (memberId) {
             completeLevel();
         }
     }, 1500);
-}
+       }
 
         // Submit answer
         function submitAnswer() {
