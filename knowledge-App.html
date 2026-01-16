@@ -926,20 +926,33 @@ if (memberId) {
         }
 
         // Select an option
-        function selectOption(index, element) {
-            // Remove selection from all options
-            document.querySelectorAll('.option').forEach(opt => {
-                opt.classList.remove('selected');
-                opt.classList.remove('correct', 'wrong');
-            });
-            
-            // Add selection to clicked option
-            element.classList.add('selected');
-            gameState.selectedOption = index;
-            
-            // Enable submit button
-            document.getElementById('submitBtn').disabled = false;
+        function selectOption(index) {
+    if (state.answered) return;
+    state.answered = true;
+
+    const q = questions[state.currentLevel][state.currentQuestion];
+    const options = document.querySelectorAll('.option');
+    
+    if (index === q.correct) {
+        options[index].classList.add('correct');
+        state.score += 10;
+        // REAL-TIME: Add to unsynced earnings immediately
+        TauKnowledgeTracker.addEarning(10, `Level ${state.currentLevel + 1} Question`);
+    } else {
+        options[index].classList.add('wrong');
+        options[q.correct].classList.add('correct');
+    }
+
+    // AUTO-NEXT: Wait 1.5 seconds then proceed automatically
+    setTimeout(() => {
+        if (state.currentQuestion < questions[state.currentLevel].length - 1) {
+            state.currentQuestion++;
+            renderQuestion();
+        } else {
+            completeLevel();
         }
+    }, 1500);
+}
 
         // Submit answer
         function submitAnswer() {
