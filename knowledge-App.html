@@ -606,115 +606,7 @@ document.addEventListener('DOMContentLoaded', function() {
             </div>
         </div>
     </div>
-    <script>
-        // Game state
-        let gameState = {
-            currentLevel: 1,
-            currentQuestion: 1,
-            score: 0,
-            selectedOption: null,
-            correctAnswer: null,
-            questionsAnswered: 0,
-            timer: 30,
-            timerInterval: null,
-            gameStarted: false,
-            levelQuestions: [],
-            difficultyMultipliers: [1, 1.2, 1.5, 1.8, 2.0, 2.3, 2.7, 3.1, 3.6, 4.0]
-        };
-        // ============================================
-// iKbp TRACKING SYSTEM
-// ============================================
 
-// Add this after gameState declaration (around line 694)
-const iKbpTracker = {
-    totalEarned: 0,
-    levelEarnings: {},
-    
-    addEarnings: function(amount, level, reason) {
-        this.totalEarned += amount;
-        
-        // Store per-level earnings
-        if (!this.levelEarnings[level]) {
-            this.levelEarnings[level] = 0;
-        }
-        this.levelEarnings[level] += amount;
-        
-        console.log(`💰 +${amount} iKbp earned! (${reason})`);
-        
-        // Store in localStorage for sync
-        this.saveToLocalStorage();
-        
-        return amount;
-    },
-    
-    getTotalEarned: function() {
-        return this.totalEarned;
-    },
-    
-    getCurrentLevelEarnings: function() {
-        const level = gameState.currentLevel;
-        return this.levelEarnings[level] || 0;
-    },
-    
-    saveToLocalStorage: function() {
-        const earningData = {
-            totalEarned: this.totalEarned,
-            levelEarnings: this.levelEarnings,
-            lastUpdated: new Date().toISOString()
-        };
-        
-        // Store for TAU sync
-        localStorage.setItem('tauKnowledgeEarnings', JSON.stringify(earningData));
-        
-        // Also update gameState for immediate access
-        if (window.TauLevels) {
-            window.TauLevels.totalEarned = this.totalEarned;
-        } else {
-            window.TauLevels = { totalEarned: this.totalEarned };
-        }
-    },
-    
-    loadFromLocalStorage: function() {
-        const saved = localStorage.getItem('tauKnowledgeEarnings');
-        if (saved) {
-            try {
-                const data = JSON.parse(saved);
-                this.totalEarned = data.totalEarned || 0;
-                this.levelEarnings = data.levelEarnings || {};
-                
-                // Update gameState
-                if (window.TauLevels) {
-                    window.TauLevels.totalEarned = this.totalEarned;
-                } else {
-                    window.TauLevels = { totalEarned: this.totalEarned };
-                }
-            } catch (e) {
-                console.log('Could not load saved earnings');
-            }
-        }
-    }
-};
-
-// Initialize on page load
-iKbpTracker.loadFromLocalStorage();
-
-// Add these helper functions to window for TAU sync
-window.TauLevels = window.TauLevels || {};
-window.TauLevels.getTotalEarned = function() {
-    return iKbpTracker.totalEarned || 0;
-};
-
-window.TauLevels.getCurrentLevel = function() {
-    return gameState?.currentLevel || 1;
-};
-
-window.TauLevels.setUserProgress = function(progress) {
-    if (progress.totalEarned) {
-        iKbpTracker.totalEarned = progress.totalEarned;
-        iKbpTracker.levelEarnings = progress.levelEarnings || {};
-        iKbpTracker.saveToLocalStorage();
-    }
-};
     <script>
         let gameState = {
             currentLevel: 1,
@@ -1206,4 +1098,4 @@ window.TauLevels.setUserProgress = function(progress) {
         };
     </script>
 </body>
-</html>
+                                                                              </html>
