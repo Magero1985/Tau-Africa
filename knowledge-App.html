@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Pan African Knowledge Challenge</title>
+    <title>Pan African Knowledge Challenge - TAU Edition</title>
     <style>
         * {
             margin: 0;
@@ -23,6 +23,74 @@
             max-width: 1000px;
             margin: 0 auto;
             padding: 20px;
+        }
+
+        /* TAU Connection Banner */
+        .tau-banner {
+            background: linear-gradient(45deg, #4169e1, #2ecc71);
+            color: white;
+            padding: 15px 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .tau-banner.guest {
+            background: linear-gradient(45deg, #ffd700, #f39c12);
+            color: #333;
+        }
+
+        .tau-info {
+            flex: 1;
+        }
+
+        .tau-info strong {
+            display: block;
+            font-size: 1.1rem;
+            margin-bottom: 5px;
+        }
+
+        .tau-info small {
+            opacity: 0.9;
+            font-size: 0.9rem;
+        }
+
+        .tau-actions {
+            display: flex;
+            gap: 10px;
+        }
+
+        .tau-btn {
+            padding: 8px 15px;
+            border: none;
+            border-radius: 20px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.3s ease;
+        }
+
+        .tau-btn:hover {
+            transform: scale(1.05);
+        }
+
+        .tau-btn.primary {
+            background: white;
+            color: #4169e1;
+        }
+
+        .tau-btn.secondary {
+            background: rgba(255,255,255,0.2);
+            color: white;
+            border: 1px solid white;
+        }
+
+        .tau-btn.guest-register {
+            background: #333;
+            color: #ffd700;
         }
 
         .header {
@@ -45,6 +113,16 @@
             color: #f7d560;
             font-size: 1.2rem;
             margin-bottom: 20px;
+        }
+
+        .earnings-display {
+            background: linear-gradient(135deg, #f7a440, #e1701a);
+            padding: 15px;
+            border-radius: 10px;
+            text-align: center;
+            margin-bottom: 20px;
+            font-size: 1.5rem;
+            font-weight: bold;
         }
 
         .game-container {
@@ -114,6 +192,7 @@
             font-weight: bold;
             font-size: 1.2rem;
             transition: all 0.3s ease;
+            position: relative;
         }
 
         .level-dot.active {
@@ -126,6 +205,21 @@
         .level-dot.completed {
             background: #4361ee;
             color: white;
+        }
+
+        .level-dot.completed::after {
+            content: '✓';
+            position: absolute;
+            top: -5px;
+            right: -5px;
+            background: #2ecc71;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            font-size: 0.8rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
 
         .question-container {
@@ -292,6 +386,51 @@
             padding: 40px 20px;
         }
 
+        .mode-selection {
+            display: flex;
+            gap: 20px;
+            justify-content: center;
+            margin-top: 30px;
+            flex-wrap: wrap;
+        }
+
+        .mode-card {
+            background: rgba(30, 60, 114, 0.7);
+            padding: 30px;
+            border-radius: 15px;
+            border: 2px solid #4cc9f0;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            min-width: 250px;
+        }
+
+        .mode-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 30px rgba(76, 201, 240, 0.4);
+        }
+
+        .mode-card.selected {
+            border-color: #e1701a;
+            background: rgba(225, 112, 26, 0.3);
+        }
+
+        .mode-card h3 {
+            color: #4cc9f0;
+            margin-bottom: 15px;
+            font-size: 1.5rem;
+        }
+
+        .mode-card p {
+            color: #f1f1f1;
+            margin-bottom: 10px;
+        }
+
+        .mode-card .highlight {
+            color: #f7a440;
+            font-weight: bold;
+            font-size: 1.2rem;
+        }
+
         .btn-start {
             background: linear-gradient(90deg, #e1701a, #f7a440);
             color: white;
@@ -307,6 +446,12 @@
         .btn-start:hover {
             transform: scale(1.05);
             box-shadow: 0 10px 25px rgba(225, 112, 26, 0.5);
+        }
+
+        .btn-start:disabled {
+            background: #666;
+            cursor: not-allowed;
+            transform: none;
         }
 
         .timer {
@@ -345,194 +490,72 @@
             .btn {
                 width: 100%;
             }
+
+            .mode-selection {
+                flex-direction: column;
+            }
         }
     </style>
 </head>
 <body>
-    <!-- TAU Connection Banner -->
-<div id="tauConnectionBanner" style="display: none; 
-     background: linear-gradient(45deg, #4169e1, #2ecc71); 
-     color: white; padding: 15px 20px; border-radius: 10px; 
-     margin: 20px; text-align: center;">
-    
-    <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap;">
-        <div style="text-align: left;">
-            <strong>🔗 Connected to TAU Africa</strong>
-            <div style="font-size: 12px; opacity: 0.9;" id="memberInfo">
-                Loading member info...
-            </div>
-        </div>
-        <div>
-            <button onclick="syncEarningsToTAU()" style="background: white; color: #4169e1; 
-                    border: none; padding: 8px 15px; border-radius: 20px; cursor: pointer; 
-                    font-weight: bold; margin-right: 10px;">
-                💰 Sync Earnings
-            </button>
-            <button onclick="openTAUMainApp()" style="background: rgba(255,255,255,0.2); 
-                    color: white; border: 1px solid white; padding: 8px 15px; 
-                    border-radius: 20px; cursor: pointer;">
-                Open TAU App
-            </button>
-        </div>
-    </div>
-</div>
-
-<!-- Guest Mode Banner -->
-<div id="guestModeBanner" style="display: none; 
-     background: linear-gradient(45deg, #ffd700, #f39c12); 
-     color: #333; padding: 15px 20px; border-radius: 10px; 
-     margin: 20px; text-align: center;">
-    
-    <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap;">
-        <div style="text-align: left;">
-            <strong>🌍 Playing as Guest</strong>
-            <div style="font-size: 12px; opacity: 0.8;">
-                Earn iKbp now, claim when you register!
-            </div>
-        </div>
-        <div>
-            <button onclick="registerWithTAU()" style="background: #333; color: #ffd700; 
-                    border: none; padding: 8px 20px; border-radius: 20px; cursor: pointer; 
-                    font-weight: bold;">
-                🎯 Register with TAU
-            </button>
-        </div>
-    </div>
-</div>
-
-<script>
-// ============================================
-// TAU CONNECTION HANDLER for Knowledge App
-// ============================================
-
-function checkTAUConnection() {
-    const urlParams = new URLSearchParams(window.location.search);
-    const type = urlParams.get('type');
-    const memberId = urlParams.get('memberId');
-    const guestId = urlParams.get('guestId');
-    const progress = urlParams.get('progress');
-    
-    if (type === 'member' && memberId) {
-        // Connected as TAU member
-        showTAUConnectionBanner(memberId, urlParams);
-        
-        // Load any existing progress
-        if (progress) {
-            try {
-                const userProgress = JSON.parse(decodeURIComponent(progress));
-                window.TauLevels?.setUserProgress?.(userProgress);
-            } catch (e) {
-                console.log('Could not load progress from URL');
-            }
-        }
-        
-        return { type: 'member', id: memberId };
-        
-    } else if (type === 'guest' && guestId) {
-        // Playing as guest
-        showGuestModeBanner(guestId);
-        
-        // Load guest progress
-        const guestProgress = localStorage.getItem(`tauGuestProgress_${guestId}`);
-        if (guestProgress) {
-            try {
-                const progress = JSON.parse(guestProgress);
-                window.TauLevels?.setUserProgress?.(progress);
-            } catch (e) {
-                console.log('Could not load guest progress');
-            }
-        }
-        
-        return { type: 'guest', id: guestId };
-        
-    } else {
-        // No connection - default to guest
-        const defaultGuestId = 'GUEST-' + Date.now().toString(36).toUpperCase();
-        showGuestModeBanner(defaultGuestId);
-        return { type: 'guest', id: defaultGuestId };
-    }
-}
-
-function showTAUConnectionBanner(memberId, urlParams) {
-    const banner = document.getElementById('tauConnectionBanner');
-    const memberInfo = document.getElementById('memberInfo');
-    
-    // Extract member info from URL
-    const name = urlParams.get('name') || 'Member';
-    const email = urlParams.get('email') || '';
-    const team = urlParams.get('team') || '';
-    const level = urlParams.get('level') || '1';
-    
-    memberInfo.innerHTML = `
-        ${name} | ${team ? team + ' Team' : ''} | Level ${level}
-        ${email ? `<br><small>${email}</small>` : ''}
-    `;
-    
-    banner.style.display = 'block';
-    document.getElementById('guestModeBanner').style.display = 'none';
-}
-
-function showGuestModeBanner(guestId) {
-    const banner = document.getElementById('guestModeBanner');
-    
-    // Store guest ID in localStorage for this session
-    localStorage.setItem('currentGuestId', guestId);
-    
-    banner.style.display = 'block';
-    document.getElementById('tauConnectionBanner').style.display = 'none';
-}
-
-
-function openTAUMainApp() {
-    window.open('https://magero1985.github.io/Tau-Africa/', '_blank');
-}
-
-function registerWithTAU() {
-    // Get guest earnings to show as incentive
-    const guestId = localStorage.getItem('currentGuestId');
-    const guestEarnings = localStorage.getItem(`tauGuestProgress_${guestId}`);
-    let totalEarned = 0;
-    
-    if (guestEarnings) {
-        try {
-            const progress = JSON.parse(guestEarnings);
-            totalEarned = progress.totalEarned || 0;
-        } catch (e) {}
-    }
-    
-    // Show incentive message
-    if (totalEarned > 0) {
-        const message = `You've earned ${totalEarned} iKbp as a guest!\n\n`;
-        const incentive = `Register with TAU to claim your ${totalEarned} iKbp and start earning real rewards!`;
-        
-        if (confirm(message + incentive)) {
-            window.open('https://magero1985.github.io/Tau-Africa/', '_blank');
-        }
-    } else {
-        window.open('https://magero1985.github.io/Tau-Africa/', '_blank');
-    }
-}
-
-// Initialize on page load
-document.addEventListener('DOMContentLoaded', function() {
-    setTimeout(() => {
-        const connection = checkTAUConnection();
-        console.log('TAU Connection:', connection);
-    }, 500);
-});
-</script>
     <div class="container">
+        <!-- TAU Member Banner -->
+        <div id="tauMemberBanner" class="tau-banner" style="display: none;">
+            <div class="tau-info">
+                <strong>🔗 Connected to TAU Africa</strong>
+                <small id="memberInfo">Loading member info...</small>
+            </div>
+            <div class="tau-actions">
+                <button class="tau-btn primary" onclick="syncEarningsToTAU()">💰 Sync Earnings</button>
+                <button class="tau-btn secondary" onclick="openTAUApp()">Open TAU App</button>
+            </div>
+        </div>
+
+        <!-- Guest Banner -->
+        <div id="guestBanner" class="tau-banner guest" style="display: none;">
+            <div class="tau-info">
+                <strong>🌍 Playing as Guest</strong>
+                <small>Play for fun! Register with TAU to earn iKbp rewards.</small>
+            </div>
+            <div class="tau-actions">
+                <button class="tau-btn guest-register" onclick="registerWithTAU()">🎯 Register with TAU</button>
+            </div>
+        </div>
+
         <div class="header">
             <h1>Pan African Knowledge Challenge</h1>
-            <div class="subtitle">Test your knowledge of African history, culture, and achievements across 10 challenging levels</div>
+            <div class="subtitle">Test your knowledge across 10 challenging levels • Earn iKbp rewards as TAU member!</div>
+        </div>
+
+        <!-- Earnings Display -->
+        <div id="earningsDisplay" class="earnings-display" style="display: none;">
+            💰 Total Earned: <span id="totalEarned">0</span> iKbp
         </div>
 
         <div id="startScreen" class="start-screen">
             <h2>Welcome to the Challenge!</h2>
-            <p>Journey through 10 levels of Pan African knowledge, with each level containing 10 questions of increasing difficulty.</p>
-            <p>Test your understanding of African history, culture, politics, and achievements.</p>
-            <p>Complete all 100 questions to become a Pan African Master!</p>
-            <button class="btn-start" onclick="startGame()">Begin Your Journey</button>
+            <p>Journey through 10 levels of Pan African knowledge, with 10 questions per level.</p>
+            <p><strong>Complete each level to earn 250 iKbp!</strong> (TAU Members only)</p>
+            
+            <div class="mode-selection">
+                <div class="mode-card" onclick="selectMode('guest')">
+                    <h3>🌍 Guest Mode</h3>
+                    <p>• Play all levels for fun</p>
+                    <p>• No earnings</p>
+                    <p>• Perfect for practice</p>
+                    <p class="highlight">Free Play</p>
+                </div>
+                
+                <div class="mode-card" onclick="selectMode('member')">
+                    <h3>⭐ TAU Member</h3>
+                    <p>• Earn 250 iKbp per level</p>
+                    <p>• Sync to TAU account</p>
+                    <p>• Track your progress</p>
+                    <p class="highlight">Earn While Learning!</p>
+                </div>
+            </div>
+            
+            <button class="btn-start" id="startBtn" onclick="startGame()" disabled>Select Mode to Begin</button>
         </div>
 
         <div id="gameScreen" class="game-container" style="display: none;">
@@ -553,8 +576,8 @@ document.addEventListener('DOMContentLoaded', function() {
                     <p id="score">0</p>
                 </div>
                 <div class="info-card">
-                    <h3>Time</h3>
-                    <p class="timer" id="timer">∞</p>
+                    <h3>Level iKbp</h3>
+                    <p id="levelEarnings">0</p>
                 </div>
             </div>
 
@@ -566,9 +589,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     <div class="timer">Difficulty: <span id="difficulty">Easy</span></div>
                 </div>
                 
-                <div class="question-text" id="questionText">
-                    Loading question...
-                </div>
+                <div class="question-text" id="questionText">Loading question...</div>
                 
                 <div class="options-container" id="optionsContainer"></div>
                 
@@ -585,8 +606,9 @@ document.addEventListener('DOMContentLoaded', function() {
             <div class="modal-content">
                 <div class="celebration" id="celebrationEmoji">🎉</div>
                 <h2 id="resultTitle">Level Complete!</h2>
-                <p id="resultMessage">You have successfully completed this level!</p>
-                <p id="resultScore">Your score: <span id="finalScore">0</span></p>
+                <p id="resultMessage"></p>
+                <p id="resultScore">Score: <span id="finalScore">0</span></p>
+                <p id="resultEarnings" style="color: #f7a440; font-size: 1.5rem; font-weight: bold;"></p>
                 <div style="margin-top: 30px;">
                     <button class="btn btn-next" onclick="nextLevel()" id="nextLevelBtn">Proceed to Next Level</button>
                 </div>
@@ -597,11 +619,31 @@ document.addEventListener('DOMContentLoaded', function() {
             <div class="modal-content">
                 <div class="celebration">🏆</div>
                 <h2>Congratulations!</h2>
-                <p>You have successfully completed all 10 levels of the Pan African Knowledge Challenge!</p>
-                <p>You are now a certified Pan African Master with a deep understanding of African history, culture, and achievements!</p>
-                <p id="finalGameScore">Final Score: <span id="totalScore">0</span></p>
+                <p>You've completed all 10 levels of the Pan African Knowledge Challenge!</p>
+                <p id="completionEarnings"></p>
+                <p style="margin-top: 20px; color: #4cc9f0;">
+                    🌍 <strong>Join the TAU Africa Ecosystem</strong> for expanded earning opportunities and Pan-African awakening!
+                </p>
+                <div style="margin-top: 30px; display: flex; gap: 15px; justify-content: center; flex-wrap: wrap;">
+                    <button class="btn btn-start" onclick="joinTAUEcosystem()">Join TAU Ecosystem</button>
+                    <button class="btn btn-next" onclick="restartGame()">Play for Fun</button>
+                </div>
+            </div>
+        </div>
+
+        <div id="alreadyCompletedModal" class="result-modal">
+            <div class="modal-content">
+                <div class="celebration">⏳</div>
+                <h2>Already Completed!</h2>
+                <p>You've already earned rewards for all 10 levels.</p>
+                <p style="color: #f7a440;">💰 Total Earned: <span id="totalEarnedComplete">0</span> iKbp</p>
+                <p style="margin-top: 20px;">
+                    <strong>Levels 11-20 coming soon!</strong><br>
+                    In the meantime, play previous levels for fun as a guest.
+                </p>
                 <div style="margin-top: 30px;">
-                    <button class="btn btn-start" onclick="restartGame()">Play Again</button>
+                    <button class="btn btn-next" onclick="playAsGuest()">Play as Guest</button>
+                    <button class="btn btn-start" onclick="closeModal('alreadyCompletedModal')" style="margin-top: 10px;">Return to Menu</button>
                 </div>
             </div>
         </div>
@@ -615,12 +657,86 @@ document.addEventListener('DOMContentLoaded', function() {
             selectedOption: null,
             correctAnswer: null,
             questionsAnswered: 0,
-            timer: 30,
+            correctAnswers: 0,
             timerInterval: null,
             gameStarted: false,
             levelQuestions: [],
             difficultyMultipliers: [1, 1.2, 1.5, 1.8, 2.0, 2.3, 2.7, 3.1, 3.6, 4.0],
-            answerSubmitted: false
+            answerSubmitted: false,
+            playMode: null, // 'guest' or 'member'
+            memberId: null,
+            levelEarnings: 0,
+            completedLevels: []
+        };
+
+        const iKbpTracker = {
+            totalEarned: 0,
+            levelEarnings: {},
+            
+            addEarnings: function(amount, level, reason) {
+                if (gameState.playMode !== 'member') return 0;
+                
+                this.totalEarned += amount;
+                
+                if (!this.levelEarnings[level]) {
+                    this.levelEarnings[level] = 0;
+                }
+                this.levelEarnings[level] += amount;
+                
+                console.log(`💰 +${amount} iKbp earned! (${reason})`);
+                this.saveToStorage();
+                this.updateDisplay();
+                
+                return amount;
+            },
+            
+            getTotalEarned: function() {
+                return this.totalEarned;
+            },
+            
+            getCurrentLevelEarnings: function() {
+                const level = gameState.currentLevel;
+                return this.levelEarnings[level] || 0;
+            },
+            
+            saveToStorage: function() {
+                const earningData = {
+                    totalEarned: this.totalEarned,
+                    levelEarnings: this.levelEarnings,
+                    completedLevels: gameState.completedLevels,
+                    lastUpdated: new Date().toISOString()
+                };
+                
+                const key = gameState.playMode === 'member' && gameState.memberId 
+                    ? `tauKnowledge_${gameState.memberId}` 
+                    : 'tauKnowledgeGuest';
+                    
+                localStorage.setItem(key, JSON.stringify(earningData));
+            },
+            
+            loadFromStorage: function() {
+                const key = gameState.playMode === 'member' && gameState.memberId 
+                    ? `tauKnowledge_${gameState.memberId}` 
+                    : 'tauKnowledgeGuest';
+                    
+                const saved = localStorage.getItem(key);
+                if (saved) {
+                    try {
+                        const data = JSON.parse(saved);
+                        this.totalEarned = data.totalEarned || 0;
+                        this.levelEarnings = data.levelEarnings || {};
+                        gameState.completedLevels = data.completedLevels || [];
+                        this.updateDisplay();
+                    } catch (e) {
+                        console.log('Could not load saved earnings');
+                    }
+                }
+            },
+            
+            updateDisplay: function() {
+                document.getElementById('totalEarned').textContent = this.totalEarned;
+                document.getElementById('levelEarnings').textContent = gameState.levelEarnings;
+            }
         };
 
         const questionsDatabase = {
@@ -726,7 +842,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     category: "Economy"
                 },
                 {
-                    question: "The ancient Nubian civilization was located in present-day:",
+                   question: "The ancient Nubian civilization was located in present-day:",
                     options: ["Egypt and Sudan", "Ethiopia and Eritrea", "Libya and Tunisia", "Morocco and Algeria"],
                     correct: 0,
                     hint: "Nubia was located along the Nile, south of Ancient Egypt.",
@@ -776,10 +892,10 @@ document.addEventListener('DOMContentLoaded', function() {
             for (let i = 0; i < 10; i++) {
                 const category = categories[i % categories.length];
                 questions.push({
-                    question: `Level ${level}, Question ${i+1}: Advanced question about ${category}.`,
+                    question: `Level ${level}, Question ${i+1}: Advanced question about ${category} in African affairs.`,
                     options: ["Option A", "Option B", "Option C", "Option D"],
                     correct: Math.floor(Math.random() * 4),
-                    hint: `Hint for level ${level} question.`,
+                    hint: `This is a Level ${level} difficulty question about African ${category}.`,
                     category: category,
                     difficulty: level
                 });
@@ -818,6 +934,8 @@ document.addEventListener('DOMContentLoaded', function() {
             gameState.currentQuestion = 1;
             gameState.score = 0;
             gameState.questionsAnswered = 0;
+            gameState.correctAnswers = 0;
+            gameState.levelEarnings = 0;
             
             updateGameDisplay();
             loadQuestion();
@@ -893,59 +1011,6 @@ document.addEventListener('DOMContentLoaded', function() {
             }, 1000);
         }
 
-        function submitAnswer() {
-            if (gameState.selectedOption === null || gameState.answerSubmitted) return;
-            
-            gameState.answerSubmitted = true;
-            
-            const options = document.querySelectorAll('.option');
-            const correctIndex = gameState.correctAnswer;
-            
-            if (window.answerTimeout) {
-                clearTimeout(window.answerTimeout);
-                window.answerTimeout = null;
-            }
-            
-            options.forEach((option, index) => {
-                option.classList.add('disabled');
-                if (index === correctIndex) {
-                    option.classList.add('correct');
-                } else if (index === gameState.selectedOption && index !== correctIndex) {
-                    option.classList.add('wrong');
-                }
-            });
-            
-            const timeBonus = Math.max(0, gameState.timer) * 2;
-            const difficultyMultiplier = gameState.difficultyMultipliers[gameState.currentLevel - 1];
-            const basePoints = 100;
-            
-            if (gameState.selectedOption === correctIndex) {
-                const pointsEarned = Math.round((basePoints + timeBonus) * difficultyMultiplier);
-                gameState.score += pointsEarned;
-                document.getElementById('hintArea').innerHTML = 
-                    `<span style="color: #4cc9f0">✓ Correct! +${pointsEarned} points</span>`;
-            } else {
-                document.getElementById('hintArea').innerHTML = 
-                    `<span style="color: #ef476f">✗ Incorrect. The correct answer was: ${options[correctIndex].textContent}</span>`;
-            }
-            
-            gameState.questionsAnswered++;
-            document.getElementById('score').textContent = gameState.score;
-            
-            document.getElementById('submitBtn').disabled = true;
-            document.getElementById('nextBtn').disabled = false;
-            
-            clearInterval(gameState.timerInterval);
-            
-            setTimeout(() => {
-                if (gameState.currentQuestion < 10) {
-                    nextQuestion();
-                } else {
-                    completeLevel();
-                }
-            }, 2000);
-        }
-
         function nextQuestion() {
             if (gameState.currentQuestion < 10) {
                 gameState.currentQuestion++;
@@ -954,67 +1019,6 @@ document.addEventListener('DOMContentLoaded', function() {
             } else {
                 completeLevel();
             }
-        }
-
-        function completeLevel() {
-            clearInterval(gameState.timerInterval);
-            
-            const correctPercentage = (gameState.questionsAnswered / 10) * 100;
-            let celebrationMessage = "";
-            let celebrationEmoji = "🎉";
-            
-            if (correctPercentage >= 90) {
-                celebrationMessage = "Outstanding! You're a Pan African expert!";
-                celebrationEmoji = "🏆";
-            } else if (correctPercentage >= 70) {
-                celebrationMessage = "Great job! You know your African history well!";
-                celebrationEmoji = "⭐";
-            } else if (correctPercentage >= 50) {
-                celebrationMessage = "Good work! Keep learning about Africa!";
-                celebrationEmoji = "👍";
-            } else {
-                celebrationMessage = "Good attempt! Review and try again for better results!";
-                celebrationEmoji = "📚";
-            }
-            
-            document.getElementById(`level${gameState.currentLevel}`).classList.add('completed');
-            
-            if (gameState.currentLevel >= 10) {
-                completeGame();
-                return;
-            }
-            
-            document.getElementById('resultTitle').textContent = `Level ${gameState.currentLevel} Complete! ${celebrationEmoji}`;
-            document.getElementById('resultMessage').innerHTML = celebrationMessage;
-            document.getElementById('finalScore').textContent = gameState.score;
-            document.getElementById('celebrationEmoji').textContent = celebrationEmoji;
-            document.getElementById('nextLevelBtn').textContent = `Proceed to Level ${gameState.currentLevel + 1}`;
-            
-            document.getElementById('resultModal').style.display = 'flex';
-        }
-
-        function completeGame() {
-            document.getElementById('totalScore').textContent = gameState.score;
-            document.getElementById('gameCompleteModal').style.display = 'flex';
-        }
-
-        function nextLevel() {
-            gameState.currentLevel++;
-            gameState.currentQuestion = 1;
-            gameState.questionsAnswered = 0;
-            gameState.selectedOption = null;
-            gameState.correctAnswer = null;
-            gameState.answerSubmitted = false;
-            
-            updateGameDisplay();
-            loadQuestion();
-            startTimer();
-            
-            closeResult();
-        }
-
-        function closeResult() {
-            document.getElementById('resultModal').style.display = 'none';
         }
 
         function restartGame() {
@@ -1027,6 +1031,8 @@ document.addEventListener('DOMContentLoaded', function() {
             });
             
             gameState.gameStarted = false;
+            gameState.currentLevel = 1;
+            gameState.score = 0;
         }
 
         function updateGameDisplay() {
@@ -1093,9 +1099,99 @@ document.addEventListener('DOMContentLoaded', function() {
             return "Expert";
         }
 
+        // TAU Integration Functions
+        function selectMode(mode) {
+            gameState.playMode = mode;
+            
+            document.querySelectorAll('.mode-card').forEach(card => {
+                card.classList.remove('selected');
+            });
+            event.target.closest('.mode-card').classList.add('selected');
+            
+            document.getElementById('startBtn').disabled = false;
+            
+            if (mode === 'member') {
+                const urlParams = new URLSearchParams(window.location.search);
+                gameState.memberId = urlParams.get('memberId') || prompt('Enter your TAU Member ID:') || 'TEMP_' + Date.now();
+                
+                iKbpTracker.loadFromStorage();
+                
+                if (gameState.completedLevels.length >= 10) {
+                    document.getElementById('totalEarnedComplete').textContent = iKbpTracker.getTotalEarned();
+                    document.getElementById('alreadyCompletedModal').style.display = 'flex';
+                    return;
+                }
+                
+                document.getElementById('tauMemberBanner').style.display = 'flex';
+                document.getElementById('guestBanner').style.display = 'none';
+                document.getElementById('earningsDisplay').style.display = 'block';
+                document.getElementById('memberInfo').textContent = `Member ID: ${gameState.memberId} | Completed: ${gameState.completedLevels.length}/10 levels`;
+            } else {
+                document.getElementById('tauMemberBanner').style.display = 'none';
+                document.getElementById('guestBanner').style.display = 'flex';
+                document.getElementById('earningsDisplay').style.display = 'none';
+            }
+        }
+
+        function syncEarningsToTAU() {
+            const totalEarned = iKbpTracker.getTotalEarned();
+            
+            if (totalEarned === 0) {
+                alert('No earnings to sync yet! Complete some questions first.');
+                return;
+            }
+            
+            const syncData = {
+                memberId: gameState.memberId,
+                totalEarned: totalEarned,
+                levelEarnings: iKbpTracker.levelEarnings,
+                completedLevels: gameState.completedLevels,
+                timestamp: new Date().toISOString(),
+                source: 'knowledge_challenge'
+            };
+            
+            localStorage.setItem('tauSyncData', JSON.stringify(syncData));
+            
+            alert(`✅ ${totalEarned} iKbp prepared for sync!\n\nRedirecting to TAU app...`);
+            
+            setTimeout(() => {
+                window.open(`https://magero1985.github.io/Tau-Africa/?sync=true&memberId=${gameState.memberId}&earned=${totalEarned}`, '_blank');
+            }, 1000);
+        }
+
+        function openTAUApp() {
+            window.open('https://magero1985.github.io/Tau-Africa/', '_blank');
+        }
+
+        function registerWithTAU() {
+            if (confirm('Join TAU Africa to start earning iKbp rewards while learning!\n\nProceed to registration?')) {
+                window.open('https://magero1985.github.io/Tau-Africa/', '_blank');
+            }
+        }
+
+        function joinTAUEcosystem() {
+            window.open('https://magero1985.github.io/Tau-Africa/', '_blank');
+        }
+
+        function playAsGuest() {
+            closeModal('alreadyCompletedModal');
+            gameState.playMode = 'guest';
+            gameState.completedLevels = [];
+            document.getElementById('startScreen').style.display = 'block';
+        }
+
+        function closeModal(modalId) {
+            document.getElementById(modalId).style.display = 'none';
+        }
+
         window.onload = function() {
             initGame();
+            
+            const urlParams = new URLSearchParams(window.location.search);
+            if (urlParams.get('memberId')) {
+                selectMode('member');
+            }
         };
     </script>
 </body>
-                                                                              </html>
+</html>
