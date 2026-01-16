@@ -648,6 +648,100 @@ if (memberId) {
             levelQuestions: [],
             difficultyMultipliers: [1, 1.2, 1.5, 1.8, 2.0, 2.3, 2.7, 3.1, 3.6, 4.0]
         };
+        // ============================================
+// iKbp TRACKING SYSTEM
+// ============================================
+
+// Add this after gameState declaration (around line 694)
+const iKbpTracker = {
+    totalEarned: 0,
+    levelEarnings: {},
+    
+    addEarnings: function(amount, level, reason) {
+        this.totalEarned += amount;
+        
+        // Store per-level earnings
+        if (!this.levelEarnings[level]) {
+            this.levelEarnings[level] = 0;
+        }
+        this.levelEarnings[level] += amount;
+        
+        console.log(`💰 +${amount} iKbp earned! (${reason})`);
+        
+        // Store in localStorage for sync
+        this.saveToLocalStorage();
+        
+        return amount;
+    },
+    
+    getTotalEarned: function() {
+        return this.totalEarned;
+    },
+    
+    getCurrentLevelEarnings: function() {
+        const level = gameState.currentLevel;
+        return this.levelEarnings[level] || 0;
+    },
+    
+    saveToLocalStorage: function() {
+        const earningData = {
+            totalEarned: this.totalEarned,
+            levelEarnings: this.levelEarnings,
+            lastUpdated: new Date().toISOString()
+        };
+        
+        // Store for TAU sync
+        localStorage.setItem('tauKnowledgeEarnings', JSON.stringify(earningData));
+        
+        // Also update gameState for immediate access
+        if (window.TauLevels) {
+            window.TauLevels.totalEarned = this.totalEarned;
+        } else {
+            window.TauLevels = { totalEarned: this.totalEarned };
+        }
+    },
+    
+    loadFromLocalStorage: function() {
+        const saved = localStorage.getItem('tauKnowledgeEarnings');
+        if (saved) {
+            try {
+                const data = JSON.parse(saved);
+                this.totalEarned = data.totalEarned || 0;
+                this.levelEarnings = data.levelEarnings || {};
+                
+                // Update gameState
+                if (window.TauLevels) {
+                    window.TauLevels.totalEarned = this.totalEarned;
+                } else {
+                    window.TauLevels = { totalEarned: this.totalEarned };
+                }
+            } catch (e) {
+                console.log('Could not load saved earnings');
+            }
+        }
+    }
+};
+
+// Initialize on page load
+iKbpTracker.loadFromLocalStorage();
+
+// Add these helper functions to window for TAU sync
+window.TauLevels = window.TauLevels || {};
+window.TauLevels.getTotalEarned = function() {
+    return iKbpTracker.totalEarned || 0;
+};
+
+window.TauLevels.getCurrentLevel = function() {
+    return gameState?.currentLevel || 1;
+};
+
+window.TauLevels.setUserProgress = function(progress) {
+    if (progress.totalEarned) {
+        iKbpTracker.totalEarned = progress.totalEarned;
+        iKbpTracker.levelEarnings = progress.levelEarnings || {};
+        iKbpTracker.saveToLocalStorage();
+    }
+};
 
         // Pan African questions database
         const questionsDatabase = {
@@ -926,80 +1020,99 @@ if (memberId) {
         }
 
         // Select an option
-        function selectOption(index, element) {
-            // Remove selection from all options
-            document.querySelectorAll('.option').forEach(opt => {
-                opt.classList.remove('selected');
-                opt.classList.remove('correct', 'wrong');
-            });
-            
-            // Add selection to clicked option
-            element.classList.add('selected');
-            gameState.selectedOption = index;
-            
-            // Enable submit button
-            document.getElementById('submitBtn').disabled = false;
+        // Select an option
+function selectOption(index, element) {
+    if (document.getElementById('submitBtn').disabled) return;
+    
+    // Remove selected class from all options
+    document.querySelectorAll('.option').forEach(opt => {
+        opt.classList.remove('selected');
+    });
+    
+    // Add selected class to clicked option
+    element.classList.add('selected');
+    gameState.selectedOption = index;
+    
+    // Enable submit button
+    document.getElementById('submitBtn').disabled = false;
+    
+    // AUTO-SUBMIT: Submit answer after 1 second delay
+    setTimeout(() => {
+        if (!document.getElementById('submitBtn').disabled) {
+            submitAnswer();
         }
-
-        // Submit answer
-        function submitAnswer() {
-            if (gameState.selectedOption === null) return;
-            
-            const options = document.querySelectorAll('.option');
-            const correctIndex = gameState.correctAnswer;
-            
-            // Mark correct and wrong answers
-            options.forEach((option, index) => {
-                if (index === correctIndex) {
-                    option.classList.add('correct');
-                } else if (index === gameState.selectedOption && index !== correctIndex) {
-                    option.classList.add('wrong');
-                }
-            });
-            
-            // Calculate score
-            const timeBonus = Math.max(0, gameState.timer) * 2;
-            const difficultyMultiplier = gameState.difficultyMultipliers[gameState.currentLevel - 1];
-            const basePoints = 100;
-            
-            if (gameState.selectedOption === correctIndex) {
-                // Correct answer
-                const pointsEarned = Math.round((basePoints + timeBonus) * difficultyMultiplier);
-                gameState.score += pointsEarned;
-                
-                // Show feedback
-                document.getElementById('hintArea').innerHTML = 
-                    `<span style="color: #4cc9f0">✓ Correct! +${pointsEarned} points (Time bonus: +${timeBonus})</span>`;
-            } else {
-                // Wrong answer
-                document.getElementById('hintArea').innerHTML = 
-                    `<span style="color: #ef476f">✗ Incorrect. The correct answer was: ${options[correctIndex].textContent}</span>`;
-            }
-            
-            gameState.questionsAnswered++;
-            
-            // Update score display
-            document.getElementById('score').textContent = gameState.score;
-            
-            // Disable submit button, enable next button
-            document.getElementById('submitBtn').disabled = true;
-            document.getElementById('nextBtn').disabled = false;
-            
-            // Stop timer
-            clearInterval(gameState.timerInterval);
+    }, 1000);
+}
+function submitAnswer() {
+    if (gameState.selectedOption === null) return;
+    
+    const options = document.querySelectorAll('.option');
+    const correctIndex = gameState.correctAnswer;
+    
+    // Mark correct and wrong answers
+    options.forEach((option, index) => {
+        if (index === correctIndex) {
+            option.classList.add('correct');
+        } else if (index === gameState.selectedOption && index !== correctIndex) {
+            option.classList.add('wrong');
         }
-
-        // Move to next question
-        function nextQuestion() {
-            if (gameState.currentQuestion < 10) {
-                gameState.currentQuestion++;
-                updateGameDisplay();
-                loadQuestion();
-            } else {
-                // Level complete
-                completeLevel();
-            }
+    });
+    
+    // Calculate score
+    const timeBonus = Math.max(0, gameState.timer) * 2;
+    const difficultyMultiplier = gameState.difficultyMultipliers[gameState.currentLevel - 1];
+    const basePoints = 100;
+    
+    // Disable all options to prevent further clicks
+    options.forEach(option => {
+        option.style.pointerEvents = 'none';
+    });
+    
+    if (gameState.selectedOption === correctIndex) {
+        // Correct answer - Award iKbp
+        const pointsEarned = Math.round((basePoints + timeBonus) * difficultyMultiplier);
+        gameState.score += pointsEarned;
+        
+        // AWARD iKbp (1 iKbp per 10 points)
+        const iKbpEarned = Math.floor(pointsEarned / 10);
+        if (iKbpEarned > 0) {
+            iKbpTracker.addEarnings(
+                iKbpEarned, 
+                gameState.currentLevel, 
+                `Level ${gameState.currentLevel}, Q${gameState.currentQuestion}`
+            );
         }
+        
+        // Show feedback
+        document.getElementById('hintArea').innerHTML = 
+            `<span style="color: #4cc9f0">✓ Correct! +${pointsEarned} points (+${iKbpEarned} iKbp)</span>`;
+    } else {
+        // Wrong answer
+        document.getElementById('hintArea').innerHTML = 
+            `<span style="color: #ef476f">✗ Incorrect. The correct answer was: ${options[correctIndex].textContent}</span>`;
+    }
+    
+    gameState.questionsAnswered++;
+    
+    // Update score display
+    document.getElementById('score').textContent = gameState.score;
+    
+    // Disable submit button, enable next button
+    document.getElementById('submitBtn').disabled = true;
+    document.getElementById('nextBtn').disabled = false;
+    
+    // Stop timer
+    clearInterval(gameState.timerInterval);
+    
+    // AUTO-ADVANCE: Wait 2 seconds then go to next question
+    setTimeout(() => {
+        if (gameState.currentQuestion < 10) {
+            nextQuestion();
+        } else {
+            completeLevel();
+        }
+    }, 2000);
+}
 
         // Complete level
         function completeLevel() {
@@ -1150,56 +1263,117 @@ if (memberId) {
         }
 
         // Initialize the game when page loads
-        window.onload = function() {
-            initGame();
-        };
+        // Initialize the game when page loads
+window.onload = function() {
+    initGame();
+    iKbpTracker.loadFromLocalStorage(); // Add this line
+    
+    // Show current total iKbp if any
+    const totalEarned = iKbpTracker.getTotalEarned();
+    if (totalEarned > 0) {
+        console.log(`Previously earned: ${totalEarned} iKbp`);
+    }
+};
 </script>
 <script>
 // Add this function to your Knowledge App JavaScript:
 
-  function syncEarningsToMainApp(userId, earnediKbp) {
-    // Get current member from TAU Main App
-    const currentMember = window.TauDB?.getCurrentMember();
+ function syncEarningsToTAU() {
+    // Get current earnings from our tracking system
+    const totalEarned = iKbpTracker.getTotalEarned();
+    const currentLevel = gameState?.currentLevel || 1;
     
-    if (currentMember) {
-        // Member is logged into TAU Main App
-        if (window.TauDB?.updateBalance) {
-            window.TauDB.updateBalance(currentMember.id, earnediKbp);
-            
-            // Show success message
-            showNotification(`✅ ${earnediKbp} iKbp added to your TAU account!`, 'success');
-            
-            // Create activity record
-            const activity = {
-                type: 'Knowledge App Completion',
-                title: `Completed Level ${currentLevel}`,
-                description: `Earned ${earnediKbp} iKbp from Knowledge App`,
-                reward: earnediKbp
+    if (totalEarned > 0) {
+        // Show detailed confirmation
+        const earningsByLevel = Object.entries(iKbpTracker.levelEarnings)
+            .map(([level, amount]) => `Level ${level}: ${amount} iKbp`)
+            .join('\n');
+        
+        const message = `Sync ${totalEarned} iKbp to your TAU account?\n\nBreakdown:\n${earningsByLevel}`;
+        
+        const confirmed = confirm(message);
+        
+        if (confirmed) {
+            // Create sync data
+            const syncData = {
+                totalEarned: totalEarned,
+                levelEarnings: iKbpTracker.levelEarnings,
+                currentLevel: currentLevel,
+                timestamp: new Date().toISOString(),
+                source: 'knowledge_app'
             };
             
-            if (window.TauDB?.addActivity) {
-                window.TauDB.addActivity(currentMember.id, activity);
-            }
+            // Store sync data for TAU app to pick up
+            localStorage.setItem('tauSyncData', JSON.stringify(syncData));
             
-            return true;
+            // Show success message
+            alert(`✅ ${totalEarned} iKbp prepared for sync!\n\nRedirecting to TAU app...`);
+            
+            // Redirect to TAU app with sync parameters
+            const urlParams = new URLSearchParams(window.location.search);
+            const memberId = urlParams.get('memberId') || 'guest';
+            
+            setTimeout(() => {
+                window.open(`https://magero1985.github.io/Tau-Africa/?sync=true&memberId=${memberId}&earned=${totalEarned}`, '_blank');
+            }, 1000);
         }
     } else {
-        // User not logged in - store for later redemption
-        const pendingEarnings = JSON.parse(localStorage.getItem('tauPendingEarnings') || '[]');
-        pendingEarnings.push({
-            userId: userId,
-            iKbp: earnediKbp,
-            date: new Date().toISOString(),
-            source: 'Knowledge App Level ' + currentLevel
-        });
-        localStorage.setItem('tauPendingEarnings', JSON.stringify(pendingEarnings));
-        
-        // Show message to register
-        showNotification(`🎮 Earned ${earnediKbp} iKbp! Register with TAU to claim them.`, 'info');
-        return false;
+        alert('No earnings to sync yet! Complete some questions first.\n\nTip: Answer questions correctly to earn iKbp!');
     }
 }
-
+// Complete level
+function completeLevel() {
+    clearInterval(gameState.timerInterval);
+    
+    // Calculate level performance
+    const correctPercentage = (gameState.questionsAnswered / 10) * 100;
+    const leveliKbp = iKbpTracker.getCurrentLevelEarnings();
+    
+    // Show celebration based on performance
+    let celebrationMessage = "";
+    let celebrationEmoji = "🎉";
+    
+    if (correctPercentage >= 90) {
+        celebrationMessage = "Outstanding! You're a Pan African expert!";
+        celebrationEmoji = "🏆";
+    } else if (correctPercentage >= 70) {
+        celebrationMessage = "Great job! You know your African history well!";
+        celebrationEmoji = "⭐";
+    } else if (correctPercentage >= 50) {
+        celebrationMessage = "Good work! Keep learning about Africa!";
+        celebrationEmoji = "👍";
+    } else {
+        celebrationMessage = "Good attempt! Review and try again for better results!";
+        celebrationEmoji = "📚";
+    }
+    
+    // Add iKbp message if earned
+    if (leveliKbp > 0) {
+        celebrationMessage += `\n\n💰 You earned ${leveliKbp} iKbp this level!`;
+    }
+    
+    // Update level indicator
+    document.getElementById(`level${gameState.currentLevel}`).classList.add('completed');
+    
+    // Check if game is complete
+    if (gameState.currentLevel >= 10) {
+        completeGame();
+        return;
+    }
+    
+    // Show level completion modal with celebration
+    document.getElementById('resultTitle').textContent = `Level ${gameState.currentLevel} Complete! ${celebrationEmoji}`;
+    document.getElementById('resultMessage').innerHTML = celebrationMessage.replace(/\n/g, '<br>');
+    document.getElementById('finalScore').textContent = gameState.score;
+    
+    // Update celebration emoji
+    document.getElementById('celebrationEmoji').textContent = celebrationEmoji;
+    
+    // Update next level button text
+    document.getElementById('nextLevelBtn').textContent = `Proceed to Level ${gameState.currentLevel + 1}`;
+    
+    document.getElementById('resultModal').style.display = 'flex';
+        }
 // Modify the completeLevel function to use sync:
 function completeLevel() {
     const levelData = userProgress.levels[currentLevel];
