@@ -16927,16 +16927,21 @@ window.startLevelChallenge = function() {
     const questions = generateLevelQuestions(level); 
     let currentQIndex = 0;
 
+    if (!questions || questions.length === 0) {
+        container.innerHTML = "<p>Error: Questions could not be loaded. Please reload.</p>";
+        return;
+    }
+
     // 2. Function to show the current question
     function renderQuestion() {
         const q = questions[currentQIndex];
         container.innerHTML = `
             <div class="quiz-box" style="animation: fadeIn 0.5s ease;">
-                <p style="color: #4169e1; font-weight: bold;">Question ${currentQIndex + 1} of 5</p>
-                <h3 style="margin: 15px 0; line-height: 1.4;">${q.question}</h3>
-                <div style="display: flex; flex-direction: column; gap: 12px; margin-top: 20px;">
+                <p style="color: #4169e1; font-weight: bold; margin-bottom: 10px;">Question ${currentQIndex + 1} of 5</p>
+                <h3 style="margin-bottom: 20px; line-height: 1.4; color: #333;">${q.question}</h3>
+                <div style="display: flex; flex-direction: column; gap: 12px;">
                     ${q.options.map((opt, i) => `
-                        <button class="btn" style="background: #f8f9fa; color: #333; text-align: left; border: 1px solid #ddd;" 
+                        <button class="btn" style="background: #f8f9fa; color: #333; text-align: left; border: 1px solid #ddd; padding: 15px; border-radius: 10px;" 
                                 onclick="processAnswer(${i}, ${q.correctAnswer})">
                             ${opt}
                         </button>
@@ -16952,15 +16957,15 @@ window.startLevelChallenge = function() {
             showNotification("Correct! 🎯", "success");
             currentQIndex++;
             
-            if (currentQIndex < 5) {
-                // Auto-next to next question
-                renderQuestion();
-            } else {
-                // Level Complete
-                const reward = level * 50;
-                handleKnowledgeSync(reward, level);
-                showLevelComplete(level, reward);
-            }
+            setTimeout(() => {
+                if (currentQIndex < 5) {
+                    renderQuestion();
+                } else {
+                    const reward = level * 50;
+                    handleKnowledgeSync(reward, level); // Awards iKbp
+                    showLevelComplete(level, reward);
+                }
+            }, 600);
         } else {
             showNotification("Incorrect. Try again!", "error");
         }
@@ -16973,10 +16978,12 @@ function showLevelComplete(level, reward) {
     const container = document.getElementById('levelChallengeContainer');
     container.innerHTML = `
         <div style="text-align: center; padding: 20px;">
-            <div style="font-size: 50px;">🏆</div>
-            <h2 style="color: #2ecc71;">Level ${level} Complete!</h2>
-            <p>You've earned <strong>${reward} iKbp</strong></p>
-            <button class="btn" onclick="location.reload()" style="margin-top: 15px;">Claim Reward & Continue</button>
+            <div style="font-size: 50px; margin-bottom: 10px;">🏆</div>
+            <h2 style="color: #2ecc71; margin-bottom: 10px;">Level ${level} Complete!</h2>
+            <p style="font-size: 1.1rem; margin-bottom: 20px;">You've earned <strong>${reward} iKbp</strong></p>
+            <button class="btn" onclick="location.reload()" style="background: #4169e1; padding: 12px 30px;">
+                Claim Reward & Continue
+            </button>
         </div>
     `;
 }
