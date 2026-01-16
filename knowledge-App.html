@@ -607,20 +607,6 @@ document.addEventListener('DOMContentLoaded', function() {
         </div>
     </div>
     <script>
-// At the START of the Knowledge App
-const urlParams = new URLSearchParams(window.location.search);
-const memberId = urlParams.get('memberId');
-const guestId = urlParams.get('guestId');
-
-if (memberId) {
-    // Connected to TAU member - auto-sync earnings
-    console.log('Connected to TAU Member:', memberId);
-} else if (guestId) {
-    // Public user - store for later claim
-    console.log('Public user playing:', guestId);
-} 
-</script>
-    <script>
         // Game state
         let gameState = {
             currentLevel: 1,
@@ -1218,6 +1204,53 @@ window.TauLevels.setUserProgress = function(progress) {
         window.onload = function() {
             initGame();
         };
+    </script>
+    <script>
+// Add this function to your Knowledge App JavaScript:
+
+ function syncEarningsToTAU() {
+    // Get current earnings from our tracking system
+    const totalEarned = iKbpTracker.getTotalEarned();
+    const currentLevel = gameState?.currentLevel || 1;
+    
+    if (totalEarned > 0) {
+        // Show detailed confirmation
+        const earningsByLevel = Object.entries(iKbpTracker.levelEarnings)
+            .map(([level, amount]) => `Level ${level}: ${amount} iKbp`)
+            .join('\n');
+        
+        const message = `Sync ${totalEarned} iKbp to your TAU account?\n\nBreakdown:\n${earningsByLevel}`;
+        
+        const confirmed = confirm(message);
+        
+        if (confirmed) {
+            // Create sync data
+            const syncData = {
+                totalEarned: totalEarned,
+                levelEarnings: iKbpTracker.levelEarnings,
+                currentLevel: currentLevel,
+                timestamp: new Date().toISOString(),
+                source: 'knowledge_app'
+            };
+            
+            // Store sync data for TAU app to pick up
+            localStorage.setItem('tauSyncData', JSON.stringify(syncData));
+            
+            // Show success message
+            alert(`✅ ${totalEarned} iKbp prepared for sync!\n\nRedirecting to TAU app...`);
+            
+            // Redirect to TAU app with sync parameters
+            const urlParams = new URLSearchParams(window.location.search);
+            const memberId = urlParams.get('memberId') || 'guest';
+            
+            setTimeout(() => {
+                window.open(`https://magero1985.github.io/Tau-Africa/?sync=true&memberId=${memberId}&earned=${totalEarned}`, '_blank');
+            }, 1000);
+        }
+    } else {
+        alert('No earnings to sync yet! Complete some questions first.\n\nTip: Answer questions correctly to earn iKbp!');
+    }
+ }
     </script>
 </body>
 </html>
