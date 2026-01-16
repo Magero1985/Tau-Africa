@@ -189,6 +189,11 @@
             border-color: #ef476f;
         }
 
+        .option.disabled {
+            pointer-events: none;
+            opacity: 0.6;
+        }
+
         .buttons {
             display: flex;
             justify-content: space-between;
@@ -210,7 +215,7 @@
             color: white;
         }
 
-        .btn-next:hover {
+        .btn-next:hover:not(:disabled) {
             background: linear-gradient(90deg, #3a56d4, #2f48b9);
             transform: translateY(-3px);
             box-shadow: 0 5px 15px rgba(67, 97, 238, 0.4);
@@ -228,10 +233,17 @@
             color: white;
         }
 
-        .btn-submit:hover {
+        .btn-submit:hover:not(:disabled) {
             background: linear-gradient(90deg, #d16617, #c15c14);
             transform: translateY(-3px);
             box-shadow: 0 5px 15px rgba(225, 112, 26, 0.4);
+        }
+
+        .btn-submit:disabled {
+            background: #666;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
         }
 
         .result-modal {
@@ -337,178 +349,6 @@
     </style>
 </head>
 <body>
-    <!-- TAU Connection Banner -->
-<div id="tauConnectionBanner" style="display: none; 
-     background: linear-gradient(45deg, #4169e1, #2ecc71); 
-     color: white; padding: 15px 20px; border-radius: 10px; 
-     margin: 20px; text-align: center;">
-    
-    <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap;">
-        <div style="text-align: left;">
-            <strong>🔗 Connected to TAU Africa</strong>
-            <div style="font-size: 12px; opacity: 0.9;" id="memberInfo">
-                Loading member info...
-            </div>
-        </div>
-        <div>
-            <button onclick="syncEarningsToTAU()" style="background: white; color: #4169e1; 
-                    border: none; padding: 8px 15px; border-radius: 20px; cursor: pointer; 
-                    font-weight: bold; margin-right: 10px;">
-                💰 Sync Earnings
-            </button>
-            <button onclick="openTAUMainApp()" style="background: rgba(255,255,255,0.2); 
-                    color: white; border: 1px solid white; padding: 8px 15px; 
-                    border-radius: 20px; cursor: pointer;">
-                Open TAU App
-            </button>
-        </div>
-    </div>
-</div>
-
-<!-- Guest Mode Banner -->
-<div id="guestModeBanner" style="display: none; 
-     background: linear-gradient(45deg, #ffd700, #f39c12); 
-     color: #333; padding: 15px 20px; border-radius: 10px; 
-     margin: 20px; text-align: center;">
-    
-    <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap;">
-        <div style="text-align: left;">
-            <strong>🌍 Playing as Guest</strong>
-            <div style="font-size: 12px; opacity: 0.8;">
-                Earn iKbp now, claim when you register!
-            </div>
-        </div>
-        <div>
-            <button onclick="registerWithTAU()" style="background: #333; color: #ffd700; 
-                    border: none; padding: 8px 20px; border-radius: 20px; cursor: pointer; 
-                    font-weight: bold;">
-                🎯 Register with TAU
-            </button>
-        </div>
-    </div>
-</div>
-
-<script>
-// ============================================
-// TAU CONNECTION HANDLER for Knowledge App
-// ============================================
-
-function checkTAUConnection() {
-    const urlParams = new URLSearchParams(window.location.search);
-    const type = urlParams.get('type');
-    const memberId = urlParams.get('memberId');
-    const guestId = urlParams.get('guestId');
-    const progress = urlParams.get('progress');
-    
-    if (type === 'member' && memberId) {
-        // Connected as TAU member
-        showTAUConnectionBanner(memberId, urlParams);
-        
-        // Load any existing progress
-        if (progress) {
-            try {
-                const userProgress = JSON.parse(decodeURIComponent(progress));
-                window.TauLevels?.setUserProgress?.(userProgress);
-            } catch (e) {
-                console.log('Could not load progress from URL');
-            }
-        }
-        
-        return { type: 'member', id: memberId };
-        
-    } else if (type === 'guest' && guestId) {
-        // Playing as guest
-        showGuestModeBanner(guestId);
-        
-        // Load guest progress
-        const guestProgress = localStorage.getItem(`tauGuestProgress_${guestId}`);
-        if (guestProgress) {
-            try {
-                const progress = JSON.parse(guestProgress);
-                window.TauLevels?.setUserProgress?.(progress);
-            } catch (e) {
-                console.log('Could not load guest progress');
-            }
-        }
-        
-        return { type: 'guest', id: guestId };
-        
-    } else {
-        // No connection - default to guest
-        const defaultGuestId = 'GUEST-' + Date.now().toString(36).toUpperCase();
-        showGuestModeBanner(defaultGuestId);
-        return { type: 'guest', id: defaultGuestId };
-    }
-}
-
-function showTAUConnectionBanner(memberId, urlParams) {
-    const banner = document.getElementById('tauConnectionBanner');
-    const memberInfo = document.getElementById('memberInfo');
-    
-    // Extract member info from URL
-    const name = urlParams.get('name') || 'Member';
-    const email = urlParams.get('email') || '';
-    const team = urlParams.get('team') || '';
-    const level = urlParams.get('level') || '1';
-    
-    memberInfo.innerHTML = `
-        ${name} | ${team ? team + ' Team' : ''} | Level ${level}
-        ${email ? `<br><small>${email}</small>` : ''}
-    `;
-    
-    banner.style.display = 'block';
-    document.getElementById('guestModeBanner').style.display = 'none';
-}
-
-function showGuestModeBanner(guestId) {
-    const banner = document.getElementById('guestModeBanner');
-    
-    // Store guest ID in localStorage for this session
-    localStorage.setItem('currentGuestId', guestId);
-    
-    banner.style.display = 'block';
-    document.getElementById('tauConnectionBanner').style.display = 'none';
-}
-
-
-function openTAUMainApp() {
-    window.open('https://magero1985.github.io/Tau-Africa/', '_blank');
-}
-
-function registerWithTAU() {
-    // Get guest earnings to show as incentive
-    const guestId = localStorage.getItem('currentGuestId');
-    const guestEarnings = localStorage.getItem(`tauGuestProgress_${guestId}`);
-    let totalEarned = 0;
-    
-    if (guestEarnings) {
-        try {
-            const progress = JSON.parse(guestEarnings);
-            totalEarned = progress.totalEarned || 0;
-        } catch (e) {}
-    }
-    
-    // Show incentive message
-    if (totalEarned > 0) {
-        const message = `You've earned ${totalEarned} iKbp as a guest!\n\n`;
-        const incentive = `Register with TAU to claim your ${totalEarned} iKbp and start earning real rewards!`;
-        
-        if (confirm(message + incentive)) {
-            window.open('https://magero1985.github.io/Tau-Africa/', '_blank');
-        }
-    } else {
-        window.open('https://magero1985.github.io/Tau-Africa/', '_blank');
-    }
-}
-
-// Initialize on page load
-document.addEventListener('DOMContentLoaded', function() {
-    setTimeout(() => {
-        const connection = checkTAUConnection();
-        console.log('TAU Connection:', connection);
-    }, 500);
-});
-</script>
     <div class="container">
         <div class="header">
             <h1>Pan African Knowledge Challenge</h1>
@@ -546,9 +386,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 </div>
             </div>
 
-            <div class="level-indicator" id="levelIndicator">
-                <!-- Levels will be generated by JavaScript -->
-            </div>
+            <div class="level-indicator" id="levelIndicator"></div>
 
             <div class="question-container">
                 <div class="question-header">
@@ -560,9 +398,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     Loading question...
                 </div>
                 
-                <div class="options-container" id="optionsContainer">
-                    <!-- Options will be generated by JavaScript -->
-                </div>
+                <div class="options-container" id="optionsContainer"></div>
                 
                 <div id="hintArea" class="hint"></div>
                 
@@ -590,7 +426,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 <div class="celebration">🏆</div>
                 <h2>Congratulations!</h2>
                 <p>You have successfully completed all 10 levels of the Pan African Knowledge Challenge!</p>
-                <p>You are now a certified Pan African Master with a deep understanding of African history, culture, and achievements, please proceed to TAU Africa Ecosystemt to participate.</p>
+                <p>You are now a certified Pan African Master with a deep understanding of African history, culture, and achievements!</p>
                 <p id="finalGameScore">Final Score: <span id="totalScore">0</span></p>
                 <div style="margin-top: 30px;">
                     <button class="btn btn-start" onclick="restartGame()">Play Again</button>
@@ -598,22 +434,8 @@ document.addEventListener('DOMContentLoaded', function() {
             </div>
         </div>
     </div>
-<script>
-   // At the START of the Knowledge App
-const urlParams = new URLSearchParams(window.location.search);
-const memberId = urlParams.get('memberId');
-const guestId = urlParams.get('guestId');
 
-if (memberId) {
-    // Connected to TAU member - auto-sync earnings
-    console.log('Connected to TAU Member:', memberId);
-} else if (guestId) {
-    // Public user - store for later claim
-    console.log('Public user playing:', guestId);
-} 
-</script>
     <script>
-        // Game state
         let gameState = {
             currentLevel: 1,
             currentQuestion: 1,
@@ -625,104 +447,10 @@ if (memberId) {
             timerInterval: null,
             gameStarted: false,
             levelQuestions: [],
-            difficultyMultipliers: [1, 1.2, 1.5, 1.8, 2.0, 2.3, 2.7, 3.1, 3.6, 4.0]
+            difficultyMultipliers: [1, 1.2, 1.5, 1.8, 2.0, 2.3, 2.7, 3.1, 3.6, 4.0],
+            answerSubmitted: false
         };
-        // ============================================
-// iKbp TRACKING SYSTEM
-// ============================================
 
-// Add this after gameState declaration (around line 694)
-const iKbpTracker = {
-    totalEarned: 0,
-    levelEarnings: {},
-    
-    addEarnings: function(amount, level, reason) {
-        this.totalEarned += amount;
-        
-        // Store per-level earnings
-        if (!this.levelEarnings[level]) {
-            this.levelEarnings[level] = 0;
-        }
-        this.levelEarnings[level] += amount;
-        
-        console.log(`💰 +${amount} iKbp earned! (${reason})`);
-        
-        // Store in localStorage for sync
-        this.saveToLocalStorage();
-        
-        return amount;
-    },
-    
-    getTotalEarned: function() {
-        return this.totalEarned;
-    },
-    
-    getCurrentLevelEarnings: function() {
-        const level = gameState.currentLevel;
-        return this.levelEarnings[level] || 0;
-    },
-    
-    saveToLocalStorage: function() {
-        const earningData = {
-            totalEarned: this.totalEarned,
-            levelEarnings: this.levelEarnings,
-            lastUpdated: new Date().toISOString()
-        };
-        
-        // Store for TAU sync
-        localStorage.setItem('tauKnowledgeEarnings', JSON.stringify(earningData));
-        
-        // Also update gameState for immediate access
-        if (window.TauLevels) {
-            window.TauLevels.totalEarned = this.totalEarned;
-        } else {
-            window.TauLevels = { totalEarned: this.totalEarned };
-        }
-    },
-    
-    loadFromLocalStorage: function() {
-        const saved = localStorage.getItem('tauKnowledgeEarnings');
-        if (saved) {
-            try {
-                const data = JSON.parse(saved);
-                this.totalEarned = data.totalEarned || 0;
-                this.levelEarnings = data.levelEarnings || {};
-                
-                // Update gameState
-                if (window.TauLevels) {
-                    window.TauLevels.totalEarned = this.totalEarned;
-                } else {
-                    window.TauLevels = { totalEarned: this.totalEarned };
-                }
-            } catch (e) {
-                console.log('Could not load saved earnings');
-            }
-        }
-    }
-};
-
-// Initialize on page load
-iKbpTracker.loadFromLocalStorage();
-
-// Add these helper functions to window for TAU sync
-window.TauLevels = window.TauLevels || {};
-window.TauLevels.getTotalEarned = function() {
-    return iKbpTracker.totalEarned || 0;
-};
-
-window.TauLevels.getCurrentLevel = function() {
-    return gameState?.currentLevel || 1;
-};
-
-window.TauLevels.setUserProgress = function(progress) {
-    if (progress.totalEarned) {
-        iKbpTracker.totalEarned = progress.totalEarned;
-        iKbpTracker.levelEarnings = progress.levelEarnings || {};
-        iKbpTracker.saveToLocalStorage();
-    }
-};
-
-        // Pan African questions database
         const questionsDatabase = {
             level1: [
                 {
@@ -867,33 +595,16 @@ window.TauLevels.setUserProgress = function(progress) {
                     hint: "She won in 2004 for her contribution to sustainable development, democracy, and peace.",
                     category: "Politics"
                 }
-            ],
-            // Levels 3-10 would continue with increasing difficulty
-            // For this example, we'll generate placeholder questions for remaining levels
+            ]
         };
 
-        // Generate questions for levels 3-10
         function generateQuestionsForLevel(level) {
             const categories = ["History", "Politics", "Geography", "Culture", "Economy", "Science", "Arts", "Sports"];
-            const questionTemplates = [
-                {template: "Which African country was the first to gain independence in the {decade}s?", decade: ""},
-                {template: "The {event} took place in which African country?", event: ""},
-                {template: "Who was the founder of the {organization}?", organization: ""},
-                {template: "The {language} language is primarily spoken in which African region?", language: ""},
-                {template: "Which African scientist made significant contributions to {field}?", field: ""},
-                {template: "The {empire} reached its peak during which century?", empire: ""},
-                {template: "Which African musician is known for {achievement}?", achievement: ""},
-                {template: "The {resource} is a major export of which African country?", resource: ""}
-            ];
-
             let questions = [];
             for (let i = 0; i < 10; i++) {
                 const category = categories[i % categories.length];
-                const template = questionTemplates[i % questionTemplates.length];
-                const question = `Level ${level}, Question ${i+1}: Advanced question about ${category}.`;
-                
                 questions.push({
-                    question: question,
+                    question: `Level ${level}, Question ${i+1}: Advanced question about ${category}.`,
                     options: ["Option A", "Option B", "Option C", "Option D"],
                     correct: Math.floor(Math.random() * 4),
                     hint: `Hint for level ${level} question.`,
@@ -904,9 +615,7 @@ window.TauLevels.setUserProgress = function(progress) {
             return questions;
         }
 
-        // Initialize the game
         function initGame() {
-            // Generate questions for all levels if not already in database
             for (let level = 3; level <= 10; level++) {
                 const levelKey = `level${level}`;
                 if (!questionsDatabase[levelKey]) {
@@ -914,7 +623,6 @@ window.TauLevels.setUserProgress = function(progress) {
                 }
             }
             
-            // Create level indicators
             const levelIndicator = document.getElementById('levelIndicator');
             levelIndicator.innerHTML = '';
             
@@ -929,7 +637,6 @@ window.TauLevels.setUserProgress = function(progress) {
             updateLevelIndicator();
         }
 
-        // Start the game
         function startGame() {
             document.getElementById('startScreen').style.display = 'none';
             document.getElementById('gameScreen').style.display = 'flex';
@@ -946,268 +653,203 @@ window.TauLevels.setUserProgress = function(progress) {
         }
 
         function loadQuestion() {
-    const levelKey = `level${gameState.currentLevel}`;
-    gameState.levelQuestions = questionsDatabase[levelKey];
-    
-    if (!gameState.levelQuestions || gameState.levelQuestions.length === 0) {
-        console.error(`No questions found for ${levelKey}`);
-        return;
-    }
-    
-    const questionIndex = gameState.currentQuestion - 1;
-    const question = gameState.levelQuestions[questionIndex];
-    
-    if (!question) {
-        console.error(`No question found at index ${questionIndex}`);
-        return;
-    }
-    
-    document.getElementById('questionText').textContent = question.question;
-    document.getElementById('difficulty').textContent = getDifficultyText(gameState.currentLevel);
-    
-    // Update progress
-    const progressPercent = (gameState.currentQuestion / 10) * 100;
-    document.getElementById('questionProgress').style.width = `${progressPercent}%`;
-    
-    // Load options
-    const optionsContainer = document.getElementById('optionsContainer');
-    optionsContainer.innerHTML = '';
-    
-    gameState.correctAnswer = question.correct;
-    
-    question.options.forEach((option, index) => {
-        const optionElement = document.createElement('div');
-        optionElement.className = 'option';
-        optionElement.textContent = option;
-        optionElement.onclick = () => selectOption(index, optionElement);
-        optionsContainer.appendChild(optionElement);
-    });
-    
-    // Update hint
-    document.getElementById('hintArea').textContent = `Category: ${question.category} | ${question.hint}`;
-    
-    // Reset buttons
-    document.getElementById('submitBtn').disabled = true;
-    document.getElementById('nextBtn').disabled = true;
-    
-    // Reset selected option
-    gameState.selectedOption = null;
-    
-    // Reset timer
-    resetTimer();
-    
-    // ADD THIS LINE: Make sure options are clickable
-    document.querySelectorAll('.option').forEach(option => {
-        option.style.pointerEvents = 'auto';
-    });
-}
-// Select an option
-function selectOption(index, element) {
-    // Don't allow selection if already answered
-    if (document.getElementById('submitBtn').disabled) return;
-    
-    // Remove selected class from all options
-    document.querySelectorAll('.option').forEach(opt => {
-        opt.classList.remove('selected');
-    });
-    
-    // Add selected class to clicked option
-    element.classList.add('selected');
-    gameState.selectedOption = index;
-    
-    // Enable submit button
-    document.getElementById('submitBtn').disabled = false;
-    
-    // Remove previous timeouts to prevent multiple submissions
-    if (window.answerTimeout) {
-        clearTimeout(window.answerTimeout);
-    }
-    
-    // AUTO-SUBMIT: Submit answer after 1 second delay
-    window.answerTimeout = setTimeout(() => {
-        if (!document.getElementById('submitBtn').disabled) {
-            submitAnswer();
+            const levelKey = `level${gameState.currentLevel}`;
+            gameState.levelQuestions = questionsDatabase[levelKey];
+            
+            if (!gameState.levelQuestions || gameState.levelQuestions.length === 0) {
+                console.error(`No questions found for ${levelKey}`);
+                return;
+            }
+            
+            const questionIndex = gameState.currentQuestion - 1;
+            const question = gameState.levelQuestions[questionIndex];
+            
+            if (!question) {
+                console.error(`No question found at index ${questionIndex}`);
+                return;
+            }
+            
+            document.getElementById('questionText').textContent = question.question;
+            document.getElementById('difficulty').textContent = getDifficultyText(gameState.currentLevel);
+            
+            const progressPercent = (gameState.currentQuestion / 10) * 100;
+            document.getElementById('questionProgress').style.width = `${progressPercent}%`;
+            
+            const optionsContainer = document.getElementById('optionsContainer');
+            optionsContainer.innerHTML = '';
+            
+            gameState.correctAnswer = question.correct;
+            gameState.selectedOption = null;
+            gameState.answerSubmitted = false;
+            
+            question.options.forEach((option, index) => {
+                const optionElement = document.createElement('div');
+                optionElement.className = 'option';
+                optionElement.textContent = option;
+                optionElement.onclick = () => selectOption(index, optionElement);
+                optionsContainer.appendChild(optionElement);
+            });
+            
+            document.getElementById('hintArea').textContent = `Category: ${question.category} | ${question.hint}`;
+            
+            document.getElementById('submitBtn').disabled = true;
+            document.getElementById('nextBtn').disabled = true;
+            
+            resetTimer();
         }
-    }, 1000);
-}
-        // Move to next question
-function nextQuestion() {
-    if (gameState.currentQuestion < 10) {
-        gameState.currentQuestion++;
-        updateGameDisplay();
-        loadQuestion();
-    } else {
-        // Level complete
-        completeLevel();
-    }
-}
-function submitAnswer() {
-    if (gameState.selectedOption === null) return;
-    
-    const options = document.querySelectorAll('.option');
-    const correctIndex = gameState.correctAnswer;
-    
-    // Clear any pending timeout
-    if (window.answerTimeout) {
-        clearTimeout(window.answerTimeout);
-        window.answerTimeout = null;
-    }
-    
-    // IMMEDIATE VISUAL FEEDBACK
-    options.forEach((option, index) => {
-        if (index === correctIndex) {
-            option.classList.add('correct');
-        } else if (index === gameState.selectedOption && index !== correctIndex) {
-            option.classList.add('wrong');
-        }
-    });
-    
-    // Disable all options to prevent further clicks
-    options.forEach(option => {
-        option.style.pointerEvents = 'none';
-    });
-    
-    // Calculate score
-    const timeBonus = Math.max(0, gameState.timer) * 2;
-    const difficultyMultiplier = gameState.difficultyMultipliers[gameState.currentLevel - 1];
-    const basePoints = 100;
-    
-    if (gameState.selectedOption === correctIndex) {
-        // Correct answer - Award iKbp
-        const pointsEarned = Math.round((basePoints + timeBonus) * difficultyMultiplier);
-        gameState.score += pointsEarned;
-        
-        // AWARD iKbp (1 iKbp per 10 points)
-        const iKbpEarned = Math.floor(pointsEarned / 10);
-        if (iKbpEarned > 0) {
-            iKbpTracker.addEarnings(
-                iKbpEarned, 
-                gameState.currentLevel, 
-                `Level ${gameState.currentLevel}, Q${gameState.currentQuestion}`
-            );
-        }
-        
-        // Show feedback
-        document.getElementById('hintArea').innerHTML = 
-            `<span style="color: #4cc9f0">✓ Correct! +${pointsEarned} points (+${iKbpEarned} iKbp)</span>`;
-    } else {
-        // Wrong answer
-        document.getElementById('hintArea').innerHTML = 
-            `<span style="color: #ef476f">✗ Incorrect. The correct answer was: ${options[correctIndex].textContent}</span>`;
-    }
-    
-    gameState.questionsAnswered++;
-    
-    // Update score display
-    document.getElementById('score').textContent = gameState.score;
-    
-    // Disable submit button, enable next button
-    document.getElementById('submitBtn').disabled = true;
-    document.getElementById('nextBtn').disabled = false;
-    
-    // Stop timer
-    clearInterval(gameState.timerInterval);
-    
-    // AUTO-ADVANCE: Wait 2 seconds then go to next question
-    setTimeout(() => {
-        if (gameState.currentQuestion < 10) {
-            nextQuestion();
-        } else {
-            completeLevel();
-        }
-    }, 2000);
-        }
-        // Complete level
-function completeLevel() {
-    clearInterval(gameState.timerInterval);
-    
-    // Calculate level performance
-    const correctPercentage = (gameState.questionsAnswered / 10) * 100;
-    const leveliKbp = iKbpTracker.getCurrentLevelEarnings();
-    
-    // Show celebration based on performance
-    let celebrationMessage = "";
-    let celebrationEmoji = "🎉";
-    
-    if (correctPercentage >= 90) {
-        celebrationMessage = "Outstanding! You're a Pan African expert!";
-        celebrationEmoji = "🏆";
-    } else if (correctPercentage >= 70) {
-        celebrationMessage = "Great job! You know your African history well!";
-        celebrationEmoji = "⭐";
-    } else if (correctPercentage >= 50) {
-        celebrationMessage = "Good work! Keep learning about Africa!";
-        celebrationEmoji = "👍";
-    } else {
-        celebrationMessage = "Good attempt! Review and try again for better results!";
-        celebrationEmoji = "📚";
-    }
-    
-    // Add iKbp message if earned
-    if (leveliKbp > 0) {
-        celebrationMessage += `\n\n💰 You earned ${leveliKbp} iKbp this level!`;
-    }
-    
-    // Update level indicator
-    document.getElementById(`level${gameState.currentLevel}`).classList.add('completed');
-    
-    // Check if game is complete
-    if (gameState.currentLevel >= 10) {
-        completeGame();
-        return;
-    }
-    
-    // Show level completion modal with celebration
-    document.getElementById('resultTitle').textContent = `Level ${gameState.currentLevel} Complete! ${celebrationEmoji}`;
-    document.getElementById('resultMessage').innerHTML = celebrationMessage.replace(/\n/g, '<br>');
-    document.getElementById('finalScore').textContent = gameState.score;
-    
-    // Update celebration emoji
-    document.getElementById('celebrationEmoji').textContent = celebrationEmoji;
-    
-    // Update next level button text
-    document.getElementById('nextLevelBtn').textContent = `Proceed to Level ${gameState.currentLevel + 1}`;
-    
-    document.getElementById('resultModal').style.display = 'flex';
-}
 
-        // Complete entire game
+        function selectOption(index, element) {
+            if (gameState.answerSubmitted) return;
+            
+            document.querySelectorAll('.option').forEach(opt => {
+                opt.classList.remove('selected');
+            });
+            
+            element.classList.add('selected');
+            gameState.selectedOption = index;
+            
+            document.getElementById('submitBtn').disabled = false;
+            
+            if (window.answerTimeout) {
+                clearTimeout(window.answerTimeout);
+            }
+            
+            window.answerTimeout = setTimeout(() => {
+                if (!gameState.answerSubmitted) {
+                    submitAnswer();
+                }
+            }, 1000);
+        }
+
+        function submitAnswer() {
+            if (gameState.selectedOption === null || gameState.answerSubmitted) return;
+            
+            gameState.answerSubmitted = true;
+            
+            const options = document.querySelectorAll('.option');
+            const correctIndex = gameState.correctAnswer;
+            
+            if (window.answerTimeout) {
+                clearTimeout(window.answerTimeout);
+                window.answerTimeout = null;
+            }
+            
+            options.forEach((option, index) => {
+                option.classList.add('disabled');
+                if (index === correctIndex) {
+                    option.classList.add('correct');
+                } else if (index === gameState.selectedOption && index !== correctIndex) {
+                    option.classList.add('wrong');
+                }
+            });
+            
+            const timeBonus = Math.max(0, gameState.timer) * 2;
+            const difficultyMultiplier = gameState.difficultyMultipliers[gameState.currentLevel - 1];
+            const basePoints = 100;
+            
+            if (gameState.selectedOption === correctIndex) {
+                const pointsEarned = Math.round((basePoints + timeBonus) * difficultyMultiplier);
+                gameState.score += pointsEarned;
+                document.getElementById('hintArea').innerHTML = 
+                    `<span style="color: #4cc9f0">✓ Correct! +${pointsEarned} points</span>`;
+            } else {
+                document.getElementById('hintArea').innerHTML = 
+                    `<span style="color: #ef476f">✗ Incorrect. The correct answer was: ${options[correctIndex].textContent}</span>`;
+            }
+            
+            gameState.questionsAnswered++;
+            document.getElementById('score').textContent = gameState.score;
+            
+            document.getElementById('submitBtn').disabled = true;
+            document.getElementById('nextBtn').disabled = false;
+            
+            clearInterval(gameState.timerInterval);
+            
+            setTimeout(() => {
+                if (gameState.currentQuestion < 10) {
+                    nextQuestion();
+                } else {
+                    completeLevel();
+                }
+            }, 2000);
+        }
+
+        function nextQuestion() {
+            if (gameState.currentQuestion < 10) {
+                gameState.currentQuestion++;
+                updateGameDisplay();
+                loadQuestion();
+            } else {
+                completeLevel();
+            }
+        }
+
+        function completeLevel() {
+            clearInterval(gameState.timerInterval);
+            
+            const correctPercentage = (gameState.questionsAnswered / 10) * 100;
+            let celebrationMessage = "";
+            let celebrationEmoji = "🎉";
+            
+            if (correctPercentage >= 90) {
+                celebrationMessage = "Outstanding! You're a Pan African expert!";
+                celebrationEmoji = "🏆";
+            } else if (correctPercentage >= 70) {
+                celebrationMessage = "Great job! You know your African history well!";
+                celebrationEmoji = "⭐";
+            } else if (correctPercentage >= 50) {
+                celebrationMessage = "Good work! Keep learning about Africa!";
+                celebrationEmoji = "👍";
+            } else {
+                celebrationMessage = "Good attempt! Review and try again for better results!";
+                celebrationEmoji = "📚";
+            }
+            
+            document.getElementById(`level${gameState.currentLevel}`).classList.add('completed');
+            
+            if (gameState.currentLevel >= 10) {
+                completeGame();
+                return;
+            }
+            
+            document.getElementById('resultTitle').textContent = `Level ${gameState.currentLevel} Complete! ${celebrationEmoji}`;
+            document.getElementById('resultMessage').innerHTML = celebrationMessage;
+            document.getElementById('finalScore').textContent = gameState.score;
+            document.getElementById('celebrationEmoji').textContent = celebrationEmoji;
+            document.getElementById('nextLevelBtn').textContent = `Proceed to Level ${gameState.currentLevel + 1}`;
+            
+            document.getElementById('resultModal').style.display = 'flex';
+        }
+
         function completeGame() {
             document.getElementById('totalScore').textContent = gameState.score;
             document.getElementById('gameCompleteModal').style.display = 'flex';
         }
-        
-// Move to next level
-function nextLevel() {
-    gameState.currentLevel++;
-    gameState.currentQuestion = 1;
-    gameState.questionsAnswered = 0;
-    gameState.selectedOption = null;
-    gameState.correctAnswer = null;
-    
-    updateGameDisplay();
-    loadQuestion();
-    startTimer();
-    
-    closeResult();
-}
 
-// Close result modal
-function closeResult() {
-    document.getElementById('resultModal').style.display = 'none';
-    
-    // IMPORTANT: Reset game state for next level
-    gameState.questionsAnswered = 0;
-    gameState.selectedOption = null;
-}
+        function nextLevel() {
+            gameState.currentLevel++;
+            gameState.currentQuestion = 1;
+            gameState.questionsAnswered = 0;
+            gameState.selectedOption = null;
+            gameState.correctAnswer = null;
+            gameState.answerSubmitted = false;
+            
+            updateGameDisplay();
+            loadQuestion();
+            startTimer();
+            
+            closeResult();
+        }
 
-        // Restart game
+        function closeResult() {
+            document.getElementById('resultModal').style.display = 'none';
+        }
+
         function restartGame() {
             document.getElementById('gameCompleteModal').style.display = 'none';
             document.getElementById('gameScreen').style.display = 'none';
             document.getElementById('startScreen').style.display = 'block';
             
-            // Reset all level indicators
             document.querySelectorAll('.level-dot').forEach(dot => {
                 dot.classList.remove('active', 'completed');
             });
@@ -1215,7 +857,6 @@ function closeResult() {
             gameState.gameStarted = false;
         }
 
-        // Update game display
         function updateGameDisplay() {
             document.getElementById('currentLevel').textContent = gameState.currentLevel;
             document.getElementById('currentQuestion').textContent = `${gameState.currentQuestion}/10`;
@@ -1226,23 +867,19 @@ function closeResult() {
             updateLevelIndicator();
         }
 
-        // Update level indicator
         function updateLevelIndicator() {
-            // Remove active class from all
             document.querySelectorAll('.level-dot').forEach(dot => {
                 dot.classList.remove('active');
             });
             
-            // Add active class to current level
             const currentLevelDot = document.getElementById(`level${gameState.currentLevel}`);
             if (currentLevelDot) {
                 currentLevelDot.classList.add('active');
             }
         }
 
-        // Timer functions
         function startTimer() {
-            gameState.timer = 30; // 30 seconds per question
+            gameState.timer = 30;
             updateTimerDisplay();
             
             clearInterval(gameState.timerInterval);
@@ -1252,8 +889,7 @@ function closeResult() {
                 
                 if (gameState.timer <= 0) {
                     clearInterval(gameState.timerInterval);
-                    if (gameState.selectedOption === null) {
-                        // Auto-submit with no answer selected
+                    if (gameState.selectedOption === null && !gameState.answerSubmitted) {
                         submitAnswer();
                     }
                 }
@@ -1269,16 +905,15 @@ function closeResult() {
         function updateTimerDisplay() {
             const timerElement = document.getElementById('timer');
             if (gameState.timer <= 10) {
-                timerElement.style.color = '#ef476f'; // Red for low time
+                timerElement.style.color = '#ef476f';
             } else if (gameState.timer <= 20) {
-                timerElement.style.color = '#f7a440'; // Orange for medium time
+                timerElement.style.color = '#f7a440';
             } else {
-                timerElement.style.color = '#4cc9f0'; // Blue for normal time
+                timerElement.style.color = '#4cc9f0';
             }
             timerElement.textContent = `${gameState.timer}s`;
         }
 
-        // Helper function to get difficulty text
         function getDifficultyText(level) {
             if (level <= 2) return "Easy";
             if (level <= 4) return "Medium";
@@ -1286,92 +921,9 @@ function closeResult() {
             return "Expert";
         }
 
-        // Initialize the game when page loads
-        // Initialize the game when page loads
-window.onload = function() {
-    initGame();
-    iKbpTracker.loadFromLocalStorage(); // Add this line
-    
-    // Show current total iKbp if any
-    const totalEarned = iKbpTracker.getTotalEarned();
-    if (totalEarned > 0) {
-        console.log(`Previously earned: ${totalEarned} iKbp`);
-    }
-};
-</script>
-<script>
-// Add this function to your Knowledge App JavaScript:
-
- function syncEarningsToTAU() {
-    // Get current earnings from our tracking system
-    const totalEarned = iKbpTracker.getTotalEarned();
-    const currentLevel = gameState?.currentLevel || 1;
-    
-    if (totalEarned > 0) {
-        // Show detailed confirmation
-        const earningsByLevel = Object.entries(iKbpTracker.levelEarnings)
-            .map(([level, amount]) => `Level ${level}: ${amount} iKbp`)
-            .join('\n');
-        
-        const message = `Sync ${totalEarned} iKbp to your TAU account?\n\nBreakdown:\n${earningsByLevel}`;
-        
-        const confirmed = confirm(message);
-        
-        if (confirmed) {
-            // Create sync data
-            const syncData = {
-                totalEarned: totalEarned,
-                levelEarnings: iKbpTracker.levelEarnings,
-                currentLevel: currentLevel,
-                timestamp: new Date().toISOString(),
-                source: 'knowledge_app'
-            };
-            
-            // Store sync data for TAU app to pick up
-            localStorage.setItem('tauSyncData', JSON.stringify(syncData));
-            
-            // Show success message
-            alert(`✅ ${totalEarned} iKbp prepared for sync!\n\nRedirecting to TAU app...`);
-            
-            // Redirect to TAU app with sync parameters
-            const urlParams = new URLSearchParams(window.location.search);
-            const memberId = urlParams.get('memberId') || 'guest';
-            
-            setTimeout(() => {
-                window.open(`https://magero1985.github.io/Tau-Africa/?sync=true&memberId=${memberId}&earned=${totalEarned}`, '_blank');
-            }, 1000);
-        }
-    } else {
-        alert('No earnings to sync yet! Complete some questions first.\n\nTip: Answer questions correctly to earn iKbp!');
-    }
- }
-</script>
-
-    <script>
-        // Debug function to check if everything is working
-function debugGame() {
-    console.log('Game State:', gameState);
-    console.log('iKbp Tracker:', iKbpTracker);
-    console.log('Questions loaded:', gameState.levelQuestions?.length || 0);
-    console.log('Current question:', gameState.currentQuestion);
-    console.log('Selected option:', gameState.selectedOption);
-    
-    // Test buttons
-    const submitBtn = document.getElementById('submitBtn');
-    const nextBtn = document.getElementById('nextBtn');
-    console.log('Submit button disabled:', submitBtn.disabled);
-    console.log('Next button disabled:', nextBtn.disabled);
-    
-    alert('Check console for debug info');
-}
-
-// Call debug on F12 key press
-document.addEventListener('keydown', function(e) {
-    if (e.key === 'F12') {
-        e.preventDefault();
-        debugGame();
-    }
-});
+        window.onload = function() {
+            initGame();
+        };
     </script>
 </body>
 </html>
