@@ -16381,43 +16381,39 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 </script>
  <script>
-(function() {
-    function ensureLoginIndicator() {
-        // Remove the old one if it exists to refresh the UI state
-        const old = document.getElementById('loginStatusIndicator');
-        if (old) old.remove();
-
-        const currentMember = window.TauDB?.getCurrentMember();
-        const div = document.createElement('div');
-        div.id = 'loginStatusIndicator';
-        
-        if (currentMember) {
-            // LOGGED IN STATE: Shows Name & Email
-            div.innerHTML = `
-                <div style="width:10px; height:10px; background:#2ecc71; border-radius:50%; box-shadow: 0 0 5px #2ecc71;"></div>
-                <div style="text-align: left;">
-                    <div style="font-weight:bold; font-size:12px; color:#2a5298; line-height:1.2;">${currentMember.fullName}</div>
-                    <div style="font-size:10px; color:#666;">${currentMember.email}</div>
-                </div>
-            `;
-            // Re-enables the "Quick Menu" with dashboard/profile/logout options
-            div.onclick = (e) => { e.stopPropagation(); window.showQuickMenu(currentMember); };
-        } else {
-            // LOGGED OUT STATE: Shows "Not Logged In" pulsing
-            div.innerHTML = `
-                <div style="width:10px; height:10px; background:#e74c3c; border-radius:50%; animation:pulse 2s infinite;"></div>
-                <div style="font-weight:bold; font-size:12px; color:#333;">Not Logged In</div>
-            `;
-            // Shows the Login/Register selection menu
-            div.onclick = (e) => { e.stopPropagation(); window.showLoginRegisterMenu(); };
-        }
-        document.body.appendChild(div);
+function ensureLoginIndicator() {
+    let indicator = document.getElementById('loginStatusIndicator');
+    if (!indicator) {
+        indicator = document.createElement('div');
+        indicator.id = 'loginStatusIndicator';
+        document.body.appendChild(indicator);
     }
 
-    ensureLoginIndicator();
-    // Refresh every 5 seconds to catch login/logout events
-    setInterval(ensureLoginIndicator, 5000);
-})();
+    const currentMember = window.TauDB?.getCurrentMember();
+    
+    // Reset styles and content
+    indicator.style.cssText = `
+        position: fixed; bottom: 30px; left: 30px; z-index: 999999;
+        background: white; padding: 10px 20px; border-radius: 50px;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.2); display: flex;
+        align-items: center; gap: 10px; cursor: pointer; border: 2px solid #4169e1;
+    `;
+
+    if (currentMember) {
+        indicator.innerHTML = `
+            <div style="width: 10px; height: 10px; background: #2ecc71; border-radius: 50%;"></div>
+            <span style="font-weight: bold; font-size: 14px;">${currentMember.fullName.split(' ')[0]} (💰${currentMember.iKbpBalance || 0})</span>
+        `;
+        // Explicitly use the window-scoped function we added at the end of the script
+        indicator.onclick = function() { window.showQuickMenu(currentMember); };
+    } else {
+        indicator.innerHTML = `
+            <div style="width: 10px; height: 10px; background: #e74c3c; border-radius: 50%;"></div>
+            <span style="font-weight: bold; font-size: 14px;">Guest: Login</span>
+        `;
+        indicator.onclick = function() { showTab('login'); };
+    }
+}
     </script>
         <script>
 // ==========================================
@@ -16841,30 +16837,39 @@ window.showQuickMenu = function(member) {
     document.body.appendChild(panel);
 };
 
-// 3. Start Level Logic: Prevents repeats and ensures correct starting level
 window.startLevelChallenge = function() {
     const user = firebase.auth().currentUser;
     const currentLevel = window.userCurrentLevel || 1;
 
-    if (!user) {
-        alert("⚠️ GUEST MODE: You are playing for fun. To earn rewards that sync to your TAU account, please login first.");
-    }
-
+    // Check if Level 10 already finished
     if (currentLevel > 10) {
-        alert("🎉 You have completed all 10 Levels! Visit the Knowledge Portal for further earning opportunities.");
+        alert("🎉 Level 10 Complete! Please visit the Knowledge Portal for further earnings.");
         return;
     }
 
-    // Launch the game at the specific level
-    console.log(`Starting Level ${currentLevel}`);
-    if (typeof openKnowledgeGame === 'function') {
-        openKnowledgeGame(currentLevel);
+    // Modal or Div check for In-App Challenge
+    const challengeSection = document.getElementById('knowledge-challenge-ui'); 
+    if (challengeSection) {
+        showTab('knowledge-section'); // Switch to the UI
+        initiateInAppGame(currentLevel); // Start the local logic
     } else {
-        // Fallback: If your game uses a different function name, update it here
-        initiateLevel(currentLevel); 
+        // Fallback to External Portal only if In-App UI is missing
+        const mode = user ? 'member' : 'guest';
+        window.open(`https://magero1985.github.io/Tau-Africa/knowledge-App.html?mode=${mode}&level=${currentLevel}`, '_blank');
     }
 };
-}
+
+// Hook to add earnings per level passed in-app
+window.onLevelComplete = async function(points) {
+    const user = firebase.auth().currentUser;
+    if (user) {
+        await firebase.firestore().collection('members').doc(user.uid).update({
+            iKbpBalance: firebase.firestore.FieldValue.increment(points),
+            lastCompletedLevel: firebase.firestore.FieldValue.increment(1)
+        });
+        showNotification(`💰 +${points} iKbp added to your account!`, 'success');
+    }
+};
     </script>
 </body>
 </html>
