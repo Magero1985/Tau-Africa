@@ -1110,17 +1110,23 @@ function calculateLevelReward(level) {
     return Math.round(50 * Math.pow(1.2, level - 1));
 }
 
-function startLevelChallenge() {
-    const currentLevel = window.TauLevels?.getCurrentLevel?.() || 1;
-    
-    // If user is logged in, open knowledge app
-    const currentMember = window.TauDB?.getCurrentMember();
-    if (currentMember) {
-        openKnowledgeAppForMember();
-    } else {
-        openKnowledgeAppForPublic();
-    }
-}
+window.startLevelChallenge = function() {
+    const container = document.getElementById('levelChallengeContainer');
+    if (!container) return;
+
+    // Reset container for the game
+    container.innerHTML = `
+        <div style="text-align: center; padding: 20px;">
+            <h3>Loading Level ${window.userCurrentLevel || 1}...</h3>
+            <div class="spinner"></div>
+        </div>
+    `;
+
+    // Initialize the quiz after a short delay
+    setTimeout(() => {
+        initiateGameLevel();
+    }, 800);
+};
 
 // Load initial data
 function loadLevelData(level = 1) {
@@ -15431,6 +15437,7 @@ window.declineMember = async function(docId, name) {
         return Math.round(LEVEL_CONFIG.baseReward * Math.pow(LEVEL_CONFIG.rewardMultiplier, level - 1));
     }
     
+    
     // Generate questions for each level
     function generateLevelQuestions(level) {
         const questions = [];
@@ -15455,7 +15462,63 @@ window.declineMember = async function(docId, name) {
         // Shuffle and limit questions
         return shuffleArray(questions).slice(0, LEVEL_CONFIG.questionsPerLevel);
     }
-    
+    function initiateGameLevel() {
+    const level = window.userCurrentLevel || 1;
+    const questions = generateLevelQuestions(level); // Uses your existing generator
+    let currentQIndex = 0;
+
+    function renderQuestion() {
+        const q = questions[currentQIndex];
+        const container = document.getElementById('levelChallengeContainer');
+        
+        container.innerHTML = `
+            <div class="quiz-box">
+                <p><strong>Question ${currentQIndex + 1} of 5:</strong></p>
+                <h3 style="margin: 15px 0;">${q.question}</h3>
+                <div style="display: flex; flex-direction: column; gap: 10px;">
+                    ${q.options.map((opt, i) => `
+                        <button class="btn" style="background: #f0f0f0; color: #333; text-align: left;" 
+                                onclick="checkAnswer(${i}, ${q.correctAnswer})">
+                            ${opt}
+                        </button>
+                    `).join('')}
+                </div>
+            </div>
+        `;
+    }
+
+    window.checkAnswer = function(selected, correct) {
+        if (selected === correct) {
+            showNotification("Correct! 🎉", "success");
+            currentQIndex++;
+            if (currentQIndex < 5) {
+                renderQuestion();
+            } else {
+                completeLevel(level);
+            }
+        } else {
+            showNotification("Try again!", "error");
+        }
+    };
+
+    renderQuestion();
+}
+
+function completeLevel(level) {
+    const reward = level * 50;
+    const container = document.getElementById('levelChallengeContainer');
+    container.innerHTML = `
+        <div style="text-align: center; padding: 30px;">
+            <h2>Level ${level} Complete!</h2>
+            <p>You earned ${reward} iKbp</p>
+            <button class="btn" onclick="location.reload()">Claim & Continue</button>
+        </div>
+    `;
+    // Call your existing sync function to award points
+    if (typeof handleKnowledgeSync === 'function') {
+        handleKnowledgeSync(reward, level);
+    }
+}
     // ============================================
     // QUESTION GENERATORS
     // ============================================
@@ -16836,28 +16899,22 @@ window.showQuickMenu = function(member) {
 
 // 3. Start Level Logic: Prevents repeats and ensures correct starting level
 window.startLevelChallenge = function() {
-    const user = firebase.auth().currentUser;
-    const currentLevel = window.userCurrentLevel || 1;
+    const container = document.getElementById('levelChallengeContainer');
+    if (!container) return;
 
-    if (!user) {
-        alert("⚠️ GUEST MODE: You are playing for fun. To earn rewards that sync to your TAU account, please login first.");
-    }
+    // Reset container for the game
+    container.innerHTML = `
+        <div style="text-align: center; padding: 20px;">
+            <h3>Loading Level ${window.userCurrentLevel || 1}...</h3>
+            <div class="spinner"></div>
+        </div>
+    `;
 
-    if (currentLevel > 10) {
-        alert("🎉 You have completed all 10 Levels! Visit the Knowledge Portal for further earning opportunities.");
-        return;
-    }
-
-    // Launch the game at the specific level
-    console.log(`Starting Level ${currentLevel}`);
-    if (typeof openKnowledgeGame === 'function') {
-        openKnowledgeGame(currentLevel);
-    } else {
-        // Fallback: If your game uses a different function name, update it here
-        initiateLevel(currentLevel); 
-    }
+    // Initialize the quiz after a short delay
+    setTimeout(() => {
+        initiateGameLevel();
+    }, 800);
 };
-}
     </script>
 </body>
 </html>
