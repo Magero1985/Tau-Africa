@@ -15915,23 +15915,27 @@ function completeLevel(level) {
     // ============================================
     
     function updateLevelDisplay() {
-        const levelElement = document.getElementById('currentLevel');
-        const rewardElement = document.getElementById('levelReward');
-        
-        if (levelElement && rewardElement) {
-            levelElement.textContent = `Level ${currentLevel}`;
-            rewardElement.textContent = `Reward: ${calculateLevelReward(currentLevel)} iKbp`;
-        }
-    }
+    // This pulls the current level from the global variable
+    const levelVal = window.userCurrentLevel || 1;
     
-    function updateProgressBar() {
-        const progressElement = document.getElementById('levelProgress');
-        if (!progressElement) return;
-        
-        // Calculate progress percentage
-        const progressPercentage = ((currentLevel - 1) / LEVEL_CONFIG.totalLevels) * 100;
-        progressElement.style.width = `${progressPercentage}%`;
-    }
+    // 1. Update the big number in the circle
+    const levelDisplay = document.getElementById('currentLevelDisplay');
+    if (levelDisplay) levelDisplay.textContent = levelVal;
+
+    // 2. Update the "Level X" text label
+    const levelLabel = document.getElementById('currentLevel');
+    if (levelLabel) levelLabel.textContent = levelVal;
+
+    // 3. Update the Reward amount (e.g., 50, 100, 150...)
+    const rewardLabel = document.getElementById('levelReward');
+    if (rewardLabel) rewardLabel.textContent = (levelVal * 50);
+
+    // 4. Update the Progress Bar width (Level 1 = 10%, Level 10 = 100%)
+    const progressBar = document.getElementById('levelProgressBar');
+    if (progressBar) progressBar.style.width = (levelVal * 10) + '%';
+    
+    console.log("UI Updated to Level:", levelVal);
+}
     
     window.handleKnowledgeSync = async function(earnedPoints, level) {
     const user = firebase.auth().currentUser;
@@ -16915,6 +16919,67 @@ window.startLevelChallenge = function() {
         initiateGameLevel();
     }, 800);
 };
+    window.initiateGameLevel = function() {
+    const container = document.getElementById('levelChallengeContainer');
+    const level = window.userCurrentLevel || 1;
+    
+    // 1. Get Questions for this level
+    const questions = generateLevelQuestions(level); 
+    let currentQIndex = 0;
+
+    // 2. Function to show the current question
+    function renderQuestion() {
+        const q = questions[currentQIndex];
+        container.innerHTML = `
+            <div class="quiz-box" style="animation: fadeIn 0.5s ease;">
+                <p style="color: #4169e1; font-weight: bold;">Question ${currentQIndex + 1} of 5</p>
+                <h3 style="margin: 15px 0; line-height: 1.4;">${q.question}</h3>
+                <div style="display: flex; flex-direction: column; gap: 12px; margin-top: 20px;">
+                    ${q.options.map((opt, i) => `
+                        <button class="btn" style="background: #f8f9fa; color: #333; text-align: left; border: 1px solid #ddd;" 
+                                onclick="processAnswer(${i}, ${q.correctAnswer})">
+                            ${opt}
+                        </button>
+                    `).join('')}
+                </div>
+            </div>
+        `;
+    }
+
+    // 3. Handle Answer & Auto-Next
+    window.processAnswer = function(selected, correct) {
+        if (selected === correct) {
+            showNotification("Correct! 🎯", "success");
+            currentQIndex++;
+            
+            if (currentQIndex < 5) {
+                // Auto-next to next question
+                renderQuestion();
+            } else {
+                // Level Complete
+                const reward = level * 50;
+                handleKnowledgeSync(reward, level);
+                showLevelComplete(level, reward);
+            }
+        } else {
+            showNotification("Incorrect. Try again!", "error");
+        }
+    };
+
+    renderQuestion();
+};
+
+function showLevelComplete(level, reward) {
+    const container = document.getElementById('levelChallengeContainer');
+    container.innerHTML = `
+        <div style="text-align: center; padding: 20px;">
+            <div style="font-size: 50px;">🏆</div>
+            <h2 style="color: #2ecc71;">Level ${level} Complete!</h2>
+            <p>You've earned <strong>${reward} iKbp</strong></p>
+            <button class="btn" onclick="location.reload()" style="margin-top: 15px;">Claim Reward & Continue</button>
+        </div>
+    `;
+}
     </script>
 </body>
 </html>
