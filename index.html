@@ -1838,7 +1838,6 @@ TAU Africa Team
             (m.id === identifier || m.email === identifier) && 
             m.phone.slice(-4) === phoneLastFour
         );
-        
         if (member) {
             console.log('✅ Found in localStorage:', member.id);
             
@@ -3627,7 +3626,6 @@ function showMultiPaymentModal(amount, phoneNumber, formData, successCallback) {
                     💳 Visa/Card
                 </button>
             </div>
-            
             <!-- M-PESA PAYMENT FORM -->
             <div id="mpesaPaymentForm" style="display: none;">
                 <div style="background: #fff3cd; padding: 15px; border-radius: 10px; margin-bottom: 15px;">
@@ -5863,7 +5861,6 @@ function createWorkshopModal() {
                     <label>Your Expertise/Qualifications *</label>
                     <textarea name="expertise" rows="3" placeholder="Your background and qualifications for hosting this workshop" required></textarea>
                 </div>
-                
                 <button type="submit" class="btn">Submit Workshop Proposal</button>
             </form>
         </div>
@@ -7871,7 +7868,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 totalEarnings += stageEarnings;
             }
         });
-        
         // Get pending validations
         const pendingCodes = codes.filter(c => c.status === 'pending');
         
@@ -11038,7 +11034,6 @@ console.log('💡 Run window.runIntegrationTest() to check integration');
             console.log('⚠️ OFFLINE MODE - Local storage only');
             console.log('💡 Will sync when connection restored');
         }
-        
         console.log('\n💡 Debug commands:');
         console.log('  window.TauFirestore.testConnection()');
         console.log('  window.TauFirestore.load("members")');
@@ -12806,7 +12801,6 @@ window.processValidatorCode = async function(event, validatorId) {
     window.handleValueClaim = function(valueId) {
         const values = JSON.parse(localStorage.getItem('tauValues') || '[]');
         const value = values.find(v => v.id === valueId);
-        
         if (!value) {
             showNotification('❌ Value not found', 'error');
             return;
@@ -14589,7 +14583,6 @@ window.processValidatorCode = async function(event, validatorId) {
                     <label>Key Skills *</label>
                     <textarea name="skills" rows="3" required placeholder="List your relevant skills..."></textarea>
                 </div>
-                
                 <div class="form-group">
                     <label>References</label>
                     <textarea name="references" rows="2" placeholder="Professional references (optional)"></textarea>
@@ -16380,7 +16373,46 @@ document.addEventListener('DOMContentLoaded', () => {
     }, 2000);
 });
 </script>
-<script>
+ <script>
+(function() {
+    function ensureLoginIndicator() {
+        // Remove the old one if it exists to refresh the UI state
+        const old = document.getElementById('loginStatusIndicator');
+        if (old) old.remove();
+
+        const currentMember = window.TauDB?.getCurrentMember();
+        const div = document.createElement('div');
+        div.id = 'loginStatusIndicator';
+        
+        if (currentMember) {
+            // LOGGED IN STATE: Shows Name & Email
+            div.innerHTML = `
+                <div style="width:10px; height:10px; background:#2ecc71; border-radius:50%; box-shadow: 0 0 5px #2ecc71;"></div>
+                <div style="text-align: left;">
+                    <div style="font-weight:bold; font-size:12px; color:#2a5298; line-height:1.2;">${currentMember.fullName}</div>
+                    <div style="font-size:10px; color:#666;">${currentMember.email}</div>
+                </div>
+            `;
+            // Re-enables the "Quick Menu" with dashboard/profile/logout options
+            div.onclick = (e) => { e.stopPropagation(); window.showQuickMenu(currentMember); };
+        } else {
+            // LOGGED OUT STATE: Shows "Not Logged In" pulsing
+            div.innerHTML = `
+                <div style="width:10px; height:10px; background:#e74c3c; border-radius:50%; animation:pulse 2s infinite;"></div>
+                <div style="font-weight:bold; font-size:12px; color:#333;">Not Logged In</div>
+            `;
+            // Shows the Login/Register selection menu
+            div.onclick = (e) => { e.stopPropagation(); window.showLoginRegisterMenu(); };
+        }
+        document.body.appendChild(div);
+    }
+
+    ensureLoginIndicator();
+    // Refresh every 5 seconds to catch login/logout events
+    setInterval(ensureLoginIndicator, 5000);
+})();
+    </script>
+        <script>
 // ==========================================
 // ADMIN PAYMENT VALIDATION SYSTEM
 // ==========================================
@@ -16626,51 +16658,157 @@ window.rejectPayment = async function(memberId) {
     loadPendingMembers();
 };
 
-</script>
+        </script>
     <script>
-         // ==========================================================
-// 🛡️ FINAL REPAIR: INDICATOR & IN-APP GAME REDIRECTION
-// ==========================================================
+    // ============================================
+// FULLY FUNCTIONAL QUICK MENU & DASHBOARD
+// ============================================
+function renderQuickMenu() {
+    const user = firebase.auth().currentUser;
+    const existing = document.getElementById('tauQuickMenu');
+    if (existing) existing.remove();
 
-window.ensureLoginIndicator = function() {
-    let indicator = document.getElementById('loginStatusIndicator');
-    if (!indicator) {
-        indicator = document.createElement('div');
-        indicator.id = 'loginStatusIndicator';
-        document.body.appendChild(indicator);
-    }
-
-    // 1. DATA FIX: Check all possible storage for the member data
-    const currentMember = window.TauDB?.getCurrentMember() || 
-                          JSON.parse(sessionStorage.getItem('tauCurrentUser')) ||
-                          JSON.parse(localStorage.getItem('tauAfricaMember'));
-
-    // 2. VISIBILITY FIX: Forced Z-Index and Display
-    indicator.style.cssText = `
-        position: fixed !important; bottom: 30px !important; left: 30px !important;
-        z-index: 9999999 !important; background: white !important; 
-        padding: 12px 22px !important; border-radius: 50px !important;
-        box-shadow: 0 4px 25px rgba(0,0,0,0.4) !important; display: flex !important;
-        align-items: center !important; gap: 10px !important; cursor: pointer !important;
-        border: 2px solid #4169e1 !important; visibility: visible !important;
-        opacity: 1 !important;
+    // The Floating Trigger Button
+    const trigger = document.createElement('div');
+    trigger.id = 'tauQuickMenu';
+    trigger.style.cssText = `
+        position: fixed; bottom: 25px; left: 25px; z-index: 9999;
+        background: white; padding: 10px 18px; border-radius: 50px;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.3); display: flex;
+        align-items: center; gap: 10px; cursor: pointer; border: 2px solid #4169e1;
     `;
 
-    if (currentMember && currentMember.fullName) {
-        indicator.innerHTML = `
+    if (user) {
+        // Fetch balance from the member data global if available
+        const bal = window.currentMemberData?.iKbpBalance || 0;
+        trigger.innerHTML = `
             <div style="width: 12px; height: 12px; background: #2ecc71; border-radius: 50%;"></div>
-            <span style="font-weight: bold; font-size: 14px; color: #333;">${currentMember.fullName.split(' ')[0]} (💰${currentMember.iKbpBalance || 0})</span>
+            <div style="display:flex; flex-direction:column;">
+                <span style="font-size:12px; font-weight:bold; color:#333;">ACCOUNT ACTIVE</span>
+                <span style="font-size:11px; color:#4169e1;">💰 ${bal} iKbp</span>
+            </div>
         `;
-        indicator.onclick = (e) => { e.stopPropagation(); window.showQuickMenu(currentMember); };
+        trigger.onclick = toggleAccountPanel; // Opens the quick features
     } else {
-        indicator.innerHTML = `
+        trigger.innerHTML = `
             <div style="width: 12px; height: 12px; background: #e74c3c; border-radius: 50%;"></div>
-            <span style="font-weight: bold; font-size: 14px; color: #333;">Guest: Login</span>
+            <span style="font-size:13px; font-weight:bold;">GUEST: LOGIN</span>
         `;
-        indicator.onclick = () => showTab('login');
+        trigger.onclick = () => { showTab('login'); }; // Redirects to login tab
     }
-};
+    document.body.appendChild(trigger);
+}
 
+// The Panel that opens when clicking the button
+function toggleAccountPanel() {
+    let panel = document.getElementById('quickActionPanel');
+    if (panel) {
+        panel.remove();
+        return;
+    }
+
+    panel = document.createElement('div');
+    panel.id = 'quickActionPanel';
+    panel.style.cssText = `
+        position: fixed; bottom: 85px; left: 25px; z-index: 9998;
+        background: white; width: 220px; border-radius: 15px;
+        box-shadow: 0 5px 25px rgba(0,0,0,0.2); padding: 15px;
+        display: flex; flex-direction: column; gap: 10px;
+        animation: slideUp 0.3s ease;
+    `;
+
+    panel.innerHTML = `
+        <h4 style="margin:0; color:#4169e1; border-bottom:1px solid #eee; padding-bottom:5px;">Quick Access</h4>
+        <button onclick="showTab('dashboard')" class="btn-menu">🏠 My Wallet</button>
+        <button onclick="showTab('knowledge')" class="btn-menu">🧠 Knowledge Game</button>
+        <button onclick="showTab('profile')" class="btn-menu">👤 My Profile</button>
+        <button onclick="handleLogout()" style="color:red; background:none; border:none; text-align:left; cursor:pointer; padding:5px;">Logout</button>
+    `;
+    document.body.appendChild(panel);
+}
+
+// Add these styles to your <style> section
+const style = document.createElement('style');
+style.innerHTML = `
+    @keyframes slideUp { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+    .btn-menu { background: #f8f9fa; border: none; padding: 10px; text-align: left; border-radius: 8px; cursor: pointer; font-weight: 500; transition: 0.2s; }
+    .btn-menu:hover { background: #eef2ff; color: #4169e1; }
+`;
+document.head.appendChild(style);
+</script>
+    <script>
+        // Function to toggle the Quick Menu Panel
+function toggleAccountPanel() {
+    let panel = document.getElementById('quickActionPanel');
+    if (panel) {
+        panel.remove();
+        return;
+    }
+
+    panel = document.createElement('div');
+    panel.id = 'quickActionPanel';
+    panel.style.cssText = `
+        position: fixed; bottom: 85px; left: 25px; z-index: 9999;
+        background: white; width: 220px; border-radius: 15px;
+        box-shadow: 0 5px 25px rgba(0,0,0,0.2); padding: 15px;
+        display: flex; flex-direction: column; gap: 10px;
+    `;
+
+    panel.innerHTML = `
+        <h4 style="margin:0; color:#4169e1; border-bottom:1px solid #eee; padding-bottom:5px;">Quick Actions</h4>
+        <button onclick="showSection('wallet')" class="btn-menu">🏠 My Wallet</button>
+        <button onclick="showSection('knowledge')" class="btn-menu">🧠 Play & Earn</button>
+        <button onclick="firebase.auth().signOut()" style="color:red; background:none; border:none; text-align:left; cursor:pointer;">Logout</button>
+    `;
+    document.body.appendChild(panel);
+}
+
+// Helper to switch tabs via the Quick Menu
+function showSection(tabId) {
+    const panel = document.getElementById('quickActionPanel');
+    if (panel) panel.remove(); // Close menu
+    
+    // Call your existing tab switcher function
+    if (typeof showTab === 'function') {
+        showTab(tabId);
+    } else {
+        window.location.hash = tabId; // Fallback
+    }
+    // ==========================================================
+// 🚀 ADDED: AUTH LISTENER & MENU INTERACTION
+// ==========================================================
+
+// 1. Firebase Auth Listener: Overwrites "Guest" data with "Member" data on login
+if (typeof firebase !== 'undefined') {
+    firebase.auth().onAuthStateChanged(async (user) => {
+        if (user) {
+            console.log("Member authenticated:", user.uid);
+            try {
+                // Fetch real data from Firestore
+                const doc = await firebase.firestore().collection('members').doc(user.uid).get();
+                if (doc.exists) {
+                    const data = doc.data();
+                    // Sync to variables used by the Knowledge Game
+                    window.userCurrentLevel = data.lastCompletedLevel || 1;
+                    window.userBalance = data.iKbpBalance || 0;
+                    
+                    // Update global session for the platform
+                    sessionStorage.setItem('tauCurrentUser', JSON.stringify(data));
+                }
+            } catch (err) {
+                console.error("Auth sync error:", err);
+            }
+        } else {
+            // Revert to Guest status
+            window.userCurrentLevel = 1;
+            window.userBalance = 0;
+        }
+        // Force refresh the floating menu appearance
+        if (typeof ensureLoginIndicator === 'function') ensureLoginIndicator();
+    });
+}
+
+// 2. Dashboard Interaction: This makes the floating menu actually open something
 window.showQuickMenu = function(member) {
     let panel = document.getElementById('quickActionPanel');
     if (panel) { panel.remove(); return; }
@@ -16678,56 +16816,48 @@ window.showQuickMenu = function(member) {
     panel = document.createElement('div');
     panel.id = 'quickActionPanel';
     panel.style.cssText = `
-        position: fixed !important; bottom: 95px !important; left: 30px !important;
-        z-index: 9999999 !important; background: white !important; width: 250px !important;
-        border-radius: 15px !important; box-shadow: 0 8px 30px rgba(0,0,0,0.4) !important;
-        padding: 15px !important; border: 1px solid #4169e1 !important;
+        position: fixed; bottom: 85px; left: 20px; z-index: 1000000;
+        background: white; width: 250px; border-radius: 15px;
+        box-shadow: 0 5px 25px rgba(0,0,0,0.3); padding: 15px;
+        display: flex; flex-direction: column; gap: 10px; border: 1px solid #4169e1;
     `;
 
     panel.innerHTML = `
-        <div style="border-bottom:1px solid #eee; padding-bottom:8px; margin-bottom:8px;">
-            <strong style="color:#4169e1;">Quick Actions</strong>
+        <div style="padding-bottom:10px; border-bottom:1px solid #eee; margin-bottom:5px;">
+            <strong style="color:#4169e1;">Quick Access</strong>
+            <div style="font-size:12px; color:#666;">Balance: ${member.iKbpBalance || 0} iKbp</div>
         </div>
-        <button onclick="showTab('dashboard'); document.getElementById('quickActionPanel').remove();" style="width:100%; text-align:left; padding:12px; background:#f4f7fe; border:none; border-radius:8px; cursor:pointer; margin-bottom:5px; font-weight:500;">🏠 My Wallet</button>
-        <button onclick="showTab('knowledge-section'); document.getElementById('quickActionPanel').remove();" style="width:100%; text-align:left; padding:12px; background:#f4f7fe; border:none; border-radius:8px; cursor:pointer; margin-bottom:5px; font-weight:500;">🧠 In-App TAU Challenge</button>
-        <button onclick="firebase.auth().signOut().then(() => { localStorage.clear(); location.reload(); })" style="color:#e74c3c; background:none; border:none; padding:10px; cursor:pointer; font-weight:bold;">🚪 Logout</button>
+        <button onclick="window.location.hash='dashboard'; document.getElementById('quickActionPanel').remove();" class="btn" style="width:100%; text-align:left;">🏠 My Dashboard</button>
+        <button onclick="window.location.hash='knowledge-section'; document.getElementById('quickActionPanel').remove();" class="btn" style="width:100%; text-align:left;">🧠 Knowledge Game</button>
+        <button onclick="firebase.auth().signOut().then(() => location.reload())" style="color:red; background:none; border:none; padding:10px; cursor:pointer; text-align:left;">🚪 Logout</button>
     `;
     document.body.appendChild(panel);
 };
 
-// 3. REDIRECTION FIX: Stay In-App
+// 3. Start Level Logic: Prevents repeats and ensures correct starting level
 window.startLevelChallenge = function() {
     const user = firebase.auth().currentUser;
-    // Get level from database or session
     const currentLevel = window.userCurrentLevel || 1;
 
+    if (!user) {
+        alert("⚠️ GUEST MODE: You are playing for fun. To earn rewards that sync to your TAU account, please login first.");
+    }
+
     if (currentLevel > 10) {
-        alert("🎉 Level 10 Complete! You've finished the TAU Challenge.");
+        alert("🎉 You have completed all 10 Levels! Visit the Knowledge Portal for further earning opportunities.");
         return;
     }
 
-    // TARGET THE SPECIFIC SECTION ID IN YOUR HTML
-    const inAppTarget = document.getElementById('knowledge-section');
-    
-    if (inAppTarget) {
-        showTab('knowledge-section'); // Switch visible tab
-        // Initialize the local game logic
-        if (typeof initGame === 'function') initGame(currentLevel);
-        else if (typeof startNewGame === 'function') startNewGame(currentLevel);
+    // Launch the game at the specific level
+    console.log(`Starting Level ${currentLevel}`);
+    if (typeof openKnowledgeGame === 'function') {
+        openKnowledgeGame(currentLevel);
     } else {
-        // Fallback
-        const mode = user ? 'member' : 'guest';
-        window.open(`https://magero1985.github.io/Tau-Africa/knowledge-App.html?mode=${mode}&level=${currentLevel}`, '_blank');
+        // Fallback: If your game uses a different function name, update it here
+        initiateLevel(currentLevel); 
     }
 };
-
-// Start the system
-document.addEventListener('DOMContentLoaded', () => {
-    setTimeout(window.ensureLoginIndicator, 2000);
-});
-// Sync when clicking in app
-document.addEventListener('click', () => {
-   if (typeof window.ensureLoginIndicator === 'function') window.ensureLoginIndicator();
-});</script>
+}
+    </script>
 </body>
 </html>
