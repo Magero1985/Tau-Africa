@@ -1000,6 +1000,7 @@ function selectOption(index, element) {
     }, 1000);
 }
 
+
 // Also make sure your submitAnswer function looks like this:
 function submitAnswer() {
     if (gameState.selectedOption === null || gameState.answerSubmitted) return;
@@ -1323,26 +1324,22 @@ window.iKbpTracker = {
     levelEarnings: {},
     
     addEarnings: function(amount, level, reason) {
-        if (gameState.playMode !== 'member') {
-            console.log('Guest mode - no earnings');
-            return 0;
-        }
-        
-        this.totalEarned += amount;
-        
-        if (!this.levelEarnings[level]) {
-            this.levelEarnings[level] = 0;
-        }
-        this.levelEarnings[level] += amount;
-        
-        console.log(`💰 +${amount} iKbp earned! (${reason})`);
-        console.log(`📊 Total now: ${this.totalEarned} iKbp`);
-        
-        this.saveToStorage();
-        this.updateDisplay();
-        
-        return amount;
-    },
+    if (gameState.playMode !== 'member') return 0;
+    
+    // THIS LINE UPDATES THE TOTAL
+    this.totalEarned += amount;
+    
+    if (!this.levelEarnings[level]) {
+        this.levelEarnings[level] = 0;
+    }
+    this.levelEarnings[level] += amount;
+    
+    console.log(`ðŸ’° +${amount} iKbp earned! (${reason})`);
+    this.saveToStorage();
+    this.updateDisplay(); // THIS UPDATES THE UI
+    
+    return amount;
+}
     
     getTotalEarned: function() {
         return this.totalEarned;
@@ -1390,15 +1387,14 @@ window.iKbpTracker = {
     },
     
     updateDisplay: function() {
-        const totalEl = document.getElementById('totalEarned');
-        const levelEl = document.getElementById('levelEarnings');
-        
-        if (totalEl) totalEl.textContent = this.totalEarned;
-        if (levelEl) levelEl.textContent = gameState.levelEarnings || 0;
-        
-        console.log('🖥️ Display updated - Total:', this.totalEarned);
-    }
-};
+    const totalEl = document.getElementById('totalEarned');
+    const levelEl = document.getElementById('levelEarnings');
+    
+    if (totalEl) totalEl.textContent = this.totalEarned;
+    if (levelEl) levelEl.textContent = gameState.levelEarnings;
+    
+    console.log('ðŸ–¥ï¸ Display updated - Total:', this.totalEarned);
+        }
 
 // Replace global iKbpTracker reference
 iKbpTracker = window.iKbpTracker;
@@ -1406,40 +1402,41 @@ iKbpTracker = window.iKbpTracker;
 // ========================================
 // COMPLETE LEVEL FUNCTION - ADD/OVERRIDE
 // ========================================
-window.completeLevel = function() {
-    console.log('🎯 Level completion triggered!');
+function completeLevel() {
+    console.log('ðŸŽ¯ Level completion triggered!');
     
     clearInterval(gameState.timerInterval);
     clearInterval(gameState.levelTimerInterval);
     
     const correctPercentage = (gameState.correctAnswers / 10) * 100;
     let celebrationMessage = "";
-    let celebrationEmoji = "🎉";
+    let celebrationEmoji = "ðŸŽ‰";
     
     if (correctPercentage >= 90) {
         celebrationMessage = "Outstanding! You're a Pan African expert!";
-        celebrationEmoji = "🏆";
+        celebrationEmoji = "ðŸ†";
     } else if (correctPercentage >= 70) {
         celebrationMessage = "Great job! You know your African history well!";
-        celebrationEmoji = "⭐";
+        celebrationEmoji = "â­";
     } else if (correctPercentage >= 50) {
         celebrationMessage = "Good work! Keep learning about Africa!";
-        celebrationEmoji = "👍";
+        celebrationEmoji = "ðŸ‘";
     } else {
-        celebrationMessage = "Good attempt! Review and try again for better results!";
-        celebrationEmoji = "📚";
+        celebrationMessage = "Good attempt! Review and try again!";
+        celebrationEmoji = "ðŸ“š";
     }
     
-    // Award full level bonus for TAU members
+    // Award level bonus for TAU members
     if (gameState.playMode === 'member' && !gameState.completedLevels.includes(gameState.currentLevel)) {
         const levelBonus = 250;
+        // THIS IS THE KEY FIX - Actually call addEarnings which updates the total
         iKbpTracker.addEarnings(levelBonus, gameState.currentLevel, `Level ${gameState.currentLevel} completion bonus`);
+        
         gameState.completedLevels.push(gameState.currentLevel);
         gameState.completedLevels.sort((a, b) => a - b);
-        iKbpTracker.saveToStorage();
         
         document.getElementById('resultEarnings').innerHTML = 
-            `🎉 Level ${gameState.currentLevel} Complete: +250 iKbp Bonus!<br>
+            `ðŸŽ‰ Level ${gameState.currentLevel} Complete: +250 iKbp Bonus!<br>
             <small>Total Earned: ${iKbpTracker.getTotalEarned()} iKbp</small>`;
     } else if (gameState.playMode === 'guest') {
         document.getElementById('resultEarnings').innerHTML = 
@@ -1451,6 +1448,7 @@ window.completeLevel = function() {
             <small>Earnings claimed previously</small>`;
     }
     
+    // Mark level as completed
     const levelDot = document.getElementById(`level${gameState.currentLevel}`);
     if (levelDot) levelDot.classList.add('completed');
     
@@ -1469,21 +1467,21 @@ window.completeLevel = function() {
     
     document.getElementById('resultModal').style.display = 'flex';
     
-    console.log('✅ Level completion modal shown');
-};
+    console.log('âœ… Level completion modal shown');
+}
 
 // ========================================
 // COMPLETE GAME FUNCTION - OVERRIDE
 // ========================================
-window.completeGame = function() {
-    console.log('🏆 Game completion triggered!');
+function completeGame() {
+    console.log('ðŸ† Game completion triggered!');
     
     const totalEarned = iKbpTracker.getTotalEarned();
     
     if (gameState.playMode === 'member') {
         document.getElementById('completionEarnings').innerHTML = 
             `<span style="color: #f7a440; font-size: 2rem; font-weight: bold;">
-                💰 Total Earned: ${totalEarned} iKbp
+                ðŸ’° Total Earned: ${totalEarned} iKbp
             </span><br>
             <span style="color: #4cc9f0;">
                 All 10 levels completed! Sync your earnings to your TAU account.
@@ -1491,17 +1489,17 @@ window.completeGame = function() {
     } else {
         document.getElementById('completionEarnings').innerHTML = 
             `<span style="color: #f7d560;">
-                Playing as Guest - Register with TAU to earn rewards on future attempts!
+                Playing as Guest - Register with TAU to earn rewards!
             </span>`;
     }
     
     document.getElementById('gameCompleteModal').style.display = 'flex';
-};
+}
 
 // ========================================
 // LEVEL TIMER FUNCTIONS - NEW
 // ========================================
-window.startLevelTimer = function() {
+function startLevelTimer() {
     gameState.levelTimer = 60;
     updateLevelTimerDisplay();
     
@@ -1515,9 +1513,9 @@ window.startLevelTimer = function() {
             handleLevelTimeout();
         }
     }, 1000);
-};
+        }
 
-window.updateLevelTimerDisplay = function() {
+function updateLevelTimerDisplay() {
     const timerElement = document.getElementById('levelTimer');
     if (!timerElement) return;
     
@@ -1534,27 +1532,20 @@ window.updateLevelTimerDisplay = function() {
     } else {
         timerElement.style.color = '#4cc9f0';
     }
-};
+}
 
-window.handleLevelTimeout = function() {
-    alert('⏰ Time\'s up! Level timeout.');
+function handleLevelTimeout() {
+    alert('â° Time\'s up! Level timeout. Restarting level.');
     
-    gameState.levelTimeoutCount++;
+    gameState.currentQuestion = 1;
+    gameState.questionsAnswered = 0;
+    gameState.correctAnswers = 0;
     gameState.levelEarnings = 0;
     
-    const levelEl = document.getElementById('levelEarnings');
-    if (levelEl) levelEl.textContent = '0';
-    
-    if (gameState.levelTimeoutCount >= 3) {
-        alert('❌ Three consecutive timeouts!\n\nRestarting challenge from Level 1.');
-        gameState.levelTimeoutCount = 0;
-        restartFromBeginning();
-    } else {
-        alert(`⚠️ Timeout ${gameState.levelTimeoutCount}/3\n\nRestarting Level ${gameState.currentLevel}.`);
-        restartCurrentLevel();
-    }
-};
-
+    updateGameDisplay();
+    loadQuestion();
+    startLevelTimer();
+}
 window.restartCurrentLevel = function() {
     gameState.currentQuestion = 1;
     gameState.questionsAnswered = 0;
@@ -1607,8 +1598,11 @@ window.startGame = function() {
 };
 
 // Override nextLevel to reset timer
-const originalNextLevel = window.nextLevel;
-window.nextLevel = function() {
+function nextLevel() {
+    // Close the modal first
+    document.getElementById('resultModal').style.display = 'none';
+    
+    // Move to next level
     gameState.currentLevel++;
     gameState.currentQuestion = 1;
     gameState.questionsAnswered = 0;
@@ -1616,21 +1610,23 @@ window.nextLevel = function() {
     gameState.selectedOption = null;
     gameState.correctAnswer = null;
     gameState.answerSubmitted = false;
-    gameState.levelEarnings = 0;
-    gameState.levelTimeoutCount = 0;
+    gameState.levelEarnings = 0; // Reset level earnings for new level
     
+    // Update display
     updateGameDisplay();
     loadQuestion();
     
+    // Restart level timer
     if (document.getElementById('levelTimer')) {
         startLevelTimer();
     }
     
-    closeResult();
-    
-    console.log('➡️ Advanced to level', gameState.currentLevel);
-};
-
+    console.log('âž¡ï¸ Advanced to level', gameState.currentLevel);
+        }
+// Add this function (it's called by nextLevel but doesn't exist)
+function closeResult() {
+    document.getElementById('resultModal').style.display = 'none';
+}
 // Override submitAnswer to track earnings properly
 const originalSubmitAnswer = window.submitAnswer;
 window.submitAnswer = function() {
