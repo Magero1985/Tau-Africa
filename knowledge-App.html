@@ -1581,32 +1581,6 @@ window.startGame = function() {
     console.log('🎮 Game started with timer');
 };
 
-// Override nextLevel to reset timer
-function nextLevel() {
-    // Close the modal first
-    document.getElementById('resultModal').style.display = 'none';
-    
-    // Move to next level
-    gameState.currentLevel++;
-    gameState.currentQuestion = 1;
-    gameState.questionsAnswered = 0;
-    gameState.correctAnswers = 0;
-    gameState.selectedOption = null;
-    gameState.correctAnswer = null;
-    gameState.answerSubmitted = false;
-    gameState.levelEarnings = 0; // Reset level earnings for new level
-    
-    // Update display
-    updateGameDisplay();
-    loadQuestion();
-    
-    // Restart level timer
-    if (document.getElementById('levelTimer')) {
-        startLevelTimer();
-    }
-    
-    console.log('âž¡ï¸ Advanced to level', gameState.currentLevel);
-        }
 // Add this function (it's called by nextLevel but doesn't exist)
 function closeResult() {
     document.getElementById('resultModal').style.display = 'none';
