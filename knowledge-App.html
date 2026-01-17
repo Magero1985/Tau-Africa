@@ -581,6 +581,33 @@
                 </div>
             </div>
 
+            <div style="text-align: center; margin: 20px 0;">
+    <div style="background: rgba(30, 60, 114, 0.7); 
+                padding: 20px; 
+                border-radius: 15px; 
+                border: 2px solid #4cc9f0;
+                display: inline-block;
+                box-shadow: 0 5px 20px rgba(0,0,0,0.3);">
+        <h3 style="color: #4cc9f0; 
+                   margin-bottom: 10px; 
+                   font-size: 1.1rem;">
+            ⏱️ Level Time Remaining
+        </h3>
+        <div id="levelTimer" 
+             style="font-size: 3rem; 
+                    font-weight: bold; 
+                    color: #4cc9f0;
+                    font-family: 'Courier New', monospace;
+                    text-shadow: 2px 2px 4px rgba(0,0,0,0.5);">
+            1:00
+        </div>
+        <p style="color: #f7d560; 
+                  margin-top: 10px; 
+                  font-size: 0.9rem;">
+            Complete 10 questions before time runs out!
+        </p>
+    </div>
+</div>
             <div class="level-indicator" id="levelIndicator"></div>
 
             <div class="question-container">
@@ -590,18 +617,7 @@
                 </div>
                 
                 <div class="question-text" id="questionText">Loading question...</div>
-        
-                <div class="options-container" id="optionsContainer"></div>
                 
-                <div id="hintArea" class="hint"></div>
-                
-                <div class="buttons">
-                    <button class="btn btn-submit" id="submitBtn" onclick="submitAnswer()" disabled>Submit Answer</button>
-                    <button class="btn btn-next" id="nextBtn" onclick="nextQuestion()" disabled>Next Question →</button>
-                </div>
-            </div>
-        </div>
-
         <div id="resultModal" class="result-modal">
             <div class="modal-content">
                 <div class="celebration" id="celebrationEmoji">🎉</div>
@@ -648,6 +664,7 @@
             </div>
         </div>
     </div>
+
     <script>
         let gameState = {
             currentLevel: 1,
@@ -852,7 +869,13 @@
                     options: ["Kwame Nkrumah", "Haile Selassie", "Julius Nyerere", "Gamal Abdel Nasser"],
                     correct: 1,
                     hint: "The Ethiopian emperor played a key role in establishing this pan-African organization.",
-                    category: nities.",
+                    category: "Politics"
+                },
+                {
+                    question: "The 'Mfecane' refers to a period of widespread disruption and migration in which region?",
+                    options: ["West Africa", "Horn of Africa", "Southern Africa", "Central Africa"],
+                    correct: 2,
+                    hint: "This period occurred in the early 19th century among Bantu-speaking communities.",
                     category: "History"
                 },
                 {
