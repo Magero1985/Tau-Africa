@@ -942,74 +942,151 @@
             startTimer();
         }
 
-        function loadQuestion() {
-            const levelKey = `level${gameState.currentLevel}`;
-            gameState.levelQuestions = questionsDatabase[levelKey];
-            
-            if (!gameState.levelQuestions || gameState.levelQuestions.length === 0) {
-                console.error(`No questions found for ${levelKey}`);
-                return;
-            }
-            
-            const questionIndex = gameState.currentQuestion - 1;
-            const question = gameState.levelQuestions[questionIndex];
-            
-            if (!question) {
-                console.error(`No question found at index ${questionIndex}`);
-                return;
-            }
-            
-            document.getElementById('questionText').textContent = question.question;
-            document.getElementById('difficulty').textContent = getDifficultyText(gameState.currentLevel);
-            
-            const progressPercent = (gameState.currentQuestion / 10) * 100;
-            document.getElementById('questionProgress').style.width = `${progressPercent}%`;
-            
-            const optionsContainer = document.getElementById('optionsContainer');
-            optionsContainer.innerHTML = '';
-            
-            gameState.correctAnswer = question.correct;
-            gameState.selectedOption = null;
-            gameState.answerSubmitted = false;
-            
-            question.options.forEach((option, index) => {
-                const optionElement = document.createElement('div');
-                optionElement.className = 'option';
-                optionElement.textContent = option;
-                optionElement.onclick = () => selectOption(index, optionElement);
-                optionsContainer.appendChild(optionElement);
-            });
-            
-            document.getElementById('hintArea').textContent = `Category: ${question.category} | ${question.hint}`;
-            
-            document.getElementById('submitBtn').disabled = true;
-            document.getElementById('nextBtn').disabled = true;
-            
-            resetTimer();
-        }
+        // Replace your selectOption function with this:
+function selectOption(index, element) {
 
-        function selectOption(index, element) {
-            if (gameState.answerSubmitted) return;
-            
-            document.querySelectorAll('.option').forEach(opt => {
-                opt.classList.remove('selected');
-            });
-            
-            element.classList.add('selected');
-            gameState.selectedOption = index;
-            
-            
-          
-            if (window.answerTimeout) {
-                clearTimeout(window.answerTimeout);
-            }
-            
-            window.answerTimeout = setTimeout(() => {
-                if (!gameState.answerSubmitted) {
-                    submitAnswer();
-                }
-            }, 1000);
+    // Check if answer already submitted
+    if (gameState.answerSubmitted) return;
+    
+    // Remove selected class from all options
+    document.querySelectorAll('.option').forEach(opt => {
+        opt.classList.remove('selected');
+    });
+    
+    // Add selected class to clicked option
+    element.classList.add('selected');
+    gameState.selectedOption = index;
+    
+    // Enable submit button
+    document.getElementById('submitBtn').disabled = false;
+    
+    // Clear any existing timeout
+    if (window.answerTimeout) {
+        clearTimeout(window.answerTimeout);
+    }
+    
+    // AUTO-SUBMIT: Submit answer after 1 second delay
+    window.answerTimeout = setTimeout(() => {
+        if (!gameState.answerSubmitted) {
+            submitAnswer();
         }
+    }, 1000);
+}
+
+// Also make sure your submitAnswer function looks like this:
+function submitAnswer() {
+    if (gameState.selectedOption === null || gameState.answerSubmitted) return;
+    
+    gameState.answerSubmitted = true;
+    
+    const options = document.querySelectorAll('.option');
+    const correctIndex = gameState.correctAnswer;
+    
+    // Clear any pending timeout
+    if (window.answerTimeout) {
+        clearTimeout(window.answerTimeout);
+        window.answerTimeout = null;
+    }
+    
+    // Add visual feedback and disable options
+    options.forEach((option, index) => {
+        option.classList.add('disabled');
+        if (index === correctIndex) {
+            option.classList.add('correct');
+        } else if (index === gameState.selectedOption && index !== correctIndex) {
+            option.classList.add('wrong');
+        }
+    });
+    
+    const difficultyMultiplier = gameState.difficultyMultipliers[gameState.currentLevel - 1];
+    const basePoints = 100;
+    
+    if (gameState.selectedOption === correctIndex) {
+        gameState.correctAnswers++;
+        const pointsEarned = Math.round(basePoints * difficultyMultiplier);
+        gameState.score += pointsEarned;
+        
+        // Calculate iKbp for this question (25 iKbp per correct answer for members)
+        if (gameState.playMode === 'member') {
+            const iKbpEarned = 25;
+            gameState.levelEarnings += iKbpEarned;
+            document.getElementById('levelEarnings').textContent = gameState.levelEarnings;
+            
+            document.getElementById('hintArea').innerHTML = 
+                `<span style="color: #4cc9f0">✓ Correct! +${pointsEarned} points | +${iKbpEarned} iKbp</span>`;
+        } else {
+            document.getElementById('hintArea').innerHTML = 
+                `<span style="color: #4cc9f0">✓ Correct! +${pointsEarned} points</span>`;
+        }
+    } else {
+        document.getElementById('hintArea').innerHTML = 
+            `<span style="color: #ef476f">✗ Incorrect. The correct answer was: ${options[correctIndex].textContent}</span>`;
+    }
+    
+    gameState.questionsAnswered++;
+    document.getElementById('score').textContent = gameState.score;
+    
+    document.getElementById('submitBtn').disabled = true;
+    document.getElementById('nextBtn').disabled = false;
+    
+    clearInterval(gameState.timerInterval);
+    
+    // Auto-advance after 2 seconds
+    setTimeout(() => {
+        if (gameState.currentQuestion < 10) {
+            nextQuestion();
+        } else {
+            completeLevel();
+        }
+    }, 2000);
+}
+
+// Make sure loadQuestion resets everything properly:
+function loadQuestion() {
+    const levelKey = `level${gameState.currentLevel}`;
+    gameState.levelQuestions = questionsDatabase[levelKey];
+    
+    if (!gameState.levelQuestions || gameState.levelQuestions.length === 0) {
+        console.error(`No questions found for ${levelKey}`);
+        return;
+    }
+    
+    const questionIndex = gameState.currentQuestion - 1;
+    const question = gameState.levelQuestions[questionIndex];
+    
+    if (!question) {
+        console.error(`No question found at index ${questionIndex}`);
+        return;
+    }
+    
+    document.getElementById('questionText').textContent = question.question;
+    document.getElementById('difficulty').textContent = getDifficultyText(gameState.currentLevel);
+    
+    const progressPercent = (gameState.currentQuestion / 10) * 100;
+    document.getElementById('questionProgress').style.width = `${progressPercent}%`;
+    
+    const optionsContainer = document.getElementById('optionsContainer');
+    optionsContainer.innerHTML = '';
+    
+    gameState.correctAnswer = question.correct;
+    gameState.selectedOption = null;
+    gameState.answerSubmitted = false; // IMPORTANT: Reset this
+    
+    question.options.forEach((option, index) => {
+        const optionElement = document.createElement('div');
+        optionElement.className = 'option';
+        optionElement.textContent = option;
+        optionElement.onclick = () => selectOption(index, optionElement);
+        optionsContainer.appendChild(optionElement);
+    });
+    
+    document.getElementById('hintArea').textContent = `Category: ${question.category} | ${question.hint}`;
+    
+    document.getElementById('submitBtn').disabled = true;
+    document.getElementById('nextBtn').disabled = true;
+    
+    resetTimer();
+}
 
         function nextQuestion() {
             if (gameState.currentQuestion < 10) {
