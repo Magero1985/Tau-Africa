@@ -917,27 +917,113 @@ Object.assign(iKbpTracker, window.iKbpTracker);
                     correct: 0,
                     hint: "She won in 2004 for her contribution to sustainable development, democracy, and peace.",
                     category: "Politics"
-                }
+                },
+            ],
+        level3: [
+        {question: "Which African leader introduced 'Ujamaa' (African socialism) in Tanzania?", options: ["Kenneth Kaunda", "Julius Nyerere", "Jomo Kenyatta", "Kwame Nkrumah"], correct: 1, hint: "He promoted villagization and collective farming.", category: "Politics"},
+        {question: "The Great Zimbabwe ruins were built by which civilization?", options: ["Shona people", "Zulu Kingdom", "Swahili traders", "Portuguese settlers"], correct: 0, hint: "These stone structures date from 11th-15th centuries.", category: "History"},
+        {question: "Which African country has the most official languages (11)?", options: ["Nigeria", "South Africa", "Kenya", "Ethiopia"], correct: 1, hint: "Its constitution recognizes multiple indigenous languages.", category: "Culture"},
+        {question: "Lake Victoria is shared by three countries. Which is NOT one?", options: ["Kenya", "Tanzania", "Rwanda", "Uganda"], correct: 2, hint: "It's Africa's largest lake by area.", category: "Geography"},
+        {question: "Who was the first woman president in Africa?", options: ["Ellen Johnson Sirleaf", "Joyce Banda", "Sahle-Work Zewde", "Sylvie Kinigi"], correct: 0, hint: "She led Liberia from 2006-2018.", category: "Politics"},
+        {question: "The ancient University of Sankore was in which city?", options: ["Cairo", "Timbuktu", "Gao", "Djenné"], correct: 1, hint: "Major center of Islamic learning in medieval West Africa.", category: "History"},
+        {question: "Which African nation was formed by freed American slaves?", options: ["Sierra Leone", "Liberia", "Equatorial Guinea", "São Tomé"], correct: 1, hint: "Capital Monrovia is named after a U.S. president.", category: "History"},
+        {question: "The Maasai people traditionally live in which two countries?", options: ["Kenya and Tanzania", "Uganda and Rwanda", "Ethiopia and Somalia", "Zambia and Malawi"], correct: 0, hint: "Semi-nomadic pastoralists with distinctive red clothing.", category: "Culture"},
+        {question: "Which African country produces the most oil?", options: ["Angola", "Nigeria", "Libya", "Algeria"], correct: 1, hint: "Also the most populous nation on the continent.", category: "Economy"},
+        {question: "Pan-African colors were inspired by which flag?", options: ["Ethiopian flag", "Ghanaian flag", "Kenyan flag", "Marcus Garvey's flag"], correct: 3, hint: "Red, black, and green represent blood, people, and land.", category: "Culture"}
+    ],
+    
+    level4: [
+        {question: "The Scramble for Africa was formalized at which conference?", options: ["Congress of Vienna", "Berlin Conference", "Treaty of Versailles", "Paris Peace"], correct: 1, hint: "1884-1885 meeting divided Africa among Europeans.", category: "History"},
+        {question: "Which woman led armed resistance against Italian colonization?", options: ["Yaa Asantewaa", "Queen Nzinga", "Nehanda Nyakasikana", "Taytu Betul"], correct: 3, hint: "Wife of Emperor Menelik II of Ethiopia.", category: "History"},
+        {question: "Sahara Desert covers what percentage of Africa?", options: ["15%", "25%", "35%", "45%"], correct: 1, hint: "World's largest hot desert.", category: "Geography"},
+        {question: "Which country was formerly Rhodesia?", options: ["Zambia", "Zimbabwe", "Malawi", "Botswana"], correct: 1, hint: "Gained independence in 1980.", category: "History"},
+        {question: "AfCFTA was established in which year?", options: ["2015", "2018", "2021", "2023"], correct: 1, hint: "Trading began in 2021.", category: "Economy"},
+        {question: "Who is the 'Father of Afrobeat'?", options: ["Miriam Makeba", "Fela Kuti", "Youssou N'Dour", "Salif Keita"], correct: 1, hint: "Nigerian musician combined jazz, funk, and traditional rhythms.", category: "Culture"},
+        {question: "Mount Kilimanjaro has how many volcanic cones?", options: ["One", "Two", "Three", "Four"], correct: 2, hint: "Kibo, Mawenzi, and Shira.", category: "Geography"},
+        {question: "Apartheid officially ended in which year?", options: ["1990", "1991", "1994", "1996"], correct: 2, hint: "Year of first democratic elections.", category: "History"},
+        {question: "Which country has highest GDP per capita in Africa?", options: ["Seychelles", "Mauritius", "Botswana", "South Africa"], correct: 0, hint: "Island nation with thriving tourism.", category: "Economy"},
+        {question: "Dogon people, known for astronomy, live where?", options: ["Burkina Faso", "Mali", "Niger", "Senegal"], correct: 1, hint: "Bandiagara Escarpment region.", category: "Culture"}
+    ],
+    
+    level5: [
+        {question: "Which kingdom resisted Portuguese for 400+ years?", options: ["Kingdom of Kongo", "Kingdom of Benin", "Kingdom of Aksum", "Ashanti"], correct: 1, hint: "Located in present-day Nigeria.", category: "History"},
+        {question: "Independent African nations by 1914?", options: ["None", "Two", "Five", "Ten"], correct: 1, hint: "Ethiopia and Liberia only.", category: "History"},
+        {question: "Second-largest river flow rate in world?", options: ["Nile", "Niger", "Congo", "Zambezi"], correct: 2, hint: "Second only to Amazon.", category: "Geography"},
+        {question: "Mau Mau uprising occurred where?", options: ["Kenya", "Zimbabwe", "South Africa", "Algeria"], correct: 0, hint: "Against British in 1950s.", category: "History"},
+        {question: "First African Nobel Literature Prize (1986)?", options: ["Chinua Achebe", "Wole Soyinka", "Nadine Gordimer", "Ngugi wa Thiong'o"], correct: 1, hint: "First African to win.", category: "Literature"},
+        {question: "Battle of Adwa (1896): Ethiopia defeated?", options: ["Britain", "France", "Italy", "Germany"], correct: 2, hint: "Preserved Ethiopian independence.", category: "History"},
+        {question: "Most UNESCO World Heritage Sites in Africa?", options: ["Egypt", "Ethiopia", "South Africa", "Morocco"], correct: 0, hint: "Ancient monuments and sites.", category: "Culture"},
+        {question: "World's largest inland delta location?", options: ["Namibia", "Botswana", "Zimbabwe", "Zambia"], correct: 1, hint: "Okavango Delta ecosystem.", category: "Geography"},
+        {question: "First AU Summit 2002 location?", options: ["Ethiopia", "South Africa", "Senegal", "Egypt"], correct: 1, hint: "AU replaced OAU here.", category: "Politics"},
+        {question: "Ancient Ge'ez script still used where?", options: ["Egypt", "Ethiopia", "Sudan", "Eritrea"], correct: 1, hint: "Script over 2,000 years old.", category: "Culture"}
+    ],
+    
+    level6: [
+        {question: "Kingdom with 'Dahomey Amazons' female regiment?", options: ["Ashanti", "Dahomey", "Zulu", "Kongo"], correct: 1, hint: "Present-day Benin.", category: "History"},
+        {question: "Rosetta Stone found in which year?", options: ["1699", "1755", "1799", "1822"], correct: 2, hint: "Napoleon's troops discovered it.", category: "History"},
+        {question: "Which country has most pyramids?", options: ["Egypt", "Sudan", "Ethiopia", "Libya"], correct: 1, hint: "Nubian pyramids outnumber Egypt's.", category: "History"},
+        {question: "Barbary Coast refers to which region?", options: ["East Africa", "West Africa", "North Africa", "Southern Africa"], correct: 2, hint: "Morocco, Algeria, Tunisia, Libya.", category: "Geography"},
+        {question: "Who coined 'African Personality'?", options: ["Kwame Nkrumah", "Léopold Senghor", "Patrice Lumumba", "Jomo Kenyatta"], correct: 0, hint: "Promoted Pan-Africanism.", category: "Politics"},
+        {question: "Olduvai Gorge location?", options: ["Kenya", "Ethiopia", "Tanzania", "South Africa"], correct: 2, hint: "Leakey family discoveries.", category: "History"},
+        {question: "First African independence in 20th century?", options: ["Ghana", "Libya", "Morocco", "Tunisia"], correct: 1, hint: "Independence in 1951.", category: "History"},
+        {question: "Trans-Saharan trade: gold for what?", options: ["Spices", "Salt", "Ivory", "Textiles"], correct: 1, hint: "As valuable as gold in some regions.", category: "History"},
+        {question: "World's largest vanilla producer?", options: ["Kenya", "Tanzania", "Madagascar", "Uganda"], correct: 2, hint: "Produces 80% of world's vanilla.", category: "Economy"},
+        {question: "Who developed 'Négritude' concept?", options: ["Aimé Césaire", "Léopold Senghor", "Léon-Gontran Damas", "Frantz Fanon"], correct: 1, hint: "First president of Senegal.", category: "Culture"}
+    ],
+    
+    level7: [
+        {question: "Kingdom with cowrie shell record-keeping?", options: ["Benin", "Yoruba", "Ashanti", "Kongo"], correct: 2, hint: "Used for currency and records.", category: "History"},
+        {question: "Undeciphered Meroitic script civilization?", options: ["Ancient Egypt", "Kingdom of Kush", "Aksum", "Carthage"], correct: 1, hint: "Nubian kingdom after 25th Dynasty.", category: "History"},
+        {question: "Lowest population density in Africa?", options: ["Namibia", "Botswana", "Libya", "Mauritania"], correct: 0, hint: "Covered by Namib Desert.", category: "Geography"},
+        {question: "Kilwa Sultanate present-day location?", options: ["Kenya", "Tanzania", "Mozambique", "Somalia"], correct: 1, hint: "Controlled Indian Ocean trade.", category: "History"},
+        {question: "African scientist: gamma knife development?", options: ["Philip Emeagwali", "Cheikh Anta Diop", "Wangari Maathai", "Lars Leksell"], correct: 0, hint: "Also contributed to supercomputing.", category: "Science"},
+        {question: "Rift Valley extends through how many countries?", options: ["6", "9", "12", "15"], correct: 1, hint: "Lebanon to Mozambique.", category: "Geography"},
+        {question: "Tanganyika + Zanzibar formed?", options: ["Kenya", "Tanzania", "Uganda", "Malawi"], correct: 1, hint: "Merged in 1964.", category: "History"},
+        {question: "Sahelian kingdoms' primary resource?", options: ["Gold", "Salt", "Ivory", "Iron"], correct: 0, hint: "Ghana, Mali, Songhai empires.", category: "History"},
+        {question: "Most active volcanoes in Africa?", options: ["Kenya", "Tanzania", "Ethiopia", "DR Congo"], correct: 3, hint: "Mount Nyiragongo is active.", category: "Geography"},
+        {question: "'Ubuntu' philosophy means?", options: ["'I am because we are'", "'Unity is strength'", "'Knowledge is power'", "'Freedom or death'"], correct: 0, hint: "Southern African interconnectedness.", category: "Culture"}
+    ],
+    
+    level8: [
+        {question: "Emperor's pilgrimage caused Cairo inflation?", options: ["Ghana", "Mali", "Songhai", "Kanem-Bornu"], correct: 1, hint: "Mansa Musa's 1324 pilgrimage.", category: "History"},
+        {question: "Khoisan language unique feature?", options: ["Tonal variations", "Click consonants", "Whistled speech", "Sign integration"], correct: 1, hint: "Among Africa's oldest languages.", category: "Culture"},
+        {question: "'Father of African Historiography'?", options: ["Joseph Ki-Zerbo", "Cheikh Anta Diop", "Ali Mazrui", "Walter Rodney"], correct: 1, hint: "Argued for African origin of Egypt.", category: "History"},
+        {question: "Swahili fusion of which cultures?", options: ["Bantu and Arab", "Cushitic and Persian", "Nilotic and Indian", "Berber and Egyptian"], correct: 0, hint: "Coastal trading culture.", category: "History"},
+        {question: "Most diverse ecosystem per km²?", options: ["Madagascar", "Tanzania", "Kenya", "South Africa"], correct: 0, hint: "90% wildlife found nowhere else.", category: "Geography"},
+        {question: "Hannibal attacked which empire?", options: ["Greek", "Roman", "Persian", "Macedonian"], correct: 1, hint: "Used war elephants.", category: "History"},
+        {question: "First 50% female parliament?", options: ["Rwanda", "South Africa", "Senegal", "Namibia"], correct: 0, hint: "Leads world in gender parity.", category: "Politics"},
+        {question: "Library of Alexandria dynasty?", options: ["Ptolemaic", "Roman", "Persian", "Nubian"], correct: 0, hint: "After Alexander the Great.", category: "History"},
+        {question: "'Cradle of Humankind' location?", options: ["Rift Valley", "Olduvai Gorge", "Sterkfontein Caves", "Afar Triangle"], correct: 2, hint: "South African hominin fossils.", category: "History"},
+        {question: "'Lost City of Kalahari' country?", options: ["Botswana", "Namibia", "South Africa", "Zimbabwe"], correct: 0, hint: "Legendary Kalahari civilization.", category: "Culture"}
+    ],
+    
+    level9: [
+        {question: "Advanced bronze casting before Europeans?", options: ["Benin", "Ashanti", "Kongo", "Zulu"], correct: 0, hint: "Benin Bronzes masterpieces.", category: "History"},
+        {question: "Kebra Nagast claims Ark in which city?", options: ["Addis Ababa", "Gondar", "Lalibela", "Axum"], correct: 3, hint: "Ancient Aksumite capital.", category: "Culture"},
+        {question: "Ishango bone developers?", options: ["Ancient Egyptians", "Nubians", "Ishango people", "Yoruba"], correct: 2, hint: "20,000-year-old math tool.", category: "Science"},
+        {question: "Kush conquered Egypt: which dynasty?", options: ["23rd", "24th", "25th", "26th"], correct: 2, hint: "Ruled 100 years (744-656 BCE).", category: "History"},
+        {question: "Highest linguistic diversity region?", options: ["West Africa", "East Africa", "Central Africa", "Southern Africa"], correct: 0, hint: "Nigeria has 500+ languages.", category: "Culture"},
+        {question: "Igbo-Ukwu bronze artifacts date?", options: ["5th century", "7th century", "9th century", "11th century"], correct: 2, hint: "Predate European contact.", category: "History"},
+        {question: "First paperless parliament?", options: ["Kenya", "Rwanda", "Ghana", "South Africa"], correct: 1, hint: "Rapid technological advancement.", category: "Politics"},
+        {question: "Sankore Madrasah manuscripts count?", options: ["100,000", "400,000", "700,000", "1,000,000"], correct: 2, hint: "Largest medieval libraries.", category: "History"},
+        {question: "Nobel Chemistry 1999 African scientist?", options: ["Ahmed Zewail", "Sydney Brenner", "Aaron Klug", "Max Theiler"], correct: 0, hint: "Egyptian chemist, femtochemistry.", category: "Science"},
+        {question: "Great Zimbabwe building technique?", options: ["Mortared stone", "Dry stone walling", "Mud brick", "Wood framework"], correct: 1, hint: "No mortar used.", category: "History"}
+    ],
+    
+    level10: [
+        {question: "Philosopher developed 'Conscientism'?", options: ["Kwame Nkrumah", "Julius Nyerere", "Cheikh Anta Diop", "Léopold Senghor"], correct: 0, hint: "Reconcile tradition with modernity.", category: "Philosophy"},
+        {question: "Mapungubwe traded what with China?", options: ["Gold", "Ivory", "Copper", "Iron"], correct: 0, hint: "Chinese porcelain found at site.", category: "History"},
+        {question: "Oldest sub-Saharan inhabited city?", options: ["Ethiopia", "Sudan", "Nigeria", "Senegal"], correct: 0, hint: "Harar, 4th holiest Islamic city.", category: "History"},
+        {question: "Ajuran Sultanate hydraulic engineering location?", options: ["Kenya", "Tanzania", "Somalia", "Ethiopia"], correct: 2, hint: "Sophisticated irrigation systems.", category: "History"},
+        {question: "First African country to ban plastic bags?", options: ["Kenya", "Rwanda", "Tanzania", "Uganda"], correct: 1, hint: "2008 environmental policy.", category: "Politics"},
+        {question: "Which African script predates Arabic in region?", options: ["Tifinagh", "N'Ko", "Vai", "Ge'ez"], correct: 3, hint: "Ethiopian ancient script.", category: "Culture"},
+        {question: "Africa's oldest university (859 CE)?", options: ["Al-Azhar", "University of Al Quaraouiyine", "Sankore", "University of Timbuktu"], correct: 1, hint: "Located in Fez, Morocco.", category: "History"},
+        {question: "First African satellite launched by?", options: ["South Africa", "Nigeria", "Egypt", "Kenya"], correct: 1, hint: "NigeriaSat-1 in 2003.", category: "Science"},
+        {question: "Pan-African Parliament headquarters?", options: ["Addis Ababa", "Johannesburg", "Midrand", "Nairobi"], correct: 2, hint: "South African city.", category: "Politics"},
+        {question: "Which civilization built Lalibela's rock churches?", options: ["Aksumites", "Zagwe dynasty", "Solomonic dynasty", "Beta Israel"], correct: 1, hint: "12th-13th century Ethiopian dynasty.", category: "History"}
+    
             ]
         };
-
-        function generateQuestionsForLevel(level) {
-            const categories = ["History", "Politics", "Geography", "Culture", "Economy", "Science", "Arts", "Sports"];
-            let questions = [];
-            for (let i = 0; i < 10; i++) {
-                const category = categories[i % categories.length];
-                questions.push({
-                    question: `Level ${level}, Question ${i+1}: Advanced question about ${category} in African affairs.`,
-                    options: ["Option A", "Option B", "Option C", "Option D"],
-                    correct: Math.floor(Math.random() * 4),
-                    hint: `This is a Level ${level} difficulty question about African ${category}.`,
-                    category: category,
-                    difficulty: level
-                });
-            }
-            return questions;
-        }
-
         function initGame() {
             for (let level = 3; level <= 10; level++) {
                 const levelKey = `level${level}`;
