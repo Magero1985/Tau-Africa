@@ -1322,31 +1322,39 @@ function loadQuestion() {
 // MISSING CORE FUNCTIONS - ADD THESE
 // ========================================
 
-function completeLevel() {
-    console.log('🎯 Level completion triggered!');
+function completeGame() {
+    console.log('🏆 Game completion triggered!');
     
-    clearInterval(gameState.timerInterval);
-    if (gameState.levelTimerInterval) {
-        clearInterval(gameState.levelTimerInterval);
-    }
+    const totalEarned = iKbpTracker.getTotalEarned();
     
-    const correctPercentage = (gameState.correctAnswers / 10) * 100;
-    let celebrationMessage = "";
-    let celebrationEmoji = "🎉";
-    
-    if (correctPercentage >= 90) {
-        celebrationMessage = "Outstanding! You're a Pan African expert!";
-        celebrationEmoji = "🏆";
-    } else if (correctPercentage >= 70) {
-        celebrationMessage = "Great job! You know your African history well!";
-        celebrationEmoji = "⭐";
-    } else if (correctPercentage >= 50) {
-        celebrationMessage = "Good work! Keep learning about Africa!";
-        celebrationEmoji = "👍";
+    if (gameState.playMode === 'member') {
+        document.getElementById('completionEarnings').innerHTML = 
+            `<div style="margin-bottom: 20px;">
+                <div style="font-size: 3rem; margin-bottom: 15px;">🎓</div>
+                <div style="font-size: 1.8rem; color: #4cc9f0; margin-bottom: 15px;">
+                    <strong>You're a Pan-African Expert!</strong>
+                </div>
+            </div>
+            <span style="color: #f7a440; font-size: 2rem; font-weight: bold;">
+                💰 Total Earned: ${totalEarned} iKbp
+            </span><br>
+            <span style="color: #4cc9f0; font-size: 1.1rem; margin-top: 15px; display: block;">
+                ✅ All 10 levels completed! Sync your earnings to your TAU account.
+            </span>`;
     } else {
-        celebrationMessage = "Good attempt! Review and try again!";
-        celebrationEmoji = "📚";
+        document.getElementById('completionEarnings').innerHTML = 
+            `<div style="margin-bottom: 20px;">
+                <div style="font-size: 1.8rem; color: #4cc9f0; margin-bottom: 15px;">
+                    <strong>Congratulations! All Levels Completed!</strong>
+                </div>
+            </div>
+            <span style="color: #f7d560;">
+                Playing as Guest - Register with TAU to earn rewards next time!
+            </span>`;
     }
+    
+    document.getElementById('gameCompleteModal').style.display = 'flex';
+}
     
     // Award level bonus for TAU members
     if (gameState.playMode === 'member' && !gameState.completedLevels.includes(gameState.currentLevel)) {
@@ -1402,23 +1410,21 @@ function completeGame() {
     
     const totalEarned = iKbpTracker.getTotalEarned();
     
-    if (gameState.playMode === 'member') {
-        document.getElementById('completionEarnings').innerHTML = 
-            `<span style="color: #f7a440; font-size: 2rem; font-weight: bold;">
-                💰 Total Earned: ${totalEarned} iKbp
-            </span><br>
-            <span style="color: #4cc9f0;">
-                All 10 levels completed! Sync your earnings to your TAU account.
-            </span>`;
-    } else {
-        document.getElementById('completionEarnings').innerHTML = 
-            `<span style="color: #f7d560;">
-                Playing as Guest - Register with TAU to earn rewards!
-            </span>`;
-    }
-    
-    document.getElementById('gameCompleteModal').style.display = 'flex';
+ // Check if all levels complete
+if (gameState.currentLevel >= 10) {
+    // Show final congratulations modal instead of level complete
+    completeGame();
+    return;
 }
+
+// For levels 1-9, show level completion modal
+document.getElementById('resultTitle').textContent = `Level ${gameState.currentLevel} Complete!`;
+document.getElementById('resultMessage').innerHTML = celebrationMessage;
+document.getElementById('finalScore').textContent = gameState.score;
+document.getElementById('celebrationEmoji').textContent = celebrationEmoji;
+document.getElementById('nextLevelBtn').textContent = `Proceed to Level ${gameState.currentLevel + 1}`;
+
+document.getElementById('resultModal').style.display = 'flex';
 
 function nextLevel() {
     console.log('➡️ Moving to next level');
