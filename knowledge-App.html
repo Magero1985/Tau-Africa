@@ -1230,6 +1230,76 @@ function loadQuestion() {
                 completeLevel();
             }
         }
+        function completeLevel() {
+    console.log('🎯 Level completion triggered');
+    
+    // Stop all timers
+    clearInterval(gameState.levelTimerInterval);
+    clearInterval(gameState.timerInterval);
+    
+    // Calculate accuracy
+    const accuracy = (gameState.correctAnswers / 10) * 100;
+    let celebrationEmoji = "🎉";
+    let celebrationMessage = "";
+    
+    if (accuracy === 100) {
+        celebrationEmoji = "🏆";
+        celebrationMessage = "Perfect score! Absolutely amazing!";
+    } else if (accuracy >= 80) {
+        celebrationEmoji = "⭐";
+        celebrationMessage = "Excellent work! You really know your stuff!";
+    } else if (accuracy >= 60) {
+        celebrationEmoji = "👍";
+        celebrationMessage = "Good job! Keep it up!";
+    } else {
+        celebrationEmoji = "💪";
+        celebrationMessage = "Nice try! Practice makes perfect!";
+    }
+    
+    // Award level completion bonus for TAU members
+    if (gameState.playMode === 'member' && !gameState.completedLevels.includes(gameState.currentLevel)) {
+        const levelBonus = 250;
+        iKbpTracker.addEarnings(levelBonus, gameState.currentLevel, `Level ${gameState.currentLevel} completion bonus`);
+        
+        gameState.completedLevels.push(gameState.currentLevel);
+        gameState.completedLevels.sort((a, b) => a - b);
+        
+        iKbpTracker.saveToStorage();
+        
+        document.getElementById('resultEarnings').innerHTML = 
+            `🎉 Level ${gameState.currentLevel} Complete: +250 iKbp Bonus!<br>
+            <small>Total Earned: ${iKbpTracker.getTotalEarned()} iKbp</small>`;
+    } else if (gameState.playMode === 'guest') {
+        document.getElementById('resultEarnings').innerHTML = 
+            `Playing as Guest - No earnings<br>
+            <small>Register with TAU to earn iKbp rewards!</small>`;
+    } else {
+        document.getElementById('resultEarnings').innerHTML = 
+            `Already completed this level<br>
+            <small>Earnings claimed previously</small>`;
+    }
+    
+    // Mark level as completed in UI
+    const levelDot = document.getElementById(`level${gameState.currentLevel}`);
+    if (levelDot) levelDot.classList.add('completed');
+    
+    // Check if all 10 levels are complete
+    if (gameState.currentLevel >= 10) {
+        completeGame();
+        return;
+    }
+    
+    // Show level completion modal
+    document.getElementById('resultTitle').textContent = `Level ${gameState.currentLevel} Complete! ${celebrationEmoji}`;
+    document.getElementById('resultMessage').innerHTML = celebrationMessage;
+    document.getElementById('finalScore').textContent = gameState.score;
+    document.getElementById('celebrationEmoji').textContent = celebrationEmoji;
+    document.getElementById('nextLevelBtn').textContent = `Proceed to Level ${gameState.currentLevel + 1}`;
+    
+    document.getElementById('resultModal').style.display = 'flex';
+    
+    console.log('✅ Level completion modal displayed');
+        }
 
         function restartGame() {
             document.getElementById('gameCompleteModal').style.display = 'none';
@@ -1515,13 +1585,13 @@ document.getElementById('resultModal').style.display = 'flex';
 function nextLevel() {
     console.log('➡️ Moving to next level');
     
-    // Close the modal first
+    // Close the level completion modal
     document.getElementById('resultModal').style.display = 'none';
     
-    // Move to next level
+    // Increment to next level
     gameState.currentLevel++;
     
-    // IMPORTANT: Check if this level was already completed
+    // Check if member already completed this level
     if (gameState.playMode === 'member' && gameState.completedLevels.includes(gameState.currentLevel)) {
         alert(`⚠️ Level ${gameState.currentLevel} Already Completed!\n\nYou've already earned rewards for this level.\n\nSkipping to next uncompleted level...`);
         
@@ -1535,13 +1605,14 @@ function nextLevel() {
             }
         }
         
-        // If all levels completed, show completion screen
+        // If all levels completed
         if (!foundNext) {
             completeGame();
             return;
         }
     }
     
+    // Reset for new level
     gameState.currentQuestion = 1;
     gameState.questionsAnswered = 0;
     gameState.correctAnswers = 0;
@@ -1550,16 +1621,16 @@ function nextLevel() {
     gameState.answerSubmitted = false;
     gameState.levelEarnings = 0;
     
-    // Update display
+    // Update UI
     updateGameDisplay();
     loadQuestion();
     
-    // Restart level timer
+    // Start new level timer
     if (typeof startLevelTimer === 'function') {
         startLevelTimer();
     }
     
-    console.log('✅ Advanced to level', gameState.currentLevel);
+    console.log('✅ Successfully advanced to level', gameState.currentLevel);
 }
     </script>
     <script>
