@@ -208,7 +208,7 @@
         }
 
         .level-dot.completed::after {
-            content: 'âœ“';
+            content: '✓';
             position: absolute;
             top: -5px;
             right: -5px;
@@ -502,11 +502,11 @@
         <!-- TAU Member Banner -->
         <div id="tauMemberBanner" class="tau-banner" style="display: none;">
             <div class="tau-info">
-                <strong>ðŸ”— Connected to TAU Africa</strong>
+                <strong>🔗 Connected to TAU Africa</strong>
                 <small id="memberInfo">Loading member info...</small>
             </div>
             <div class="tau-actions">
-                <button class="tau-btn primary" onclick="syncEarningsToTAU()">ðŸ’° Sync Earnings</button>
+                <button class="tau-btn primary" onclick="syncEarningsToTAU()">💰 Sync Earnings</button>
                 <button class="tau-btn secondary" onclick="openTAUApp()">Open TAU App</button>
             </div>
         </div>
@@ -514,22 +514,22 @@
         <!-- Guest Banner -->
         <div id="guestBanner" class="tau-banner guest" style="display: none;">
             <div class="tau-info">
-                <strong>ðŸŒ Playing as Guest</strong>
+                <strong>🌍 Playing as Guest</strong>
                 <small>Play for fun! Register with TAU to earn iKbp rewards.</small>
             </div>
             <div class="tau-actions">
-                <button class="tau-btn guest-register" onclick="registerWithTAU()">ðŸŽ¯ Register with TAU</button>
+                <button class="tau-btn guest-register" onclick="registerWithTAU()">🎯 Register with TAU</button>
             </div>
         </div>
 
         <div class="header">
             <h1>Pan African Knowledge Challenge</h1>
-            <div class="subtitle">Test your knowledge across 10 challenging levels â€¢ Earn iKbp rewards as TAU member!</div>
+            <div class="subtitle">Test your knowledge across 10 challenging levels • Earn iKbp rewards as TAU member!</div>
         </div>
 
         <!-- Earnings Display -->
         <div id="earningsDisplay" class="earnings-display" style="display: none;">
-            ðŸ’° Total Earned: <span id="totalEarned">0</span> iKbp
+            💰 Total Earned: <span id="totalEarned">0</span> iKbp
         </div>
 
         <div id="startScreen" class="start-screen">
@@ -539,18 +539,18 @@
             
             <div class="mode-selection">
                 <div class="mode-card" onclick="selectMode('guest')">
-                    <h3>ðŸŒ Guest Mode</h3>
-                    <p>â€¢ Play all levels for fun</p>
-                    <p>â€¢ No earnings</p>
-                    <p>â€¢ Perfect for practice</p>
+                    <h3>🌍 Guest Mode</h3>
+                    <p>• Play all levels for fun</p>
+                    <p>• No earnings</p>
+                    <p>• Perfect for practice</p>
                     <p class="highlight">Free Play</p>
                 </div>
                 
                 <div class="mode-card" onclick="selectMode('member')">
-                    <h3>â­ TAU Member</h3>
-                    <p>â€¢ Earn 250 iKbp per level</p>
-                    <p>â€¢ Sync to TAU account</p>
-                    <p>â€¢ Track your progress</p>
+                    <h3>⭐ TAU Member</h3>
+                    <p>• Earn 250 iKbp per level</p>
+                    <p>• Sync to TAU account</p>
+                    <p>• Track your progress</p>
                     <p class="highlight">Earn While Learning!</p>
                 </div>
             </div>
@@ -591,7 +591,7 @@
         <h3 style="color: #4cc9f0; 
                    margin-bottom: 10px; 
                    font-size: 1.1rem;">
-            â±ï¸ Level Time Remaining
+            ⏱️ Level Time Remaining
         </h3>
         <div id="levelTimer" 
              style="font-size: 3rem; 
@@ -624,14 +624,14 @@
                 
                 <div class="buttons">
                     <button class="btn btn-submit" id="submitBtn" onclick="submitAnswer()" disabled>Submit Answer</button>
-                    <button class="btn btn-next" id="nextBtn" onclick="nextQuestion()" disabled>Next Question â†’</button>
+                    <button class="btn btn-next" id="nextBtn" onclick="nextQuestion()" disabled>Next Question →</button>
                 </div>
             </div>
         </div>
                 
         <div id="resultModal" class="result-modal">
             <div class="modal-content">
-                <div class="celebration" id="celebrationEmoji">ðŸŽ‰</div>
+                <div class="celebration" id="celebrationEmoji">🎉</div>
                 <h2 id="resultTitle">Level Complete!</h2>
                 <p id="resultMessage"></p>
                 <p id="resultScore">Score: <span id="finalScore">0</span></p>
@@ -644,12 +644,12 @@
 
         <div id="gameCompleteModal" class="result-modal">
             <div class="modal-content">
-                <div class="celebration">ðŸ†</div>
+                <div class="celebration">🏆</div>
                 <h2>Congratulations!</h2>
                 <p>You've completed all 10 levels of the Pan African Knowledge Challenge!</p>
                 <p id="completionEarnings"></p>
                 <p style="margin-top: 20px; color: #4cc9f0;">
-                    ðŸŒ <strong>Join the TAU Africa Ecosystem</strong> for expanded earning opportunities and Pan-African awakening!
+                    🌍 <strong>Join the TAU Africa Ecosystem</strong> for expanded earning opportunities and Pan-African awakening!
                 </p>
                 <div style="margin-top: 30px; display: flex; gap: 15px; justify-content: center; flex-wrap: wrap;">
                     <button class="btn btn-start" onclick="joinTAUEcosystem()">Join TAU Ecosystem</button>
@@ -660,10 +660,10 @@
 
         <div id="alreadyCompletedModal" class="result-modal">
             <div class="modal-content">
-                <div class="celebration">â³</div>
+                <div class="celebration">⏳</div>
                 <h2>Already Completed!</h2>
                 <p>You've already earned rewards for all 10 levels.</p>
-                <p style="color: #f7a440;">ðŸ’° Total Earned: <span id="totalEarnedComplete">0</span> iKbp</p>
+                <p style="color: #f7a440;">💰 Total Earned: <span id="totalEarnedComplete">0</span> iKbp</p>
                 <p style="margin-top: 20px;">
                     <strong>Levels 11-20 coming soon!</strong><br>
                     In the meantime, play previous levels for fun as a guest.
@@ -710,7 +710,7 @@
         }
         this.levelEarnings[level] += amount;
         
-        console.log(`ðŸ’° +${amount} iKbp earned! (${reason})`);
+        console.log(`💰 +${amount} iKbp earned! (${reason})`);
         this.saveToStorage();
         this.updateDisplay();
         
@@ -738,7 +738,7 @@
             : 'tauKnowledgeGuest';
             
         localStorage.setItem(key, JSON.stringify(earningData));
-        console.log('ðŸ’¾ Saved:', earningData);
+        console.log('💾 Saved:', earningData);
     },
     
     loadFromStorage: function() {
@@ -767,7 +767,7 @@
         if (totalEl) totalEl.textContent = this.totalEarned;
         if (levelEl) levelEl.textContent = gameState.levelEarnings;
         
-        console.log('ðŸ–¥ï¸ Display updated - Total:', this.totalEarned);
+        console.log('🖥️ Display updated - Total:', this.totalEarned);
     }
 };
 
@@ -834,7 +834,7 @@ Object.assign(iKbpTracker, window.iKbpTracker);
                 },
                 {
                     question: "Who wrote the novel 'Things Fall Apart'?",
-                    options: ["Wole Soyinka", "Chinua Achebe", "NgÅ©gÄ© wa Thiong'o", "Chimamanda Ngozi Adichie"],
+                    options: ["Wole Soyinka", "Chinua Achebe", "Ngũgĩ wa Thiong'o", "Chimamanda Ngozi Adichie"],
                     correct: 1,
                     hint: "This Nigerian author is considered the father of modern African literature.",
                     category: "Literature"
@@ -925,8 +925,8 @@ Object.assign(iKbpTracker, window.iKbpTracker);
         {question: "Which African country has the most official languages (11)?", options: ["Nigeria", "South Africa", "Kenya", "Ethiopia"], correct: 1, hint: "Its constitution recognizes multiple indigenous languages.", category: "Culture"},
         {question: "Lake Victoria is shared by three countries. Which is NOT one?", options: ["Kenya", "Tanzania", "Rwanda", "Uganda"], correct: 2, hint: "It's Africa's largest lake by area.", category: "Geography"},
         {question: "Who was the first woman president in Africa?", options: ["Ellen Johnson Sirleaf", "Joyce Banda", "Sahle-Work Zewde", "Sylvie Kinigi"], correct: 0, hint: "She led Liberia from 2006-2018.", category: "Politics"},
-        {question: "The ancient University of Sankore was in which city?", options: ["Cairo", "Timbuktu", "Gao", "DjennÃ©"], correct: 1, hint: "Major center of Islamic learning in medieval West Africa.", category: "History"},
-        {question: "Which African nation was formed by freed American slaves?", options: ["Sierra Leone", "Liberia", "Equatorial Guinea", "SÃ£o TomÃ©"], correct: 1, hint: "Capital Monrovia is named after a U.S. president.", category: "History"},
+        {question: "The ancient University of Sankore was in which city?", options: ["Cairo", "Timbuktu", "Gao", "Djenné"], correct: 1, hint: "Major center of Islamic learning in medieval West Africa.", category: "History"},
+        {question: "Which African nation was formed by freed American slaves?", options: ["Sierra Leone", "Liberia", "Equatorial Guinea", "São Tomé"], correct: 1, hint: "Capital Monrovia is named after a U.S. president.", category: "History"},
         {question: "The Maasai people traditionally live in which two countries?", options: ["Kenya and Tanzania", "Uganda and Rwanda", "Ethiopia and Somalia", "Zambia and Malawi"], correct: 0, hint: "Semi-nomadic pastoralists with distinctive red clothing.", category: "Culture"},
         {question: "Which African country produces the most oil?", options: ["Angola", "Nigeria", "Libya", "Algeria"], correct: 1, hint: "Also the most populous nation on the continent.", category: "Economy"},
         {question: "Pan-African colors were inspired by which flag?", options: ["Ethiopian flag", "Ghanaian flag", "Kenyan flag", "Marcus Garvey's flag"], correct: 3, hint: "Red, black, and green represent blood, people, and land.", category: "Culture"}
@@ -963,12 +963,12 @@ Object.assign(iKbpTracker, window.iKbpTracker);
         {question: "Rosetta Stone found in which year?", options: ["1699", "1755", "1799", "1822"], correct: 2, hint: "Napoleon's troops discovered it.", category: "History"},
         {question: "Which country has most pyramids?", options: ["Egypt", "Sudan", "Ethiopia", "Libya"], correct: 1, hint: "Nubian pyramids outnumber Egypt's.", category: "History"},
         {question: "Barbary Coast refers to which region?", options: ["East Africa", "West Africa", "North Africa", "Southern Africa"], correct: 2, hint: "Morocco, Algeria, Tunisia, Libya.", category: "Geography"},
-        {question: "Who coined 'African Personality'?", options: ["Kwame Nkrumah", "LÃ©opold Senghor", "Patrice Lumumba", "Jomo Kenyatta"], correct: 0, hint: "Promoted Pan-Africanism.", category: "Politics"},
+        {question: "Who coined 'African Personality'?", options: ["Kwame Nkrumah", "Léopold Senghor", "Patrice Lumumba", "Jomo Kenyatta"], correct: 0, hint: "Promoted Pan-Africanism.", category: "Politics"},
         {question: "Olduvai Gorge location?", options: ["Kenya", "Ethiopia", "Tanzania", "South Africa"], correct: 2, hint: "Leakey family discoveries.", category: "History"},
         {question: "First African independence in 20th century?", options: ["Ghana", "Libya", "Morocco", "Tunisia"], correct: 1, hint: "Independence in 1951.", category: "History"},
         {question: "Trans-Saharan trade: gold for what?", options: ["Spices", "Salt", "Ivory", "Textiles"], correct: 1, hint: "As valuable as gold in some regions.", category: "History"},
         {question: "World's largest vanilla producer?", options: ["Kenya", "Tanzania", "Madagascar", "Uganda"], correct: 2, hint: "Produces 80% of world's vanilla.", category: "Economy"},
-        {question: "Who developed 'NÃ©gritude' concept?", options: ["AimÃ© CÃ©saire", "LÃ©opold Senghor", "LÃ©on-Gontran Damas", "Frantz Fanon"], correct: 1, hint: "First president of Senegal.", category: "Culture"}
+        {question: "Who developed 'Négritude' concept?", options: ["Aimé Césaire", "Léopold Senghor", "Léon-Gontran Damas", "Frantz Fanon"], correct: 1, hint: "First president of Senegal.", category: "Culture"}
     ],
     
     level7: [
@@ -989,7 +989,7 @@ Object.assign(iKbpTracker, window.iKbpTracker);
         {question: "Khoisan language unique feature?", options: ["Tonal variations", "Click consonants", "Whistled speech", "Sign integration"], correct: 1, hint: "Among Africa's oldest languages.", category: "Culture"},
         {question: "'Father of African Historiography'?", options: ["Joseph Ki-Zerbo", "Cheikh Anta Diop", "Ali Mazrui", "Walter Rodney"], correct: 1, hint: "Argued for African origin of Egypt.", category: "History"},
         {question: "Swahili fusion of which cultures?", options: ["Bantu and Arab", "Cushitic and Persian", "Nilotic and Indian", "Berber and Egyptian"], correct: 0, hint: "Coastal trading culture.", category: "History"},
-        {question: "Most diverse ecosystem per kmÂ²?", options: ["Madagascar", "Tanzania", "Kenya", "South Africa"], correct: 0, hint: "90% wildlife found nowhere else.", category: "Geography"},
+        {question: "Most diverse ecosystem per km²?", options: ["Madagascar", "Tanzania", "Kenya", "South Africa"], correct: 0, hint: "90% wildlife found nowhere else.", category: "Geography"},
         {question: "Hannibal attacked which empire?", options: ["Greek", "Roman", "Persian", "Macedonian"], correct: 1, hint: "Used war elephants.", category: "History"},
         {question: "First 50% female parliament?", options: ["Rwanda", "South Africa", "Senegal", "Namibia"], correct: 0, hint: "Leads world in gender parity.", category: "Politics"},
         {question: "Library of Alexandria dynasty?", options: ["Ptolemaic", "Roman", "Persian", "Nubian"], correct: 0, hint: "After Alexander the Great.", category: "History"},
@@ -1011,7 +1011,7 @@ Object.assign(iKbpTracker, window.iKbpTracker);
     ],
     
     level10: [
-        {question: "Philosopher developed 'Conscientism'?", options: ["Kwame Nkrumah", "Julius Nyerere", "Cheikh Anta Diop", "LÃ©opold Senghor"], correct: 0, hint: "Reconcile tradition with modernity.", category: "Philosophy"},
+        {question: "Philosopher developed 'Conscientism'?", options: ["Kwame Nkrumah", "Julius Nyerere", "Cheikh Anta Diop", "Léopold Senghor"], correct: 0, hint: "Reconcile tradition with modernity.", category: "Philosophy"},
         {question: "Mapungubwe traded what with China?", options: ["Gold", "Ivory", "Copper", "Iron"], correct: 0, hint: "Chinese porcelain found at site.", category: "History"},
         {question: "Oldest sub-Saharan inhabited city?", options: ["Ethiopia", "Sudan", "Nigeria", "Senegal"], correct: 0, hint: "Harar, 4th holiest Islamic city.", category: "History"},
         {question: "Ajuran Sultanate hydraulic engineering location?", options: ["Kenya", "Tanzania", "Somalia", "Ethiopia"], correct: 2, hint: "Sophisticated irrigation systems.", category: "History"},
@@ -1049,7 +1049,7 @@ Object.assign(iKbpTracker, window.iKbpTracker);
         function startGame() {
     // Check if user is trying to replay a completed level
     if (gameState.playMode === 'member' && gameState.completedLevels.includes(gameState.currentLevel)) {
-        alert('âš ï¸ You have already completed this level and earned rewards!\n\nYou cannot earn iKbp from the same level twice.\n\nSwitch to Guest Mode to replay for fun.');
+        alert('⚠️ You have already completed this level and earned rewards!\n\nYou cannot earn iKbp from the same level twice.\n\nSwitch to Guest Mode to replay for fun.');
         return;
     }
     
@@ -1146,14 +1146,14 @@ function submitAnswer() {
             document.getElementById('levelEarnings').textContent = gameState.levelEarnings;
             
             document.getElementById('hintArea').innerHTML = 
-                `<span style="color: #4cc9f0">âœ“ Correct! +${pointsEarned} points | +${iKbpEarned} iKbp</span>`;
+                `<span style="color: #4cc9f0">✓ Correct! +${pointsEarned} points | +${iKbpEarned} iKbp</span>`;
         } else {
             document.getElementById('hintArea').innerHTML = 
-                `<span style="color: #4cc9f0">âœ“ Correct! +${pointsEarned} points</span>`;
+                `<span style="color: #4cc9f0">✓ Correct! +${pointsEarned} points</span>`;
         }
     } else {
         document.getElementById('hintArea').innerHTML = 
-            `<span style="color: #ef476f">âœ— Incorrect. The correct answer was: ${options[correctIndex].textContent}</span>`;
+            `<span style="color: #ef476f">✗ Incorrect. The correct answer was: ${options[correctIndex].textContent}</span>`;
     }
     
     gameState.questionsAnswered++;
@@ -1362,7 +1362,7 @@ function loadQuestion() {
             
             localStorage.setItem('tauSyncData', JSON.stringify(syncData));
             
-            alert(`âœ… ${totalEarned} iKbp prepared for sync!\n\nRedirecting to TAU app...`);
+            alert(`✅ ${totalEarned} iKbp prepared for sync!\n\nRedirecting to TAU app...`);
             
             setTimeout(() => {
                 window.open(`https://magero1985.github.io/Tau-Africa/?sync=true&memberId=${gameState.memberId}&earned=${totalEarned}`, '_blank');
@@ -1409,23 +1409,23 @@ function loadQuestion() {
 // ========================================
 
 function completeGame() {
-    console.log('ðŸ† Game completion triggered!');
+    console.log('🏆 Game completion triggered!');
     
     const totalEarned = iKbpTracker.getTotalEarned();
     
     if (gameState.playMode === 'member') {
         document.getElementById('completionEarnings').innerHTML = 
             `<div style="margin-bottom: 20px;">
-                <div style="font-size: 3rem; margin-bottom: 15px;">ðŸŽ“</div>
+                <div style="font-size: 3rem; margin-bottom: 15px;">🎓</div>
                 <div style="font-size: 1.8rem; color: #4cc9f0; margin-bottom: 15px;">
                     <strong>You're a Pan-African Expert!</strong>
                 </div>
             </div>
             <span style="color: #f7a440; font-size: 2rem; font-weight: bold;">
-                ðŸ’° Total Earned: ${totalEarned} iKbp
+                💰 Total Earned: ${totalEarned} iKbp
             </span><br>
             <span style="color: #4cc9f0; font-size: 1.1rem; margin-top: 15px; display: block;">
-                âœ… All 10 levels completed! Sync your earnings to your TAU account.
+                ✅ All 10 levels completed! Sync your earnings to your TAU account.
             </span>`;
     } else {
         document.getElementById('completionEarnings').innerHTML = 
@@ -1451,7 +1451,7 @@ function completeGame() {
         gameState.completedLevels.sort((a, b) => a - b);
         
         document.getElementById('resultEarnings').innerHTML = 
-            `ðŸŽ‰ Level ${gameState.currentLevel} Complete: +250 iKbp Bonus!<br>
+            `🎉 Level ${gameState.currentLevel} Complete: +250 iKbp Bonus!<br>
             <small>Total Earned: ${iKbpTracker.getTotalEarned()} iKbp</small>`;
     } else if (gameState.playMode === 'guest') {
         document.getElementById('resultEarnings').innerHTML = 
@@ -1492,7 +1492,7 @@ function closeResult() {
 // ADD THESE TWO FUNCTIONS HERE:
 
 function completeGame() {
-    console.log('ðŸ† Game completion triggered!');
+    console.log('🏆 Game completion triggered!');
     
     const totalEarned = iKbpTracker.getTotalEarned();
     
@@ -1513,7 +1513,7 @@ document.getElementById('nextLevelBtn').textContent = `Proceed to Level ${gameSt
 document.getElementById('resultModal').style.display = 'flex';
 
 function nextLevel() {
-    console.log('âž¡ï¸ Moving to next level');
+    console.log('➡️ Moving to next level');
     
     // Close the modal first
     document.getElementById('resultModal').style.display = 'none';
@@ -1523,7 +1523,7 @@ function nextLevel() {
     
     // IMPORTANT: Check if this level was already completed
     if (gameState.playMode === 'member' && gameState.completedLevels.includes(gameState.currentLevel)) {
-        alert(`âš ï¸ Level ${gameState.currentLevel} Already Completed!\n\nYou've already earned rewards for this level.\n\nSkipping to next uncompleted level...`);
+        alert(`⚠️ Level ${gameState.currentLevel} Already Completed!\n\nYou've already earned rewards for this level.\n\nSkipping to next uncompleted level...`);
         
         // Find next uncompleted level
         let foundNext = false;
@@ -1559,7 +1559,7 @@ function nextLevel() {
         startLevelTimer();
     }
     
-    console.log('âœ… Advanced to level', gameState.currentLevel);
+    console.log('✅ Advanced to level', gameState.currentLevel);
 }
     </script>
     <script>
@@ -1570,14 +1570,14 @@ function nextLevel() {
 // OVERRIDE SCRIPT - Fixes all issues
 // ========================================
 
-console.log('ðŸ”§ Loading function overrides...');
+console.log('🔧 Loading function overrides...');
 
 // Update gameState with timer properties if not already present
 if (!gameState.hasOwnProperty('levelTimer')) {
     gameState.levelTimer = 60;
     gameState.levelTimerInterval = null;
     gameState.levelTimeoutCount = 0;
-    console.log('âœ… Added timer properties to gameState');
+    console.log('✅ Added timer properties to gameState');
 }
 
 // ========================================
@@ -1619,7 +1619,7 @@ function updateLevelTimerDisplay() {
 }
 
 function handleLevelTimeout() {
-    alert('Ã¢ÂÂ° Time\'s up! Level timeout. Restarting level.');
+    alert('â° Time\'s up! Level timeout. Restarting level.');
     
     gameState.currentQuestion = 1;
     gameState.questionsAnswered = 0;
@@ -1678,7 +1678,7 @@ window.startGame = function() {
         startLevelTimer();
     }
     
-    console.log('ðŸŽ® Game started with timer');
+    console.log('🎮 Game started with timer');
 };
 
 // Override submitAnswer to track earnings properly
@@ -1722,16 +1722,16 @@ window.submitAnswer = function() {
             if (levelEl) levelEl.textContent = gameState.levelEarnings;
             
             document.getElementById('hintArea').innerHTML = 
-                `<span style="color: #4cc9f0">âœ“ Correct! +${pointsEarned} points | +${iKbpEarned} iKbp</span>`;
+                `<span style="color: #4cc9f0">✓ Correct! +${pointsEarned} points | +${iKbpEarned} iKbp</span>`;
             
-            console.log(`âœ… Earned ${iKbpEarned} iKbp (Total this level: ${gameState.levelEarnings})`);
+            console.log(`✅ Earned ${iKbpEarned} iKbp (Total this level: ${gameState.levelEarnings})`);
         } else {
             document.getElementById('hintArea').innerHTML = 
-                `<span style="color: #4cc9f0">âœ“ Correct! +${pointsEarned} points</span>`;
+                `<span style="color: #4cc9f0">✓ Correct! +${pointsEarned} points</span>`;
         }
     } else {
         document.getElementById('hintArea').innerHTML = 
-            `<span style="color: #ef476f">âœ— Incorrect. The correct answer was: ${options[correctIndex].textContent}</span>`;
+            `<span style="color: #ef476f">✗ Incorrect. The correct answer was: ${options[correctIndex].textContent}</span>`;
     }
     
     gameState.questionsAnswered++;
@@ -1757,10 +1757,10 @@ window.submitAnswer = function() {
 window.syncEarningsToTAU = function() {
     const totalEarned = iKbpTracker.getTotalEarned();
     
-    console.log('ðŸ”„ Attempting to sync:', totalEarned, 'iKbp');
+    console.log('🔄 Attempting to sync:', totalEarned, 'iKbp');
     
     if (totalEarned === 0) {
-        alert('âŒ No earnings to sync yet!\n\nTips:\nâ€¢ Make sure you selected "TAU Member" mode\nâ€¢ Complete some levels to earn iKbp\nâ€¢ Each correct answer = 25 iKbp\nâ€¢ Level completion = 250 iKbp bonus');
+        alert('❌ No earnings to sync yet!\n\nTips:\n• Make sure you selected "TAU Member" mode\n• Complete some levels to earn iKbp\n• Each correct answer = 25 iKbp\n• Level completion = 250 iKbp bonus');
         return;
     }
     
@@ -1788,15 +1788,15 @@ window.syncEarningsToTAU = function() {
         timestamp: Date.now()
     });
     
-    alert(`âœ… ${totalEarned} iKbp prepared for sync!\n\nBreakdown:\n${breakdown}\n\nRedirecting to TAU app...`);
+    alert(`✅ ${totalEarned} iKbp prepared for sync!\n\nBreakdown:\n${breakdown}\n\nRedirecting to TAU app...`);
     
     setTimeout(() => {
         window.open(`https://magero1985.github.io/Tau-Africa/?${syncParams.toString()}`, '_blank');
     }, 1000);
 };
 
-console.log('âœ… All function overrides loaded successfully!');
-console.log('ðŸ“Š iKbpTracker ready:', iKbpTracker.getTotalEarned(), 'iKbp');
+console.log('✅ All function overrides loaded successfully!');
+console.log('📊 iKbpTracker ready:', iKbpTracker.getTotalEarned(), 'iKbp');
     </script>
 </body>
-</html>
+                                        </html>
