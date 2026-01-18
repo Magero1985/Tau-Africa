@@ -1555,11 +1555,9 @@ function completeGame() {
 function closeResult() {
     document.getElementById('resultModal').style.display = 'none';
 }
-       
-        }
+
 function nextLevel() {
     console.log('🔍 nextLevel() called - Current level:', gameState.currentLevel);
-    
     // Close the level completion modal
     const modal = document.getElementById('resultModal');
     if (modal) {
