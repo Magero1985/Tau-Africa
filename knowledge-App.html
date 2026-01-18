@@ -918,7 +918,7 @@ Object.assign(iKbpTracker, window.iKbpTracker);
                     hint: "She won in 2004 for her contribution to sustainable development, democracy, and peace.",
                     category: "Politics"
                 },
-            ],
+
         level3: [
         {question: "Which African leader introduced 'Ujamaa' (African socialism) in Tanzania?", options: ["Kenneth Kaunda", "Julius Nyerere", "Jomo Kenyatta", "Kwame Nkrumah"], correct: 1, hint: "He promoted villagization and collective farming.", category: "Politics"},
         {question: "The Great Zimbabwe ruins were built by which civilization?", options: ["Shona people", "Zulu Kingdom", "Swahili traders", "Portuguese settlers"], correct: 0, hint: "These stone structures date from 11th-15th centuries.", category: "History"},
@@ -1542,6 +1542,7 @@ function nextLevel() {
         }
     }
     
+    // Reset state for new level
     gameState.currentQuestion = 1;
     gameState.questionsAnswered = 0;
     gameState.correctAnswers = 0;
@@ -1557,6 +1558,9 @@ function nextLevel() {
     // Restart level timer
     if (typeof startLevelTimer === 'function') {
         startLevelTimer();
+    } else {
+        // Fallback to regular timer if level timer not available
+        startTimer();
     }
     
     console.log('✅ Advanced to level', gameState.currentLevel);
