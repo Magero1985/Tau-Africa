@@ -961,21 +961,32 @@ Object.assign(iKbpTracker, window.iKbpTracker);
         }
 
         function startGame() {
-            document.getElementById('startScreen').style.display = 'none';
-            document.getElementById('gameScreen').style.display = 'flex';
-            
-            gameState.gameStarted = true;
-            gameState.currentLevel = 1;
-            gameState.currentQuestion = 1;
-            gameState.score = 0;
-            gameState.questionsAnswered = 0;
-            gameState.correctAnswers = 0;
-            gameState.levelEarnings = 0;
-            
-            updateGameDisplay();
-            loadQuestion();
-            startTimer();
-        }
+    // Check if user is trying to replay a completed level
+    if (gameState.playMode === 'member' && gameState.completedLevels.includes(gameState.currentLevel)) {
+        alert('⚠️ You have already completed this level and earned rewards!\n\nYou cannot earn iKbp from the same level twice.\n\nSwitch to Guest Mode to replay for fun.');
+        return;
+    }
+    
+    document.getElementById('startScreen').style.display = 'none';
+    document.getElementById('gameScreen').style.display = 'flex';
+    
+    gameState.gameStarted = true;
+    gameState.currentLevel = 1;
+    gameState.currentQuestion = 1;
+    gameState.score = 0;
+    gameState.questionsAnswered = 0;
+    gameState.correctAnswers = 0;
+    gameState.levelEarnings = 0;
+    
+    updateGameDisplay();
+    loadQuestion();
+    startTimer();
+    
+    // Start level timer if available
+    if (typeof startLevelTimer === 'function') {
+        startLevelTimer();
+    }
+}
 
         // Replace your selectOption function with this:
 function selectOption(index, element) {
@@ -1417,13 +1428,35 @@ function nextLevel() {
     
     // Move to next level
     gameState.currentLevel++;
+    
+    // IMPORTANT: Check if this level was already completed
+    if (gameState.playMode === 'member' && gameState.completedLevels.includes(gameState.currentLevel)) {
+        alert(`⚠️ Level ${gameState.currentLevel} Already Completed!\n\nYou've already earned rewards for this level.\n\nSkipping to next uncompleted level...`);
+        
+        // Find next uncompleted level
+        let foundNext = false;
+        for (let i = gameState.currentLevel; i <= 10; i++) {
+            if (!gameState.completedLevels.includes(i)) {
+                gameState.currentLevel = i;
+                foundNext = true;
+                break;
+            }
+        }
+        
+        // If all levels completed, show completion screen
+        if (!foundNext) {
+            completeGame();
+            return;
+        }
+    }
+    
     gameState.currentQuestion = 1;
     gameState.questionsAnswered = 0;
     gameState.correctAnswers = 0;
     gameState.selectedOption = null;
     gameState.correctAnswer = null;
     gameState.answerSubmitted = false;
-    gameState.levelEarnings = 0; // Reset level earnings for new level
+    gameState.levelEarnings = 0;
     
     // Update display
     updateGameDisplay();
@@ -1435,7 +1468,7 @@ function nextLevel() {
     }
     
     console.log('✅ Advanced to level', gameState.currentLevel);
-} 
+}
     </script>
     <script>
 // ADD THIS ENTIRE SECTION RIGHT BEFORE //
