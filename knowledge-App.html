@@ -1542,7 +1542,6 @@ function nextLevel() {
         }
     }
     
-    // Reset state for new level
     gameState.currentQuestion = 1;
     gameState.questionsAnswered = 0;
     gameState.correctAnswers = 0;
@@ -1558,9 +1557,6 @@ function nextLevel() {
     // Restart level timer
     if (typeof startLevelTimer === 'function') {
         startLevelTimer();
-    } else {
-        // Fallback to regular timer if level timer not available
-        startTimer();
     }
     
     console.log('✅ Advanced to level', gameState.currentLevel);
