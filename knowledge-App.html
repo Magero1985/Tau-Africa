@@ -726,50 +726,69 @@
     },
     
     saveToStorage: function() {
-        const earningData = {
-            totalEarned: this.totalEarned,
-            levelEarnings: this.levelEarnings,
-            completedLevels: gameState.completedLevels,
-            lastUpdated: new Date().toISOString()
-        };
+    const earningData = {
+        version: '2.0', // ← ADD THIS LINE
+        totalEarned: this.totalEarned,
+        levelEarnings: this.levelEarnings,
+        completedLevels: gameState.completedLevels,
+        lastUpdated: new Date().toISOString()
+    };
+    
+    const key = gameState.playMode === 'member' && gameState.memberId 
+        ? `tauKnowledge_${gameState.memberId}` 
+        : 'tauKnowledgeGuest';
         
-        const key = gameState.playMode === 'member' && gameState.memberId 
-            ? `tauKnowledge_${gameState.memberId}` 
-            : 'tauKnowledgeGuest';
-            
-        localStorage.setItem(key, JSON.stringify(earningData));
-        console.log('💾 Saved:', earningData);
-    },
+    localStorage.setItem(key, JSON.stringify(earningData));
+    console.log('💾 Saved:', earningData);
+},
     
     loadFromStorage: function() {
-        const key = gameState.playMode === 'member' && gameState.memberId 
-            ? `tauKnowledge_${gameState.memberId}` 
-            : 'tauKnowledgeGuest';
+    const key = gameState.playMode === 'member' && gameState.memberId 
+        ? `tauKnowledge_${gameState.memberId}` 
+        : 'tauKnowledgeGuest';
+        
+    const saved = localStorage.getItem(key);
+    if (saved) {
+        try {
+            const data = JSON.parse(saved);
             
-        const saved = localStorage.getItem(key);
-        if (saved) {
-            try {
-                const data = JSON.parse(saved);
+            // VERSION CHECK - Handle upgrades intelligently
+            const currentVersion = '2.0'; // Change this when you add new levels
+            const savedVersion = data.version || '1.0';
+            
+            if (savedVersion !== currentVersion) {
+                console.log(`🔄 Upgrading from v${savedVersion} to v${currentVersion}`);
+                
+                // PRESERVE all earnings and completed levels
                 this.totalEarned = data.totalEarned || 0;
                 this.levelEarnings = data.levelEarnings || {};
                 gameState.completedLevels = data.completedLevels || [];
+                
+                // Filter out any invalid level completions (in case they had placeholder levels)
+                // Only keep levels 1-10 since those are the only real levels now
+                gameState.completedLevels = gameState.completedLevels.filter(level => level >= 1 && level <= 10);
+                
+                // Save with new version
+                this.saveToStorage();
+                
                 this.updateDisplay();
-            } catch (e) {
-                console.log('Load error');
+                
+                alert(`🆕 Game Updated to v${currentVersion}!\n\n✅ Your earnings preserved: ${this.totalEarned} iKbp\n✅ Completed levels: ${gameState.completedLevels.join(', ') || 'None'}\n\n🎮 All 10 levels with full questions are now available!\n\nYou can continue from any uncompleted level.`);
+                
+                return;
             }
+            
+            // Normal load for same version
+            this.totalEarned = data.totalEarned || 0;
+            this.levelEarnings = data.levelEarnings || {};
+            gameState.completedLevels = data.completedLevels || [];
+            this.updateDisplay();
+            
+        } catch (e) {
+            console.log('Load error:', e);
         }
-    },
-    
-    updateDisplay: function() {
-        const totalEl = document.getElementById('totalEarned');
-        const levelEl = document.getElementById('levelEarnings');
-        
-        if (totalEl) totalEl.textContent = this.totalEarned;
-        if (levelEl) levelEl.textContent = gameState.levelEarnings;
-        
-        console.log('🖥️ Display updated - Total:', this.totalEarned);
     }
-};
+},
 
 // Now override the global reference
 Object.assign(iKbpTracker, window.iKbpTracker);
@@ -1046,18 +1065,23 @@ Object.assign(iKbpTracker, window.iKbpTracker);
             updateLevelIndicator();
         }
 
-        function startGame() {
-    // Check if user is trying to replay a completed level
-    if (gameState.playMode === 'member' && gameState.completedLevels.includes(gameState.currentLevel)) {
-        alert('⚠️ You have already completed this level and earned rewards!\n\nYou cannot earn iKbp from the same level twice.\n\nSwitch to Guest Mode to replay for fun.');
-        return;
+function startGame() {
+    // Find the first uncompleted level
+    let startLevel = 1;
+    if (gameState.playMode === 'member') {
+        for (let i = 1; i <= 10; i++) {
+            if (!gameState.completedLevels.includes(i)) {
+                startLevel = i;
+                break;
+            }
+        }
     }
     
     document.getElementById('startScreen').style.display = 'none';
     document.getElementById('gameScreen').style.display = 'flex';
     
     gameState.gameStarted = true;
-    gameState.currentLevel = 1;
+    gameState.currentLevel = startLevel; // ← Start at first uncompleted level
     gameState.currentQuestion = 1;
     gameState.score = 0;
     gameState.questionsAnswered = 0;
@@ -1068,11 +1092,17 @@ Object.assign(iKbpTracker, window.iKbpTracker);
     loadQuestion();
     startTimer();
     
-    // Start level timer if available
     if (typeof startLevelTimer === 'function') {
         startLevelTimer();
     }
-}
+    
+    // Show helpful message if starting from middle
+    if (startLevel > 1) {
+        setTimeout(() => {
+            alert(`📍 Continuing from Level ${startLevel}\n\nYou've already completed levels 1-${startLevel - 1}.\n\nTotal earnings so far: ${iKbpTracker.getTotalEarned()} iKbp`);
+        }, 500);
+    }
+                    }
 
         // Replace your selectOption function with this:
 function selectOption(index, element) {
@@ -1266,40 +1296,22 @@ function completeLevel() {
         
         iKbpTracker.saveToStorage();
         
-        document.getElementById('resultEarnings').innerHTML = 
-            `🎉 Level ${gameState.currentLevel} Complete: +250 iKbp Bonus!<br>
-            <small>Total Earned: ${iKbpTracker.getTotalEarned()} iKbp</small>`;
-    } else if (gameState.playMode === 'guest') {
-        document.getElementById('resultEarnings').innerHTML = 
-            `Playing as Guest - No earnings<br>
-            <small>Register with TAU to earn iKbp rewards!</small>`;
-    } else {
-        document.getElementById('resultEarnings').innerHTML = 
-            `Already completed this level<br>
-            <small>Earnings claimed previously</small>`;
-    }
+saveToStorage: function() {
+    const earningData = {
+        version: '2.0', // ← ADD THIS LINE
+        totalEarned: this.totalEarned,
+        levelEarnings: this.levelEarnings,
+        completedLevels: gameState.completedLevels,
+        lastUpdated: new Date().toISOString()
+    };
     
-    // Mark level as completed in UI
-    const levelDot = document.getElementById(`level${gameState.currentLevel}`);
-    if (levelDot) levelDot.classList.add('completed');
-    
-    // Check if all 10 levels are complete
-    if (gameState.currentLevel >= 10) {
-        completeGame();
-        return;
-    }
-    
-    // Show level completion modal
-    document.getElementById('resultTitle').textContent = `Level ${gameState.currentLevel} Complete! ${celebrationEmoji}`;
-    document.getElementById('resultMessage').innerHTML = celebrationMessage;
-    document.getElementById('finalScore').textContent = gameState.score;
-    document.getElementById('celebrationEmoji').textContent = celebrationEmoji;
-    document.getElementById('nextLevelBtn').textContent = `Proceed to Level ${gameState.currentLevel + 1}`;
-    
-    document.getElementById('resultModal').style.display = 'flex';
-    
-    console.log('✅ Level completion modal displayed');
-        }
+    const key = gameState.playMode === 'member' && gameState.memberId 
+        ? `tauKnowledge_${gameState.memberId}` 
+        : 'tauKnowledgeGuest';
+        
+    localStorage.setItem(key, JSON.stringify(earningData));
+    console.log('💾 Saved:', earningData);
+},
         function restartGame() {
             document.getElementById('gameCompleteModal').style.display = 'none';
             document.getElementById('gameScreen').style.display = 'none';
@@ -1395,22 +1407,53 @@ function completeLevel() {
                 
                 iKbpTracker.loadFromStorage();
                 
-                if (gameState.completedLevels.length >= 10) {
-                    document.getElementById('totalEarnedComplete').textContent = iKbpTracker.getTotalEarned();
-                    document.getElementById('alreadyCompletedModal').style.display = 'flex';
-                    return;
-                }
+                loadFromStorage: function() {
+    const key = gameState.playMode === 'member' && gameState.memberId 
+        ? `tauKnowledge_${gameState.memberId}` 
+        : 'tauKnowledgeGuest';
+        
+    const saved = localStorage.getItem(key);
+    if (saved) {
+        try {
+            const data = JSON.parse(saved);
+            
+            // VERSION CHECK - Handle upgrades intelligently
+            const currentVersion = '2.0'; // Change this when you add new levels
+            const savedVersion = data.version || '1.0';
+            
+            if (savedVersion !== currentVersion) {
+                console.log(`🔄 Upgrading from v${savedVersion} to v${currentVersion}`);
                 
-                document.getElementById('tauMemberBanner').style.display = 'flex';
-                document.getElementById('guestBanner').style.display = 'none';
-                document.getElementById('earningsDisplay').style.display = 'block';
-                document.getElementById('memberInfo').textContent = `Member ID: ${gameState.memberId} | Completed: ${gameState.completedLevels.length}/10 levels`;
-            } else {
-                document.getElementById('tauMemberBanner').style.display = 'none';
-                document.getElementById('guestBanner').style.display = 'flex';
-                document.getElementById('earningsDisplay').style.display = 'none';
+                // PRESERVE all earnings and completed levels
+                this.totalEarned = data.totalEarned || 0;
+                this.levelEarnings = data.levelEarnings || {};
+                gameState.completedLevels = data.completedLevels || [];
+                
+                // Filter out any invalid level completions (in case they had placeholder levels)
+                // Only keep levels 1-10 since those are the only real levels now
+                gameState.completedLevels = gameState.completedLevels.filter(level => level >= 1 && level <= 10);
+                
+                // Save with new version
+                this.saveToStorage();
+                
+                this.updateDisplay();
+                
+                alert(`🆕 Game Updated to v${currentVersion}!\n\n✅ Your earnings preserved: ${this.totalEarned} iKbp\n✅ Completed levels: ${gameState.completedLevels.join(', ') || 'None'}\n\n🎮 All 10 levels with full questions are now available!\n\nYou can continue from any uncompleted level.`);
+                
+                return;
             }
+            
+            // Normal load for same version
+            this.totalEarned = data.totalEarned || 0;
+            this.levelEarnings = data.levelEarnings || {};
+            gameState.completedLevels = data.completedLevels || [];
+            this.updateDisplay();
+            
+        } catch (e) {
+            console.log('Load error:', e);
         }
+    }
+},
 
         function syncEarningsToTAU() {
             const totalEarned = iKbpTracker.getTotalEarned();
