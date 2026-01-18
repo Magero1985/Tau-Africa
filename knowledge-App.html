@@ -1583,16 +1583,24 @@ document.getElementById('nextLevelBtn').textContent = `Proceed to Level ${gameSt
 document.getElementById('resultModal').style.display = 'flex';
 
 function nextLevel() {
-    console.log('➡️ Moving to next level');
+    console.log('🔍 nextLevel() called - Current level:', gameState.currentLevel);
     
     // Close the level completion modal
-    document.getElementById('resultModal').style.display = 'none';
+    const modal = document.getElementById('resultModal');
+    if (modal) {
+        modal.style.display = 'none';
+        console.log('✅ Modal closed');
+    } else {
+        console.error('❌ Modal not found!');
+    }
     
     // Increment to next level
     gameState.currentLevel++;
+    console.log('📈 Incremented to level:', gameState.currentLevel);
     
     // Check if member already completed this level
     if (gameState.playMode === 'member' && gameState.completedLevels.includes(gameState.currentLevel)) {
+        console.log('⚠️ Level already completed, finding next...');
         alert(`⚠️ Level ${gameState.currentLevel} Already Completed!\n\nYou've already earned rewards for this level.\n\nSkipping to next uncompleted level...`);
         
         // Find next uncompleted level
@@ -1601,12 +1609,14 @@ function nextLevel() {
             if (!gameState.completedLevels.includes(i)) {
                 gameState.currentLevel = i;
                 foundNext = true;
+                console.log('✅ Found uncompleted level:', i);
                 break;
             }
         }
         
         // If all levels completed
         if (!foundNext) {
+            console.log('🏆 All levels complete!');
             completeGame();
             return;
         }
@@ -1621,13 +1631,21 @@ function nextLevel() {
     gameState.answerSubmitted = false;
     gameState.levelEarnings = 0;
     
+    console.log('🔄 Game state reset for new level');
+    
     // Update UI
     updateGameDisplay();
+    console.log('🖥️ Display updated');
+    
     loadQuestion();
+    console.log('❓ Question loaded');
     
     // Start new level timer
     if (typeof startLevelTimer === 'function') {
         startLevelTimer();
+        console.log('⏱️ Timer started');
+    } else {
+        console.warn('⚠️ startLevelTimer function not found');
     }
     
     console.log('✅ Successfully advanced to level', gameState.currentLevel);
