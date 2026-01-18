@@ -1555,33 +1555,8 @@ function completeGame() {
 function closeResult() {
     document.getElementById('resultModal').style.display = 'none';
 }
-       function closeResult() {
-    document.getElementById('resultModal').style.display = 'none';
-}
-
-// ADD THESE TWO FUNCTIONS HERE:
-
-function completeGame() {
-    console.log('🏆 Game completion triggered!');
-    
-    const totalEarned = iKbpTracker.getTotalEarned();
-    
- // Check if all levels complete
-if (gameState.currentLevel >= 10) {
-    // Show final congratulations modal instead of level complete
-    completeGame();
-    return;
-}
-
-// For levels 1-9, show level completion modal
-document.getElementById('resultTitle').textContent = `Level ${gameState.currentLevel} Complete!`;
-document.getElementById('resultMessage').innerHTML = celebrationMessage;
-document.getElementById('finalScore').textContent = gameState.score;
-document.getElementById('celebrationEmoji').textContent = celebrationEmoji;
-document.getElementById('nextLevelBtn').textContent = `Proceed to Level ${gameState.currentLevel + 1}`;
-
-document.getElementById('resultModal').style.display = 'flex';
-
+       
+        }
 function nextLevel() {
     console.log('🔍 nextLevel() called - Current level:', gameState.currentLevel);
     
@@ -1649,7 +1624,7 @@ function nextLevel() {
     }
     
     console.log('✅ Successfully advanced to level', gameState.currentLevel);
-}
+        }
     </script>
     <script>
 // ADD THIS ENTIRE SECTION RIGHT BEFORE //
