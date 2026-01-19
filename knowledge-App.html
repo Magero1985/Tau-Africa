@@ -695,15 +695,17 @@
             levelEarnings: 0,
             completedLevels: []
         };
-
         window.iKbpTracker = {
     totalEarned: 0,
     levelEarnings: {},
+    pendingSync: 0,      // Track unsynced earnings
+    lastSynced: 0,       // Last synced amount
     
     addEarnings: function(amount, level, reason) {
         if (gameState.playMode !== 'member') return 0;
         
         this.totalEarned += amount;
+        this.pendingSync += amount; // Track pending
         
         if (!this.levelEarnings[level]) {
             this.levelEarnings[level] = 0;
@@ -725,137 +727,107 @@
         return this.levelEarnings[gameState.currentLevel] || 0;
     },
     
-    saveToStorage: function() {
-    const earningData = {
-        version: '2.0', // ← ADD THIS LINE
-        totalEarned: this.totalEarned,
-        levelEarnings: this.levelEarnings,
-        completedLevels: gameState.completedLevels,
-        lastUpdated: new Date().toISOString()
-    };
-    
-    const key = gameState.playMode === 'member' && gameState.memberId 
-        ? `tauKnowledge_${gameState.memberId}` 
-        : 'tauKnowledgeGuest';
-        
-    localStorage.setItem(key, JSON.stringify(earningData));
-    console.log('💾 Saved:', earningData);
-},
-    loadFromStorage: function() {
-    const key = gameState.playMode === 'member' && gameState.memberId 
-        ? `tauKnowledge_${gameState.memberId}` 
-        : 'tauKnowledgeGuest';
-        
-    const saved = localStorage.getItem(key);
-    if (saved) {
-        try {
-            const data = JSON.parse(saved);
-            
-            // VERSION CHECK - Handle upgrades intelligently
-            const currentVersion = '2.0'; // Change this when you add new levels
-            const savedVersion = data.version || '1.0';
-            
-            if (savedVersion !== currentVersion) {
-                console.log(`🔄 Upgrading from v${savedVersion} to v${currentVersion}`);
-                
-                // PRESERVE all earnings and completed levels
-                this.totalEarned = data.totalEarned || 0;
-                this.levelEarnings = data.levelEarnings || {};
-                gameState.completedLevels = data.completedLevels || [];
-                
-                // Filter out any invalid level completions (in case they had placeholder levels)
-                // Only keep levels 1-10 since those are the only real levels now
-                gameState.completedLevels = gameState.completedLevels.filter(level => level >= 1 && level <= 10);
-                
-                // Save with new version
-                this.saveToStorage();
-                
-                this.updateDisplay();
-                
-                alert(`🆕 Game Updated to v${currentVersion}!\n\n✅ Your earnings preserved: ${this.totalEarned} iKbp\n✅ Completed levels: ${gameState.completedLevels.join(', ') || 'None'}\n\n🎮 All 10 levels with full questions are now available!\n\nYou can continue from any uncompleted level.`);
-                
-                return;
-            }
-            
-            // Normal load for same version
-            this.totalEarned = data.totalEarned || 0;
-            this.levelEarnings = data.levelEarnings || {};
-            gameState.completedLevels = data.completedLevels || [];
-            this.updateDisplay();
-            
-        } catch (e) {
-            console.log('Load error:', e);
-        }
-    }
-},
-    // ADD to window.iKbpTracker object (after totalEarned property):
-window.iKbpTracker = {
-    totalEarned: 0,
-    levelEarnings: {},
-    pendingSync: 0,      // NEW: Unsynced earnings
-    lastSynced: 0,       // NEW: Last synced amount
-    
-    addEarnings: function(amount, level, reason) {
-        if (gameState.playMode !== 'member') return 0;
-        
-        this.totalEarned += amount;
-        this.pendingSync += amount; // NEW: Track pending
-        
-        if (!this.levelEarnings[level]) {
-            this.levelEarnings[level] = 0;
-        }
-        this.levelEarnings[level] += amount;
-        
-        console.log(`💰 +${amount} iKbp earned! (${reason})`);
-        this.saveToStorage();
-        this.updateDisplay();
-        
-        return amount;
+    getPendingSync: function() {
+        return this.pendingSync;
     },
     
-    // NEW FUNCTION: Mark earnings as synced
-    markAsSynced: async function() {
+    markAsSynced: function() {
         this.lastSynced = this.totalEarned;
         this.pendingSync = 0;
-        await this.saveToStorage();
+        this.saveToStorage();
         console.log('✅ Marked as synced:', this.lastSynced);
     },
     
-    // NEW FUNCTION: Get unsynced amount
-    getPendingSync: function() {
-        return this.pendingSync;
+    saveToStorage: function() {
+        const earningData = {
+            version: '2.0',
+            totalEarned: this.totalEarned,
+            pendingSync: this.pendingSync,
+            lastSynced: this.lastSynced,
+            levelEarnings: this.levelEarnings,
+            completedLevels: gameState.completedLevels,
+            lastUpdated: new Date().toISOString()
+        };
+        
+        const key = gameState.playMode === 'member' && gameState.memberId 
+            ? `tauKnowledge_${gameState.memberId}` 
+            : 'tauKnowledgeGuest';
+            
+        localStorage.setItem(key, JSON.stringify(earningData));
+        console.log('💾 Saved:', earningData);
+    },
+    
+    loadFromStorage: function() {
+        const key = gameState.playMode === 'member' && gameState.memberId 
+            ? `tauKnowledge_${gameState.memberId}` 
+            : 'tauKnowledgeGuest';
+            
+        const saved = localStorage.getItem(key);
+        if (saved) {
+            try {
+                const data = JSON.parse(saved);
+                
+                this.totalEarned = data.totalEarned || 0;
+                this.pendingSync = data.pendingSync || 0;
+                this.lastSynced = data.lastSynced || 0;
+                this.levelEarnings = data.levelEarnings || {};
+                gameState.completedLevels = data.completedLevels || [];
+                
+                this.updateDisplay();
+                console.log('✅ Loaded:', data);
+            } catch (e) {
+                console.log('Load error:', e);
+            }
+        }
+    },
+    
+    updateDisplay: function() {
+        const totalEl = document.getElementById('totalEarned');
+        const levelEl = document.getElementById('levelEarnings');
+        
+        if (totalEl) totalEl.textContent = this.totalEarned;
+        if (levelEl) levelEl.textContent = gameState.levelEarnings;
+        
+        console.log('🖥️ Display updated - Total:', this.totalEarned);
     }
 };
-
-// UPDATE syncEarningsToTAU function:
-function syncEarningsToTAU() {
+    function syncEarningsToTAU() {
     const pendingAmount = iKbpTracker.getPendingSync();
     
+    console.log('🔄 Attempting to sync:', pendingAmount, 'iKbp pending');
+    
     if (pendingAmount === 0) {
-        alert('✅ All earnings already synced!\n\nTotal earned: ' + iKbpTracker.getTotalEarned() + ' iKbp\nPending sync: 0 iKbp\n\nComplete more levels to earn more.');
+        alert('✅ All earnings already synced!\n\n' +
+              'Total earned: ' + iKbpTracker.getTotalEarned() + ' iKbp\n' +
+              'Pending sync: 0 iKbp\n\n' +
+              'Complete more levels to earn more.');
         return;
     }
     
     const syncData = {
         memberId: gameState.memberId,
-        amountToSync: pendingAmount, // Only sync pending amount
+        amountToSync: pendingAmount,
         totalLifetimeEarned: iKbpTracker.getTotalEarned(),
         levelEarnings: iKbpTracker.levelEarnings,
         completedLevels: gameState.completedLevels,
         timestamp: new Date().toISOString(),
-        source: 'knowledge_challenge'
+        source: 'knowledge_challenge',
+        appVersion: '2.0'
     };
     
-    // Store sync data temporarily
-    window.pendingSyncData = syncData;
+    localStorage.setItem('tauSyncData', JSON.stringify(syncData));
     
     const breakdown = Object.entries(iKbpTracker.levelEarnings)
         .map(([level, amt]) => `Level ${level}: ${amt} iKbp`)
         .join('\n');
     
-    alert(`✅ Ready to sync ${pendingAmount} iKbp!\n\n📊 Breakdown:\n${breakdown}\n\n🔄 Opening TAU App...`);
+    const confirmMsg = `✅ Ready to sync ${pendingAmount} iKbp!\n\n` +
+                      `📊 Breakdown:\n${breakdown}\n\n` +
+                      `🔄 Opening TAU App...`;
     
-    // Mark as synced BEFORE redirect (user must complete sync in TAU)
+    alert(confirmMsg);
+    
+    // Mark as synced BEFORE redirect
     iKbpTracker.markAsSynced();
     
     const syncParams = new URLSearchParams({
@@ -870,17 +842,6 @@ function syncEarningsToTAU() {
         window.open(`https://magero1985.github.io/Tau-Africa/?${syncParams.toString()}`, '_blank');
     }, 1000);
 }
-    updateDisplay: function() {
-        const totalEl = document.getElementById('totalEarned');
-        const levelEl = document.getElementById('levelEarnings');
-        
-        if (totalEl) totalEl.textContent = this.totalEarned;
-        if (levelEl) levelEl.textContent = gameState.levelEarnings;
-        
-        console.log('🖥️ Display updated - Total:', this.totalEarned);
-    }
-};
-
 // Now override the global reference
 Object.assign(iKbpTracker, window.iKbpTracker);
 
@@ -1351,103 +1312,91 @@ function loadQuestion() {
                 completeLevel();
             }
         }
-// REPLACE completeLevel function with this:
-function completeLevel() {
-    console.log('🎯 Level completion triggered');
+function completeGame() {
+    console.log('🏆 Game completion triggered!');
     
     clearInterval(gameState.levelTimerInterval);
     clearInterval(gameState.timerInterval);
     
-    // Calculate performance
-    const totalQuestions = 10;
-    const correctAnswers = gameState.correctAnswers;
-    const missedQuestions = totalQuestions - correctAnswers;
-    const accuracy = (correctAnswers / totalQuestions) * 100;
+    const totalEarned = iKbpTracker.getTotalEarned();
+    const pendingSync = iKbpTracker.getPendingSync();
     
-    // Calculate earnings
-    const baseBonus = 250;
-    const penaltyPerMiss = 25; // 25 iKbp deducted per wrong answer
-    const levelBonus = Math.max(0, baseBonus - (missedQuestions * penaltyPerMiss));
-    
-    let celebrationEmoji = "🎉";
-    let celebrationMessage = "";
-    
-    if (accuracy === 100) {
-        celebrationEmoji = "🏆";
-        celebrationMessage = "Perfect score! Full 250 iKbp bonus!";
-    } else if (accuracy >= 80) {
-        celebrationEmoji = "⭐";
-        celebrationMessage = `Great work! ${correctAnswers}/10 correct`;
-    } else if (accuracy >= 60) {
-        celebrationEmoji = "👍";
-        celebrationMessage = `Good effort! ${correctAnswers}/10 correct`;
-    } else {
-        celebrationEmoji = "💪";
-        celebrationMessage = `Keep practicing! ${correctAnswers}/10 correct`;
-    }
-    
-    // Award proportional bonus for TAU members
-    if (gameState.playMode === 'member' && !gameState.completedLevels.includes(gameState.currentLevel)) {
-        
-        // Add the proportional bonus
-        iKbpTracker.addEarnings(levelBonus, gameState.currentLevel, `Level ${gameState.currentLevel} completion`);
-        
-        gameState.completedLevels.push(gameState.currentLevel);
-        gameState.completedLevels.sort((a, b) => a - b);
-        
-        iKbpTracker.saveToStorage();
-        
-        // Show detailed breakdown
-        const questionEarnings = correctAnswers * 25; // 25 per correct
-        const totalLevelEarnings = questionEarnings + levelBonus;
-        
-        document.getElementById('resultEarnings').innerHTML = 
-            `<div style="background: rgba(67, 97, 238, 0.2); padding: 15px; border-radius: 10px; margin: 15px 0;">
-                <div style="font-size: 1.8rem; color: #f7a440; margin-bottom: 10px;">
-                    💰 Level ${gameState.currentLevel} Earnings
+    if (gameState.playMode === 'member') {
+        document.getElementById('completionEarnings').innerHTML = 
+            `<div style="margin-bottom: 20px;">
+                <div style="font-size: 3rem; margin-bottom: 15px;">🎓</div>
+                <div style="font-size: 1.8rem; color: #4cc9f0; margin-bottom: 15px;">
+                    <strong>All 10 Levels Complete!</strong>
                 </div>
-                <div style="text-align: left; color: #f1f1f1; margin: 10px 0;">
-                    ✅ Correct Answers: ${correctAnswers}/10 × 25 = <strong>${questionEarnings} iKbp</strong><br>
-                    ${missedQuestions > 0 ? 
-                        `❌ Missed Questions: ${missedQuestions} × -25 = <strong style="color: #ef476f">-${missedQuestions * 25} iKbp penalty</strong><br>` 
-                        : ''}
-                    🎁 Level Bonus: <strong style="color: ${levelBonus === baseBonus ? '#4cc9f0' : '#f7a440'}">${levelBonus} iKbp</strong> ${levelBonus < baseBonus ? '(reduced)' : ''}
+            </div>
+            <div style="background: rgba(67, 97, 238, 0.2); padding: 20px; border-radius: 15px; margin: 20px 0;">
+                <div style="font-size: 2rem; color: #f7a440; margin-bottom: 15px;">
+                    💰 Total Earned: <strong>${totalEarned} iKbp</strong>
                 </div>
-                <div style="font-size: 1.5rem; color: #4cc9f0; border-top: 2px solid rgba(255,255,255,0.2); padding-top: 10px; margin-top: 10px;">
-                    📊 Total This Level: <strong>${totalLevelEarnings} iKbp</strong>
-                </div>
-                <div style="font-size: 1.2rem; color: #f7d560; margin-top: 10px;">
-                    💎 Lifetime Total: <strong>${iKbpTracker.getTotalEarned()} iKbp</strong>
-                </div>
-            </div>`;
-            
-    } else if (gameState.playMode === 'guest') {
-        document.getElementById('resultEarnings').innerHTML = 
-            `<div style="padding: 15px;">
-                Playing as Guest - No earnings<br>
-                <small>You answered ${correctAnswers}/10 correctly. Register with TAU to earn iKbp!</small>
+                ${pendingSync > 0 ? 
+                    `<div style="font-size: 1.3rem; color: #4cc9f0; margin-top: 10px;">
+                        🔄 Pending Sync: <strong>${pendingSync} iKbp</strong>
+                    </div>` 
+                    : 
+                    `<div style="font-size: 1.1rem; color: #2ecc71; margin-top: 10px;">
+                        ✅ All earnings synced!
+                    </div>`
+                }
+            </div>
+            <div style="color: #f7d560; margin-top: 15px;">
+                ${pendingSync > 0 ? 
+                    '👉 Click "Sync to TAU" below to transfer your earnings!' 
+                    : 
+                    '🎉 Your earnings are in your TAU account!'
+                }
             </div>`;
     } else {
-        document.getElementById('resultEarnings').innerHTML = 
-            `Already completed this level<br>
-            <small>Earnings claimed previously</small>`;
+        document.getElementById('completionEarnings').innerHTML = 
+            `<div style="margin-bottom: 20px;">
+                <div style="font-size: 1.8rem; color: #4cc9f0; margin-bottom: 15px;">
+                    <strong>Congratulations! All Levels Completed!</strong>
+                </div>
+            </div>
+            <span style="color: #f7d560;">
+                Playing as Guest - Register with TAU to earn rewards next time!
+            </span>`;
     }
     
-    const levelDot = document.getElementById(`level${gameState.currentLevel}`);
-    if (levelDot) levelDot.classList.add('completed');
+    // Create buttons container
+    const modal = document.getElementById('gameCompleteModal');
+    const modalContent = modal.querySelector('.modal-content');
     
-    if (gameState.currentLevel >= 10) {
-        completeGame();
-        return;
+    // Remove old buttons if they exist
+    let buttonsDiv = modalContent.querySelector('.completion-buttons');
+    if (!buttonsDiv) {
+        buttonsDiv = document.createElement('div');
+        buttonsDiv.className = 'completion-buttons';
+        buttonsDiv.style.cssText = 'margin-top: 30px; display: flex; gap: 15px; justify-content: center; flex-wrap: wrap;';
+        modalContent.appendChild(buttonsDiv);
     }
     
-    document.getElementById('resultTitle').textContent = `Level ${gameState.currentLevel} Complete! ${celebrationEmoji}`;
-    document.getElementById('resultMessage').innerHTML = celebrationMessage;
-    document.getElementById('finalScore').textContent = gameState.score;
-    document.getElementById('celebrationEmoji').textContent = celebrationEmoji;
-    document.getElementById('nextLevelBtn').textContent = `Proceed to Level ${gameState.currentLevel + 1}`;
+    // Build buttons HTML
+    let buttonsHTML = '';
     
-    document.getElementById('resultModal').style.display = 'flex';
+    if (gameState.playMode === 'member' && pendingSync > 0) {
+        buttonsHTML += `
+            <button class="btn btn-start" onclick="syncEarningsToTAU()" 
+                    style="background: linear-gradient(90deg, #2ecc71, #27ae60);">
+                🔄 Sync ${pendingSync} iKbp to TAU
+            </button>`;
+    }
+    
+    buttonsHTML += `
+        <button class="btn btn-start" onclick="joinTAUEcosystem()">
+            Join TAU Ecosystem
+        </button>
+        <button class="btn btn-next" onclick="restartGame()">
+            Play Again
+        </button>`;
+    
+    buttonsDiv.innerHTML = buttonsHTML;
+    
+    modal.style.display = 'flex';
 }
         function restartGame() {
             document.getElementById('gameCompleteModal').style.display = 'none';
@@ -1560,115 +1509,7 @@ function completeLevel() {
                 document.getElementById('earningsDisplay').style.display = 'none';
             }
         }
-
-        function syncEarningsToTAU() {
-    const totalEarned = iKbpTracker.getTotalEarned();
-    
-    console.log('🔄 Attempting to sync:', totalEarned, 'iKbp');
-    
-    if (totalEarned === 0) {
-        alert('❌ No earnings to sync yet!\n\nTips:\n• Make sure you selected "TAU Member" mode\n• Complete some levels to earn iKbp\n• Each correct answer = 25 iKbp\n• Level completion = 250 iKbp bonus');
-        return;
-    }
-    
-    // Check how much has already been synced
-    const syncKey = `tauKnowledge_synced_${gameState.memberId}`;
-    const syncedData = localStorage.getItem(syncKey);
-    let alreadySynced = 0;
-    
-    if (syncedData) {
-        try {
-            const parsed = JSON.parse(syncedData);
-            alreadySynced = parsed.totalSynced || 0;
-        } catch (e) {
-            console.log('Sync history parse error');
-        }
-    }
-    
-    const unsynced = totalEarned - alreadySynced;
-    
-    if (unsynced <= 0) {
-        alert('✅ All earnings already synced!\n\nNo new earnings to transfer to TAU App.\n\nComplete more levels to earn more iKbp.');
-        return;
-    }
-    
-    // Prepare sync data with ONLY unsynced earnings
-    const syncData = {
-        memberId: gameState.memberId,
-        unsyncedAmount: unsynced, // ← Only send what hasn't been synced
-        totalEarned: totalEarned,
-        alreadySynced: alreadySynced,
-        levelEarnings: iKbpTracker.levelEarnings,
-        completedLevels: gameState.completedLevels,
-        timestamp: new Date().toISOString(),
-        source: 'knowledge_challenge',
-        appVersion: '2.0',
-        syncId: `sync_${Date.now()}` // Unique sync ID
-    };
-    
-    // Save to localStorage for TAU App to read
-    localStorage.setItem('tauSyncPending', JSON.stringify(syncData));
-    
-    const breakdown = Object.entries(iKbpTracker.levelEarnings)
-        .map(([level, amt]) => `Level ${level}: ${amt} iKbp`)
-        .join('\n');
-    
-    const confirmMessage = `💰 Ready to Sync ${unsynced} iKbp\n\nBreakdown:\n${breakdown}\n\nTotal Earned: ${totalEarned} iKbp\nAlready Synced: ${alreadySynced} iKbp\n\n→ To Sync Now: ${unsynced} iKbp\n\nProceed to TAU App?`;
-    
-    if (confirm(confirmMessage)) {
-        // Build URL with sync parameters
-        const syncParams = new URLSearchParams({
-            sync: 'true',
-            memberId: gameState.memberId,
-            amount: unsynced,
-            source: 'knowledge',
-            syncId: syncData.syncId,
-            timestamp: Date.now()
-        });
         
-        console.log('📤 Redirecting to TAU App with sync data...');
-        
-        // Open TAU App
-        window.location.href = `https://magero1985.github.io/Tau-Africa/?${syncParams.toString()}`;
-    }
-}
-        function markAsSynced(amount) {
-    const syncKey = `tauKnowledge_synced_${gameState.memberId}`;
-    const syncedData = localStorage.getItem(syncKey);
-    let totalSynced = 0;
-    
-    if (syncedData) {
-        try {
-            const parsed = JSON.parse(syncedData);
-            totalSynced = parsed.totalSynced || 0;
-        } catch (e) {
-            console.log('Parse error');
-        }
-    }
-    
-    totalSynced += amount;
-    
-    const newSyncData = {
-        totalSynced: totalSynced,
-        lastSyncDate: new Date().toISOString(),
-        syncHistory: [] // You can add detailed history here if needed
-    };
-    
-    localStorage.setItem(syncKey, JSON.stringify(newSyncData));
-    console.log(`✅ Marked ${amount} iKbp as synced. Total synced: ${totalSynced}`);
-}
-
-// Listen for sync confirmation from TAU App
-window.addEventListener('storage', function(e) {
-    if (e.key === 'tauSyncConfirmed') {
-        const confirmed = JSON.parse(e.newValue);
-        if (confirmed && confirmed.memberId === gameState.memberId) {
-            markAsSynced(confirmed.amount);
-            localStorage.removeItem('tauSyncConfirmed'); // Clean up
-            alert(`✅ ${confirmed.amount} iKbp successfully synced to TAU App!`);
-        }
-    }
-});
         function openTAUApp() {
             window.open('https://magero1985.github.io/Tau-Africa/', '_blank');
         }
