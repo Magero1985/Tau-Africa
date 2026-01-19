@@ -2017,6 +2017,7 @@ window.showRealMemberLogin = window.showMemberLogin;
     }
     
     setTimeout(setupRealtimeSync, 3000);
+        
     
     // ============================================
     // 6. HELPER FUNCTIONS
@@ -5137,6 +5138,7 @@ function showMemberLogin() {
 function simulateLogin(event) {
     event.preventDefault();
     showNotification('Login successful! Loading dashboard...', 'success');
+    processPendingSyncAfterLogin(memberId);
     setTimeout(() => {
         closeAllModals();
         showMemberDashboard();
@@ -6709,8 +6711,210 @@ document.addEventListener('DOMContentLoaded', () => {
         }
         return null;
     }
+// =========================================
+// KNOWLEDGE APP SYNC HANDLER
+// =========================================
+function processKnowledgeAppSync() {
+    // Check URL parameters for sync request
+    const urlParams = new URLSearchParams(window.location.search);
+    const syncRequested = urlParams.get('sync');
+    const syncMemberId = urlParams.get('memberId');
+    const syncAmount = parseInt(urlParams.get('amount')) || 0;
+    const syncSource = urlParams.get('source');
+    const syncId = urlParams.get('syncId');
+    
+    if (syncRequested === 'true' && syncMemberId && syncAmount > 0) {
+        console.log('📥 Sync request detected:', {
+            memberId: syncMemberId,
+            amount: syncAmount,
+            source: syncSource
+        });
+        
+        // Get pending sync data from localStorage
+        const pendingSync = localStorage.getItem('tauSyncPending');
+        
+        if (pendingSync) {
+            try {
+                const syncData = JSON.parse(pendingSync);
+                
+                // Verify sync data matches URL parameters
+                if (syncData.memberId === syncMemberId && 
+                    syncData.unsyncedAmount === syncAmount &&
+                    syncData.syncId === syncId) {
+                    
+                    console.log('✅ Sync data verified');
+                    
+                    // Show sync notification BEFORE login
+                    showSyncNotification(syncAmount, syncSource);
+                    
+                    // Store sync data to process after login
+                    sessionStorage.setItem('pendingKnowledgeSync', JSON.stringify({
+                        memberId: syncMemberId,
+                        amount: syncAmount,
+                        source: syncSource,
+                        syncId: syncId,
+                        timestamp: Date.now()
+                    }));
+                    
+                    // Clean up
+                    localStorage.removeItem('tauSyncPending');
+                    
+                } else {
+                    console.error('❌ Sync data mismatch');
+                }
+            } catch (e) {
+                console.error('Sync data parse error:', e);
+            }
+        }
+    }
+}
 
-    function logoutMember() {
+function showSyncNotification(amount, source) {
+    // Show notification banner (customize based on your TAU App UI)
+    const notification = document.createElement('div');
+    notification.style.cssText = `
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        background: linear-gradient(135deg, #4361ee, #2ecc71);
+        color: white;
+        padding: 20px;
+        border-radius: 10px;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+        z-index: 10000;
+        font-size: 1.1rem;
+        max-width: 350px;
+    `;
+    notification.innerHTML = `
+        <div style="font-size: 2rem; margin-bottom: 10px;">💰</div>
+        <div style="font-weight: bold; margin-bottom: 5px;">
+            Incoming Transfer
+        </div>
+        <div>
+            +${amount} iKbp from ${source || 'Knowledge Challenge'}
+        </div>
+        <div style="margin-top: 10px; font-size: 0.9rem; opacity: 0.9;">
+            Sign in to receive
+        </div>
+    `;
+    document.body.appendChild(notification);
+    
+    // Auto-remove after 10 seconds
+    setTimeout(() => {
+        notification.style.transition = 'opacity 0.5s';
+        notification.style.opacity = '0';
+        setTimeout(() => notification.remove(), 500);
+    }, 10000);
+}
+
+function processPendingSyncAfterLogin(loggedInMemberId) {
+    const pendingSync = sessionStorage.getItem('pendingKnowledgeSync');
+    
+    if (pendingSync) {
+        try {
+            const syncData = JSON.parse(pendingSync);
+            
+            // Verify logged-in user matches sync recipient
+            if (syncData.memberId === loggedInMemberId) {
+                console.log('✅ Member verified, processing sync...');
+                
+                // ADD IKBP TO USER'S BALANCE
+                creditUserBalance(loggedInMemberId, syncData.amount, syncData.source, syncData.syncId);
+                
+                // Confirm sync back to Knowledge App
+                localStorage.setItem('tauSyncConfirmed', JSON.stringify({
+                    memberId: loggedInMemberId,
+                    amount: syncData.amount,
+                    timestamp: Date.now()
+                }));
+                
+                // Show success notification
+                alert(`✅ Success!\n\n+${syncData.amount} iKbp added to your balance!\n\nSource: ${syncData.source || 'Knowledge Challenge'}`);
+                
+                // Clean up
+                sessionStorage.removeItem('pendingKnowledgeSync');
+                
+                // Update UI to show new balance
+                updateBalanceDisplay();
+                
+            } else {
+                console.error('❌ Member ID mismatch. Sync cancelled.');
+                alert('⚠️ Account Mismatch\n\nThe earnings are for a different member ID.\n\nPlease sign in with the correct account.');
+                sessionStorage.removeItem('pendingKnowledgeSync');
+            }
+        } catch (e) {
+            console.error('Pending sync error:', e);
+        }
+    }
+}
+
+function creditUserBalance(memberId, amount, source, syncId) {
+    // Get current user data
+    const userKey = `tauUser_${memberId}`;
+    const userData = localStorage.getItem(userKey);
+    
+    let user = {
+        memberId: memberId,
+        balance: 0,
+        transactions: []
+    };
+    
+    if (userData) {
+        try {
+            user = JSON.parse(userData);
+        } catch (e) {
+            console.log('User data parse error');
+        }
+    }
+    
+    // ADD AMOUNT TO BALANCE
+    user.balance = (user.balance || 0) + amount;
+    
+    // Record transaction
+    if (!user.transactions) user.transactions = [];
+    
+    user.transactions.push({
+        type: 'credit',
+        amount: amount,
+        source: source || 'knowledge_challenge',
+        syncId: syncId,
+        timestamp: new Date().toISOString(),
+        description: `Earned from ${source || 'Knowledge Challenge'}`
+    });
+    
+    // SAVE UPDATED USER DATA
+    localStorage.setItem(userKey, JSON.stringify(user));
+    
+    console.log(`💰 Credited ${amount} iKbp. New balance: ${user.balance}`);
+    
+    return user.balance;
+}
+
+function updateBalanceDisplay() {
+    // Update your TAU App's balance display
+    // This depends on your TAU App's structure
+    // Example:
+    const balanceElement = document.getElementById('userBalance'); // Adjust ID based on your app
+    if (balanceElement && window.currentUser) {
+        const userKey = `tauUser_${window.currentUser.memberId}`;
+        const userData = localStorage.getItem(userKey);
+        if (userData) {
+            const user = JSON.parse(userData);
+            balanceElement.textContent = user.balance || 0;
+        }
+    }
+}
+
+// CALL THIS WHEN TAU APP LOADS
+window.addEventListener('DOMContentLoaded', function() {
+    processKnowledgeAppSync();
+});
+
+// CALL THIS AFTER USER LOGS IN
+// Add this to your existing login function:
+// processPendingSyncAfterLogin(loggedInUser.memberId);
+    
+function logoutMember() {
         sessionStorage.removeItem(DB_CONFIG.sessionKey);
         return true;
     }
