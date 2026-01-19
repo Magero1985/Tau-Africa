@@ -524,7 +524,8 @@
 
         <div class="header">
             <h1>Pan African Knowledge Challenge</h1>
-            <div class="subtitle">Test your knowledge across 20 challenging levels in 2 stages • Earn iKbp rewards as TAU member!</div>
+            <div class="subtitle">Test your knowledge across 10 challenging levels • Earn iKbp rewards as TAU member!</div>
+        </div>
 
         <!-- Earnings Display -->
         <div id="earningsDisplay" class="earnings-display" style="display: none;">
@@ -533,7 +534,7 @@
 
         <div id="startScreen" class="start-screen">
             <h2>Welcome to the Challenge!</h2>
-            <p>Journey through 20 levels of Pan African knowledge, with 10 questions per level.</p>
+            <p>Journey through 10 levels of Pan African knowledge, with 10 questions per level.</p>
             <p><strong>Complete each level to earn 250 iKbp!</strong> (TAU Members only)</p>
             
             <div class="mode-selection">
@@ -677,27 +678,23 @@
 
     <script>
         let gameState = {
-    currentLevel: 1,
-    currentQuestion: 1,
-    score: 0,
-    selectedOption: null,
-    correctAnswer: null,
-    questionsAnswered: 0,
-    correctAnswers: 0,
-    timerInterval: null,
-    gameStarted: false,
-    levelQuestions: [],
-    // UPDATED: 20 levels with increasing difficulty
-    difficultyMultipliers: [
-        1.0, 1.2, 1.5, 1.8, 2.0, 2.3, 2.7, 3.1, 3.6, 4.0,  // Levels 1-10
-        4.5, 5.0, 5.5, 6.0, 6.5, 7.0, 7.5, 8.0, 8.5, 9.0   // Levels 11-20
-    ],
-    answerSubmitted: false,
-    playMode: null,
-    memberId: null,
-    levelEarnings: 0,
-    completedLevels: []
-};
+            currentLevel: 1,
+            currentQuestion: 1,
+            score: 0,
+            selectedOption: null,
+            correctAnswer: null,
+            questionsAnswered: 0,
+            correctAnswers: 0,
+            timerInterval: null,
+            gameStarted: false,
+            levelQuestions: [],
+            difficultyMultipliers: [1, 1.2, 1.5, 1.8, 2.0, 2.3, 2.7, 3.1, 3.6, 4.0],
+            answerSubmitted: false,
+            playMode: null, // 'guest' or 'member'
+            memberId: null,
+            levelEarnings: 0,
+            completedLevels: []
+        };
         window.iKbpTracker = {
     totalEarned: 0,
     levelEarnings: {},
@@ -1096,163 +1093,29 @@ Object.assign(iKbpTracker, window.iKbpTracker);
         {question: "Pan-African Parliament headquarters?", options: ["Addis Ababa", "Johannesburg", "Midrand", "Nairobi"], correct: 2, hint: "South African city.", category: "Politics"},
         {question: "Which civilization built Lalibela's rock churches?", options: ["Aksumites", "Zagwe dynasty", "Solomonic dynasty", "Beta Israel"], correct: 1, hint: "12th-13th century Ethiopian dynasty.", category: "History"}
     
-            ],
-           level11: [
-    {question: "Kemet is the ancient name for which civilization?", options: ["Nubia", "Ancient Egypt", "Ethiopia", "Carthage"], correct: 1, hint: "Means 'Black Land' referring to the Nile's fertile soil.", category: "History"},
-    {question: "The Axumite Empire created which famous structures?", options: ["Pyramids", "Stone circles", "Obelisks/Stelae", "Rock churches"], correct: 2, hint: "Tall stone monuments, some over 30 meters high.", category: "History"},
-    {question: "Which African language has the most native speakers?", options: ["Swahili", "Hausa", "Yoruba", "Amharic"], correct: 0, hint: "Spoken by 100+ million across East Africa.", category: "Culture"},
-    {question: "The Mau Mau uprising fought against colonial rule in:", options: ["Kenya", "Zimbabwe", "Algeria", "Ghana"], correct: 0, hint: "1952-1960 rebellion led by Kikuyu people.", category: "History"},
-    {question: "Africa has what percentage of world's mineral reserves?", options: ["15%", "30%", "50%", "65%"], correct: 1, hint: "Holds vast reserves of gold, diamonds, coltan, cobalt.", category: "Economy"},
-    {question: "Which African country was a staging ground for the transatlantic slave trade?", options: ["Senegal (Gorée Island)", "Morocco", "Egypt", "South Africa"], correct: 0, hint: "Island fortress served as major departure point.", category: "History"},
-    {question: "Ubuntu philosophy originates from which language group?", options: ["Nilotic", "Cushitic", "Bantu", "Afro-Asiatic"], correct: 2, hint: "Southern and Central African philosophy.", category: "Culture"},
-    {question: "The Great Mosque of Djenné is built using which material?", options: ["Stone", "Wood", "Adobe/Mud brick", "Coral"], correct: 2, hint: "Must be replastered annually, world's largest mud structure.", category: "Construction"},
-    {question: "Which resource has caused most conflict in modern Africa?", options: ["Diamonds", "Oil", "Coltan", "Gold"], correct: 1, hint: "Nigeria, Angola, Sudan conflicts linked to this.", category: "Economy"},
-    {question: "Vodun (Voodoo) religion originated in which region?", options: ["West Africa", "North Africa", "East Africa", "Central Africa"], correct: 0, hint: "Benin, Togo, Ghana traditional spiritual practice.", category: "Religion"}
-],
-
-level12: [
-    {question: "Neocolonialism primarily operates through:", options: ["Military occupation", "Economic dependency", "Cultural erasure", "Religious conversion"], correct: 1, hint: "Control through debt, aid conditions, unfair trade.", category: "Politics"},
-    {question: "Which Kemetic deity represented resurrection and afterlife?", options: ["Ra", "Osiris", "Horus", "Anubis"], correct: 1, hint: "Brother of Set, father of Horus.", category: "Religion"},
-    {question: "The San people are indigenous to which region?", options: ["Horn of Africa", "Sahel", "Kalahari Desert", "Congo Basin"], correct: 2, hint: "Among Africa's oldest populations, hunter-gatherers.", category: "Culture"},
-    {question: "Africa produces what percentage of world's cocoa?", options: ["50%", "60%", "70%", "80%"], correct: 2, hint: "Ivory Coast and Ghana are top producers.", category: "Economy"},
-    {question: "The Scramble for Africa resulted in how many artificial borders?", options: ["Hundreds", "Thousands", "Tens of thousands", "Over 100,000 km"], correct: 3, hint: "Colonial borders ignored ethnic and cultural boundaries.", category: "History"},
-    {question: "Which African script was used in Timbuktu manuscripts?", options: ["Arabic", "Ge'ez", "Tifinagh", "N'Ko"], correct: 0, hint: "Modified Arabic script for African languages.", category: "Culture"},
-    {question: "The Mfecane resulted from:", options: ["Drought", "European invasion", "Zulu expansion", "Slave trade"], correct: 2, hint: "Shaka Zulu's military campaigns caused mass migration.", category: "History"},
-    {question: "Great Zimbabwe's walls were built without:", options: ["Tools", "Mortar", "Planning", "Labor"], correct: 1, hint: "Dry-stone construction technique perfected.", category: "Construction"},
-    {question: "Which mineral is essential for smartphones, mostly from Congo?", options: ["Lithium", "Cobalt", "Coltan", "Copper"], correct: 2, hint: "Conflict mineral, 60% from DRC.", category: "Economy"},
-    {question: "Ifa divination system originates from which people?", options: ["Yoruba", "Igbo", "Akan", "Zulu"], correct: 0, hint: "Complex spiritual knowledge system, UNESCO heritage.", category: "Religion"}
-],
-
-level13: [
-    {question: "The term 'Middle Passage' refers to:", options: ["Trans-Saharan trade route", "Slave ship journey", "Colonial highway", "Nile navigation"], correct: 1, hint: "Horrific Atlantic crossing, millions died.", category: "History"},
-    {question: "Kemet's greatest architectural achievement?", options: ["Sphinx", "Pyramids of Giza", "Valley of Kings", "Abu Simbel"], correct: 1, hint: "Built 4,500 years ago, one of Seven Wonders.", category: "Construction"},
-    {question: "How many indigenous African languages exist?", options: ["500", "1,000", "2,000+", "5,000"], correct: 2, hint: "Over 2,000 distinct languages, most diverse continent.", category: "Culture"},
-    {question: "Which European power colonized the most African territory?", options: ["Britain", "France", "Portugal", "Belgium"], correct: 1, hint: "Controlled vast West and Central African regions.", category: "History"},
-    {question: "The Dogon people accurately mapped which celestial object?", options: ["Mars", "Sirius B", "Jupiter's moons", "Saturn's rings"], correct: 1, hint: "Knew of invisible companion star before telescopes.", category: "Science"},
-    {question: "African Union headquarters funded by which country?", options: ["USA", "China", "France", "Saudi Arabia"], correct: 1, hint: "Built in Addis Ababa, raises neocolonial concerns.", category: "Politics"},
-    {question: "Rastafarianism considers which leader as messiah?", options: ["Marcus Garvey", "Haile Selassie", "Bob Marley", "Malcolm X"], correct: 1, hint: "Ethiopian emperor Ras Tafari Makonnen.", category: "Religion"},
-    {question: "Lalibela's rock churches carved from:", options: ["Granite", "Volcanic rock", "Single stone blocks", "Sandstone"], correct: 2, hint: "11 churches hewn from solid rock, 12th century.", category: "Construction"},
-    {question: "What percentage of Europe's industrial revolution funded by African resources?", options: ["10-20%", "30-40%", "50-60%", "Over 70%"], correct: 3, hint: "Slavery, gold, raw materials built European wealth.", category: "Economy"},
-    {question: "Which spiritual practice links African diaspora worldwide?", options: ["Christianity", "Islam", "Ancestral veneration", "Buddhism"], correct: 2, hint: "Honoring ancestors common across African traditions.", category: "Religion"}
-],
-
-level14: [
-    {question: "The Berlin Conference (1884-85) divided Africa among how many European powers?", options: ["5", "7", "14", "21"], correct: 2, hint: "No Africans invited to decide continent's fate.", category: "History"},
-    {question: "Axum controlled trade between which regions?", options: ["Europe and Asia", "Africa and Arabia", "Mediterranean and India", "All of above"], correct: 3, hint: "Major trading empire, 1st-7th century CE.", category: "History"},
-    {question: "The Khoisan click languages have how many distinct clicks?", options: ["3-5", "10-15", "20-30", "Over 40"], correct: 3, hint: "Most complex phonetic system in world.", category: "Culture"},
-    {question: "French still controls currency of how many African countries?", options: ["2", "8", "14", "22"], correct: 2, hint: "CFA Franc zone, modern colonialism.", category: "Economy"},
-    {question: "Mau Mau fighters' primary grievance was:", options: ["Taxation", "Land theft", "Forced labor", "Cultural suppression"], correct: 1, hint: "British seized fertile Kikuyu lands for settlers.", category: "History"},
-    {question: "The Nok culture (500 BCE) excelled in:", options: ["Navigation", "Iron smelting", "Astronomy", "Mathematics"], correct: 1, hint: "Advanced iron technology in Nigeria.", category: "Science"},
-    {question: "Which African resource powers electric vehicle batteries?", options: ["Lithium", "Cobalt", "Nickel", "Graphite"], correct: 1, hint: "DRC has 70% of world's reserves, child labor concerns.", category: "Economy"},
-    {question: "The Egungun masquerade tradition honors:", options: ["Harvest", "Ancestors", "Royalty", "Warriors"], correct: 1, hint: "Yoruba tradition, masked dancers embody departed souls.", category: "Culture"},
-    {question: "Great Mosque of Djenné rebuilt how often?", options: ["Every 5 years", "Annually", "Every 10 years", "When damaged"], correct: 1, hint: "Community replastering festival maintains structure.", category: "Construction"},
-    {question: "Estimated Africans enslaved in transatlantic trade:", options: ["2-5 million", "8-10 million", "12-15 million", "20+ million"], correct: 2, hint: "Millions more died during capture and passage.", category: "History"}
-],
-
-level15: [
-    {question: "Kemet means 'Black Land,' Ta-Seti means:", options: ["Red Land", "Land of the Bow", "Upper Kingdom", "Divine Land"], correct: 1, hint: "Ancient Nubia, south of Kemet.", category: "History"},
-    {question: "The Akan Goldweight system measured:", options: ["Distance", "Time", "Gold dust currency", "Grain"], correct: 2, hint: "Precise brass weights, also proverbs in metal.", category: "Economy"},
-    {question: "How many years did Haitian Revolution take to defeat France?", options: ["3", "7", "13", "20"], correct: 2, hint: "1791-1804, first Black republic, led by enslaved.", category: "History"},
-    {question: "African philosophy emphasizes:", options: ["Individualism", "Communalism", "Materialism", "Nihilism"], correct: 1, hint: "Community over individual, Ubuntu worldview.", category: "Culture"},
-    {question: "Which dam project displaced millions in Africa?", options: ["Aswan Dam", "Kariba Dam", "Akosombo Dam", "All above"], correct: 3, hint: "Development without consent, neocolonial projects.", category: "Politics"},
-    {question: "The Igbo-Ukwu bronze castings date to:", options: ["5th century CE", "9th century CE", "13th century CE", "15th century CE"], correct: 1, hint: "Predates European contact, complex metalwork.", category: "Science"},
-    {question: "Swahili language is mixture of Bantu and:", options: ["Arabic", "Portuguese", "Hindi", "Persian"], correct: 0, hint: "Indian Ocean trade created linguistic fusion.", category: "Culture"},
-    {question: "The Saadian Tombs in Marrakech use which architectural style?", options: ["Gothic", "Islamic-Andalusian", "Byzantine", "Romanesque"], correct: 1, hint: "Intricate tilework, cedar ceilings, 16th century.", category: "Construction"},
-    {question: "Structural Adjustment Programs (SAPs) forced Africa to:", options: ["Industrialize", "Privatize resources", "Build schools", "Reject aid"], correct: 1, hint: "IMF/World Bank policies, debt trap diplomacy.", category: "Economy"},
-    {question: "Which orisha (deity) represents iron, war, and technology?", options: ["Shango", "Ogun", "Obatala", "Yemoja"], correct: 1, hint: "Yoruba blacksmith god, patron of civilization.", category: "Religion"}
-],
-
-level16: [
-    {question: "The Kingdom of Kush conquered and ruled Egypt as which dynasty?", options: ["21st", "23rd", "25th", "27th"], correct: 2, hint: "744-656 BCE, Nubian pharaohs unified Nile Valley.", category: "History"},
-    {question: "Africa loses how much annually to illicit financial flows?", options: ["$10 billion", "$50 billion", "$88 billion+", "$200 billion"], correct: 2, hint: "Tax evasion, corruption, resource theft by multinationals.", category: "Economy"},
-    {question: "The Maafa refers to:", options: ["Great drought", "African Holocaust/slavery", "Colonial wars", "Berlin Conference"], correct: 1, hint: "Swahili for 'great disaster,' slavery and colonization.", category: "History"},
-    {question: "Which African writing system has over 260 characters?", options: ["Ge'ez", "Vai", "N'Ko", "Adlam"], correct: 0, hint: "Ethiopian script, used for Amharic and Tigrinya.", category: "Culture"},
-    {question: "The Meroitic pyramids are:", options: ["Larger than Giza", "More numerous than Egypt's", "Made of gold", "Underground"], correct: 1, hint: "Sudan has 200+ pyramids, Egypt has ~120.", category: "History"},
-    {question: "Which African scientist developed blood plasma storage?", options: ["Charles Drew", "Philip Emeagwali", "Wangari Maathai", "Cheikh Anta Diop"], correct: 0, hint: "African-American pioneer, blood banking during WWII.", category: "Science"},
-    {question: "The Sankore University in Timbuktu had how many students at peak?", options: ["5,000", "15,000", "25,000", "50,000"], correct: 2, hint: "Medieval Africa's Harvard, 12th-16th century.", category: "History"},
-    {question: "Ndebele houses are famous for:", options: ["Height", "Geometric painted patterns", "Underground rooms", "Thatched domes"], correct: 1, hint: "South African women's vibrant wall art tradition.", category: "Culture"},
-    {question: "Leopold II killed how many Congolese for rubber?", options: ["100,000", "1 million", "5-10 million", "20 million"], correct: 2, hint: "Belgian Congo genocide, hands cut for quotas.", category: "History"},
-    {question: "The concept of Ma'at in Kemet represents:", options: ["Death", "Truth, justice, cosmic balance", "Warfare", "Wealth"], correct: 1, hint: "Foundational principle, weighing heart against feather.", category: "Religion"}
-],
-
-level17: [
-    {question: "Which resource curse affects Nigeria most?", options: ["Diamond wars", "Oil corruption", "Gold smuggling", "Timber exploitation"], correct: 1, hint: "Vast oil wealth, little development, extreme inequality.", category: "Economy"},
-    {question: "The Zulu impi formation used which revolutionary tactic?", options: ["Cavalry charge", "Horns of the Bull", "Phalanx", "Guerrilla warfare"], correct: 1, hint: "Encirclement strategy, devastating effectiveness.", category: "History"},
-    {question: "Africa has what fraction of world's remaining wilderness?", options: ["1/10", "1/4", "1/3", "1/2"], correct: 2, hint: "Last great wildlife habitats, under threat.", category: "Geography"},
-    {question: "The Manden Charter (1222 CE) established:", options: ["Trade rules", "Human rights principles", "Religious law", "Military code"], correct: 1, hint: "Mali Empire, abolition of slavery, women's rights.", category: "History"},
-    {question: "How many African artifacts are in European museums?", options: ["Thousands", "Hundreds of thousands", "Millions", "Unknown"], correct: 2, hint: "Looted during colonization, calls for repatriation.", category: "Culture"},
-    {question: "The Ishango bone (20,000 BCE) suggests knowledge of:", options: ["Writing", "Mathematics/prime numbers", "Navigation", "Medicine"], correct: 1, hint: "DRC discovery, possible lunar calendar, math notation.", category: "Science"},
-    {question: "Which healing tradition uses divination and herbs?", options: ["Western medicine", "Traditional African medicine", "Ayurveda", "Chinese medicine"], correct: 1, hint: "Sangomas, herbalists, 80% Africans use traditional healers.", category: "Culture"},
-    {question: "The ancient city of Meroe specialized in:", options: ["Glass making", "Iron production", "Silk weaving", "Pottery"], correct: 1, hint: "Sudan's 'Birmingham of Africa,' massive iron industry.", category: "Science"},
-    {question: "Françafrique refers to:", options: ["French culture in Africa", "French neocolonial control", "French aid programs", "Language policy"], correct: 1, hint: "Shadow agreements maintaining French dominance.", category: "Politics"},
-    {question: "The baobab tree is sacred in many traditions because:", options: ["Immortal", "Provides food, water, medicine", "Home to spirits", "All above"], correct: 3, hint: "Tree of Life, lives thousands of years.", category: "Culture"}
-],
-
-level18: [
-    {question: "The Axumite King Ezana converted to Christianity in:", options: ["100 CE", "330 CE", "500 CE", "700 CE"], correct: 1, hint: "Before Roman Empire officially adopted it.", category: "History"},
-    {question: "Land grabs in Africa total how many hectares since 2000?", options: ["1 million", "10 million", "50 million", "100+ million"], correct: 2, hint: "Foreign governments and corporations seizing farmland.", category: "Economy"},
-    {question: "The Mau Mau oath-taking ceremonies emphasized:", options: ["Loyalty to Britain", "Unity against colonizers", "Religious conversion", "Trade agreements"], correct: 1, hint: "Sacred oaths binding fighters to liberation struggle.", category: "History"},
-    {question: "Which African language family is largest?", options: ["Afro-Asiatic", "Nilo-Saharan", "Niger-Congo", "Khoisan"], correct: 2, hint: "Includes Bantu languages, 1,500+ languages.", category: "Culture"},
-    {question: "The African Renaissance Monument in Senegal is:", options: ["Tallest statue in Africa", "Made of gold", "Underground", "Floating"], correct: 0, hint: "49 meters, controversial Chinese-built project.", category: "Construction"},
-    {question: "Which Egyptian deity represents wisdom and writing?", options: ["Thoth", "Ptah", "Bes", "Sekhmet"], correct: 0, hint: "Ibis-headed god, inventor of hieroglyphics.", category: "Religion"},
-    {question: "Colonial education in Africa primarily taught:", options: ["Traditional knowledge", "Subservience and labor", "Science and technology", "Indigenous languages"], correct: 1, hint: "Designed to create docile workers, not leaders.", category: "History"},
-    {question: "The Benin Bronzes were looted during:", options: ["1897 British invasion", "Slave trade", "WWI", "WWII"], correct: 0, hint: "Punitive expedition destroyed Benin City.", category: "History"},
-    {question: "How much does Africa spend importing food it could grow?", options: ["$10 billion", "$35 billion+", "$50 billion", "$100 billion"], correct: 1, hint: "Neocolonial agriculture focused on export crops.", category: "Economy"},
-    {question: "The Lemba people of Southern Africa claim descent from:", options: ["Ancient Egypt", "Lost tribe of Israel", "Phoenicians", "Romans"], correct: 1, hint: "DNA evidence supports Hebrew ancestry claims.", category: "Culture"}
-],
-
-level19: [
-    {question: "Kemet's Book of Coming Forth by Day (Book of Dead) contains:", options: ["Laws", "Spells for afterlife journey", "Poetry", "History"], correct: 1, hint: "Guide through Duat (underworld), 42 declarations.", category: "Religion"},
-    {question: "The Haitian Revolution cost France how much in modern value?", options: ["$1 billion", "$21 billion", "$100 billion", "$300+ billion"], correct: 3, hint: "Lost richest colony, Napoleon sold Louisiana as result.", category: "History"},
-    {question: "Which African university is oldest in continuous operation?", options: ["Al-Azhar (Egypt)", "Al Quaraouiyine (Morocco)", "Timbuktu", "Alexandria"], correct: 1, hint: "Founded 859 CE, still operating, Fez, Morocco.", category: "History"},
-    {question: "Colonizers justified slavery through:", options: ["Economic need", "Racial pseudoscience", "Religious doctrine", "All above"], correct: 3, hint: "Constructed racism to justify exploitation.", category: "History"},
-    {question: "The Himba people of Namibia are known for:", options: ["Stilt houses", "Otjize paste beauty practice", "Underwater homes", "Tree dwellings"], correct: 1, hint: "Red ochre paste, traditional pastoralist culture.", category: "Culture"},
-    {question: "Which African invented the gamma electric cell?", options: ["Samuel Kounessi", "Thomas Mensah", "George Carruthers", "Lonnie Johnson"], correct: 0, hint: "Togolese inventor, improved battery technology.", category: "Science"},
-    {question: "The Great Enclosure at Great Zimbabwe had walls:", options: ["5 meters high", "11 meters high", "20 meters high", "30 meters high"], correct: 1, hint: "Without mortar, precise stonework, 15th century.", category: "Construction"},
-    {question: "Debt servicing costs Africa what percentage of government budgets?", options: ["5-10%", "15-20%", "25-40%", "50%+"], correct: 2, hint: "Paying Western banks instead of schools, hospitals.", category: "Economy"},
-    {question: "The Odinani spirituality of Igbo people centers on:", options: ["One supreme god", "Chi (personal god) and Ala (earth goddess)", "Ancestor worship only", "Nature spirits"], correct: 1, hint: "Complex cosmology, individual destiny (chi).", category: "Religion"},
-    {question: "How many Africans died during colonialism (1885-1945)??", options: ["5 million", "15 million", "50 million+", "100 million"], correct: 2, hint: "Genocide, forced labor, famine, disease from colonial rule.", category: "History"}
-],
-
-level20: [
-    {question: "The 25th Dynasty pharaohs were known as:", options: ["Sea peoples", "Black Pharaohs/Nubian Dynasty", "Persian rulers", "Greek dynasty"], correct: 1, hint: "Kushite rulers who saved Egypt from Assyrians.", category: "History"},
-    {question: "Pan-Africanism was founded by:", options: ["Kwame Nkrumah", "W.E.B. Du Bois & Marcus Garvey", "Haile Selassie", "Thomas Sankara"], correct: 1, hint: "Diaspora leaders connecting all African peoples.", category: "Politics"},
-    {question: "The Timbuktu manuscripts contain knowledge on:", options: ["Astronomy", "Medicine", "Law and philosophy", "All above"], correct: 3, hint: "700,000+ manuscripts, medieval African scholarship.", category: "History"},
-    {question: "Resource extraction from Africa creates:", options: ["Development", "Conflict and poverty", "Infrastructure", "Education"], correct: 1, hint: "Wealth flows out, corruption and war remain.", category: "Economy"},
-    {question: "The talking drum can communicate:", options: ["Rhythms only", "Tonal languages/complete sentences", "Morse code", "Music only"], correct: 1, hint: "Mimics speech tones, sends messages across distances.", category: "Culture"},
-    {question: "Who proved ancient Egyptians were Black Africans through science?", options: ["Cheikh Anta Diop", "Carter G. Woodson", "Yosef Ben-Jochannan", "John Henrik Clarke"], correct: 0, hint: "Senegalese scientist, melanin tests, cultural analysis.", category: "Science"},
-    {question: "The Kasubi Tombs in Uganda are built using:", options: ["Stone", "Organic materials (bark, reeds)", "Mud brick", "Concrete"], correct: 1, hint: "Traditional Buganda architecture, UNESCO site.", category: "Construction"},
-    {question: "Africa's youth population (under 25) is approximately:", options: ["30%", "45%", "60%", "75%"], correct: 2, hint: "Youngest continent, demographic dividend potential.", category: "Demographics"},
-    {question: "The Vodun concept of 'Mami Wata' represents:", options: ["Earth mother", "Water spirit/deity", "War goddess", "Harvest spirit"], correct: 1, hint: "Mermaid-like deity, wealth and danger, pan-African.", category: "Religion"},
-    {question: "Patrice Lumumba was assassinated for:", options: ["Corruption", "Wanting Congo's independence and resources", "Religious views", "Tribal conflicts"], correct: 1, hint: "CIA/Belgium killed first democratically elected leader, 1961.", category: "History"}
-]
+            ]
         };
         function initGame() {
-    // No longer need to generate questions - all defined now
-    
-    const levelIndicator = document.getElementById('levelIndicator');
-    levelIndicator.innerHTML = '';
-    
-    // UPDATED: Create 20 level dots
-    for (let i = 1; i <= 20; i++) {
-        const levelDot = document.createElement('div');
-        levelDot.className = 'level-dot';
-        levelDot.id = `level${i}`;
-        levelDot.textContent = i;
-        
-        // Add stage indicator
-        if (i === 11) {
-            const stageLabel = document.createElement('div');
-            stageLabel.style.cssText = 'width: 100%; text-align: center; color: #f7a440; font-weight: bold; margin: 10px 0;';
-            stageLabel.textContent = '⚡ Stage 2';
-            levelIndicator.appendChild(stageLabel);
+            for (let level = 3; level <= 10; level++) {
+                const levelKey = `level${level}`;
+                if (!questionsDatabase[levelKey]) {
+                    questionsDatabase[levelKey] = generateQuestionsForLevel(level);
+                }
+            }
+            
+            const levelIndicator = document.getElementById('levelIndicator');
+            levelIndicator.innerHTML = '';
+            
+            for (let i = 1; i <= 10; i++) {
+                const levelDot = document.createElement('div');
+                levelDot.className = 'level-dot';
+                levelDot.id = `level${i}`;
+                levelDot.textContent = i;
+                levelIndicator.appendChild(levelDot);
+            }
+            
+            updateLevelIndicator();
         }
-        
-        levelIndicator.appendChild(levelDot);
-    }
-    
-    updateLevelIndicator();
-}
 
         function startGame() {
     // Find the first uncompleted level
@@ -1532,15 +1395,10 @@ function loadQuestion() {
     const levelDot = document.getElementById(`level${gameState.currentLevel}`);
     if (levelDot) levelDot.classList.add('completed');
     
-    if  (gameState.currentLevel >= 20) {
-    completeGame();
-    return;
-}
-    if (gameState.currentLevel === 10) {
-    setTimeout(() => {
-        alert(`🎓 Stage 1 Complete!\n\nWeldone You're smart, continue.\n\n⚡ Stage 2 Unlocked: Levels 11-20\n\nDeeper knowledge awaits: Kemet, colonization, resources, spirituality, and advanced African history!`);
-    }, 500);
-            }
+    if (gameState.currentLevel >= 10) {
+        completeGame();
+        return;
+    }
     
     document.getElementById('resultTitle').textContent = `Level ${gameState.currentLevel} Complete! ${celebrationEmoji}`;
     document.getElementById('resultMessage').innerHTML = celebrationMessage;
@@ -1632,39 +1490,37 @@ function loadQuestion() {
 
         // TAU Integration Functions
         function selectMode(mode) {
-    gameState.playMode = mode;
-    
-    document.querySelectorAll('.mode-card').forEach(card => {
-        card.classList.remove('selected');
-    });
-    event.target.closest('.mode-card').classList.add('selected');
-    
-    document.getElementById('startBtn').disabled = false;
-    
-    if (mode === 'member') {
-        const urlParams = new URLSearchParams(window.location.search);
-        gameState.memberId = urlParams.get('memberId') || prompt('Enter your TAU Member ID:') || 'TEMP_' + Date.now();
-        
-        iKbpTracker.loadFromStorage();
-        
-        // UPDATED: Check for 20 levels instead of 10
-        if (gameState.completedLevels.length >= 20) {
-            document.getElementById('totalEarnedComplete').textContent = iKbpTracker.getTotalEarned();
-            document.getElementById('alreadyCompletedModal').style.display = 'flex';
-            return;
+            gameState.playMode = mode;
+            
+            document.querySelectorAll('.mode-card').forEach(card => {
+                card.classList.remove('selected');
+            });
+            event.target.closest('.mode-card').classList.add('selected');
+            
+            document.getElementById('startBtn').disabled = false;
+            
+            if (mode === 'member') {
+                const urlParams = new URLSearchParams(window.location.search);
+                gameState.memberId = urlParams.get('memberId') || prompt('Enter your TAU Member ID:') || 'TEMP_' + Date.now();
+                
+                iKbpTracker.loadFromStorage();
+                
+                if (gameState.completedLevels.length >= 10) {
+                    document.getElementById('totalEarnedComplete').textContent = iKbpTracker.getTotalEarned();
+                    document.getElementById('alreadyCompletedModal').style.display = 'flex';
+                    return;
+                }
+                
+                document.getElementById('tauMemberBanner').style.display = 'flex';
+                document.getElementById('guestBanner').style.display = 'none';
+                document.getElementById('earningsDisplay').style.display = 'block';
+                document.getElementById('memberInfo').textContent = `Member ID: ${gameState.memberId} | Completed: ${gameState.completedLevels.length}/10 levels`;
+            } else {
+                document.getElementById('tauMemberBanner').style.display = 'none';
+                document.getElementById('guestBanner').style.display = 'flex';
+                document.getElementById('earningsDisplay').style.display = 'none';
+            }
         }
-        
-        document.getElementById('tauMemberBanner').style.display = 'flex';
-        document.getElementById('guestBanner').style.display = 'none';
-        document.getElementById('earningsDisplay').style.display = 'block';
-        document.getElementById('memberInfo').textContent = `Member ID: ${gameState.memberId} | Completed: ${gameState.completedLevels.length}/20 levels`;
-    } else {
-        document.getElementById('tauMemberBanner').style.display = 'none';
-        document.getElementById('guestBanner').style.display = 'flex';
-        document.getElementById('earningsDisplay').style.display = 'none';
-    }
-}
-                                                                                                             }
         
         function openTAUApp() {
             window.open('https://magero1985.github.io/Tau-Africa/', '_blank');
