@@ -1453,31 +1453,113 @@ function completeLevel() {
         }
 
         function syncEarningsToTAU() {
-            const totalEarned = iKbpTracker.getTotalEarned();
-            
-            if (totalEarned === 0) {
-                alert('No earnings to sync yet! Complete some questions first.');
-                return;
-            }
-            
-            const syncData = {
-                memberId: gameState.memberId,
-                totalEarned: totalEarned,
-                levelEarnings: iKbpTracker.levelEarnings,
-                completedLevels: gameState.completedLevels,
-                timestamp: new Date().toISOString(),
-                source: 'knowledge_challenge'
-            };
-            
-            localStorage.setItem('tauSyncData', JSON.stringify(syncData));
-            
-            alert(`✅ ${totalEarned} iKbp prepared for sync!\n\nRedirecting to TAU app...`);
-            
-            setTimeout(() => {
-                window.open(`https://magero1985.github.io/Tau-Africa/?sync=true&memberId=${gameState.memberId}&earned=${totalEarned}`, '_blank');
-            }, 1000);
+    const totalEarned = iKbpTracker.getTotalEarned();
+    
+    console.log('🔄 Attempting to sync:', totalEarned, 'iKbp');
+    
+    if (totalEarned === 0) {
+        alert('❌ No earnings to sync yet!\n\nTips:\n• Make sure you selected "TAU Member" mode\n• Complete some levels to earn iKbp\n• Each correct answer = 25 iKbp\n• Level completion = 250 iKbp bonus');
+        return;
+    }
+    
+    // Check how much has already been synced
+    const syncKey = `tauKnowledge_synced_${gameState.memberId}`;
+    const syncedData = localStorage.getItem(syncKey);
+    let alreadySynced = 0;
+    
+    if (syncedData) {
+        try {
+            const parsed = JSON.parse(syncedData);
+            alreadySynced = parsed.totalSynced || 0;
+        } catch (e) {
+            console.log('Sync history parse error');
         }
+    }
+    
+    const unsynced = totalEarned - alreadySynced;
+    
+    if (unsynced <= 0) {
+        alert('✅ All earnings already synced!\n\nNo new earnings to transfer to TAU App.\n\nComplete more levels to earn more iKbp.');
+        return;
+    }
+    
+    // Prepare sync data with ONLY unsynced earnings
+    const syncData = {
+        memberId: gameState.memberId,
+        unsyncedAmount: unsynced, // ← Only send what hasn't been synced
+        totalEarned: totalEarned,
+        alreadySynced: alreadySynced,
+        levelEarnings: iKbpTracker.levelEarnings,
+        completedLevels: gameState.completedLevels,
+        timestamp: new Date().toISOString(),
+        source: 'knowledge_challenge',
+        appVersion: '2.0',
+        syncId: `sync_${Date.now()}` // Unique sync ID
+    };
+    
+    // Save to localStorage for TAU App to read
+    localStorage.setItem('tauSyncPending', JSON.stringify(syncData));
+    
+    const breakdown = Object.entries(iKbpTracker.levelEarnings)
+        .map(([level, amt]) => `Level ${level}: ${amt} iKbp`)
+        .join('\n');
+    
+    const confirmMessage = `💰 Ready to Sync ${unsynced} iKbp\n\nBreakdown:\n${breakdown}\n\nTotal Earned: ${totalEarned} iKbp\nAlready Synced: ${alreadySynced} iKbp\n\n→ To Sync Now: ${unsynced} iKbp\n\nProceed to TAU App?`;
+    
+    if (confirm(confirmMessage)) {
+        // Build URL with sync parameters
+        const syncParams = new URLSearchParams({
+            sync: 'true',
+            memberId: gameState.memberId,
+            amount: unsynced,
+            source: 'knowledge',
+            syncId: syncData.syncId,
+            timestamp: Date.now()
+        });
+        
+        console.log('📤 Redirecting to TAU App with sync data...');
+        
+        // Open TAU App
+        window.location.href = `https://magero1985.github.io/Tau-Africa/?${syncParams.toString()}`;
+    }
+}
+        function markAsSynced(amount) {
+    const syncKey = `tauKnowledge_synced_${gameState.memberId}`;
+    const syncedData = localStorage.getItem(syncKey);
+    let totalSynced = 0;
+    
+    if (syncedData) {
+        try {
+            const parsed = JSON.parse(syncedData);
+            totalSynced = parsed.totalSynced || 0;
+        } catch (e) {
+            console.log('Parse error');
+        }
+    }
+    
+    totalSynced += amount;
+    
+    const newSyncData = {
+        totalSynced: totalSynced,
+        lastSyncDate: new Date().toISOString(),
+        syncHistory: [] // You can add detailed history here if needed
+    };
+    
+    localStorage.setItem(syncKey, JSON.stringify(newSyncData));
+    console.log(`✅ Marked ${amount} iKbp as synced. Total synced: ${totalSynced}`);
+}
 
+// Listen for sync confirmation from TAU App
+window.addEventListener('storage', function(e) {
+    if (e.key === 'tauSyncConfirmed') {
+        const confirmed = JSON.parse(e.newValue);
+        if (confirmed && confirmed.memberId === gameState.memberId) {
+            markAsSynced(confirmed.amount);
+            localStorage.removeItem('tauSyncConfirmed'); // Clean up
+            alert(`✅ ${confirmed.amount} iKbp successfully synced to TAU App!`);
+        }
+    }
+});
         function openTAUApp() {
             window.open('https://magero1985.github.io/Tau-Africa/', '_blank');
         }
