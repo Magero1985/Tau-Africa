@@ -1341,7 +1341,7 @@ document.head.appendChild(style);
         const message = `
 Dear ${member.fullName},
 
-🎉 WELCOME TO TAU AFRICA INTERNATIONAL! 🎉
+🎉 WELCOME TO TAU AFRICA ECOSYSTEM & KABIRU DIGITAL VALUE CURRENCY! 🎉
 
 ━━━━━━━━━━━━━━━━━━━━━━━━
 YOUR MEMBERSHIP DETAILS
@@ -1363,7 +1363,7 @@ YOUR BENEFITS
    Share to earn 500 iKbp per referral!
 
 💎 Start earning:
-   • Complete activities: 100-500 iKbp each
+   • Complete activities: 100-2500 iKbp each
    • Complete tasks: 200-5000 iKbp each
    • Submit values: Earn iKb
    • Refer friends: 500 iKbp each
@@ -1373,7 +1373,7 @@ NEXT STEPS
 ━━━━━━━━━━━━━━━━━━━━━━━━
 
 1. Login with your Member ID or Email
-2. Complete your first activity (earn 100 iKbp!)
+2. Complete your first activity on Knowledge quest (earn 100+ iKbp!)
 3. Share your referral code
 4. Explore the Kabiru Mining App
 
@@ -2216,7 +2216,7 @@ window.showRealMemberLogin = window.showMemberLogin;
             const welcomeMsg = `
 Dear ${member.fullName},
 
-🎉 WELCOME TO TAU AFRICA INTERNATIONAL! 🎉
+🎉 WELCOME TO TAU AFRICA ECOSYSTEM AND KABIRU DIGITAL VALUE CURRENCY ! 🎉
 
 ━━━━━━━━━━━━━━━━━━━━━━━━
 YOUR MEMBERSHIP DETAILS
@@ -2238,7 +2238,7 @@ YOUR BENEFITS
    Share to earn 500 iKbp per referral!
 
 💎 Start earning:
-   • Complete activities: 100-500 iKbp each
+   • Complete activities: 100-2500 iKbp each
    • Complete tasks: 200-5000 iKbp each
    • Submit values: Earn iKb
    • Refer friends: 500 iKbp each
@@ -2248,7 +2248,7 @@ NEXT STEPS
 ━━━━━━━━━━━━━━━━━━━━━━━━
 
 1. Login with your Member ID or Email
-2. Complete your first activity (earn 100 iKbp!)
+2. Complete your first activity (earn 100+ iKbp!)
 3. Share your referral code
 4. Explore the Kabiru Mining App
 
@@ -3664,8 +3664,9 @@ function showMultiPaymentModal(amount, phoneNumber, formData, successCallback) {
                         <strong>Bank Details:</strong><br>
                         Bank: Equity Bank<br>
                         Account: TAU AFRICA ECOSYSTEM<br>
-                        Account No: 1234567890<br>
-                        Swift Code: EQBLKENA<br>
+                        Acc Name: John Otieno Onyango (Dev Acc)
+                        Account 0650183785384<br>
+                        Swift Code: REQUEST<br>
                         Amount: <strong>KSH ${amount}</strong>
                     </p>
                     <p style="margin: 10px 0 0 0; font-size: 12px; color: #e74c3c;">
@@ -3812,8 +3813,8 @@ function showPaymentModal(amount, phoneNumber, formData, successCallback) {
                         <li>Go to M-PESA menu</li>
                         <li>Select "Lipa na M-PESA"</li>
                         <li>Select "Pay Bill"</li>
-                        <li>Business Number: <strong>4087777</strong></li>
-                        <li>Account: <strong>TAU${Date.now().toString().slice(-6)}</strong></li>
+                        <li>Business Number: <strong>247247</strong></li>
+                        <li>Account: <strong>0650183785384${Date.now().toString().slice(-6)}</strong></li>
                         <li>Amount: <strong>${amount}</strong></li>
                         <li>Enter your M-PESA PIN</li>
                     </ol>
@@ -15501,25 +15502,76 @@ window.approveMember = async function(docId) {
                 validatedAt: new Date().toISOString()
             });
 
-            // 2. Send WELCOME EMAIL to Member via EmailJS
-            // Make sure your EmailJS Template has these variables: {{to_name}}, {{to_email}}, {{member_id}}, {{password}}
-            await emailjs.send("service_tau", "template_welcome", {
-                to_name: memberData.fullName,
-                to_email: memberData.email,
-                member_id: memberId,
-                password: tempPass,
-                login_link: "https://magero1985.github.io/Tau-Africa/"
-            });
+            // ============================================
+    // 4. SEND WELCOME EMAIL TO MEMBER
+    // ============================================
+    window.sendWelcomeEmail = async function(member) {
+        const message = `
+Dear ${member.fullName},
 
-            showNotification(`✅ ${memberData.fullName} Activated & Welcome Email Sent!`, "success");
-            loadPendingMembers();
-            
-        } catch (error) {
-            console.error(error);
-            showNotification("⚠️ Status updated, but email failed to send.", "warning");
-        }
-    }
-};
+🎉 WELCOME TO TAU AFRICA ECOSYSTEM & KABIRU DIGITAL VALUE CURRENCY! 🎉
+
+━━━━━━━━━━━━━━━━━━━━━━━━
+YOUR MEMBERSHIP DETAILS
+━━━━━━━━━━━━━━━━━━━━━━━━
+
+👤 Member ID: ${member.id}
+📧 Email: ${member.email}
+📱 Phone: ${member.phone}
+📍 Location: ${member.location}
+👥 Team: ${member.team}
+💰 Registration Fee: KSH ${member.fee} ✅ PAID
+
+━━━━━━━━━━━━━━━━━━━━━━━━
+YOUR BENEFITS
+━━━━━━━━━━━━━━━━━━━━━━━━
+
+🎁 Welcome Bonus: 500 iKbp (KSH 50) - CREDITED!
+🔑 Referral Code: ${member.referralCode}
+   Share to earn 500 iKbp per referral!
+
+💎 Start earning:
+   • Complete activities: 100-2500 iKbp each
+   • Complete tasks: 200-5000 iKbp each
+   • Submit values: Earn iKb
+   • Refer friends: 500 iKbp each
+
+━━━━━━━━━━━━━━━━━━━━━━━━
+NEXT STEPS
+━━━━━━━━━━━━━━━━━━━━━━━━
+
+1. Login with your Member ID or Email
+2. Complete your first activity on Knowledge quest (earn 100+ iKbp!)
+3. Share your referral code
+4. Explore the Kabiru Mining App
+
+🌐 Access your dashboard:
+   ${window.location.origin}
+
+📧 Need help? Contact:
+   grouptauafrica@gmail.com
+
+Welcome to the TAU Africa family!
+
+Best regards,
+TAU Africa Team
+🌍 Building Africa's Digital Future
+        `.trim();
+        
+        return await sendEmail(
+            member.email,
+            member.fullName,
+            '🎉 Welcome to TAU Africa International!',
+            message,
+            {
+                phone: member.phone,
+                location: member.location,
+                member_id: member.id,
+                referral_code: member.referralCode
+            }
+        );
+    };
+    
 
 window.declineMember = async function(docId, name) {
     const reason = document.getElementById(`reason-${docId}`).value;
