@@ -723,6 +723,28 @@
 </head>
 <body>
     <div class="container">
+        <!-- Sound Toggle Button -->
+        <div class="sound-toggle" onclick="toggleSound()" id="soundToggle">
+            🔊
+        </div>
+
+        <!-- Achievement Showcase -->
+        <div class="achievement-showcase" id="achievementShowcase" style="display: none;">
+            <div class="current-rank">
+                <div class="rank-icon" id="rankIcon">🌱</div>
+                <h3 id="rankTitle">Awakening Seeker</h3>
+                <p id="rankDescription">Beginning your Pan-African journey</p>
+                <div class="kemetic-progress"></div>
+                <p style="font-size: 0.9rem; margin-top: 10px; color: white;">
+                    <span id="progressText">Level 1/20</span> • 
+                    <span id="nextRankText">Next: Conscious Member at Level 5</span>
+                </p>
+            </div>
+            
+            <div class="badges-earned" id="badgesContainer">
+                <!-- Badges will be dynamically added by JavaScript -->
+            </div>
+        </div>
         <!-- TAU Member Banner -->
         <div id="tauMemberBanner" class="tau-banner" style="display: none;">
             <div class="tau-info">
