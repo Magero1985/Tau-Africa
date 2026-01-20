@@ -1056,7 +1056,10 @@ const BADGES = [
     playMode: null,
     memberId: null,
     levelEarnings: 0,
-    completedLevels: []
+    completedLevels: [],
+    soundEnabled: true,
+    earnedBadges: [],
+    currentRank: "Awakening Seeker"
 };
         window.iKbpTracker = {
     totalEarned: 0,
@@ -2412,6 +2415,86 @@ window.syncEarningsToTAU = function() {
 };
 
 console.log('✅ All function overrides loaded successfully!');
+        // ============================================
+// SOUND SYSTEM - ADD THIS
+// ============================================
+
+function playTone(frequency, duration) {
+    if (!gameState.soundEnabled) return;
+    
+    try {
+        const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+        const oscillator = audioContext.createOscillator();
+        const gainNode = audioContext.createGain();
+        
+        oscillator.connect(gainNode);
+        gainNode.connect(audioContext.destination);
+        
+        oscillator.frequency.value = frequency;
+        oscillator.type = 'sine';
+        
+        gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
+        gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + duration / 1000);
+        
+        oscillator.start(audioContext.currentTime);
+        oscillator.stop(audioContext.currentTime + duration / 1000);
+    } catch (e) {
+        console.log('Audio not supported:', e);
+    }
+}
+
+function playMelody(frequencies, duration) {
+    frequencies.forEach((freq, index) => {
+        setTimeout(() => playTone(freq, duration), index * duration);
+    });
+}
+
+function playKenyanAnthem() {
+    // Simplified "Ee Mungu Nguvu Yetu" first verse melody
+    const melody = [
+        { freq: 392, dur: 400 },  // G - Ee
+        { freq: 440, dur: 400 },  // A - Mun
+        { freq: 494, dur: 400 },  // B - gu
+        { freq: 523, dur: 600 },  // C - Ngu
+        { freq: 494, dur: 400 },  // B - vu
+        { freq: 440, dur: 400 },  // A - Ye
+        { freq: 392, dur: 800 },  // G - tu
+        { freq: 349, dur: 400 },  // F
+        { freq: 392, dur: 400 },  // G
+        { freq: 440, dur: 600 }   // A
+    ];
+    
+    if (!gameState.soundEnabled) return;
+    
+    let totalTime = 0;
+    melody.forEach((note) => {
+        setTimeout(() => playTone(note.freq, note.dur), totalTime);
+        totalTime += note.dur;
+    });
+}
+
+const SOUNDS = {
+    correct: () => playTone(523.25, 150),           // C note
+    wrong: () => playTone(220, 300),                // A note
+    levelUp: () => playMelody([523.25, 659.25, 783.99], 200),
+    achievement: () => playMelody([523.25, 659.25, 783.99, 1046.50], 150),
+    anthem: () => playKenyanAnthem()
+};
+
+function toggleSound() {
+    gameState.soundEnabled = !gameState.soundEnabled;
+    const toggleBtn = document.getElementById('soundToggle');
+    if (toggleBtn) {
+        toggleBtn.textContent = gameState.soundEnabled ? '🔊' : '🔇';
+    }
+    
+    // Play confirmation sound
+    if (gameState.soundEnabled) {
+        playTone(523.25, 100);
+    }
+    
+    console.log('🔊 Sound', gameState.soundEnabled ? 'enabled' : 'disabled');
+        }
 console.log('📊 iKbpTracker ready:', iKbpTracker.getTotalEarned(), 'iKbp');
     </script>
 </body>
