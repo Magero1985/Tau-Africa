@@ -523,9 +523,10 @@
         </div>
 
         <div class="header">
-            <h1>Pan African Knowledge Challenge</h1>
-            <div class="subtitle">Test your knowledge across 20 challenging levels in 2 stages • Earn iKbp rewards as TAU member!</div>
-
+    <h1>Pan African Knowledge Challenge</h1>
+    <div class="subtitle">Test your knowledge across 20 challenging levels in 2 stages • Earn iKbp rewards as TAU member!</div>
+</div>  
+        
         <!-- Earnings Display -->
         <div id="earningsDisplay" class="earnings-display" style="display: none;">
             💰 Total Earned: <span id="totalEarned">0</span> iKbp
@@ -1258,8 +1259,7 @@ level20: [
         function startGame() {
     // Find the first uncompleted level
     let startLevel = 1;
-    if (gameState.playMode === 'member') {
-        for (let i = 1; i <= 10; i++) {
+    for (let i = 1; i <= 20; i++) {  // ← CORRECT!
             if (!gameState.completedLevels.includes(i)) {
                 startLevel = i;
                 break;
@@ -1287,11 +1287,11 @@ level20: [
     }
     
     // Show helpful message if starting from middle
-    if (startLevel > 1) {
-        setTimeout(() => {
-            alert(`📍 Continuing from Level ${startLevel}\n\nYou've already completed levels 1-${startLevel - 1}.\n\nTotal earnings so far: ${iKbpTracker.getTotalEarned()} iKbp`);
-        }, 500);
-    }
+if (startLevel > 1) {
+    const stage = startLevel <= 10 ? 1 : 2;  // ADD THIS LINE
+    setTimeout(() => {
+        alert(`🔍 Continuing from Level ${startLevel} (Stage ${stage})\n\nYou've already completed levels 1-${startLevel - 1}.\n\nTotal earnings so far: ${iKbpTracker.getTotalEarned()} iKbp`);
+    }, 500);
 }
 
         // Replace your selectOption function with this:
@@ -1539,7 +1539,7 @@ function loadQuestion() {
 }
     if (gameState.currentLevel === 10) {
     setTimeout(() => {
-        alert(`🎓 Stage 1 Complete!\n\nWeldone You're smart, continue.\n\n⚡ Stage 2 Unlocked: Levels 11-20\n\nDeeper knowledge awaits: Kemet, colonization, resources, spirituality, and advanced African history!`);
+        alert(`🎓 Stage 1 Complete!\n\nWeldone Your journey to Pan African awakening has begun , continue.\n\n⚡ Stage 2 Unlocked: Levels 11-20\n\nDeeper knowledge awaits: Kemet, colonization, resources, spirituality, and advanced African history!`);
     }, 500);
             }
     
@@ -1669,7 +1669,7 @@ function loadQuestion() {
         document.getElementById('earningsDisplay').style.display = 'none';
     }
 }
-                                                                                                             }
+                                                                                                             
         
         function openTAUApp() {
             window.open('https://magero1985.github.io/Tau-Africa/', '_blank');
@@ -1807,7 +1807,7 @@ function nextLevel() {
         
         // Find next uncompleted level
         let foundNext = false;
-        for (let i = gameState.currentLevel; i <= 10; i++) {
+        for (let i = gameState.currentLevel; i <= 20; i++) {
             if (!gameState.completedLevels.includes(i)) {
                 gameState.currentLevel = i;
                 foundNext = true;
