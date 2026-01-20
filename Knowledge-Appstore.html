@@ -18,7 +18,115 @@
             min-height: 100vh;
             padding: 20px;
         }
+/* ============================================
+   ACHIEVEMENT SYSTEM STYLES - ADD THIS
+   ============================================ */
 
+.achievement-showcase {
+    background: rgba(30, 60, 114, 0.7);
+    padding: 20px;
+    border-radius: 15px;
+    margin-bottom: 20px;
+    border: 2px solid #4cc9f0;
+}
+
+.current-rank {
+    text-align: center;
+    padding: 15px;
+    background: linear-gradient(135deg, #e1701a, #f7a440);
+    border-radius: 10px;
+    margin-bottom: 15px;
+}
+
+.current-rank h3 {
+    font-size: 1.8rem;
+    color: white;
+    margin-bottom: 5px;
+}
+
+.current-rank .rank-icon {
+    font-size: 3rem;
+    margin-bottom: 10px;
+}
+
+.badges-earned {
+    display: flex;
+    gap: 10px;
+    justify-content: center;
+    flex-wrap: wrap;
+    margin-top: 15px;
+}
+
+.badge {
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 2rem;
+    background: linear-gradient(135deg, #4361ee, #3a56d4);
+    border: 3px solid #f7a440;
+    cursor: pointer;
+    transition: transform 0.3s ease;
+    position: relative;
+}
+
+.badge:hover {
+    transform: scale(1.2);
+}
+
+.badge.locked {
+    opacity: 0.3;
+    filter: grayscale(100%);
+}
+
+.badge-tooltip {
+    position: absolute;
+    bottom: -40px;
+    background: rgba(0,0,0,0.9);
+    padding: 5px 10px;
+    border-radius: 5px;
+    font-size: 0.8rem;
+    white-space: nowrap;
+    display: none;
+    z-index: 1000;
+}
+
+.badge:hover .badge-tooltip {
+    display: block;
+}
+
+/* Kemetic Progress Bar */
+.kemetic-progress {
+    background: linear-gradient(90deg, 
+        #8b7355 0%, 
+        #f7a440 25%, 
+        #e1701a 50%, 
+        #f7a440 75%, 
+        #8b7355 100%
+    );
+    height: 8px;
+    margin: 20px 0;
+    border-radius: 4px;
+    position: relative;
+}
+
+.kemetic-progress::before,
+.kemetic-progress::after {
+    content: '𓂀';
+    position: absolute;
+    font-size: 1.5rem;
+    color: #f7a440;
+}
+
+.kemetic-progress::before {
+    left: -30px;
+}
+
+.kemetic-progress::after {
+    right: -30px;
+}
         .container {
             max-width: 1000px;
             margin: 0 auto;
