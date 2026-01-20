@@ -2495,6 +2495,178 @@ function toggleSound() {
     
     console.log('🔊 Sound', gameState.soundEnabled ? 'enabled' : 'disabled');
         }
+        // ============================================
+// RANK SYSTEM - ADD THIS
+// ============================================
+
+function updateRank(level) {
+    const rankKeys = Object.keys(RANKS).map(Number).sort((a,b) => a-b);
+    let currentRank = RANKS[1];
+    
+    for (let rankLevel of rankKeys) {
+        if (level >= rankLevel) {
+            currentRank = RANKS[rankLevel];
+        }
+    }
+    
+    gameState.currentRank = currentRank.name;
+    
+    document.getElementById('rankIcon').textContent = currentRank.icon;
+    document.getElementById('rankTitle').textContent = currentRank.name;
+    document.getElementById('rankDescription').textContent = currentRank.description;
+    document.getElementById('progressText').textContent = `Level ${level}/20`;
+    
+    // Find next rank
+    const nextRankLevel = rankKeys.find(l => l > level);
+    if (nextRankLevel) {
+        const nextRank = RANKS[nextRankLevel];
+        document.getElementById('nextRankText').textContent = 
+            `Next: ${nextRank.name} at Level ${nextRankLevel}`;
+    } else {
+        document.getElementById('nextRankText').textContent = '🏆 Maximum rank achieved!';
+    }
+    
+    // Show the achievement showcase
+    document.getElementById('achievementShowcase').style.display = 'block';
+    
+    console.log('📊 Rank updated:', currentRank.name);
+}
+
+// ============================================
+// BADGE SYSTEM - ADD THIS
+// ============================================
+
+function initBadges() {
+    const container = document.getElementById('badgesContainer');
+    if (!container) return;
+    
+    container.innerHTML = '';
+    
+    BADGES.forEach(badge => {
+        const isEarned = gameState.earnedBadges.includes(badge.id);
+        const badgeEl = document.createElement('div');
+        badgeEl.className = 'badge' + (isEarned ? '' : ' locked');
+        badgeEl.innerHTML = `
+            ${badge.icon}
+            <div class="badge-tooltip">${badge.name}</div>
+        `;
+        container.appendChild(badgeEl);
+    });
+    
+    console.log('🏅 Badges initialized:', gameState.earnedBadges.length, 'earned');
+}
+
+function checkBadgeUnlock(level, isPerfect, completionTime) {
+    const newBadges = [];
+    
+    // First level badge
+    if (level === 1 && !gameState.earnedBadges.includes('first_level')) {
+        newBadges.push('first_level');
+    }
+    
+    // Perfect score badge
+    if (isPerfect && !gameState.earnedBadges.includes('perfect_level')) {
+        newBadges.push('perfect_level');
+    }
+    
+    // Stage 1 complete badge
+    if (level === 10 && !gameState.earnedBadges.includes('stage1_complete')) {
+        newBadges.push('stage1_complete');
+    }
+    
+    // Stage 2 unlock badge
+    if (level === 11 && !gameState.earnedBadges.includes('stage2_unlock')) {
+        newBadges.push('stage2_unlock');
+    }
+    
+    // Speed demon badge (completed in under 30 seconds)
+    if (completionTime < 30 && !gameState.earnedBadges.includes('speed_demon')) {
+        newBadges.push('speed_demon');
+    }
+    
+    // Scholar badge
+    if (level === 15 && !gameState.earnedBadges.includes('scholar')) {
+        newBadges.push('scholar');
+    }
+    
+    // Ultimate badge
+    if (level === 20 && !gameState.earnedBadges.includes('ultimate')) {
+        newBadges.push('ultimate');
+    }
+    
+    // Award new badges
+    newBadges.forEach(badgeId => {
+        gameState.earnedBadges.push(badgeId);
+        SOUNDS.achievement();
+        showBadgeUnlock(badgeId);
+    });
+    
+    // Save to storage
+    if (newBadges.length > 0) {
+        iKbpTracker.saveToStorage();
+    }
+    
+    // Refresh badge display
+    initBadges();
+}
+
+function showBadgeUnlock(badgeId) {
+    const badge = BADGES.find(b => b.id === badgeId);
+    if (!badge) return;
+    
+    setTimeout(() => {
+        alert(`🏆 BADGE UNLOCKED!\n\n${badge.icon} ${badge.name}\n\nYour collection grows!`);
+    }, 500);
+}
+
+// ============================================
+// CERTIFICATE SYSTEM - ADD THIS
+// ============================================
+
+function showCertificate(stage, level) {
+    const rankKeys = Object.keys(RANKS).map(Number).sort((a,b) => a-b);
+    let rankName = RANKS[1].name;
+    
+    for (let rankLevel of rankKeys) {
+        if (level >= rankLevel) {
+            rankName = RANKS[rankLevel].name;
+        }
+    }
+    
+    // Set certificate details
+    const memberIdDisplay = gameState.memberId || 'Guest Player';
+    document.getElementById('certificateRecipient').textContent = memberIdDisplay;
+    document.getElementById('certificateStage').textContent = `Stage ${stage}`;
+    document.getElementById('certificateRank').textContent = rankName;
+    document.getElementById('certificateDate').textContent = new Date().toLocaleDateString();
+    
+    // Show modal
+    document.getElementById('certificateModal').style.display = 'flex';
+    
+    // Play special sound
+    if (level === 20) {
+        SOUNDS.anthem();
+    } else {
+        SOUNDS.achievement();
+    }
+    
+    console.log('📜 Certificate shown for stage', stage);
+}
+
+function closeCertificate() {
+    document.getElementById('certificateModal').style.display = 'none';
+}
+
+function downloadCertificate() {
+    alert('📥 Certificate Download\n\n' +
+          'In the full production version, this would:\n\n' +
+          '• Generate a PDF certificate\n' +
+          '• Include TAU Africa official seal\n' +
+          '• Add iKbp verification QR code\n' +
+          '• Include unique certificate number\n' +
+          '• Add your achievement details\n\n' +
+          'For now, take a screenshot of your certificate!');
+        }
 console.log('📊 iKbpTracker ready:', iKbpTracker.getTotalEarned(), 'iKbp');
     </script>
 </body>
