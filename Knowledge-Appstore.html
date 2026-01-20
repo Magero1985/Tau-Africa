@@ -1112,6 +1112,7 @@ const BADGES = [
             lastSynced: this.lastSynced,
             levelEarnings: this.levelEarnings,
             completedLevels: gameState.completedLevels,
+            earnedBadges: gameState.earnedBadges,  // ADD THIS LINE
             lastUpdated: new Date().toISOString()
         };
         
@@ -1138,6 +1139,7 @@ const BADGES = [
                 this.lastSynced = data.lastSynced || 0;
                 this.levelEarnings = data.levelEarnings || {};
                 gameState.completedLevels = data.completedLevels || [];
+                gameState.earnedBadges = data.earnedBadges || [];  // ADD THIS LINE
                 
                 this.updateDisplay();
                 console.log('✅ Loaded:', data);
@@ -1146,6 +1148,7 @@ const BADGES = [
             }
         }
     },
+            
     
     updateDisplay: function() {
         const totalEl = document.getElementById('totalEarned');
@@ -2100,13 +2103,21 @@ function loadQuestion() {
         }
 
         window.onload = function() {
-            initGame();
-            
-            const urlParams = new URLSearchParams(window.location.search);
-            if (urlParams.get('memberId')) {
-                selectMode('member');
-            }
-        };
+    initGame();
+    
+    // Initialize achievement system
+    initBadges();
+    updateRank(1);
+    
+    const urlParams = new URLSearchParams(window.location.search);
+    if (urlParams.get('memberId')) {
+        selectMode('member');
+    }
+    
+    console.log('✅ Game initialized with achievement system');
+    console.log('🎮 Sound enabled:', gameState.soundEnabled);
+    console.log('🏅 Badges earned:', gameState.earnedBadges.length);
+};
 
 // Update gameState with timer properties if not already present
 if (!gameState.hasOwnProperty('levelTimer')) {
@@ -2184,7 +2195,13 @@ function completeGame() {
             </button>
         `;
     }
+    // Play final achievement anthem
+    SOUNDS.anthem();
     
+    // Show final certificate after a delay
+    setTimeout(() => {
+        showCertificate(2, 20);
+    }, 2000);
     document.getElementById('gameCompleteModal').style.display = 'flex';
 }
 function nextLevel() {
@@ -2238,6 +2255,13 @@ function nextLevel() {
     }
     
     console.log('✅ Successfully advanced to level', gameState.currentLevel);
+    // Update rank for new level
+    updateRank(gameState.currentLevel);
+    
+    // Play level start sound
+    if (gameState.soundEnabled) {
+        playTone(440, 100);
+    }
         }
 // ========================================
 // LEVEL TIMER FUNCTIONS - NEW
