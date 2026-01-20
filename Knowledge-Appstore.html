@@ -2048,10 +2048,18 @@ function loadQuestion() {
         function selectMode(mode) {
     gameState.playMode = mode;
     
+    // Fix: Get all mode cards and remove selected class
     document.querySelectorAll('.mode-card').forEach(card => {
         card.classList.remove('selected');
     });
-    event.target.closest('.mode-card').classList.add('selected');
+    
+    // Fix: Add selected class to the clicked card using onclick context
+    const cards = document.querySelectorAll('.mode-card');
+    if (mode === 'guest') {
+        cards[0].classList.add('selected');
+    } else if (mode === 'member') {
+        cards[1].classList.add('selected');
+    }
     
     document.getElementById('startBtn').disabled = false;
     
@@ -2061,7 +2069,6 @@ function loadQuestion() {
         
         iKbpTracker.loadFromStorage();
         
-        // UPDATED: Check for 20 levels instead of 10
         if (gameState.completedLevels.length >= 20) {
             document.getElementById('totalEarnedComplete').textContent = iKbpTracker.getTotalEarned();
             document.getElementById('alreadyCompletedModal').style.display = 'flex';
@@ -2077,8 +2084,7 @@ function loadQuestion() {
         document.getElementById('guestBanner').style.display = 'flex';
         document.getElementById('earningsDisplay').style.display = 'none';
     }
-}  // ← ONLY ONE CLOSING BRACE!
-                                                                                                             
+}                                                                                                             
         
         function openTAUApp() {
             window.open('https://magero1985.github.io/Tau-Africa/', '_blank');
@@ -2208,8 +2214,9 @@ function completeGame() {
     document.getElementById('gameCompleteModal').style.display = 'flex';
 }
 function nextLevel() {
-    console.log('🔍 nextLevel() called - Current level:', gameState.currentLevel);
+    console.log('🔄 nextLevel() called - Current level:', gameState.currentLevel);
     
+    // Fix: Force hide the result modal
     const modal = document.getElementById('resultModal');
     if (modal) {
         modal.style.display = 'none';
@@ -2218,6 +2225,13 @@ function nextLevel() {
     gameState.currentLevel++;
     console.log('📈 Incremented to level:', gameState.currentLevel);
     
+    // Check if we've completed all levels
+    if (gameState.currentLevel > 20) {
+        console.log('🏆 All levels complete!');
+        completeGame();
+        return;
+    }
+    
     // Check if member already completed this level
     if (gameState.playMode === 'member' && gameState.completedLevels.includes(gameState.currentLevel)) {
         console.log('⚠️ Level already completed, finding next...');
@@ -2225,7 +2239,7 @@ function nextLevel() {
         
         // Find next uncompleted level
         let foundNext = false;
-        for (let i = gameState.currentLevel; i <= 20; i++) {  // FIXED: 20 levels
+        for (let i = gameState.currentLevel; i <= 20; i++) {
             if (!gameState.completedLevels.includes(i)) {
                 gameState.currentLevel = i;
                 foundNext = true;
@@ -2258,6 +2272,7 @@ function nextLevel() {
     }
     
     console.log('✅ Successfully advanced to level', gameState.currentLevel);
+    
     // Update rank for new level
     updateRank(gameState.currentLevel);
     
@@ -2265,7 +2280,7 @@ function nextLevel() {
     if (gameState.soundEnabled) {
         playTone(440, 100);
     }
-        }
+}
 // ========================================
 // LEVEL TIMER FUNCTIONS - NEW
 // ========================================
