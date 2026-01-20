@@ -785,7 +785,7 @@
 <p><strong>Stage 2 (Levels 11-20):</strong> Advanced topics - Kemet, colonization, resources, spirituality</p>
 <p><strong>Complete each level to earn 250 iKbp!</strong> (TAU Members only)</p>
             <div class="mode-selection">
-                <div class="mode-card" onclick="selectMode('guest')">
+                <div class="mode-card" id="guestModeCard">
                     <h3>🌍 Guest Mode</h3>
                     <p>• Play all levels for fun</p>
                     <p>• No earnings</p>
@@ -793,7 +793,7 @@
                     <p class="highlight">Free Play</p>
                 </div>
                 
-                <div class="mode-card" onclick="selectMode('member')">
+                <div class="mode-card" id="memberModeCard">
                     <h3>⭐ TAU Member</h3>
                     <p>• Earn 250 iKbp per level</p>
                     <p>• Sync to TAU account</p>
@@ -2044,16 +2044,18 @@ function loadQuestion() {
     return "Legendary";
 }
 
-        // TAU Integration Functions
-        function selectMode(mode) {
+        // COMPLETE MODE SELECTION FIX
+function selectMode(mode) {
+    console.log('🎯 Mode selected:', mode);
+    
     gameState.playMode = mode;
     
-    // Fix: Get all mode cards and remove selected class
+    // Remove selected class from all cards
     document.querySelectorAll('.mode-card').forEach(card => {
         card.classList.remove('selected');
     });
     
-    // Fix: Add selected class to the clicked card using onclick context
+    // Add selected class to clicked card
     const cards = document.querySelectorAll('.mode-card');
     if (mode === 'guest') {
         cards[0].classList.add('selected');
@@ -2061,7 +2063,13 @@ function loadQuestion() {
         cards[1].classList.add('selected');
     }
     
-    document.getElementById('startBtn').disabled = false;
+    // Enable start button
+    const startBtn = document.getElementById('startBtn');
+    startBtn.disabled = false;
+    startBtn.style.opacity = '1';
+    startBtn.style.cursor = 'pointer';
+    
+    console.log('✅ Start button enabled');
     
     if (mode === 'member') {
         const urlParams = new URLSearchParams(window.location.search);
@@ -2084,8 +2092,57 @@ function loadQuestion() {
         document.getElementById('guestBanner').style.display = 'flex';
         document.getElementById('earningsDisplay').style.display = 'none';
     }
-}                                                                                                             
-        
+}
+
+// ADD EVENT LISTENERS - Add this right after selectMode() function
+function initModeSelection() {
+    const guestCard = document.getElementById('guestModeCard');
+    const memberCard = document.getElementById('memberModeCard');
+    
+    if (guestCard) {
+        guestCard.addEventListener('click', function() {
+            console.log('🎮 Guest card clicked');
+            selectMode('guest');
+        });
+    }
+    
+    if (memberCard) {
+        memberCard.addEventListener('click', function() {
+            console.log('⭐ Member card clicked');
+            selectMode('member');
+        });
+    }
+    
+    console.log('✅ Mode selection initialized');
+}
+
+// ALSO UPDATE window.onload - Find your existing window.onload and update it:
+window.onload = function() {
+    initGame();
+    
+    // Initialize mode selection event listeners
+    initModeSelection();
+    
+    // Initialize achievement system
+    initBadges();
+    updateRank(1);
+    
+    const urlParams = new URLSearchParams(window.location.search);
+    if (urlParams.get('memberId')) {
+        selectMode('member');
+    }
+    
+    console.log('✅ Game initialized');
+};                                                                                                             
+        // Force enable start button after mode selection
+function enableStartButton() {
+    const startBtn = document.getElementById('startBtn');
+    if (startBtn && gameState.playMode) {
+        startBtn.disabled = false;
+        startBtn.style.opacity = '1';
+        startBtn.style.cursor = 'pointer';
+    }
+        }
         function openTAUApp() {
             window.open('https://magero1985.github.io/Tau-Africa/', '_blank');
         }
@@ -2108,8 +2165,14 @@ function loadQuestion() {
         }
 
         function closeModal(modalId) {
-            document.getElementById(modalId).style.display = 'none';
-        }
+    const modal = document.getElementById(modalId);
+    if (modal) {
+        modal.style.display = 'none';
+        console.log('✅ Modal closed:', modalId);
+    } else {
+        console.error('❌ Modal not found:', modalId);
+    }
+}
 
         window.onload = function() {
     initGame();
@@ -2212,8 +2275,7 @@ function completeGame() {
         showCertificate(2, 20);
     }, 2000);
     document.getElementById('gameCompleteModal').style.display = 'flex';
-}
-function nextLevel() {
+}function nextLevel() {
     console.log('🔄 nextLevel() called - Current level:', gameState.currentLevel);
     
     // Fix: Force hide the result modal
@@ -2280,7 +2342,7 @@ function nextLevel() {
     if (gameState.soundEnabled) {
         playTone(440, 100);
     }
-}
+        }
 // ========================================
 // LEVEL TIMER FUNCTIONS - NEW
 // ========================================
