@@ -1259,7 +1259,8 @@ level20: [
         function startGame() {
     // Find the first uncompleted level
     let startLevel = 1;
-    for (let i = 1; i <= 20; i++) {  // ← CORRECT!
+    if (gameState.playMode === 'member') {
+        for (let i = 1; i <= 20; i++) {  // FIXED: 20 levels
             if (!gameState.completedLevels.includes(i)) {
                 startLevel = i;
                 break;
@@ -1271,7 +1272,7 @@ level20: [
     document.getElementById('gameScreen').style.display = 'flex';
     
     gameState.gameStarted = true;
-    gameState.currentLevel = startLevel; // ← Start at first uncompleted level
+    gameState.currentLevel = startLevel;
     gameState.currentQuestion = 1;
     gameState.score = 0;
     gameState.questionsAnswered = 0;
@@ -1287,12 +1288,13 @@ level20: [
     }
     
     // Show helpful message if starting from middle
-if (startLevel > 1) {
-    const stage = startLevel <= 10 ? 1 : 2;  // ADD THIS LINE
-    setTimeout(() => {
-        alert(`🔍 Continuing from Level ${startLevel} (Stage ${stage})\n\nYou've already completed levels 1-${startLevel - 1}.\n\nTotal earnings so far: ${iKbpTracker.getTotalEarned()} iKbp`);
-    }, 500);
-}
+    if (startLevel > 1) {
+        const stage = startLevel <= 10 ? 1 : 2;  // FIXED: Stage detection
+        setTimeout(() => {
+            alert(`🔍 Continuing from Level ${startLevel} (Stage ${stage})\n\nYou've already completed levels 1-${startLevel - 1}.\n\nTotal earnings so far: ${iKbpTracker.getTotalEarned()} iKbp`);
+        }, 500);
+    }
+        }
 
         // Replace your selectOption function with this:
 function selectOption(index, element) {
@@ -1668,7 +1670,7 @@ function loadQuestion() {
         document.getElementById('guestBanner').style.display = 'flex';
         document.getElementById('earningsDisplay').style.display = 'none';
     }
-}
+}  // ← ONLY ONE CLOSING BRACE!
                                                                                                              
         
         function openTAUApp() {
@@ -1787,16 +1789,11 @@ function completeGame() {
 function nextLevel() {
     console.log('🔍 nextLevel() called - Current level:', gameState.currentLevel);
     
-    // Close the level completion modal
     const modal = document.getElementById('resultModal');
     if (modal) {
         modal.style.display = 'none';
-        console.log('✅ Modal closed');
-    } else {
-        console.error('❌ Modal not found!');
     }
     
-    // Increment to next level
     gameState.currentLevel++;
     console.log('📈 Incremented to level:', gameState.currentLevel);
     
@@ -1807,7 +1804,7 @@ function nextLevel() {
         
         // Find next uncompleted level
         let foundNext = false;
-        for (let i = gameState.currentLevel; i <= 20; i++) {
+        for (let i = gameState.currentLevel; i <= 20; i++) {  // FIXED: 20 levels
             if (!gameState.completedLevels.includes(i)) {
                 gameState.currentLevel = i;
                 foundNext = true;
@@ -1816,7 +1813,6 @@ function nextLevel() {
             }
         }
         
-        // If all levels completed
         if (!foundNext) {
             console.log('🏆 All levels complete!');
             completeGame();
@@ -1833,21 +1829,11 @@ function nextLevel() {
     gameState.answerSubmitted = false;
     gameState.levelEarnings = 0;
     
-    console.log('🔄 Game state reset for new level');
-    
-    // Update UI
     updateGameDisplay();
-    console.log('🖥️ Display updated');
-    
     loadQuestion();
-    console.log('❓ Question loaded');
     
-    // Start new level timer
     if (typeof startLevelTimer === 'function') {
         startLevelTimer();
-        console.log('⏱️ Timer started');
-    } else {
-        console.warn('⚠️ startLevelTimer function not found');
     }
     
     console.log('✅ Successfully advanced to level', gameState.currentLevel);
