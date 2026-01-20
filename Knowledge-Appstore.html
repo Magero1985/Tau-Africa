@@ -1658,8 +1658,9 @@ level20: [
             alert(`🔍 Continuing from Level ${startLevel} (Stage ${stage})\n\nYou've already completed levels 1-${startLevel - 1}.\n\nTotal earnings so far: ${iKbpTracker.getTotalEarned()} iKbp`);
         }, 500);
     }
-        }
+        
 console.log('✅ Successfully advanced to level', gameState.currentLevel);
+        }
         // ============================================
     // INITIALIZE ACHIEVEMENT SYSTEM - ADD THIS
     // ============================================
@@ -1672,7 +1673,9 @@ console.log('✅ Successfully advanced to level', gameState.currentLevel);
     
     // Show achievement showcase
     document.getElementById('achievementShowcase').style.display = 'block';
+        console.log('✅ Successfully advanced to level', gameState.currentLevel);
         }
+    
         // Replace your selectOption function with this:
 function selectOption(index, element) {
 
@@ -1751,13 +1754,13 @@ function submitAnswer() {
         } else {
             document.getElementById('hintArea').innerHTML = 
                 `<span style="color: #4cc9f0">✓ Correct! +${pointsEarned} points</span>`;
-        }
-    } else {
+        }} else {
         document.getElementById('hintArea').innerHTML = 
             `<span style="color: #ef476f">✗ Incorrect. The correct answer was: ${options[correctIndex].textContent}</span>`;
-    }
-    // Play wrong answer sound
+        
+        // Play wrong answer sound
         SOUNDS.wrong();
+    }
     gameState.questionsAnswered++;
     document.getElementById('score').textContent = gameState.score;
     
@@ -1952,13 +1955,13 @@ function loadQuestion() {
             showCertificate(stage, gameState.currentLevel);
         }, 3000); // Show 3 seconds after result modal
     }
-    
     // Play level completion sound
     SOUNDS.levelUp();
+    
     document.getElementById('resultModal').style.display = 'flex';
     
     console.log('✅ Level completion modal displayed');
-}
+        }
         function restartGame() {
             document.getElementById('gameCompleteModal').style.display = 'none';
             document.getElementById('gameScreen').style.display = 'none';
