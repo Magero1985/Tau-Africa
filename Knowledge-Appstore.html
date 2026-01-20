@@ -922,6 +922,60 @@
             </div>
         </div>
     </div>
+    <!-- Certificate Modal -->
+        <div class="certificate-modal" id="certificateModal">
+            <div class="certificate hieroglyphic-border">
+                <div class="certificate-header">
+                    <div style="font-size: 3rem; margin-bottom: 10px;">🏆</div>
+                    <div class="certificate-title">Certificate of Achievement</div>
+                    <div style="color: #8b7355; font-size: 1.2rem;">
+                        Pan African Knowledge Challenge
+                    </div>
+                </div>
+                
+                <div class="certificate-body">
+                    <p style="font-size: 1.2rem; margin-bottom: 20px;">
+                        This certifies that
+                    </p>
+                    <div class="certificate-recipient" id="certificateRecipient">
+                        TAU Member
+                    </div>
+                    <p style="font-size: 1.1rem; margin: 20px 0;">
+                        has successfully completed
+                    </p>
+                    <div style="font-size: 1.5rem; color: #e1701a; font-weight: bold; margin: 15px 0;">
+                        <span id="certificateStage">Stage 1</span>
+                    </div>
+                    <p style="font-size: 1rem; margin-top: 20px;">
+                        achieving the rank of
+                    </p>
+                    <div style="font-size: 1.8rem; color: #4361ee; font-weight: bold; margin: 15px 0;">
+                        <span id="certificateRank">Teacher of Liberation</span>
+                    </div>
+                    <p style="font-size: 0.9rem; color: #666; margin-top: 20px;">
+                        Date: <span id="certificateDate"></span>
+                    </p>
+                </div>
+
+                <div class="certificate-seals">
+                    <div class="seal">
+                        <div>
+                            TAU<br>AFRICA<br>OFFICIAL<br>SEAL
+                        </div>
+                    </div>
+                    <div class="seal">
+                        <div>
+                            iKbp<br>DIGITAL<br>VALUE<br>VERIFIED
+                        </div>
+                    </div>
+                </div>
+
+                <div style="margin-top: 30px; display: flex; gap: 15px; justify-content: center; flex-wrap: wrap;">
+                    <button class="btn btn-next" onclick="downloadCertificate()">📥 Download Certificate</button>
+                    <button class="btn btn-next" onclick="closeCertificate()">Continue Journey</button>
+                </div>
+            </div>
+        </div>
 
     <script>
         let gameState = {
