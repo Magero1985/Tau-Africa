@@ -1656,7 +1656,20 @@ level20: [
         }, 500);
     }
         }
-
+console.log('✅ Successfully advanced to level', gameState.currentLevel);
+        // ============================================
+    // INITIALIZE ACHIEVEMENT SYSTEM - ADD THIS
+    // ============================================
+    
+    // Update rank display
+    updateRank(gameState.currentLevel);
+    
+    // Initialize badges
+    initBadges();
+    
+    // Show achievement showcase
+    document.getElementById('achievementShowcase').style.display = 'block';
+        }
         // Replace your selectOption function with this:
 function selectOption(index, element) {
 
@@ -1721,6 +1734,8 @@ function submitAnswer() {
         gameState.correctAnswers++;
         const pointsEarned = Math.round(basePoints * difficultyMultiplier);
         gameState.score += pointsEarned;
+        // Play correct answer sound
+        SOUNDS.correct();
         
         // Calculate iKbp for this question (25 iKbp per correct answer for members)
         if (gameState.playMode === 'member') {
@@ -1738,7 +1753,8 @@ function submitAnswer() {
         document.getElementById('hintArea').innerHTML = 
             `<span style="color: #ef476f">✗ Incorrect. The correct answer was: ${options[correctIndex].textContent}</span>`;
     }
-    
+    // Play wrong answer sound
+        SOUNDS.wrong();
     gameState.questionsAnswered++;
     document.getElementById('score').textContent = gameState.score;
     
@@ -1911,7 +1927,31 @@ function loadQuestion() {
     document.getElementById('finalScore').textContent = gameState.score;
     document.getElementById('celebrationEmoji').textContent = celebrationEmoji;
     document.getElementById('nextLevelBtn').textContent = `Proceed to Level ${gameState.currentLevel + 1}`;
+    // ============================================
+    // ACHIEVEMENT INTEGRATION - ADD THIS
+    // ============================================
     
+    // Update rank
+    updateRank(gameState.currentLevel);
+    
+    // Check for badge unlocks
+    const isPerfect = correctAnswers === 10;
+    const completionTime = 60 - (gameState.levelTimer || 0);
+    checkBadgeUnlock(gameState.currentLevel, isPerfect, completionTime);
+    
+    // Check if we should show certificate
+    const shouldShowCertificate = (gameState.currentLevel === 10 || gameState.currentLevel === 20);
+    
+    if (shouldShowCertificate) {
+        // Delay certificate to show after result modal
+        setTimeout(() => {
+            const stage = gameState.currentLevel === 10 ? 1 : 2;
+            showCertificate(stage, gameState.currentLevel);
+        }, 3000); // Show 3 seconds after result modal
+    }
+    
+    // Play level completion sound
+    SOUNDS.levelUp();
     document.getElementById('resultModal').style.display = 'flex';
     
     console.log('✅ Level completion modal displayed');
