@@ -2723,5 +2723,21 @@ function downloadCertificate() {
         }
 console.log('📊 iKbpTracker ready:', iKbpTracker.getTotalEarned(), 'iKbp');
     </script>
+    <script>
+        function updateButtonStates() {
+    const submitBtn = document.getElementById('submitBtn');
+    const nextBtn = document.getElementById('nextBtn');
+    
+    if (submitBtn) {
+        submitBtn.disabled = (gameState.selectedOption === null || gameState.answerSubmitted);
+        submitBtn.style.opacity = submitBtn.disabled ? '0.5' : '1';
+    }
+    
+    if (nextBtn) {
+        nextBtn.disabled = !gameState.answerSubmitted;
+        nextBtn.style.opacity = nextBtn.disabled ? '0.5' : '1';
+    }
+        }
+    </script>
 </body>
     </html>
