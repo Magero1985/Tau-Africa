@@ -978,6 +978,64 @@
         </div>
 
     <script>
+        // ============================================
+// ACHIEVEMENT SYSTEM CONSTANTS - ADD THIS
+// ============================================
+
+const RANKS = {
+    1: { 
+        name: "Awakening Seeker", 
+        icon: "🌱", 
+        description: "Beginning your Pan-African journey", 
+        color: "#4cc9f0" 
+    },
+    5: { 
+        name: "Conscious Member", 
+        icon: "👁️", 
+        description: "Eyes opening to truth", 
+        color: "#4361ee" 
+    },
+    8: { 
+        name: "Member of Change", 
+        icon: "⚡", 
+        description: "Agent of transformation", 
+        color: "#f7a440" 
+    },
+    11: { 
+        name: "Teacher of Liberation", 
+        icon: "📚", 
+        description: "Stage 2: Sharing knowledge", 
+        color: "#e1701a" 
+    },
+    14: { 
+        name: "Leader of Awakening", 
+        icon: "🔥", 
+        description: "Guiding others to light", 
+        color: "#ef476f" 
+    },
+    17: { 
+        name: "Creator & Master", 
+        icon: "👑", 
+        description: "Shaping the future", 
+        color: "#8b7355" 
+    },
+    20: { 
+        name: "Deity of Pan-Africanism", 
+        icon: "⭐", 
+        description: "Highest honor achieved", 
+        color: "#ffd700" 
+    }
+};
+
+const BADGES = [
+    { id: "first_level", icon: "🎯", name: "First Steps", requirement: 1 },
+    { id: "perfect_level", icon: "💯", name: "Perfectionist", requirement: "perfect" },
+    { id: "stage1_complete", icon: "🎓", name: "Foundation Master", requirement: 10 },
+    { id: "stage2_unlock", icon: "🔓", name: "Advanced Seeker", requirement: 11 },
+    { id: "speed_demon", icon: "⚡", name: "Lightning Mind", requirement: "speed" },
+    { id: "scholar", icon: "📖", name: "Knowledge Scholar", requirement: 15 },
+    { id: "ultimate", icon: "👑", name: "Pan-African Deity", requirement: 20 }
+];
         let gameState = {
     currentLevel: 1,
     currentQuestion: 1,
