@@ -127,6 +127,100 @@
 .kemetic-progress::after {
     right: -30px;
 }
+        /* ============================================
+   CERTIFICATE MODAL STYLES - ADD THIS
+   ============================================ */
+
+.certificate-modal {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.95);
+    justify-content: center;
+    align-items: center;
+    z-index: 2000;
+}
+
+.certificate {
+    background: linear-gradient(135deg, #f5f5dc 0%, #e8e4d0 100%);
+    padding: 40px;
+    border-radius: 20px;
+    max-width: 800px;
+    width: 90%;
+    border: 8px double #8b7355;
+    position: relative;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+}
+
+.certificate-header {
+    text-align: center;
+    border-bottom: 3px solid #8b7355;
+    padding-bottom: 20px;
+    margin-bottom: 30px;
+}
+
+.certificate-title {
+    font-size: 2.5rem;
+    color: #8b7355;
+    font-weight: bold;
+    margin-bottom: 10px;
+}
+
+.certificate-body {
+    text-align: center;
+    color: #4a4a4a;
+    line-height: 1.8;
+    margin-bottom: 30px;
+}
+
+.certificate-recipient {
+    font-size: 2rem;
+    color: #e1701a;
+    font-weight: bold;
+    margin: 20px 0;
+}
+
+.certificate-seals {
+    display: flex;
+    justify-content: space-around;
+    margin-top: 30px;
+}
+
+.seal {
+    width: 100px;
+    height: 100px;
+    border-radius: 50%;
+    border: 4px solid #8b7355;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: radial-gradient(circle, #f7a440, #e1701a);
+    font-size: 0.8rem;
+    text-align: center;
+    color: white;
+    font-weight: bold;
+}
+
+/* Hieroglyphic Border Animation */
+.hieroglyphic-border {
+    border: 4px solid transparent;
+    border-image: repeating-linear-gradient(
+        90deg,
+        #f7a440,
+        #e1701a 10px,
+        transparent 10px,
+        transparent 20px
+    ) 1;
+    animation: hieroglyphic-pulse 2s ease-in-out infinite;
+}
+
+@keyframes hieroglyphic-pulse {
+    0%, 100% { border-color: #f7a440; }
+    50% { border-color: #e1701a; }
+}
         .container {
             max-width: 1000px;
             margin: 0 auto;
