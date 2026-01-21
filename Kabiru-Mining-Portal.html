@@ -1545,6 +1545,9 @@
                     <div style="font-size: 11px; opacity: 0.8; margin-top: 5px; text-align: center;">
                         Refer friends and earn 10% of their mining rewards!
                     </div>
+                    <button class="auth-button" onclick="viewReferralEarnings()" style="font-size: 12px; padding: 8px 15px; margin: 5px 0; background: linear-gradient(45deg, #00ff87, #60efff);">
+                 📊 View Referral Earnings
+                </button>
                 </div>
                 
                 <!-- Lockup Options -->
@@ -1818,67 +1821,74 @@
             }
         }
 
-        // Main mining function
-        async function mineTokens(type, reward) {
-            // Check if TAU Member ID is linked
-            if (!currentUser || !currentUser.tauMemberId) {
-                showNotification('⚠️ Please link your TAU Africa Member ID to start mining!');
-                openMemberIDLinkModal();
-                return;
-            }
-            
-            console.log('⛏️ Mining started:', type, 'Reward:', reward);
-            
-            if (isMining) {
-                showNotification('Already mining! Please wait for current session to complete.');
-                return;
-            }
+        // ============================================
+// FIX 4: UPDATE mineTokens() to Include Referral Bonus
+// ============================================
+// REPLACE your existing mineTokens() function with this:
 
-            isMining = true;
-            document.getElementById('miningStatus').textContent = 'Mining...';
-            
-            disableMiningButtons();
-            showNotification(`🔥 ${type.toUpperCase()} mining started! Please wait...`);
-            startMiningCountdown();
-            
-            setTimeout(async () => {
-                const oldBalance = userBalance;
-                minedBalance += reward;
-                userBalance = minedBalance + receivedBalance;
-                totalTasksCompleted++;
-                
-                const transaction = {
-                    id: generateTransactionId(),
-                    type: 'mining',
-                    subtype: type,
-                    amount: reward,
-                    timestamp: new Date().toISOString(),
-                    status: 'completed'
-                };
-                transactionHistory.unshift(transaction);
-                
-                if (transactionHistory.length > 50) {
-                    transactionHistory = transactionHistory.slice(0, 50);
-                }
-                
-                console.log('💰 Balance updated:', oldBalance.toFixed(4), '->', userBalance.toFixed(4));
-                
-                updateBalanceDisplay();
-                updateUserDisplay();
-                await saveUserData();
-                
-                document.getElementById('miningStatus').textContent = 'Completed';
-                showNotification(`✅ ${type.toUpperCase()} mining complete! +${reward.toFixed(4)} iKb earned`);
-                
-                enableMiningButtons();
-                isMining = false;
-                
-                setTimeout(() => {
-                    document.getElementById('miningStatus').textContent = 'Ready';
-                }, 3000);
-                
-            }, Math.random() * 2000 + 3000);
+async function mineTokens(type, reward) {
+    // Check if TAU Member ID is linked
+    if (!currentUser || !currentUser.tauMemberId) {
+        showNotification('⚠️ Please link your TAU Africa Member ID to start mining!');
+        openMemberIDLinkModal(); // NOW THIS FUNCTION EXISTS!
+        return;
+    }
+    
+    console.log('⛏️ Mining started:', type, 'Reward:', reward);
+    
+    if (isMining) {
+        showNotification('Already mining! Please wait for current session to complete.');
+        return;
+    }
+
+    isMining = true;
+    document.getElementById('miningStatus').textContent = 'Mining...';
+    
+    disableMiningButtons();
+    showNotification(`🔥 ${type.toUpperCase()} mining started! Please wait...`);
+    startMiningCountdown();
+    
+    setTimeout(async () => {
+        const oldBalance = userBalance;
+        minedBalance += reward;
+        userBalance = minedBalance + receivedBalance;
+        totalTasksCompleted++;
+        
+        const transaction = {
+            id: generateTransactionId(),
+            type: 'mining',
+            subtype: type,
+            amount: reward,
+            timestamp: new Date().toISOString(),
+            status: 'completed'
+        };
+        transactionHistory.unshift(transaction);
+        
+        if (transactionHistory.length > 50) {
+            transactionHistory = transactionHistory.slice(0, 50);
         }
+        
+        console.log('💰 Balance updated:', oldBalance.toFixed(4), '->', userBalance.toFixed(4));
+        
+        // NEW: Award referral bonus if user was referred
+        await awardReferralBonus(reward);
+        
+        updateBalanceDisplay();
+        updateUserDisplay();
+        await saveUserData();
+        
+        document.getElementById('miningStatus').textContent = 'Completed';
+        showNotification(`✅ ${type.toUpperCase()} mining complete! +${reward.toFixed(4)} iKb earned`);
+        
+        enableMiningButtons();
+        isMining = false;
+        
+        setTimeout(() => {
+            document.getElementById('miningStatus').textContent = 'Ready';
+        }, 3000);
+        
+    }, Math.random() * 2000 + 3000);
+}
 
         // Replace your verifyAndLinkMemberID() function with this enhanced version:
 
@@ -2917,122 +2927,193 @@ function setupAuthStateListener() {
             initOfflineMode();
         }
 
-        async function loadUserData(firebaseUser) {
-            try {
-                console.log('Loading user data for:', firebaseUser.uid);
-                
-                const userDoc = await db.collection('users').doc(firebaseUser.uid).get();
-                
-                if (userDoc.exists) {
-                    const userData = userDoc.data();
+// ============================================
+// FIX 2: UPDATE loadUserData() for Referral Tracking
+// ============================================
+// REPLACE your existing loadUserData() function with this enhanced version:
+
+async function loadUserData(firebaseUser) {
+    try {
+        console.log('Loading user data for:', firebaseUser.uid);
+        
+        const userDoc = await db.collection('users').doc(firebaseUser.uid).get();
+        
+        if (userDoc.exists) {
+            const userData = userDoc.data();
+            
+            // Load TAU Member verification
+            if (userData.tauMemberId) {
+                try {
+                    const memberQuery = await db.collection('members')
+                        .where('id', '==', userData.tauMemberId)
+                        .limit(1)
+                        .get();
                     
-                    if (userData.tauMemberId) {
-                        try {
-                            const memberQuery = await db.collection('members')
-                                .where('id', '==', userData.tauMemberId)
-                                .limit(1)
-                                .get();
-                            
-                            if (!memberQuery.empty) {
-                                const memberData = memberQuery.docs[0].data();
-                                const memberLevel = memberData.level || 1;
-                                
-                                const levelRates = {
-                                    1: 0.001,
-                                    2: 0.0015,
-                                    3: 0.002,
-                                    4: 0.0025
-                                };
-                                
-                                miningRate = levelRates[memberLevel] || 0.001;
-                                currentUser.tauMemberLevel = memberLevel;
-                                
-                                console.log(`⚡ Mining rate: ${miningRate} iKb/day (Level ${memberLevel})`);
-                            }
-                        } catch (error) {
-                            console.error('Error loading member level:', error);
-                        }
+                    if (!memberQuery.empty) {
+                        const memberData = memberQuery.docs[0].data();
+                        const memberLevel = memberData.level || 1;
+                        
+                        const levelRates = {
+                            1: 0.005,  // Basic
+                            2: 0.01,   // Community
+                            3: 0.1,    // Sovereign
+                            4: 0.2     // Elite
+                        };
+                        
+                        miningRate = levelRates[memberLevel] || 0.005;
+                        currentUser.tauMemberLevel = memberLevel;
+                        
+                        console.log(`⚡ Mining rate: ${miningRate} iKb/day (Level ${memberLevel})`);
                     }
-                    
-                    minedBalance = userData.minedBalance || 0.0000;
-                    receivedBalance = userData.receivedBalance || 0.0000;
-                    userBalance = minedBalance + receivedBalance;
-                    reserveBalance = userData.reserveBalance || 0.0000;
-                    lockedBalance = userData.lockedBalance || 0.0000;
-                    kabiruPoints = userData.kabiruPoints || 0.0000;
-                    totalTasksCompleted = userData.tasksCompleted || 0;
-                    miningRate = userData.miningRate || 0.001;
-                    userWalletAddress = userData.walletAddress || generateWalletAddress();
-                    transactionHistory = userData.transactionHistory || [];
-                    referralCode = userData.referralCode || '';
-                    lockupPeriods = userData.lockupPeriods || [];
-                    console.log('User data loaded from Firestore - Balance:', userBalance);
-                } else {
-                    userWalletAddress = generateWalletAddress();
-                    referralCode = 'KABIRU_' + firebaseUser.uid.substr(-6).toUpperCase();
-                    
-                    const newUserData = {
-                        uid: firebaseUser.uid,
-                        email: firebaseUser.email,
-                        displayName: firebaseUser.displayName || 'Anonymous User',
-                        balance: 0.0000,
-                        minedBalance: 0.0000,
-                        receivedBalance: 0.0000,
-                        reserveBalance: 0.0000,
-                        lockedBalance: 0.0000,
-                        kabiruPoints: 0.0000,
-                        tasksCompleted: 0,
-                        miningRate: 0.001,
-                        walletAddress: userWalletAddress,
-                        transactionHistory: [],
-                        referralCode: referralCode,
-                        lockupPeriods: [],
-                        createdAt: firebase.firestore.FieldValue.serverTimestamp(),
-                        lastActive: firebase.firestore.FieldValue.serverTimestamp()
-                    };
-                    
-                    await db.collection('users').doc(firebaseUser.uid).set(newUserData);
-                    console.log('New user document created');
+                } catch (error) {
+                    console.error('Error loading member level:', error);
                 }
-                
-                await checkReferralBonus();
-                
-                currentUser = {
-                    uid: firebaseUser.uid,
-                    email: firebaseUser.email,
-                    displayName: firebaseUser.displayName || 'Anonymous User',
-                    balance: userBalance,
-                    tasksCompleted: totalTasksCompleted,
-                    miningRate: miningRate,
-                    walletAddress: userWalletAddress,
-                    tauMemberId: userDoc.exists ? userDoc.data().tauMemberId : null,
-                    tauMemberLevel: userDoc.exists ? userDoc.data().tauMemberLevel : null
-                };
-                
-                updateUserDisplay();
-                
-                if (firebaseUser && firebaseUser.email) {
-                    console.log('🔗 Starting transfer listener for:', firebaseUser.email);
-                    transferListener = listenForKabiruTransfers(firebaseUser.email);
+            }
+            
+            // Load user balances
+            minedBalance = userData.minedBalance || 0.0000;
+            receivedBalance = userData.receivedBalance || 0.0000;
+            userBalance = minedBalance + receivedBalance;
+            reserveBalance = userData.reserveBalance || 0.0000;
+            lockedBalance = userData.lockedBalance || 0.0000;
+            kabiruPoints = userData.kabiruPoints || 0.0000;
+            totalTasksCompleted = userData.tasksCompleted || 0;
+            miningRate = userData.miningRate || 0.005;
+            userWalletAddress = userData.walletAddress || generateWalletAddress();
+            transactionHistory = userData.transactionHistory || [];
+            referralCode = userData.referralCode || '';
+            lockupPeriods = userData.lockupPeriods || [];
+            
+            // NEW: Load referrer information for ongoing earnings
+            if (userData.referredBy) {
+                currentUser.referredBy = userData.referredBy;
+                console.log('✅ User was referred by:', userData.referredBy);
+            }
+            
+            console.log('User data loaded from Firestore - Balance:', userBalance);
+            
+        } else {
+            // NEW USER - Check for referral code in URL
+            userWalletAddress = generateWalletAddress();
+            referralCode = 'KABIRU_' + firebaseUser.uid.substr(-6).toUpperCase();
+            
+            const urlParams = new URLSearchParams(window.location.search);
+            const referralCodeParam = urlParams.get('ref');
+            
+            let referrerId = null;
+            if (referralCodeParam) {
+                try {
+                    const referrerQuery = await db.collection('users')
+                        .where('referralCode', '==', referralCodeParam)
+                        .limit(1)
+                        .get();
+                    
+                    if (!referrerQuery.empty) {
+                        referrerId = referrerQuery.docs[0].id;
+                        console.log('✅ Referrer found:', referrerId);
+                        
+                        // Give welcome bonus to new user
+                        receivedBalance = 0.01;
+                        userBalance = 0.01;
+                        
+                        // Give referrer their signup bonus
+                        await db.collection('users').doc(referrerId).update({
+                            receivedBalance: firebase.firestore.FieldValue.increment(0.005)
+                        });
+                        
+                        // Add transaction for referrer's signup bonus
+                        const referrerDoc = await db.collection('users').doc(referrerId).get();
+                        const referrerTxHistory = referrerDoc.data().transactionHistory || [];
+                        referrerTxHistory.unshift({
+                            id: generateTransactionId(),
+                            type: 'referral_signup_bonus',
+                            amount: 0.005,
+                            from: firebaseUser.uid,
+                            fromEmail: firebaseUser.email,
+                            timestamp: new Date().toISOString(),
+                            status: 'completed'
+                        });
+                        
+                        await db.collection('users').doc(referrerId).update({
+                            transactionHistory: referrerTxHistory.slice(0, 50)
+                        });
+                        
+                        showNotification('🎁 Welcome bonus: +0.01 iKb for joining through referral!');
+                    }
+                } catch (error) {
+                    console.error('Error processing referral:', error);
                 }
-                
-            } catch (error) {
-                console.error('Error loading user data:', error);
-                userBalance = 0.0000;
-                minedBalance = 0.0000;
-                receivedBalance = 0.0000;
-                reserveBalance = 0.0000;
-                lockedBalance = 0.0000;
-                kabiruPoints = 0.0000;
-                totalTasksCompleted = 0;
-                miningRate = 0.001;
-                userWalletAddress = generateWalletAddress();
-                transactionHistory = [];
-                referralCode = '';
-                lockupPeriods = [];
+            }
+            
+            const newUserData = {
+                uid: firebaseUser.uid,
+                email: firebaseUser.email,
+                displayName: firebaseUser.displayName || 'Anonymous User',
+                balance: userBalance,
+                minedBalance: 0.0000,
+                receivedBalance: receivedBalance,
+                reserveBalance: 0.0000,
+                lockedBalance: 0.0000,
+                kabiruPoints: 0.0000,
+                tasksCompleted: 0,
+                miningRate: 0.005,
+                walletAddress: userWalletAddress,
+                transactionHistory: [],
+                referralCode: referralCode,
+                referredBy: referrerId,  // Track who referred them
+                lockupPeriods: [],
+                createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+                lastActive: firebase.firestore.FieldValue.serverTimestamp()
+            };
+            
+            await db.collection('users').doc(firebaseUser.uid).set(newUserData);
+            console.log('New user document created with referral tracking');
+            
+            // Clean URL
+            if (referralCodeParam) {
+                window.history.replaceState({}, document.title, window.location.pathname);
             }
         }
-
+        
+        // Create currentUser object
+        currentUser = {
+            uid: firebaseUser.uid,
+            email: firebaseUser.email,
+            displayName: firebaseUser.displayName || 'Anonymous User',
+            balance: userBalance,
+            tasksCompleted: totalTasksCompleted,
+            miningRate: miningRate,
+            walletAddress: userWalletAddress,
+            tauMemberId: userDoc.exists ? userDoc.data().tauMemberId : null,
+            tauMemberLevel: userDoc.exists ? userDoc.data().tauMemberLevel : null,
+            referredBy: userDoc.exists ? userDoc.data().referredBy : null
+};
+        
+        updateUserDisplay();
+        
+        // Start transfer listener if email exists
+        if (firebaseUser && firebaseUser.email) {
+            console.log('🔗 Starting transfer listener for:', firebaseUser.email);
+            transferListener = listenForKabiruTransfers(firebaseUser.email);
+        }
+        
+    } catch (error) {
+        console.error('Error loading user data:', error);
+        userBalance = 0.0000;
+        minedBalance = 0.0000;
+        receivedBalance = 0.0000;
+        reserveBalance = 0.0000;
+        lockedBalance = 0.0000;
+        kabiruPoints = 0.0000;
+        totalTasksCompleted = 0;
+        miningRate = 0.005;
+        userWalletAddress = generateWalletAddress();
+        transactionHistory = [];
+        referralCode = '';
+        lockupPeriods = [];
+    }
+}
+        
         async function checkReferralBonus() {
             const urlParams = new URLSearchParams(window.location.search);
             const referralCodeParam = urlParams.get('ref');
@@ -4205,6 +4286,15 @@ function openSovereignModal() {
 function closeModal(modalId) {
     document.getElementById(modalId).style.display = 'none';
 }
+// ============================================
+// FIX 1: ADD MISSING MODAL FUNCTION
+// ============================================
+// Add this function anywhere in your <script> section
+
+function openMemberIDLinkModal() {
+    document.getElementById('memberIDModal').style.display = 'block';
+    document.getElementById('linkMemberID').value = '';
+}
 
 // Function to handle sub-sections inside the Value Pool
 function showValueSection(section) {
@@ -4237,5 +4327,98 @@ function showValueSection(section) {
     // Add other sections (family, business) as needed...
 }
     </script> 
+    <script>
+
+// ============================================
+// FIX 3: ADD REFERRAL BONUS TO MINING
+// ============================================
+// Add this new function to award referral bonuses
+
+async function awardReferralBonus(miningAmount) {
+    if (!currentUser || !currentUser.referredBy || !db) {
+        return; // No referrer or offline mode
+    }
+    
+    const bonusAmount = miningAmount * 0.10; // 10% of mining reward
+    
+    try {
+        // Credit the referrer
+        await db.collection('users').doc(currentUser.referredBy).update({
+            receivedBalance: firebase.firestore.FieldValue.increment(bonusAmount)
+        });
+        
+        // Get referrer's current transaction history
+        const referrerDoc = await db.collection('users').doc(currentUser.referredBy).get();
+        const referrerTxHistory = referrerDoc.data().transactionHistory || [];
+        
+        // Add new transaction at the beginning
+        referrerTxHistory.unshift({
+            id: generateTransactionId(),
+            type: 'referral_mining_bonus',
+            amount: bonusAmount,
+            from: currentUser.uid,
+            fromEmail: currentUser.email,
+            timestamp: new Date().toISOString(),
+            status: 'completed'
+        });
+        
+        // Update with trimmed history (keep last 50)
+        await db.collection('users').doc(currentUser.referredBy).update({
+            transactionHistory: referrerTxHistory.slice(0, 50)
+        });
+        
+        console.log(`💰 Referral bonus awarded: ${bonusAmount.toFixed(6)} iKb to ${currentUser.referredBy}`);
+        
+    } catch (error) {
+        console.error('Error awarding referral bonus:', error);
+    }
+}
+
+// ============================================
+// FIX 5: ADD VIEW REFERRAL EARNINGS FUNCTION
+// ============================================
+
+async function viewReferralEarnings() {
+    if (!currentUser || !db) {
+        showNotification('Please login to view referral earnings');
+        return;
+    }
+    
+    try {
+        const userDoc = await db.collection('users').doc(currentUser.uid).get();
+        const userData = userDoc.data();
+        
+        // Filter referral transactions
+        const referralTransactions = (userData.transactionHistory || [])
+            .filter(tx => tx.type === 'referral_mining_bonus' || tx.type === 'referral_signup_bonus');
+        
+        const totalEarned = referralTransactions.reduce((sum, tx) => sum + tx.amount, 0);
+        const signupBonuses = referralTransactions.filter(tx => tx.type === 'referral_signup_bonus').length;
+        const miningBonuses = referralTransactions.filter(tx => tx.type === 'referral_mining_bonus');
+        
+        let message = `💰 REFERRAL EARNINGS\n\n`;
+        message += `Total Earned: ${totalEarned.toFixed(6)} iKb\n`;
+        message += `Referrals Signed Up: ${signupBonuses}\n`;
+        message += `Mining Bonuses: ${miningBonuses.length}\n\n`;
+        
+        if (referralTransactions.length > 0) {
+            message += `Recent Earnings:\n`;
+            referralTransactions.slice(0, 5).forEach(tx => {
+                const date = new Date(tx.timestamp).toLocaleDateString();
+                const type = tx.type === 'referral_signup_bonus' ? '📝 Signup' : '⛏️ Mining';
+                message += `${date} ${type}: +${tx.amount.toFixed(6)} iKb\n`;
+            });
+        } else {
+            message += `No referral earnings yet.\nShare your link to start earning!`;
+        }
+        
+        alert(message);
+        
+    } catch (error) {
+        console.error('Error viewing referral earnings:', error);
+        showNotification('❌ Could not load referral earnings');
+    }
+}
+    </script>
 </body>
     </html>
