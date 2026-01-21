@@ -2522,7 +2522,10 @@ async function checkExistingMemberLink() {
             document.getElementById('walletReserveBalance').textContent = reserveBalance.toFixed(4) + ' iKb';
             document.getElementById('walletTotalBalance').textContent = (minedBalance + receivedBalance + lockedBalance + reserveBalance).toFixed(4) + ' iKb';
         }
-
+function openMemberIDLinkModal() {
+        document.getElementById('memberIDModal').style.display = 'block';
+        document.getElementById('linkMemberID').value = '';
+}
         function openReadModal() {
             document.getElementById('readModal').style.display = 'block';
         }
