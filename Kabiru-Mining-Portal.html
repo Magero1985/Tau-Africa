@@ -1880,69 +1880,197 @@
             }, Math.random() * 2000 + 3000);
         }
 
-        // Verify and link Member ID
-        async function verifyAndLinkMemberID() {
-            const memberId = document.getElementById('linkMemberID').value.trim();
+        // Replace your verifyAndLinkMemberID() function with this enhanced version:
+
+async function verifyAndLinkMemberID() {
+    const memberId = document.getElementById('linkMemberID').value.trim();
+    
+    // Validate format
+    if (!memberId || !memberId.match(/^(TSK|TLK)-\d{6}-\d{3}$/)) {
+        showNotification('❌ Invalid Member ID format. Use: TSK-XXXXXX-XXX or TLK-XXXXXX-XXX');
+        return;
+    }
+    
+    try {
+        showNotification('🔍 Verifying Member ID...');
+        console.log('🔍 Searching for Member ID:', memberId);
+        console.log('📧 Current user email:', currentUser.email);
+        
+        // STRATEGY 1: Try to find by member ID first
+        console.log('📍 Strategy 1: Searching by member ID...');
+        let memberQuery = await db.collection('members')
+            .where('id', '==', memberId)
+            .limit(1)
+            .get();
+        
+        console.log('📊 Query 1 results:', memberQuery.size, 'documents found');
+        
+        // STRATEGY 2: If not found, try searching by email only
+        if (memberQuery.empty) {
+            console.log('📍 Strategy 2: Searching by email only...');
+            memberQuery = await db.collection('members')
+                .where('email', '==', currentUser.email)
+                .limit(1)
+                .get();
             
-            if (!memberId || !memberId.match(/^(TSK|TLK)-\d{6}-\d{3}$/)) {
-                showNotification('❌ Invalid Member ID format. Use: TSK-XXXXXX-XXX or TLK-XXXXXX-XXX');
+            console.log('📊 Query 2 results:', memberQuery.size, 'documents found');
+            
+            // Check if the found member has the correct ID
+            if (!memberQuery.empty) {
+                const foundMember = memberQuery.docs[0].data();
+                console.log('👤 Found member:', foundMember);
+                
+                if (foundMember.id !== memberId) {
+                    showNotification(`❌ Your email is registered with ID: ${foundMember.id}\nPlease use that ID instead.`);
+                    document.getElementById('linkMemberID').value = foundMember.id;
+                    return;
+                }
+            }
+        }
+        
+        // STRATEGY 3: Check if member exists at all (regardless of email)
+        if (memberQuery.empty) {
+            console.log('📍 Strategy 3: Checking if member ID exists anywhere...');
+            const idOnlyQuery = await db.collection('members')
+                .where('id', '==', memberId)
+                .limit(1)
+                .get();
+            
+            if (!idOnlyQuery.empty) {
+                const existingMember = idOnlyQuery.docs[0].data();
+                console.log('⚠️ Member ID exists but email mismatch');
+                console.log('   Registered email:', existingMember.email);
+                console.log('   Your email:', currentUser.email);
+                
+                showNotification(
+                    `❌ Member ID exists but email mismatch.\n\n` +
+                    `This ID is registered with: ${existingMember.email}\n` +
+                    `Your account: ${currentUser.email}\n\n` +
+                    `Please use the correct Member ID for your email.`
+                );
                 return;
             }
             
-            try {
-                showNotification('🔍 Verifying Member ID...');
+            // Member doesn't exist at all
+            console.log('❌ Member ID not found in database');
+            showNotification(
+                `❌ Member ID not found.\n\n` +
+                `Please check:\n` +
+                `1. ID format is correct (TSK-XXXXXX-XXX)\n` +
+                `2. You are registered in TAU Africa\n` +
+                `3. Your email matches: ${currentUser.email}\n\n` +
+                `If you don't have a TAU Member ID, register at TAU Africa first.`
+            );
+            return;
+        }
+        
+        // SUCCESS: Member found and email matches
+        const memberDoc = memberQuery.docs[0];
+        const memberData = memberDoc.data();
+        console.log('✅ Member verified:', memberData);
+        
+        // Extract member details
+        const memberLevel = memberData.level || 1;
+        const memberTeam = memberData.team || 'General';
+        const memberName = memberData.fullName || memberData.name || 'Member';
+        
+        // Link Member ID to Kabiru user account
+        console.log('🔗 Linking to Kabiru account...');
+        await db.collection('users').doc(currentUser.uid).update({
+            tauMemberId: memberId,
+            tauMemberName: memberName,
+            tauMemberTeam: memberTeam,
+            tauMemberLevel: memberLevel,
+            tauMemberEmail: memberData.email,
+            memberVerified: true,
+            linkedAt: firebase.firestore.FieldValue.serverTimestamp()
+        });
+        
+        // Update current user object
+        currentUser.tauMemberId = memberId;
+        currentUser.tauMemberLevel = memberLevel;
+        currentUser.tauMemberName = memberName;
+        currentUser.lastDeclarationDate = 0; // Will need to declare values
+        
+        // Set mining rate based on level
+        const levelRates = {
+            1: 0.005,   // Basic: 0.005 iKb/day
+            2: 0.01,    // Community: 0.01 iKb/day
+            3: 0.1,     // Sovereign: 0.1 iKb/day
+            4: 0.2      // Elite: 0.2 iKb/day (if exists)
+        };
+        miningRate = levelRates[memberLevel] || 0.005;
+        
+        // Save to local storage
+        await saveUserData();
+        updateBalanceDisplay();
+        
+        // Success notification
+        showNotification(
+            `✅ Member ID Verified Successfully!\n\n` +
+            `Name: ${memberName}\n` +
+            `Level: ${memberLevel}\n` +
+            `Team: ${memberTeam}\n` +
+            `Mining Rate: ${miningRate} iKb/day\n\n` +
+            `⚠️ Next Step: Declare your values to activate mining!`
+        );
+        
+        closeModal('memberIDModal');
+        
+        // Prompt to declare values
+        setTimeout(() => {
+            if (confirm('Would you like to declare your values now to start mining?')) {
+                openValueModal();
+            }
+        }, 2000);
+        
+    } catch (error) {
+        console.error('❌ Verification error:', error);
+        console.error('Error code:', error.code);
+        console.error('Error message:', error.message);
+        
+        let errorMsg = '❌ Verification failed.\n\n';
+        
+        if (error.code === 'permission-denied') {
+            errorMsg += 'Database access denied. Please check Firebase security rules.';
+        } else if (error.code === 'unavailable') {
+            errorMsg += 'Cannot connect to database. Please check your internet connection.';
+        } else {
+            errorMsg += `Error: ${error.message}\n\nPlease try again or contact support.`;
+        }
+        
+        showNotification(errorMsg);
+    }
+}
+
+// HELPER: Check if Member ID is already linked (call this on app load)
+async function checkExistingMemberLink() {
+    if (!currentUser || !currentUser.uid || !db) return;
+    
+    try {
+        const userDoc = await db.collection('users').doc(currentUser.uid).get();
+        
+        if (userDoc.exists) {
+            const userData = userDoc.data();
+            
+            if (userData.tauMemberId && userData.memberVerified) {
+                // Already linked
+                currentUser.tauMemberId = userData.tauMemberId;
+                currentUser.tauMemberLevel = userData.tauMemberLevel || 1;
+                currentUser.tauMemberName = userData.tauMemberName || 'Member';
+                currentUser.lastDeclarationDate = userData.lastDeclarationDate || 0;
                 
-                // Check if Member ID exists in Firestore
-                const memberQuery = await db.collection('members')
-                    .where('id', '==', memberId)
-                    .where('email', '==', currentUser.email)
-                    .limit(1)
-                    .get();
+                console.log('✅ Member ID already linked:', currentUser.tauMemberId);
+                console.log('📅 Last declaration:', new Date(currentUser.lastDeclarationDate));
                 
-                if (memberQuery.empty) {
-                    showNotification('❌ Member ID not found or email mismatch. Please check your ID and email.');
-                    return;
-                }
-                
-                const memberData = memberQuery.docs[0].data();
-                
-                // Link Member ID to Kabiru user account
-                await db.collection('users').doc(currentUser.uid).update({
-                    tauMemberId: memberId,
-                    tauMemberName: memberData.fullName,
-                    tauMemberTeam: memberData.team,
-                    tauMemberLevel: memberData.level || 1,
-                    memberVerified: true,
-                    linkedAt: firebase.firestore.FieldValue.serverTimestamp()
-                });
-                
-                currentUser.tauMemberId = memberId;
-                currentUser.tauMemberLevel = memberData.level || 1;
-                
-                // Update mining rate based on level
-                const levelRates = {
-                    1: 0.001,
-                    2: 0.0015,
-                    3: 0.002,
-                    4: 0.0025
-                };
-                miningRate = levelRates[memberData.level || 1];
-                
-                await saveUserData();
-                updateBalanceDisplay();
-                
-                showNotification(`✅ Member ID verified!\nLevel ${memberData.level || 1} - Mining rate: ${miningRate} iKb/day\nYou can now start mining!`);
-                closeModal('memberIDModal');
-                
-            } catch (error) {
-                console.error('Verification error:', error);
-                showNotification('❌ Verification failed. Please try again or contact support.');
+                // Update mining rate
+                const levelRates = {1: 0.005, 2: 0.01, 3: 0.1, 4: 0.2};
+                miningRate = levelRates[currentUser.tauMemberLevel] || 0.005;
             }
         }
-
-        // Open Member ID Link Modal
-        function openMemberIDLinkModal() {
-            document.getElementById('memberIDModal').style.display = 'block';
+    } catch (error) {
+        console.error('Error checking member link:', error);
+    }
         }
 
         // Cash withdrawal functions
