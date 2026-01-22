@@ -2660,35 +2660,93 @@ function openMemberIDLinkModal() {
         }
 
         function shareReferralLink() {
-            const referralLink = generateReferralLink();
-            const shareText = `Join me on KABIRU and start mining iKb tokens! Use my referral link: ${referralLink}`;
-            
-            if (navigator.share) {
-                navigator.share({
-                    title: 'Join KABIRU Mining App',
-                    text: shareText,
-                    url: referralLink
-                }).then(() => {
-                    showNotification('Referral link shared successfully!');
-                }).catch(() => {
-                    fallbackShare(shareText);
-                });
-            } else {
-                fallbackShare(shareText);
-            }
-        }
+    const referralLink = generateReferralLink();
+    const shareText = `Join me on KABIRU and start mining iKb tokens! Use my referral link: ${referralLink}`;
+    
+    if (navigator.share) {
+        // Native mobile/desktop share
+        navigator.share({
+            title: 'Join KABIRU Mining App',
+            text: shareText,
+            url: referralLink
+        }).then(() => {
+            showNotification('📱 Share dialog opened!');
+        }).catch((err) => {
+            console.log('Share cancelled or failed:', err);
+            // User cancelled or error - show manual options
+            showSocialShareOptions(referralLink, shareText);
+        });
+    } else {
+        // Desktop fallback - show social media options
+        showSocialShareOptions(referralLink, shareText);
+    }
+}
 
-        function fallbackShare(text) {
-            if (navigator.clipboard) {
-                navigator.clipboard.writeText(text).then(() => {
-                    showNotification('Referral message copied! You can paste it anywhere to share.');
-                }).catch(() => {
-                    showNotification('Share: Copy the referral link manually to share with friends.');
-                });
-            } else {
-                showNotification('Share your referral link manually with friends!');
-            }
-        }
+function showSocialShareOptions(link, text) {
+    const encodedLink = encodeURIComponent(link);
+    const encodedText = encodeURIComponent(text);
+    
+    // Create social share URLs
+    const whatsappUrl = `https://wa.me/?text=${encodedText}`;
+    const telegramUrl = `https://t.me/share/url?url=${encodedLink}&text=${encodedText}`;
+    const twitterUrl = `https://twitter.com/intent/tweet?text=${encodedText}`;
+    const facebookUrl = `https://www.facebook.com/sharer/sharer.php?u=${encodedLink}`;
+    const emailUrl = `mailto:?subject=Join KABIRU Mining&body=${encodedText}`;
+    
+    // Show options modal
+    const shareModal = `
+        <div style="position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.8); z-index: 9999; display: flex; align-items: center; justify-content: center;" id="socialShareModal" onclick="if(event.target.id==='socialShareModal') this.remove()">
+            <div style="background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%); padding: 30px; border-radius: 20px; max-width: 350px; width: 90%;" onclick="event.stopPropagation()">
+                <h3 style="color: #FFD700; margin-bottom: 20px; text-align: center;">Share Referral Link</h3>
+                <div style="display: grid; gap: 10px;">
+                    <a href="${whatsappUrl}" target="_blank" style="background: #25D366; color: white; padding: 12px; border-radius: 8px; text-decoration: none; text-align: center; font-weight: bold;">
+                        📱 Share on WhatsApp
+                    </a>
+                    <a href="${telegramUrl}" target="_blank" style="background: #0088cc; color: white; padding: 12px; border-radius: 8px; text-decoration: none; text-align: center; font-weight: bold;">
+                        ✈️ Share on Telegram
+                    </a>
+                    <a href="${twitterUrl}" target="_blank" style="background: #1DA1F2; color: white; padding: 12px; border-radius: 8px; text-decoration: none; text-align: center; font-weight: bold;">
+                        🐦 Share on Twitter
+                    </a>
+                    <a href="${facebookUrl}" target="_blank" style="background: #4267B2; color: white; padding: 12px; border-radius: 8px; text-decoration: none; text-align: center; font-weight: bold;">
+                        📘 Share on Facebook
+                    </a>
+                    <a href="${emailUrl}" style="background: #EA4335; color: white; padding: 12px; border-radius: 8px; text-decoration: none; text-align: center; font-weight: bold;">
+                        📧 Share via Email
+                    </a>
+                    <button onclick="navigator.clipboard.writeText('${link}').then(() => {showNotification('Link copied!'); document.getElementById('socialShareModal').remove();})" style="background: linear-gradient(45deg, #667eea, #764ba2); color: white; padding: 12px; border-radius: 8px; border: none; font-weight: bold; cursor: pointer;">
+                        📋 Copy Link
+                    </button>
+                    <button onclick="document.getElementById('socialShareModal').remove()" style="background: rgba(255,255,255,0.1); color: white; padding: 12px; border-radius: 8px; border: none; cursor: pointer;">
+                        Cancel
+                    </button>
+                </div>
+            </div>
+        </div>
+    `;
+    
+    // Remove existing modal if any
+    const existing = document.getElementById('socialShareModal');
+    if (existing) existing.remove();
+    
+    // Add new modal
+    document.body.insertAdjacentHTML('beforeend', shareModal);
+}
+
+function fallbackShare(text) {
+    // This is now only used if absolutely necessary
+    const textarea = document.createElement('textarea');
+    textarea.value = text;
+    document.body.appendChild(textarea);
+    textarea.select();
+    try {
+        document.execCommand('copy');
+        showNotification('Referral message copied! Paste it to share with friends.');
+    } catch (err) {
+        showNotification('Could not copy. Please copy the link manually.');
+    }
+    document.body.removeChild(textarea);
+}
 
         async function lockupTokens(months) {
             const availableBalance = minedBalance + receivedBalance;
