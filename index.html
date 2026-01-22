@@ -3104,6 +3104,8 @@ window.TauDB.sync = async function(formData, team, referralCode) {
         
         localStorage.setItem('tauAfricaDB', JSON.stringify(localMembers));
         console.log('✅ SAVED TO LOCALSTORAGE:', memberId);
+        await syncMemberToFirestore(newMember);
+            }
         
         // 4. SAVE TO FIRESTORE (if available)
         if (typeof firebase !== 'undefined' && firebase.apps.length > 0) {
@@ -3233,6 +3235,9 @@ console.log('✅ TauDB.sync fixed - guaranteed save');
                     (members[memberIndex].iKbpBalance || 0) + amount;
                 
                 localStorage.setItem('tauAfricaDB', JSON.stringify(members));
+                await syncMemberToFirestore(members[memberIndex]);
+    }
+            }
                 
                 // Update session
                 const currentMember = JSON.parse(sessionStorage.getItem('tauCurrentUser') || 'null');
@@ -5203,6 +5208,22 @@ function showMemberDashboard() {
     `;
     document.body.appendChild(modal);
 }
+// ============================================
+// 7. ADD SYNC BUTTON TO TAU UI (OPTIONAL)
+// ============================================
+
+Add this HTML button somewhere in your TAU Africa dashboard:
+
+<button onclick="syncAllExistingMembers()" 
+        style="background: linear-gradient(45deg, #667eea, #764ba2); 
+               color: white; 
+               padding: 10px 20px; 
+               border: none; 
+               border-radius: 8px; 
+               cursor: pointer;
+               font-weight: bold;">
+    🔄 Sync All Members to Firestore
+</button>
 
 // ===== EVENT LISTENERS =====
 document.addEventListener('click', function(event) {
@@ -12014,6 +12035,8 @@ console.log('💡 Run window.runIntegrationTest() to check integration');
             localMembers.push(member);
             localStorage.setItem('tauAfricaDB', JSON.stringify(localMembers));
             console.log('✅ Saved to localStorage');
+            syncMemberToFirestore(newMember);
+        }
             
             // 4. Save credentials
             const credentials = JSON.parse(localStorage.getItem('tauCredentials') || '{}');
@@ -12024,6 +12047,7 @@ console.log('💡 Run window.runIntegrationTest() to check integration');
             };
             localStorage.setItem('tauCredentials', JSON.stringify(credentials));
             console.log('🔑 Credentials saved');
+            
             
             // 5. SAVE TO FIRESTORE
             if (db && isOnline) {
@@ -17247,6 +17271,8 @@ function showLevelComplete(level, reward) {
         </div>
     `;
 }
-    </script>
+console.log('✅ TAU-Firestore Sync Functions Loaded!');
+console.log('📝 To sync all existing members, run: syncAllExistingMembers()');
+ </script>
 </body>
 </html>
