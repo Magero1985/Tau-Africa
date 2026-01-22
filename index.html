@@ -671,6 +671,13 @@ input[type="date"] {
     animation: fadeIn 1s ease-in-out;
 }
 @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+      
+const style = document.createElement('style');
+style.innerHTML = `
+    @keyframes slideUp { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+    .btn-menu { background: #f8f9fa; border: none; padding: 10px; text-align: left; border-radius: 8px; cursor: pointer; font-weight: 500; transition: 0.2s; }
+    .btn-menu:hover { background: #eef2ff; color: #4169e1; }
+`;  
     </style>
 </head>
 <body>
@@ -828,7 +835,7 @@ To join in these categories, please use KABIRU SERVICE CENTER portal</p>
         <div class="kabiru-section">
             <h2>⚡ KABIRU MINING</h2>
             <p>Mine Kabiru tokens by proving and validating real values</p>
-            <button class="btn-kabiru" onclick="window.open('https://magero1985.github.io/Kabiru-Mining-Portal-/', '_blank')">Access Kabiru Mining App</button>
+            <button class="btn-kabiru" onclick="window.open('https://magero1985.github.io/Tau-Africa/Kabiru-Mining-Portal.html', '_blank')">Access Kabiru Mining App</button>
         </div>
     </div>
     
@@ -1696,13 +1703,14 @@ TAU Africa Team
     // 1. FIREBASE CONFIG & INIT
     // ============================================
       const FIREBASE_CONFIG = {
-        apiKey: "AIzaSyBcTzvl5lwpojRQM5lwyWe3hwp4upogUWw",
-        authDomain: "tau-main-app.firebaseapp.com",
-        projectId: "tau-main-app",
-        storageBucket: "tau-main-app.firebasestorage.app",
-        messagingSenderId: "69734421488",
-        appId: "1:69734421488:web:d13ae38f1c7d79cc854335"
-    };
+        apiKey: "AIzaSyCZhPjrl18PuyBh01Ou2KQMs-Ph3x2GP7o",
+            authDomain: "kabiru-mining-app.firebaseapp.com",
+            projectId: "kabiru-mining-app",
+            storageBucket: "kabiru-mining-app.appspot.com",
+            messagingSenderId: "217095254990",
+            appId: "1:217095254990:web:9eb44eff825666995fb19f",
+            measurementId: "G-W6070RT4PB"
+        };
     
     let db, isOnline = false;
     
@@ -2883,13 +2891,14 @@ TAU AFRICA - COMPLETE FIX (ALL-IN-ONE)
     // PART 1: FIREBASE CONNECTION
     // ========================================
       const FIREBASE_CONFIG = {
-        apiKey: "AIzaSyBcTzvl5lwpojRQM5lwyWe3hwp4upogUWw",
-        authDomain: "tau-main-app.firebaseapp.com",
-        projectId: "tau-main-app",
-        storageBucket: "tau-main-app.firebasestorage.app",
-        messagingSenderId: "69734421488",
-        appId: "1:69734421488:web:d13ae38f1c7d79cc854335"
-    };
+        apiKey: "AIzaSyCZhPjrl18PuyBh01Ou2KQMs-Ph3x2GP7o",
+            authDomain: "kabiru-mining-app.firebaseapp.com",
+            projectId: "kabiru-mining-app",
+            storageBucket: "kabiru-mining-app.appspot.com",
+            messagingSenderId: "217095254990",
+            appId: "1:217095254990:web:9eb44eff825666995fb19f",
+            measurementId: "G-W6070RT4PB"
+        };
     
     let db = null;
     let isOnline = false;
@@ -9634,13 +9643,14 @@ console.log('💡 Run window.runIntegrationTest() to check integration');
     // FIREBASE CONFIGURATION
     // ============================================
       const FIREBASE_CONFIG = {
-        apiKey: "AIzaSyBcTzvl5lwpojRQM5lwyWe3hwp4upogUWw",
-        authDomain: "tau-main-app.firebaseapp.com",
-        projectId: "tau-main-app",
-        storageBucket: "tau-main-app.firebasestorage.app",
-        messagingSenderId: "69734421488",
-        appId: "1:69734421488:web:d13ae38f1c7d79cc854335"
-    };
+            apiKey: "AIzaSyCZhPjrl18PuyBh01Ou2KQMs-Ph3x2GP7o",
+            authDomain: "kabiru-mining-app.firebaseapp.com",
+            projectId: "kabiru-mining-app",
+            storageBucket: "kabiru-mining-app.appspot.com",
+            messagingSenderId: "217095254990",
+            appId: "1:217095254990:web:9eb44eff825666995fb19f",
+            measurementId: "G-W6070RT4PB"
+        };
     
     let db, isOnline = false;
     
@@ -9942,13 +9952,14 @@ console.log('💡 Run window.runIntegrationTest() to check integration');
     // FIREBASE CONFIG (Same for both apps)
     // ============================================
       const FIREBASE_CONFIG = {
-        apiKey: "AIzaSyBcTzvl5lwpojRQM5lwyWe3hwp4upogUWw",
-        authDomain: "tau-main-app.firebaseapp.com",
-        projectId: "tau-main-app",
-        storageBucket: "tau-main-app.firebasestorage.app",
-        messagingSenderId: "69734421488",
-        appId: "1:69734421488:web:d13ae38f1c7d79cc854335"
-    };
+       apiKey: "AIzaSyCZhPjrl18PuyBh01Ou2KQMs-Ph3x2GP7o",
+            authDomain: "kabiru-mining-app.firebaseapp.com",
+            projectId: "kabiru-mining-app",
+            storageBucket: "kabiru-mining-app.appspot.com",
+            messagingSenderId: "217095254990",
+            appId: "1:217095254990:web:9eb44eff825666995fb19f",
+            measurementId: "G-W6070RT4PB"
+        };
     let db, isKabiruApp = false;
     
     // Detect which app this is
@@ -10800,13 +10811,14 @@ console.log('💡 Run window.runIntegrationTest() to check integration');
     // 2. FIREBASE CONFIGURATION (Verified Working)
     // ============================================
       const FIREBASE_CONFIG = {
-        apiKey: "AIzaSyBcTzvl5lwpojRQM5lwyWe3hwp4upogUWw",
-        authDomain: "tau-main-app.firebaseapp.com",
-        projectId: "tau-main-app",
-        storageBucket: "tau-main-app.firebasestorage.app",
-        messagingSenderId: "69734421488",
-        appId: "1:69734421488:web:d13ae38f1c7d79cc854335"
-    };
+        apiKey: "AIzaSyCZhPjrl18PuyBh01Ou2KQMs-Ph3x2GP7o",
+            authDomain: "kabiru-mining-app.firebaseapp.com",
+            projectId: "kabiru-mining-app",
+            storageBucket: "kabiru-mining-app.appspot.com",
+            messagingSenderId: "217095254990",
+            appId: "1:217095254990:web:9eb44eff825666995fb19f",
+            measurementId: "G-W6070RT4PB"
+        };
     
     let db, isOnline = false;
     
@@ -11895,13 +11907,14 @@ console.log('💡 Run window.runIntegrationTest() to check integration');
     // 1. FIREBASE INITIALIZATION
     // ============================================
       const FIREBASE_CONFIG = {
-        apiKey: "AIzaSyBcTzvl5lwpojRQM5lwyWe3hwp4upogUWw",
-        authDomain: "tau-main-app.firebaseapp.com",
-        projectId: "tau-main-app",
-        storageBucket: "tau-main-app.firebasestorage.app",
-        messagingSenderId: "69734421488",
-        appId: "1:69734421488:web:d13ae38f1c7d79cc854335"
-    };
+        apiKey: "AIzaSyCZhPjrl18PuyBh01Ou2KQMs-Ph3x2GP7o",
+            authDomain: "kabiru-mining-app.firebaseapp.com",
+            projectId: "kabiru-mining-app",
+            storageBucket: "kabiru-mining-app.appspot.com",
+            messagingSenderId: "217095254990",
+            appId: "1:217095254990:web:9eb44eff825666995fb19f",
+            measurementId: "G-W6070RT4PB"
+        };
     
     let db = null;
     let isOnline = false;
@@ -17038,15 +17051,6 @@ function toggleAccountPanel() {
     `;
     document.body.appendChild(panel);
 }
-
-// Add these styles to your <style> section
-const style = document.createElement('style');
-style.innerHTML = `
-    @keyframes slideUp { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
-    .btn-menu { background: #f8f9fa; border: none; padding: 10px; text-align: left; border-radius: 8px; cursor: pointer; font-weight: 500; transition: 0.2s; }
-    .btn-menu:hover { background: #eef2ff; color: #4169e1; }
-`;
-document.head.appendChild(style);
 </script>
     <script>
         // Function to toggle the Quick Menu Panel
