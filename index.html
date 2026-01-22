@@ -828,7 +828,7 @@ To join in these categories, please use KABIRU SERVICE CENTER portal</p>
         <div class="kabiru-section">
             <h2>⚡ KABIRU MINING</h2>
             <p>Mine Kabiru tokens by proving and validating real values</p>
-            <button class="btn-kabiru" onclick="window.open('https://magero1985.github.io/Tau-Africa/Kabiru-Mining-Portal.html', '_blank')">Access Kabiru Mining App</button>
+            <button class="btn-kabiru" onclick="window.open('https://magero1985.github.io/Kabiru-Mining-Portal-/', '_blank')">Access Kabiru Mining App</button>
         </div>
     </div>
     
@@ -1696,14 +1696,13 @@ TAU Africa Team
     // 1. FIREBASE CONFIG & INIT
     // ============================================
       const FIREBASE_CONFIG = {
-        apiKey: "AIzaSyCZhPjrl18PuyBh01Ou2KQMs-Ph3x2GP7o",
-            authDomain: "kabiru-mining-app.firebaseapp.com",
-            projectId: "kabiru-mining-app",
-            storageBucket: "kabiru-mining-app.appspot.com",
-            messagingSenderId: "217095254990",
-            appId: "1:217095254990:web:9eb44eff825666995fb19f",
-            measurementId: "G-W6070RT4PB"
-        };
+        apiKey: "AIzaSyBcTzvl5lwpojRQM5lwyWe3hwp4upogUWw",
+        authDomain: "tau-main-app.firebaseapp.com",
+        projectId: "tau-main-app",
+        storageBucket: "tau-main-app.firebasestorage.app",
+        messagingSenderId: "69734421488",
+        appId: "1:69734421488:web:d13ae38f1c7d79cc854335"
+    };
     
     let db, isOnline = false;
     
@@ -1825,7 +1824,6 @@ TAU Africa Team
         
         console.log('✅ TauDB.sync enhanced (CLOUD-FIRST)');
     }
-    
     // ============================================
     // 3. CLOUD-FIRST AUTHENTICATE
     // ============================================
@@ -2885,14 +2883,13 @@ TAU AFRICA - COMPLETE FIX (ALL-IN-ONE)
     // PART 1: FIREBASE CONNECTION
     // ========================================
       const FIREBASE_CONFIG = {
-        apiKey: "AIzaSyCZhPjrl18PuyBh01Ou2KQMs-Ph3x2GP7o",
-            authDomain: "kabiru-mining-app.firebaseapp.com",
-            projectId: "kabiru-mining-app",
-            storageBucket: "kabiru-mining-app.appspot.com",
-            messagingSenderId: "217095254990",
-            appId: "1:217095254990:web:9eb44eff825666995fb19f",
-            measurementId: "G-W6070RT4PB"
-        };
+        apiKey: "AIzaSyBcTzvl5lwpojRQM5lwyWe3hwp4upogUWw",
+        authDomain: "tau-main-app.firebaseapp.com",
+        projectId: "tau-main-app",
+        storageBucket: "tau-main-app.firebasestorage.app",
+        messagingSenderId: "69734421488",
+        appId: "1:69734421488:web:d13ae38f1c7d79cc854335"
+    };
     
     let db = null;
     let isOnline = false;
@@ -3104,8 +3101,6 @@ window.TauDB.sync = async function(formData, team, referralCode) {
         
         localStorage.setItem('tauAfricaDB', JSON.stringify(localMembers));
         console.log('✅ SAVED TO LOCALSTORAGE:', memberId);
-        await syncMemberToFirestore(newMember);
-            }
         
         // 4. SAVE TO FIRESTORE (if available)
         if (typeof firebase !== 'undefined' && firebase.apps.length > 0) {
@@ -3235,9 +3230,6 @@ console.log('✅ TauDB.sync fixed - guaranteed save');
                     (members[memberIndex].iKbpBalance || 0) + amount;
                 
                 localStorage.setItem('tauAfricaDB', JSON.stringify(members));
-                await syncMemberToFirestore(members[memberIndex]);
-    }
-            }
                 
                 // Update session
                 const currentMember = JSON.parse(sessionStorage.getItem('tauCurrentUser') || 'null');
@@ -3595,8 +3587,7 @@ Fee: KSH 500 ✅ PAID
     }
     
     console.log('✅ Complete Fix Loaded');
-    
-})();
+    })();
 </script>
     <script> 
         // ============================================
@@ -5208,22 +5199,6 @@ function showMemberDashboard() {
     `;
     document.body.appendChild(modal);
 }
-// ============================================
-// 7. ADD SYNC BUTTON TO TAU UI (OPTIONAL)
-// ============================================
-
-Add this HTML button somewhere in your TAU Africa dashboard:
-
-<button onclick="syncAllExistingMembers()" 
-        style="background: linear-gradient(45deg, #667eea, #764ba2); 
-               color: white; 
-               padding: 10px 20px; 
-               border: none; 
-               border-radius: 8px; 
-               cursor: pointer;
-               font-weight: bold;">
-    🔄 Sync All Members to Firestore
-</button>
 
 // ===== EVENT LISTENERS =====
 document.addEventListener('click', function(event) {
@@ -5391,7 +5366,6 @@ function createTaskRegistrationModal() {
                     <label>Languages Spoken *</label>
                     <input type="text" name="languages" required placeholder="e.g., English, Swahili, French">
                 </div>
-                
                 <h3 style="color: #2a5298; margin: 25px 0 15px 0;">Proof of Innocence & Capabilities</h3>
                 
                 <div class="form-group">
@@ -6580,7 +6554,6 @@ document.addEventListener('DOMContentLoaded', () => {
                     earnings: earnings
                 });
                 referrals[referrer.id].totalEarnings += earnings;
-                
                 localStorage.setItem(DB_CONFIG.referralsKey, JSON.stringify(referrals));
                 updateMemberBalance(referrer.id, earnings);
                 sendReferralNotification(referrer, earnings);
@@ -8124,7 +8097,6 @@ function logoutMember() {
                         </button>
                     </div>
                 </div>
-                
                 <!-- STATS CARDS -->
                 <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-bottom: 30px;">
                     <div style="background: linear-gradient(45deg, #2ecc71, #27ae60); color: white; padding: 25px; border-radius: 15px; text-align: center;">
@@ -9578,7 +9550,6 @@ function requestAdminAccess(event) {
         };
         
         allNotifications[memberId].unshift(notification);
-        
         // Keep only last 50 notifications
         if (allNotifications[memberId].length > 50) {
             allNotifications[memberId] = allNotifications[memberId].slice(0, 50);
@@ -9663,14 +9634,13 @@ console.log('💡 Run window.runIntegrationTest() to check integration');
     // FIREBASE CONFIGURATION
     // ============================================
       const FIREBASE_CONFIG = {
-        apiKey: "AIzaSyCZhPjrl18PuyBh01Ou2KQMs-Ph3x2GP7o",
-            authDomain: "kabiru-mining-app.firebaseapp.com",
-            projectId: "kabiru-mining-app",
-            storageBucket: "kabiru-mining-app.appspot.com",
-            messagingSenderId: "217095254990",
-            appId: "1:217095254990:web:9eb44eff825666995fb19f",
-            measurementId: "G-W6070RT4PB"
-        };
+        apiKey: "AIzaSyBcTzvl5lwpojRQM5lwyWe3hwp4upogUWw",
+        authDomain: "tau-main-app.firebaseapp.com",
+        projectId: "tau-main-app",
+        storageBucket: "tau-main-app.firebasestorage.app",
+        messagingSenderId: "69734421488",
+        appId: "1:69734421488:web:d13ae38f1c7d79cc854335"
+    };
     
     let db, isOnline = false;
     
@@ -9972,14 +9942,13 @@ console.log('💡 Run window.runIntegrationTest() to check integration');
     // FIREBASE CONFIG (Same for both apps)
     // ============================================
       const FIREBASE_CONFIG = {
-        apiKey: "AIzaSyCZhPjrl18PuyBh01Ou2KQMs-Ph3x2GP7o",
-            authDomain: "kabiru-mining-app.firebaseapp.com",
-            projectId: "kabiru-mining-app",
-            storageBucket: "kabiru-mining-app.appspot.com",
-            messagingSenderId: "217095254990",
-            appId: "1:217095254990:web:9eb44eff825666995fb19f",
-            measurementId: "G-W6070RT4PB"
-        };
+        apiKey: "AIzaSyBcTzvl5lwpojRQM5lwyWe3hwp4upogUWw",
+        authDomain: "tau-main-app.firebaseapp.com",
+        projectId: "tau-main-app",
+        storageBucket: "tau-main-app.firebasestorage.app",
+        messagingSenderId: "69734421488",
+        appId: "1:69734421488:web:d13ae38f1c7d79cc854335"
+    };
     let db, isKabiruApp = false;
     
     // Detect which app this is
@@ -10831,14 +10800,13 @@ console.log('💡 Run window.runIntegrationTest() to check integration');
     // 2. FIREBASE CONFIGURATION (Verified Working)
     // ============================================
       const FIREBASE_CONFIG = {
-        apiKey: "AIzaSyCZhPjrl18PuyBh01Ou2KQMs-Ph3x2GP7o",
-            authDomain: "kabiru-mining-app.firebaseapp.com",
-            projectId: "kabiru-mining-app",
-            storageBucket: "kabiru-mining-app.appspot.com",
-            messagingSenderId: "217095254990",
-            appId: "1:217095254990:web:9eb44eff825666995fb19f",
-            measurementId: "G-W6070RT4PB"
-        };
+        apiKey: "AIzaSyBcTzvl5lwpojRQM5lwyWe3hwp4upogUWw",
+        authDomain: "tau-main-app.firebaseapp.com",
+        projectId: "tau-main-app",
+        storageBucket: "tau-main-app.firebasestorage.app",
+        messagingSenderId: "69734421488",
+        appId: "1:69734421488:web:d13ae38f1c7d79cc854335"
+    };
     
     let db, isOnline = false;
     
@@ -11927,14 +11895,13 @@ console.log('💡 Run window.runIntegrationTest() to check integration');
     // 1. FIREBASE INITIALIZATION
     // ============================================
       const FIREBASE_CONFIG = {
-        apiKey: "AIzaSyCZhPjrl18PuyBh01Ou2KQMs-Ph3x2GP7o",
-            authDomain: "kabiru-mining-app.firebaseapp.com",
-            projectId: "kabiru-mining-app",
-            storageBucket: "kabiru-mining-app.appspot.com",
-            messagingSenderId: "217095254990",
-            appId: "1:217095254990:web:9eb44eff825666995fb19f",
-            measurementId: "G-W6070RT4PB"
-        };
+        apiKey: "AIzaSyBcTzvl5lwpojRQM5lwyWe3hwp4upogUWw",
+        authDomain: "tau-main-app.firebaseapp.com",
+        projectId: "tau-main-app",
+        storageBucket: "tau-main-app.firebasestorage.app",
+        messagingSenderId: "69734421488",
+        appId: "1:69734421488:web:d13ae38f1c7d79cc854335"
+    };
     
     let db = null;
     let isOnline = false;
@@ -12035,8 +12002,6 @@ console.log('💡 Run window.runIntegrationTest() to check integration');
             localMembers.push(member);
             localStorage.setItem('tauAfricaDB', JSON.stringify(localMembers));
             console.log('✅ Saved to localStorage');
-            syncMemberToFirestore(newMember);
-        }
             
             // 4. Save credentials
             const credentials = JSON.parse(localStorage.getItem('tauCredentials') || '{}');
@@ -12047,7 +12012,6 @@ console.log('💡 Run window.runIntegrationTest() to check integration');
             };
             localStorage.setItem('tauCredentials', JSON.stringify(credentials));
             console.log('🔑 Credentials saved');
-            
             
             // 5. SAVE TO FIRESTORE
             if (db && isOnline) {
@@ -12808,7 +12772,6 @@ window.processValidatorCode = async function(event, validatorId) {
         modal.innerHTML = `
             <div class="modal-content">
                 <span class="close" onclick="this.parentElement.parentElement.remove()">&times;</span>
-                
                 <div style="background: linear-gradient(45deg, #667eea, #764ba2); color: white; padding: 25px; border-radius: 15px; margin-bottom: 20px; text-align: center;">
                     <h2 style="margin: 0;">🚀 Unlock Full Mining Access</h2>
                     <p style="margin: 10px 0 0 0;">Choose your membership level</p>
@@ -14434,7 +14397,6 @@ window.processValidatorCode = async function(event, validatorId) {
                         View Details
                     </button>
                 </div>
-                
                 <button onclick="claimJob('${job.id}')" class="btn" style="width: 100%; padding: 12px; background: ${canClaim ? '#667eea' : '#95a5a6'};">
                     ${canClaim ? '💼 Claim Job' : '🔒 Members Only'}
                 </button>
@@ -15465,7 +15427,6 @@ async function loadPendingMembers() {
             
         allPendingMembers = [];
         snapshot.forEach(doc => allPendingMembers.push({id: doc.id, ...doc.data()}));
-        
         renderValidationList(allPendingMembers);
     } catch (error) {
         console.error("Firebase Error:", error);
@@ -17271,8 +17232,7 @@ function showLevelComplete(level, reward) {
         </div>
     `;
 }
-console.log('✅ TAU-Firestore Sync Functions Loaded!');
-console.log('📝 To sync all existing members, run: syncAllExistingMembers()');
- </script>
+    </script>
 </body>
 </html>
+                
