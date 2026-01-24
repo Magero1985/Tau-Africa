@@ -3005,23 +3005,19 @@ function setupAuthStateListener() {
             initOfflineMode();
         }
 
-//============================================
-// STEP 1: Enhanced User Registration with Referral Tracking
-// ============================================
-// REPLACE your existing loadUserData function with this:
-
-   async function loadUserData(firebaseUser) {
+async function loadUserData(firebaseUser) {
     try {
         console.log('📊 Loading user data for:', firebaseUser.uid);
         
         const userDoc = await db.collection('users').doc(firebaseUser.uid).get();
         
-        // DECLARE userData HERE so it's accessible throughout the function
+        // ✅ DECLARE userData HERE (top of function scope)
         let userData = null;
         
         if (userDoc.exists) {
             // EXISTING USER - Load their data
             userData = userDoc.data();
+            console.log('👤 Existing user found');
             
             // Load TAU Member verification
             if (userData.tauMemberId) {
@@ -3043,7 +3039,6 @@ function setupAuthStateListener() {
                         };
                         
                         miningRate = levelRates[memberLevel] || 0.005;
-                        
                         console.log(`⚡ Mining rate: ${miningRate} iKb/day (Level ${memberLevel})`);
                     }
                 } catch (error) {
@@ -3068,8 +3063,8 @@ function setupAuthStateListener() {
             console.log('✅ User data loaded - Balance:', userBalance.toFixed(4));
             
         } else {
-            // NEW USER - Check for referral code and process signup
-            console.log('🆕 New user registration');
+            // ✅ NEW USER - Check for referral code and process signup
+            console.log('🆕 New user registration detected');
             
             userWalletAddress = generateWalletAddress();
             referralCode = 'KABIRU_' + firebaseUser.uid.substr(-6).toUpperCase();
@@ -3080,6 +3075,7 @@ function setupAuthStateListener() {
             let referrerId = null;
             let welcomeBonus = 0;
             
+            // ✅ PROCESS REFERRAL CODE
             if (referralCodeParam) {
                 try {
                     console.log('🔍 Processing referral code:', referralCodeParam);
@@ -3090,46 +3086,40 @@ function setupAuthStateListener() {
                         .get();
                     
                     if (!referrerQuery.empty) {
-    const referrerDoc = referrerQuery.docs[0];
-    referrerId = referrerDoc.id;
-    const referrerData = referrerDoc.data();
-    
-    console.log('✅ Valid referrer found');
-    
-    // Give new user their welcome bonus
-    welcomeBonus = 0.01;
-    receivedBalance = welcomeBonus;
-    userBalance = welcomeBonus;
-    
-    // Try to give referrer their signup bonus
-    const signupBonus = 0.005;
-
-    try {
-        await db.runTransaction(async (transaction) => {
-            const referrerRef = db.collection('users').doc(referrerId);
-            const referrerSnapshot = await transaction.get(referrerRef);
-            
-            // ✅ SAFETY CHECK: Only proceed if referrer still exists
-            if (!referrerSnapshot.exists) {
-                console.warn('⚠️ Referrer was deleted - new user still gets bonus');
-                return;  // ✅ NEW: Exit gracefully instead of throwing error
-                }
+                        const referrerDoc = referrerQuery.docs[0];
+                        referrerId = referrerDoc.id;
+                        const referrerData = referrerDoc.data();
+                        
+                        console.log('✅ Valid referrer found:', referrerData.email);
+                        
+                        // ✅ AWARD WELCOME BONUS TO NEW USER
+                        welcomeBonus = 0.01;
+                        receivedBalance = welcomeBonus;
+                        userBalance = welcomeBonus;
+                        
+                        console.log(`🎁 Welcome bonus: ${welcomeBonus} iKb`);
+                        
+                        // ✅ AWARD SIGNUP BONUS TO REFERRER
+                        const signupBonus = 0.005;
+                        
+                        try {
+                            await db.runTransaction(async (transaction) => {
+                                const referrerRef = db.collection('users').doc(referrerId);
+                                const referrerSnapshot = await transaction.get(referrerRef);
                                 
-                                const referrerCurrentData = referrerSnapshot.data();
+                                if (!referrerSnapshot.exists) {
+                                    console.warn('⚠️ Referrer was deleted - new user still gets bonus');
+                                    return;
+                                }
                                 
-                                const newReceivedBalance = (referrerCurrentData.receivedBalance || 0) + signupBonus;
-                                const newTotalReferrals = (referrerCurrentData.totalReferrals || 0) + 1;
-                                const newTotalEarnings = (referrerCurrentData.totalReferralEarnings || 0) + signupBonus;
+                                const currentData = referrerSnapshot.data();
                                 
-                                console.log('📊 Referrer update:', {
-                                    oldBalance: referrerCurrentData.receivedBalance || 0,
-                                    newBalance: newReceivedBalance,
-                                    bonus: signupBonus,
-                                    totalReferrals: newTotalReferrals
-                                });
+                                const newReceivedBalance = (currentData.receivedBalance || 0) + signupBonus;
+                                const newTotalReferrals = (currentData.totalReferrals || 0) + 1;
+                                const newTotalEarnings = (currentData.totalReferralEarnings || 0) + signupBonus;
                                 
-                                const currentTxHistory = referrerCurrentData.transactionHistory || [];
-                                const newTransaction = {
+                                const txHistory = currentData.transactionHistory || [];
+                                txHistory.unshift({
                                     id: generateTransactionId(),
                                     type: 'referral_signup_bonus',
                                     amount: signupBonus,
@@ -3138,29 +3128,24 @@ function setupAuthStateListener() {
                                     fromName: firebaseUser.displayName || 'New User',
                                     timestamp: new Date().toISOString(),
                                     status: 'completed'
-                                };
-                                
-                                currentTxHistory.unshift(newTransaction);
-                                const trimmedHistory = currentTxHistory.slice(0, 50);
+                                });
                                 
                                 transaction.update(referrerRef, {
                                     receivedBalance: newReceivedBalance,
                                     totalReferrals: newTotalReferrals,
                                     totalReferralEarnings: newTotalEarnings,
-                                    transactionHistory: trimmedHistory,
+                                    transactionHistory: txHistory.slice(0, 50),
                                     lastReferralBonus: firebase.firestore.FieldValue.serverTimestamp()
                                 });
+                                
+                                console.log('✅ Signup bonus credited to referrer:', signupBonus);
                             });
-                            
-                            console.log('✅ Signup bonus credited to referrer:', signupBonus);
                             
                         } catch (txError) {
                             console.error('❌ Referral transaction failed:', txError);
-                            console.error('   Error details:', txError.message);
-                            // Even if referrer bonus fails, new user still gets welcome bonus
                         }
                         
-                        // Add transaction to NEW USER's history
+                        // ✅ ADD TRANSACTION TO NEW USER'S HISTORY
                         transactionHistory.push({
                             id: generateTransactionId(),
                             type: 'referral_welcome_bonus',
@@ -3172,20 +3157,20 @@ function setupAuthStateListener() {
                             status: 'completed'
                         });
                         
-                        showNotification(`🎉 Welcome! +${welcomeBonus.toFixed(4)} iKb bonus for joining through referral!`);
+                        // Show welcome message
+                        setTimeout(() => {
+                            showNotification(`🎉 Welcome Bonus!\n\n+${welcomeBonus.toFixed(4)} iKb credited\n\nReferred by: ${referrerData.email}`);
+                        }, 2000);
                         
                     } else {
-                        console.log('⚠️ Referral code not found:', referralCodeParam);
-                        showNotification('⚠️ Invalid referral code. Signing up without referral bonus.');
+                        console.log('⚠️ Invalid referral code:', referralCodeParam);
                     }
                 } catch (error) {
                     console.error('❌ Error processing referral:', error);
-                    console.error('   Referral code:', referralCodeParam);
-                    // Continue with signup even if referral processing fails
                 }
             }
             
-            // Create new user document
+            // ✅ CREATE NEW USER DOCUMENT
             const newUserData = {
                 uid: firebaseUser.uid,
                 email: firebaseUser.email,
@@ -3212,15 +3197,16 @@ function setupAuthStateListener() {
             await db.collection('users').doc(firebaseUser.uid).set(newUserData);
             console.log('✅ New user created with referral tracking');
             
-            // Set userData for new user
+            // ✅ SET userData for new user
             userData = newUserData;
             
+            // Clean URL
             if (referralCodeParam) {
                 window.history.replaceState({}, document.title, window.location.pathname);
             }
         }
         
-        // Create currentUser object - NOW userData is ALWAYS defined
+        // ✅ CREATE currentUser OBJECT (userData is NOW always defined)
         currentUser = {
             uid: firebaseUser.uid,
             email: firebaseUser.email,
@@ -3236,15 +3222,15 @@ function setupAuthStateListener() {
             totalReferralEarnings: userData?.totalReferralEarnings || 0
         };
 
-        // CRITICAL: Update UI immediately after creating currentUser
         console.log('✅ Current user created:', {
             displayName: currentUser.displayName,
             email: currentUser.email,
             balance: currentUser.balance
         });
         
-        // UPDATE THE UI
+        // ✅ UPDATE UI IMMEDIATELY
         updateUserDisplay();
+        updateBalanceDisplay();
         
         // Start transfer listener
         if (firebaseUser && firebaseUser.email) {
@@ -3254,21 +3240,14 @@ function setupAuthStateListener() {
         
     } catch (error) {
         console.error('❌ Error loading user data:', error);
-        // Initialize defaults
+        // Initialize defaults on error
         userBalance = 0.0000;
         minedBalance = 0.0000;
         receivedBalance = 0.0000;
-        reserveBalance = 0.0000;
-        lockedBalance = 0.0000;
-        kabiruPoints = 0.0000;
-        totalTasksCompleted = 0;
-        miningRate = 0.005;
         userWalletAddress = generateWalletAddress();
-        transactionHistory = [];
-        referralCode = '';
-        lockupPeriods = [];
+        referralCode = 'KABIRU_' + Math.random().toString(36).substr(2, 6).toUpperCase();
     }
-    }
+        }
         async function checkReferralBonus() {
             const urlParams = new URLSearchParams(window.location.search);
             const referralCodeParam = urlParams.get('ref');
@@ -3479,6 +3458,14 @@ const maxRetries = 3;
 while (!emailSent && retryCount < maxRetries) {
     try {
         console.log(`📧 Sending verification email (attempt ${retryCount + 1})...`);
+        // IMMEDIATE email verification with retry logic
+let emailSent = false;
+let retryCount = 0;
+const maxRetries = 3;
+
+while (!emailSent && retryCount < maxRetries) {
+    try {
+        console.log(`📧 Sending verification email (attempt ${retryCount + 1})...`);
         
         await user.sendEmailVerification({
             url: window.location.href, // Use current URL
@@ -3669,56 +3656,62 @@ setTimeout(() => {
 async function checkEmailVerification() {
     if (!auth || !auth.currentUser) {
         showError('No user session found. Please try logging in again.');
-        setTimeout(() => {
-            showLogin();
-        }, 2000);
+        setTimeout(() => showLogin(), 2000);
         return;
     }
     
     try {
-        // Show loading state
         const verifyButton = document.querySelector('#emailVerificationContainer .auth-button');
         const originalText = verifyButton.textContent;
-        verifyButton.textContent = 'Checking verification...';
+        verifyButton.textContent = '🔄 Checking...';
         verifyButton.disabled = true;
         
-        // IMPORTANT: Force refresh user data from Firebase
-        console.log('🔵 Reloading user data from Firebase...');
+        // ✅ FORCE REFRESH user data from Firebase (CRITICAL)
+        console.log('🔵 Forcing Firebase reload...');
         await auth.currentUser.reload();
         
-        // Small delay to ensure Firebase has updated
-        await new Promise(resolve => setTimeout(resolve, 1000));
+        // ✅ WAIT for Firebase to update (Important!)
+        await new Promise(resolve => setTimeout(resolve, 1500));
         
-        // Check verification status
+        // ✅ CHECK VERIFICATION STATUS
         const isVerified = auth.currentUser.emailVerified;
-        console.log('📧 Email verified status:', isVerified);
+        console.log('📧 Email verified:', isVerified);
         
         if (isVerified) {
-            console.log('✅ Email verification confirmed!');
-            showSuccess('Email verified successfully! Loading your account...');
+            console.log('✅ Email verification CONFIRMED!');
+            showSuccess('✅ Email Verified!\n\nLoading your account...');
             
-            // Wait a moment then proceed to app
+            // ✅ WAIT then proceed to app
             setTimeout(async () => {
-                await loadUserData(auth.currentUser);
-                showMiningApp();
+                try {
+                    await loadUserData(auth.currentUser);
+                    showMiningApp();
+                } catch (loadError) {
+                    console.error('❌ Error loading after verification:', loadError);
+                    showError('Account verified but error loading data. Please refresh page.');
+                }
             }, 1500);
         } else {
-            console.log('⚠️ Email not yet verified');
-            // Reset button
+            console.log('⚠️ Email NOT verified yet');
             verifyButton.textContent = originalText;
             verifyButton.disabled = false;
             
-            showError('Email not yet verified. Please click the verification link in your email, then click this button again.');
+            showError(`📧 Email not yet verified\n\n` +
+                     `Please:\n` +
+                     `1. Check your email inbox\n` +
+                     `2. Click the verification link\n` +
+                     `3. Return here and click this button\n\n` +
+                     `📬 Check spam folder too!`);
         }
         
     } catch (error) {
         console.error('❌ Verification check error:', error);
-        showError('Error checking verification status: ' + error.message);
         
-        // Reset button
         const verifyButton = document.querySelector('#emailVerificationContainer .auth-button');
         verifyButton.textContent = "I've Verified My Email";
         verifyButton.disabled = false;
+        
+        showError('Error checking verification: ' + error.message);
     }
 }
 
