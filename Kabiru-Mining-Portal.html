@@ -3090,34 +3090,30 @@ function setupAuthStateListener() {
                         .get();
                     
                     if (!referrerQuery.empty) {
-                        const referrerDoc = referrerQuery.docs[0];
-                        referrerId = referrerDoc.id;
-                        const referrerData = referrerDoc.data();
-                        
-                        console.log('✅ Referrer found:', {
-                            id: referrerId,
-                            email: referrerData.email,
-                            currentBalance: referrerData.receivedBalance || 0
-                        });
-                        
-                        // Award welcome bonus to NEW USER
-                        welcomeBonus = 0.01;
-                        receivedBalance = welcomeBonus;
-                        userBalance = welcomeBonus;
-                        
-                        const signupBonus = 0.005;
+    const referrerDoc = referrerQuery.docs[0];
+    referrerId = referrerDoc.id;
+    const referrerData = referrerDoc.data();
+    
+    console.log('✅ Valid referrer found');
+    
+    // Give new user their welcome bonus
+    welcomeBonus = 0.01;
+    receivedBalance = welcomeBonus;
+    userBalance = welcomeBonus;
+    
+    // Try to give referrer their signup bonus
+    const signupBonus = 0.005;
 
-                        try {
-                            console.log('💰 Attempting to credit referrer...');
-                            
-                            await db.runTransaction(async (transaction) => {
-                                const referrerRef = db.collection('users').doc(referrerId);
-                                const referrerSnapshot = await transaction.get(referrerRef);
-                                
-                                if (!referrerSnapshot.exists) {
-                                    console.error('❌ Referrer disappeared during transaction!');
-                                    throw new Error('Referrer account not found during transaction');
-                                }
+    try {
+        await db.runTransaction(async (transaction) => {
+            const referrerRef = db.collection('users').doc(referrerId);
+            const referrerSnapshot = await transaction.get(referrerRef);
+            
+            // ✅ SAFETY CHECK: Only proceed if referrer still exists
+            if (!referrerSnapshot.exists) {
+                console.warn('⚠️ Referrer was deleted - new user still gets bonus');
+                return;  // ✅ NEW: Exit gracefully instead of throwing error
+                }
                                 
                                 const referrerCurrentData = referrerSnapshot.data();
                                 
