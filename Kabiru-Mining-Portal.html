@@ -3016,9 +3016,12 @@ function setupAuthStateListener() {
         
         const userDoc = await db.collection('users').doc(firebaseUser.uid).get();
         
+        // DECLARE userData HERE so it's accessible throughout the function
+        let userData = null;
+        
         if (userDoc.exists) {
             // EXISTING USER - Load their data
-            const userData = userDoc.data();
+            userData = userDoc.data();
             
             // Load TAU Member verification
             if (userData.tauMemberId) {
@@ -3040,7 +3043,6 @@ function setupAuthStateListener() {
                         };
                         
                         miningRate = levelRates[memberLevel] || 0.005;
-                        currentUser.tauMemberLevel = memberLevel;
                         
                         console.log(`⚡ Mining rate: ${miningRate} iKb/day (Level ${memberLevel})`);
                     }
@@ -3062,16 +3064,6 @@ function setupAuthStateListener() {
             transactionHistory = userData.transactionHistory || [];
             referralCode = userData.referralCode || '';
             lockupPeriods = userData.lockupPeriods || [];
-            
-            // Load referral stats
-            if (userData.referredBy) {
-                currentUser.referredBy = userData.referredBy;
-                console.log('✅ User was referred by:', userData.referredBy);
-            }
-            
-            // Load referral statistics
-            currentUser.totalReferrals = userData.totalReferrals || 0;
-            currentUser.totalReferralEarnings = userData.totalReferralEarnings || 0;
             
             console.log('✅ User data loaded - Balance:', userBalance.toFixed(4));
             
@@ -3102,73 +3094,58 @@ function setupAuthStateListener() {
                         const referrerData = referrerQuery.docs[0].data();
                         
                         console.log('✅ Referrer found:', referrerId);
-                        console.log('👤 Referrer email:', referrerData.email);
                         
-                        // Give welcome bonus to new user (0.01 iKb)
                         welcomeBonus = 0.01;
                         receivedBalance = welcomeBonus;
                         userBalance = welcomeBonus;
                         
-                        // Give signup bonus to referrer (0.005 iKb) - ATOMIC TRANSACTION
-const signupBonus = 0.005;
+                        const signupBonus = 0.005;
 
-try {
-    await db.runTransaction(async (transaction) => {
-        const referrerRef = db.collection('users').doc(referrerId);
-        const referrerSnapshot = await transaction.get(referrerRef);
-        
-        if (!referrerSnapshot.exists) {
-            throw new Error('Referrer account not found');
-        }
-        
-        const referrerCurrentData = referrerSnapshot.data();
-        
-        // Calculate new values
-        const newReceivedBalance = (referrerCurrentData.receivedBalance || 0) + signupBonus;
-        const newTotalReferrals = (referrerCurrentData.totalReferrals || 0) + 1;
-        const newTotalEarnings = (referrerCurrentData.totalReferralEarnings || 0) + signupBonus;
-        
-        // Prepare transaction history
-        const currentTxHistory = referrerCurrentData.transactionHistory || [];
-        const newTransaction = {
-            id: generateTransactionId(),
-            type: 'referral_signup_bonus',
-            amount: signupBonus,
-            from: firebaseUser.uid,
-            fromEmail: firebaseUser.email,
-            fromName: firebaseUser.displayName || 'New User',
-            timestamp: new Date().toISOString(),
-            status: 'completed'
-        };
-        
-        currentTxHistory.unshift(newTransaction);
-        const trimmedHistory = currentTxHistory.slice(0, 50);
-        
-        // Update in ONE atomic operation
-        transaction.update(referrerRef, {
-            receivedBalance: newReceivedBalance,
-            totalReferrals: newTotalReferrals,
-            totalReferralEarnings: newTotalEarnings,
-            transactionHistory: trimmedHistory,
-            lastReferralBonus: firebase.firestore.FieldValue.serverTimestamp()
-        });
-        
-        console.log('✅ Referrer updated atomically:', {
-            referrerId,
-            newBalance: newReceivedBalance,
-            totalReferrals: newTotalReferrals
-        });
-    });
-    
-    console.log('✅ Signup bonus credited to referrer:', signupBonus);
-    
-} catch (txError) {
-    console.error('❌ Referral transaction failed:', txError);
-    console.error('   Referrer ID:', referrerId);
-    console.error('   Error:', txError.message);
-    // Don't throw - allow signup to continue even if referral fails
-}
-                        // Add welcome transaction to new user's history
+                        try {
+                            await db.runTransaction(async (transaction) => {
+                                const referrerRef = db.collection('users').doc(referrerId);
+                                const referrerSnapshot = await transaction.get(referrerRef);
+                                
+                                if (!referrerSnapshot.exists) {
+                                    throw new Error('Referrer account not found');
+                                }
+                                
+                                const referrerCurrentData = referrerSnapshot.data();
+                                
+                                const newReceivedBalance = (referrerCurrentData.receivedBalance || 0) + signupBonus;
+                                const newTotalReferrals = (referrerCurrentData.totalReferrals || 0) + 1;
+                                const newTotalEarnings = (referrerCurrentData.totalReferralEarnings || 0) + signupBonus;
+                                
+                                const currentTxHistory = referrerCurrentData.transactionHistory || [];
+                                const newTransaction = {
+                                    id: generateTransactionId(),
+                                    type: 'referral_signup_bonus',
+                                    amount: signupBonus,
+                                    from: firebaseUser.uid,
+                                    fromEmail: firebaseUser.email,
+                                    fromName: firebaseUser.displayName || 'New User',
+                                    timestamp: new Date().toISOString(),
+                                    status: 'completed'
+                                };
+                                
+                                currentTxHistory.unshift(newTransaction);
+                                const trimmedHistory = currentTxHistory.slice(0, 50);
+                                
+                                transaction.update(referrerRef, {
+                                    receivedBalance: newReceivedBalance,
+                                    totalReferrals: newTotalReferrals,
+                                    totalReferralEarnings: newTotalEarnings,
+                                    transactionHistory: trimmedHistory,
+                                    lastReferralBonus: firebase.firestore.FieldValue.serverTimestamp()
+                                });
+                            });
+                            
+                            console.log('✅ Signup bonus credited to referrer:', signupBonus);
+                            
+                        } catch (txError) {
+                            console.error('❌ Referral transaction failed:', txError);
+                        }
+                        
                         transactionHistory.push({
                             id: generateTransactionId(),
                             type: 'referral_welcome_bonus',
@@ -3216,36 +3193,39 @@ try {
             await db.collection('users').doc(firebaseUser.uid).set(newUserData);
             console.log('✅ New user created with referral tracking');
             
-            // Clean URL
+            // Set userData for new user
+            userData = newUserData;
+            
             if (referralCodeParam) {
                 window.history.replaceState({}, document.title, window.location.pathname);
             }
         }
         
-        // Create currentUser object - FIXED VERSION
-currentUser = {
-    uid: firebaseUser.uid,
-    email: firebaseUser.email,
-    displayName: firebaseUser.displayName || userData?.displayName || 'Anonymous User',
-    balance: userBalance,
-    tasksCompleted: totalTasksCompleted,
-    miningRate: miningRate,
-    walletAddress: userWalletAddress,
-    tauMemberId: userDoc.exists ? userDoc.data().tauMemberId : null,
-    tauMemberLevel: userDoc.exists ? userDoc.data().tauMemberLevel : null,
-    referredBy: userDoc.exists ? userDoc.data().referredBy : null,
-    totalReferrals: userDoc.exists ? (userDoc.data().totalReferrals || 0) : 0,
-    totalReferralEarnings: userDoc.exists ? (userDoc.data().totalReferralEarnings || 0) : 0
-};
+        // Create currentUser object - NOW userData is ALWAYS defined
+        currentUser = {
+            uid: firebaseUser.uid,
+            email: firebaseUser.email,
+            displayName: firebaseUser.displayName || userData?.displayName || 'Anonymous User',
+            balance: userBalance,
+            tasksCompleted: totalTasksCompleted,
+            miningRate: miningRate,
+            walletAddress: userWalletAddress,
+            tauMemberId: userData?.tauMemberId || null,
+            tauMemberLevel: userData?.tauMemberLevel || null,
+            referredBy: userData?.referredBy || null,
+            totalReferrals: userData?.totalReferrals || 0,
+            totalReferralEarnings: userData?.totalReferralEarnings || 0
+        };
 
-// Log for debugging
-console.log('✅ Current user created:', {
-    displayName: currentUser.displayName,
-    email: currentUser.email,
-    balance: currentUser.balance
-});
-
-updateUserDisplay();
+        // CRITICAL: Update UI immediately after creating currentUser
+        console.log('✅ Current user created:', {
+            displayName: currentUser.displayName,
+            email: currentUser.email,
+            balance: currentUser.balance
+        });
+        
+        // UPDATE THE UI
+        updateUserDisplay();
         
         // Start transfer listener
         if (firebaseUser && firebaseUser.email) {
@@ -3269,7 +3249,7 @@ updateUserDisplay();
         referralCode = '';
         lockupPeriods = [];
     }
-}
+    }
 
 // ============================================
 // STEP 2: Award Mining Referral Bonus
