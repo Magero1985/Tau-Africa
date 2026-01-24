@@ -3102,9 +3102,6 @@ function setupAuthStateListener() {
     await db.collection('users').doc(firebaseUser.uid).set(newUserData);
     console.log('✅ Minimal user document created');
     
-    userData = newUserData;
-      console.log('✅ New user created with referral tracking');  
-        }
             // Set userData for new user
             userData = newUserData;
             
