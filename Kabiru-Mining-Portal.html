@@ -3471,38 +3471,44 @@ function setupAuthStateListener() {
                 await user.updateProfile({
                     displayName: name
                 });
-                
-                await user.sendEmailVerification({
-    url: 'https://magero1985.github.io/Tau-Africa/Kabiru-Mining-Portal.html', // Use your exact URL
-    handleCodeInApp: false
-});
-                
-                console.log('Account created, verification email sent');
-                showSuccess('Account created! Please check your email for verification instructions.');
-                showEmailVerification();
-                
-            } catch (error) {
-                console.error('Signup error:', error);
-                document.querySelector('#signupContainer .auth-button').textContent = 'Create Account';
-                document.querySelector('#signupContainer .auth-button').disabled = false;
-                
-                let errorMessage = 'Account creation failed. ';
-                switch (error.code) {
-                    case 'auth/email-already-in-use':
-                        errorMessage = 'This email is already registered. Please sign in instead.';
-                        break;
-                    case 'auth/invalid-email':
-                        errorMessage = 'Please enter a valid email address.';
-                        break;
-                    case 'auth/weak-password':
-                        errorMessage = 'Password should be at least 6 characters long.';
-                        break;
-                    default:
-                        errorMessage += error.message;
-                }
-                showError(errorMessage);
-            }
+                // IMMEDIATE email verification with retry logic
+let emailSent = false;
+let retryCount = 0;
+const maxRetries = 3;
+
+while (!emailSent && retryCount < maxRetries) {
+    try {
+        console.log(`📧 Sending verification email (attempt ${retryCount + 1})...`);
+        
+        await user.sendEmailVerification({
+            url: window.location.href, // Use current URL
+            handleCodeInApp: false
+        });
+        
+        emailSent = true;
+        console.log('✅ Verification email sent successfully!');
+        
+    } catch (emailError) {
+        retryCount++;
+        console.warn(`⚠️ Email send attempt ${retryCount} failed:`, emailError.message);
+        
+        if (retryCount < maxRetries) {
+            // Wait 2 seconds before retry
+            await new Promise(resolve => setTimeout(resolve, 2000));
+        } else {
+            console.error('❌ All email send attempts failed');
+            throw new Error('Failed to send verification email after 3 attempts');
         }
+    }
+}
+
+console.log('✅ Account created, verification email sent');
+showSuccess(`✅ Account Created!\n\n📧 Verification email sent to:\n${email}\n\nCheck your inbox (and spam folder) now!`);
+
+// Auto-open email verification screen
+setTimeout(() => {
+    showEmailVerification();
+}, 1500);
 
         function showLoginPage() {
             document.getElementById('loginPage').style.display = 'flex';
