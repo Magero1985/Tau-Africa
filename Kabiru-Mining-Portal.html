@@ -3090,11 +3090,17 @@ function setupAuthStateListener() {
                         .get();
                     
                     if (!referrerQuery.empty) {
-                        referrerId = referrerQuery.docs[0].id;
-                        const referrerData = referrerQuery.docs[0].data();
+                        const referrerDoc = referrerQuery.docs[0];
+                        referrerId = referrerDoc.id;
+                        const referrerData = referrerDoc.data();
                         
-                        console.log('✅ Referrer found:', referrerId);
+                        console.log('✅ Referrer found:', {
+                            id: referrerId,
+                            email: referrerData.email,
+                            currentBalance: referrerData.receivedBalance || 0
+                        });
                         
+                        // Award welcome bonus to NEW USER
                         welcomeBonus = 0.01;
                         receivedBalance = welcomeBonus;
                         userBalance = welcomeBonus;
@@ -3102,12 +3108,15 @@ function setupAuthStateListener() {
                         const signupBonus = 0.005;
 
                         try {
+                            console.log('💰 Attempting to credit referrer...');
+                            
                             await db.runTransaction(async (transaction) => {
                                 const referrerRef = db.collection('users').doc(referrerId);
                                 const referrerSnapshot = await transaction.get(referrerRef);
                                 
                                 if (!referrerSnapshot.exists) {
-                                    throw new Error('Referrer account not found');
+                                    console.error('❌ Referrer disappeared during transaction!');
+                                    throw new Error('Referrer account not found during transaction');
                                 }
                                 
                                 const referrerCurrentData = referrerSnapshot.data();
@@ -3115,6 +3124,13 @@ function setupAuthStateListener() {
                                 const newReceivedBalance = (referrerCurrentData.receivedBalance || 0) + signupBonus;
                                 const newTotalReferrals = (referrerCurrentData.totalReferrals || 0) + 1;
                                 const newTotalEarnings = (referrerCurrentData.totalReferralEarnings || 0) + signupBonus;
+                                
+                                console.log('📊 Referrer update:', {
+                                    oldBalance: referrerCurrentData.receivedBalance || 0,
+                                    newBalance: newReceivedBalance,
+                                    bonus: signupBonus,
+                                    totalReferrals: newTotalReferrals
+                                });
                                 
                                 const currentTxHistory = referrerCurrentData.transactionHistory || [];
                                 const newTransaction = {
@@ -3144,25 +3160,32 @@ function setupAuthStateListener() {
                             
                         } catch (txError) {
                             console.error('❌ Referral transaction failed:', txError);
+                            console.error('   Error details:', txError.message);
+                            // Even if referrer bonus fails, new user still gets welcome bonus
                         }
                         
+                        // Add transaction to NEW USER's history
                         transactionHistory.push({
                             id: generateTransactionId(),
                             type: 'referral_welcome_bonus',
                             amount: welcomeBonus,
                             from: 'system',
                             referrer: referrerData.email,
+                            referrerId: referrerId,
                             timestamp: new Date().toISOString(),
                             status: 'completed'
                         });
                         
-                        showNotification('🎉 Welcome! +0.01 iKb bonus for joining through referral!');
+                        showNotification(`🎉 Welcome! +${welcomeBonus.toFixed(4)} iKb bonus for joining through referral!`);
                         
                     } else {
                         console.log('⚠️ Referral code not found:', referralCodeParam);
+                        showNotification('⚠️ Invalid referral code. Signing up without referral bonus.');
                     }
                 } catch (error) {
                     console.error('❌ Error processing referral:', error);
+                    console.error('   Referral code:', referralCodeParam);
+                    // Continue with signup even if referral processing fails
                 }
             }
             
