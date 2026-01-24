@@ -2998,7 +2998,7 @@ function setupAuthStateListener() {
             showLoginPage();
         }
     });
-    }
+    
 
         function showOfflineLogin() {
             showNotification('Running in offline mode - you can still mine tokens!');
@@ -3398,104 +3398,129 @@ async function loadUserData(firebaseUser) {
             }
         }
 
-        async function handleSignup() {
-            const name = document.getElementById('signupName').value.trim();
-            const email = document.getElementById('signupEmail').value.trim();
-            const password = document.getElementById('signupPassword').value;
-            const confirmPassword = document.getElementById('confirmPassword').value;
-            
-            if (!name) {
-                showError('Please enter your full name');
-                return;
-            }
-            
-            if (!email) {
-                showError('Please enter your email address');
-                return;
-            }
-            
-            if (!isValidEmail(email)) {
-                showError('Please enter a valid email address');
-                return;
-            }
-            
-            if (!password) {
-                showError('Please create a password');
-                return;
-            }
-            
-            if (password.length < 6) {
-                showError('Password must be at least 6 characters long');
-                return;
-            }
-            
-            if (password !== confirmPassword) {
-                showError('Passwords do not match');
-                return;
-            }
-            
-            if (!auth) {
-                showError('Signup requires internet connection. Please try again later.');
-                return;
-            }
-            
-            try {
-                hideMessages();
-                document.querySelector('#signupContainer .auth-button').textContent = 'Creating Account...';
-                document.querySelector('#signupContainer .auth-button').disabled = true;
-                
-                const userCredential = await auth.createUserWithEmailAndPassword(email, password);
-                const user = userCredential.user;
-                
-                await user.updateProfile({
-                    displayName: name
-                });
-                // IMMEDIATE email verification with retry logic
-let emailSent = false;
-let retryCount = 0;
-const maxRetries = 3;
+    </script>
+    <script>
+// REPLACE YOUR ENTIRE handleSignup() FUNCTION WITH THIS -->
 
-while (!emailSent && retryCount < maxRetries) {
+async function handleSignup() {
+    const name = document.getElementById('signupName').value.trim();
+    const email = document.getElementById('signupEmail').value.trim();
+    const password = document.getElementById('signupPassword').value;
+    const confirmPassword = document.getElementById('confirmPassword').value;
+    
+    if (!name) {
+        showError('Please enter your full name');
+        return;
+    }
+    
+    if (!email) {
+        showError('Please enter your email address');
+        return;
+    }
+    
+    if (!isValidEmail(email)) {
+        showError('Please enter a valid email address');
+        return;
+    }
+    
+    if (!password) {
+        showError('Please create a password');
+        return;
+    }
+    
+    if (password.length < 6) {
+        showError('Password must be at least 6 characters long');
+        return;
+    }
+    
+    if (password !== confirmPassword) {
+        showError('Passwords do not match');
+        return;
+    }
+    
+    if (!auth) {
+        showError('Signup requires internet connection. Please try again later.');
+        return;
+    }
+    
     try {
-        console.log(`📧 Sending verification email (attempt ${retryCount + 1})...`);
-        // IMMEDIATE email verification with retry logic
-let emailSent = false;
-let retryCount = 0;
-const maxRetries = 3;
-
-while (!emailSent && retryCount < maxRetries) {
-    try {
-        console.log(`📧 Sending verification email (attempt ${retryCount + 1})...`);
+        hideMessages();
+        document.querySelector('#signupContainer .auth-button').textContent = 'Creating Account...';
+        document.querySelector('#signupContainer .auth-button').disabled = true;
         
-        await user.sendEmailVerification({
-            url: window.location.href, // Use current URL
-            handleCodeInApp: false
+        const userCredential = await auth.createUserWithEmailAndPassword(email, password);
+        const user = userCredential.user;
+        
+        await user.updateProfile({
+            displayName: name
         });
         
-        emailSent = true;
-        console.log('✅ Verification email sent successfully!');
-        
-    } catch (emailError) {
-        retryCount++;
-        console.warn(`⚠️ Email send attempt ${retryCount} failed:`, emailError.message);
-        
-        if (retryCount < maxRetries) {
-            // Wait 2 seconds before retry
-            await new Promise(resolve => setTimeout(resolve, 2000));
-        } else {
-            console.error('❌ All email send attempts failed');
-            throw new Error('Failed to send verification email after 3 attempts');
+        // ✅ IMMEDIATE email verification with retry logic
+        let emailSent = false;
+        let retryCount = 0;
+        const maxRetries = 3;
+
+        while (!emailSent && retryCount < maxRetries) {
+            try {
+                console.log(`📧 Sending verification email (attempt ${retryCount + 1})...`);
+                
+                await user.sendEmailVerification({
+                    url: window.location.href,
+                    handleCodeInApp: false
+                });
+                
+                emailSent = true;
+                console.log('✅ Verification email sent successfully!');
+                
+            } catch (emailError) {
+                retryCount++;
+                console.warn(`⚠️ Email send attempt ${retryCount} failed:`, emailError.message);
+                
+                if (retryCount < maxRetries) {
+                    await new Promise(resolve => setTimeout(resolve, 2000));
+                } else {
+                    console.error('❌ All email send attempts failed');
+                    throw new Error('Failed to send verification email after 3 attempts');
+                }
+            }
         }
+
+        console.log('✅ Account created, verification email sent');
+        showSuccess(`✅ Account Created!\n\n📧 Verification email sent to:\n${email}\n\nCheck your inbox (and spam folder) now!`);
+        
+        // Reset button
+        document.querySelector('#signupContainer .auth-button').textContent = 'Create Account';
+        document.querySelector('#signupContainer .auth-button').disabled = false;
+        
+        // Auto-open email verification screen
+        setTimeout(() => {
+            showEmailVerification();
+        }, 1500);
+        
+    } catch (error) {
+        console.error('Signup error:', error);
+        document.querySelector('#signupContainer .auth-button').textContent = 'Create Account';
+        document.querySelector('#signupContainer .auth-button').disabled = false;
+        
+        let errorMessage = 'Account creation failed. ';
+        switch (error.code) {
+            case 'auth/email-already-in-use':
+                errorMessage = 'This email is already registered. Please sign in instead.';
+                break;
+            case 'auth/invalid-email':
+                errorMessage = 'Please enter a valid email address.';
+                break;
+            case 'auth/weak-password':
+                errorMessage = 'Password should be at least 6 characters long.';
+                break;
+            default:
+                errorMessage += error.message;
+        }
+        showError(errorMessage);
     }
 }
-
-console.log('✅ Account created, verification email sent');
-showSuccess(`✅ Account Created!\n\n📧 Verification email sent to:\n${email}\n\nCheck your inbox (and spam folder) now!`);
-
-// Auto-open email verification screen
-setTimeout(() => {
-    showEmailVerification();
-}, 1500);
+</script>
+<script>
 
         function showLoginPage() {
             document.getElementById('loginPage').style.display = 'flex';
