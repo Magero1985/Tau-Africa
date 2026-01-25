@@ -3019,62 +3019,38 @@ function setupAuthStateListener() {
         // DECLARE userData HERE so it's accessible throughout the function
         let userData = null;
         
-        // REPLACE the existing "NEW USER" referral logic in loadUserData with this:
-if (!userDoc.exists) {
-    console.log('🆕 New user registration detected');
-    userWalletAddress = generateWalletAddress();
-    referralCode = 'KABIRU_' + firebaseUser.uid.substr(-6).toUpperCase();
-    
-    // Check URL for referral code
-    const urlParams = new URLSearchParams(window.location.search);
-    const referralCodeParam = urlParams.get('ref');
-    let referrerId = null;
-    let welcomeBonus = 0.01; // Set your desired welcome bonus amount
-
-    if (referralCodeParam) {
-        try {
-            console.log('🔍 Processing referral link:', referralCodeParam);
-            const referrerQuery = await db.collection('users')
-                .where('referralCode', '==', referralCodeParam)
-                .limit(1).get();
-
-            if (!referrerQuery.empty) {
-                const referrerDoc = referrerQuery.docs[0];
-                referrerId = referrerDoc.id;
-                const referrerData = referrerDoc.data();
-                
-                // 1. Credit the New User (Welcome Bonus)
-                receivedBalance += welcomeBonus;
-                userBalance = receivedBalance;
-                
-                // 2. Add transaction record for New User
-                transactionHistory.push({
-                    id: 'tx_' + Date.now(),
-                    type: 'referral_welcome_bonus',
-                    amount: welcomeBonus,
-                    from: 'system',
-                    referrer: referrerData.email,
-                    timestamp: new Date().toISOString(),
-                    status: 'completed'
-                });
-
-                // 3. Credit the Referrer (Signup Bonus)
-                const signupBonus = 0.005; // Amount given to the person who invited them
-                await db.collection('users').doc(referrerId).update({
-                    receivedBalance: firebase.firestore.FieldValue.increment(signupBonus),
-                    totalReferrals: firebase.firestore.FieldValue.increment(1),
-                    totalReferralEarnings: firebase.firestore.FieldValue.increment(signupBonus),
-                    // Note: Adding to transactionHistory for referrer requires a transaction or separate update
-                });
-                
-                showNotification(`🎉 Welcome! +${welcomeBonus.toFixed(4)} iKb bonus for joining via referral!`);
+        if (userDoc.exists) {
+            // EXISTING USER - Load their data
+            userData = userDoc.data();
+            
+            // Load TAU Member verification
+            if (userData.tauMemberId) {
+                try {
+                    const memberQuery = await db.collection('members')
+                        .where('id', '==', userData.tauMemberId)
+                        .limit(1)
+                        .get();
+                    
+                    if (!memberQuery.empty) {
+                        const memberData = memberQuery.docs[0].data();
+                        const memberLevel = memberData.level || 1;
+                        
+                        const levelRates = {
+                            1: 0.005,  // Basic
+                            2: 0.01,   // Community
+                            3: 0.1,    // Sovereign
+                            4: 0.2     // Elite
+                        };
+                        
+                        miningRate = levelRates[memberLevel] || 0.005;
+                        
+                        console.log(`⚡ Mining rate: ${miningRate} iKb/day (Level ${memberLevel})`);
+                    }
+                } catch (error) {
+                    console.error('Error loading member level:', error);
+                }
             }
-        } catch (error) {
-            console.error('❌ Referral error:', error);
-        }
-    }
-    // ... rest of your newUserData object creation ...
-        
+            
             // Load user balances
             minedBalance = userData.minedBalance || 0.0000;
             receivedBalance = userData.receivedBalance || 0.0000;
@@ -3092,86 +3068,149 @@ if (!userDoc.exists) {
             console.log('✅ User data loaded - Balance:', userBalance.toFixed(4));
             
         } else {
-            // NEW USER REGISTRATION LOGIC
-        console.log('🆕 Registering new user profile...');
-        userWalletAddress = generateWalletAddress();
-        referralCode = 'KABIRU_' + firebaseUser.uid.substr(-6).toUpperCase();
-        
-        const urlParams = new URLSearchParams(window.location.search);
-        const referralCodeParam = urlParams.get('ref');
-        let referrerId = null;
-        let welcomeBonus = 0;
-
-        if (referralCodeParam) {
-            try {
-                const referrerQuery = await db.collection('users').where('referralCode', '==', referralCodeParam).limit(1).get();
-                
-                if (!referrerQuery.empty) {
-                    const referrerDoc = referrerQuery.docs[0];
-                    referrerId = referrerDoc.id;
-                    const referrerData = referrerDoc.data();
-                    welcomeBonus = 0.01; // Bonus for the new user
-                    const signupBonus = 0.005; // Bonus for the person who shared the link
-
-                    // TRANSACTION: Update Referrer's balance immediately
-                    await db.runTransaction(async (transaction) => {
-                        const refDoc = await transaction.get(referrerDoc.ref);
-                        const newReceived = (refDoc.data().receivedBalance || 0) + signupBonus;
-                        const newTotalRef = (refDoc.data().totalReferrals || 0) + 1;
-                        const newTotalEarned = (refDoc.data().totalReferralEarnings || 0) + signupBonus;
-                        
-                        // Add to Referrer's history
-                        const refHistory = refDoc.data().transactionHistory || [];
-                        refHistory.unshift({
-                            id: 'tx_ref_' + Date.now(),
-                            type: 'referral_signup_bonus',
-                            amount: signupBonus,
-                            fromEmail: firebaseUser.email,
-                            timestamp: new Date().toISOString()
-                        });
-
-                        transaction.update(referrerDoc.ref, {
-                            receivedBalance: newReceived,
-                            totalReferrals: newTotalRef,
-                            totalReferralEarnings: newTotalEarned,
-                            transactionHistory: refHistory.slice(0, 50)
-                        });
-                    });
-
-                    // Update New User's starting balance
-                    receivedBalance = welcomeBonus;
-                    userBalance = receivedBalance;
+            // NEW USER - Check for referral code and process signup
+            console.log('🆕 New user registration');
+            
+            userWalletAddress = generateWalletAddress();
+            referralCode = 'KABIRU_' + firebaseUser.uid.substr(-6).toUpperCase();
+            
+            const urlParams = new URLSearchParams(window.location.search);
+            const referralCodeParam = urlParams.get('ref');
+            
+            let referrerId = null;
+            let welcomeBonus = 0;
+            
+            if (referralCodeParam) {
+                try {
+                    console.log('🔍 Processing referral code:', referralCodeParam);
                     
-                    transactionHistory.push({
-                        id: 'tx_welcome_' + Date.now(),
-                        type: 'referral_welcome_bonus',
-                        amount: welcomeBonus,
-                        from: 'system',
-                        timestamp: new Date().toISOString()
-                    });
-                }
-            } catch (err) { console.error("Referral Error:", err); }
-        }
+                    const referrerQuery = await db.collection('users')
+                        .where('referralCode', '==', referralCodeParam)
+                        .limit(1)
+                        .get();
+                    
+                    if (!referrerQuery.empty) {
+    const referrerDoc = referrerQuery.docs[0];
+    referrerId = referrerDoc.id;
+    const referrerData = referrerDoc.data();
+    
+    console.log('✅ Valid referrer found');
+    
+    // Give new user their welcome bonus
+    welcomeBonus = 0.01;
+receivedBalance = welcomeBonus;
+userBalance = welcomeBonus;
 
-        const newUserData = {
-            uid: firebaseUser.uid,
-            email: firebaseUser.email,
-            displayName: firebaseUser.displayName || 'Anonymous User',
-            minedBalance: 0,
-            receivedBalance: receivedBalance,
-            reserveBalance: 0,
-            lockedBalance: 0,
-            tasksCompleted: 0,
-            miningRate: 0.005,
-            walletAddress: userWalletAddress,
-            transactionHistory: transactionHistory,
-            referralCode: referralCode,
-            referredBy: referrerId,
-            totalReferrals: 0,
-            totalReferralEarnings: 0,
-            createdAt: firebase.firestore.FieldValue.serverTimestamp()
-        };
-        await db.collection('users').doc(firebaseUser.uid).set(newUserData);
+const signupBonus = 0.005;
+
+try {
+    console.log('💰 Starting referrer bonus transaction...');
+    
+    await db.runTransaction(async (transaction) => {
+        const referrerRef = db.collection('users').doc(referrerId);
+        const referrerSnapshot = await transaction.get(referrerRef);
+        
+        // ✅ SAFETY CHECK: Only proceed if referrer still exists
+        if (!referrerSnapshot.exists) {
+            console.warn('⚠️ Referrer was deleted - new user still gets bonus');
+            return;  // ✅ Exit gracefully instead of throwing error
+        }
+                                
+                                const referrerCurrentData = referrerSnapshot.data();
+                                
+                                const newReceivedBalance = (referrerCurrentData.receivedBalance || 0) + signupBonus;
+                                const newTotalReferrals = (referrerCurrentData.totalReferrals || 0) + 1;
+                                const newTotalEarnings = (referrerCurrentData.totalReferralEarnings || 0) + signupBonus;
+                                
+                                console.log('📊 Referrer update:', {
+                                    oldBalance: referrerCurrentData.receivedBalance || 0,
+                                    newBalance: newReceivedBalance,
+                                    bonus: signupBonus,
+                                    totalReferrals: newTotalReferrals
+                                });
+                                
+                                const currentTxHistory = referrerCurrentData.transactionHistory || [];
+                                const newTransaction = {
+                                    id: generateTransactionId(),
+                                    type: 'referral_signup_bonus',
+                                    amount: signupBonus,
+                                    from: firebaseUser.uid,
+                                    fromEmail: firebaseUser.email,
+                                    fromName: firebaseUser.displayName || 'New User',
+                                    timestamp: new Date().toISOString(),
+                                    status: 'completed'
+                                };
+                                
+                                currentTxHistory.unshift(newTransaction);
+                                const trimmedHistory = currentTxHistory.slice(0, 50);
+                                
+                                transaction.update(referrerRef, {
+                                    receivedBalance: newReceivedBalance,
+                                    totalReferrals: newTotalReferrals,
+                                    totalReferralEarnings: newTotalEarnings,
+                                    transactionHistory: trimmedHistory,
+                                    lastReferralBonus: firebase.firestore.FieldValue.serverTimestamp()
+                                });
+                            });
+                            
+                            console.log('✅ Signup bonus credited to referrer:', signupBonus);
+                            
+                        } catch (txError) {
+                            console.error('❌ Referral transaction failed:', txError);
+                            console.error('   Error details:', txError.message);
+                            // Even if referrer bonus fails, new user still gets welcome bonus
+                        }
+                        
+                        // Add transaction to NEW USER's history
+                        transactionHistory.push({
+                            id: generateTransactionId(),
+                            type: 'referral_welcome_bonus',
+                            amount: welcomeBonus,
+                            from: 'system',
+                            referrer: referrerData.email,
+                            referrerId: referrerId,
+                            timestamp: new Date().toISOString(),
+                            status: 'completed'
+                        });
+                        
+                        showNotification(`🎉 Welcome! +${welcomeBonus.toFixed(4)} iKb bonus for joining through referral!`);
+                        
+                    } else {
+                        console.log('⚠️ Referral code not found:', referralCodeParam);
+                        showNotification('⚠️ Invalid referral code. Signing up without referral bonus.');
+                    }
+                } catch (error) {
+                    console.error('❌ Error processing referral:', error);
+                    console.error('   Referral code:', referralCodeParam);
+                    // Continue with signup even if referral processing fails
+                }
+            }
+            
+            // Create new user document
+            const newUserData = {
+                uid: firebaseUser.uid,
+                email: firebaseUser.email,
+                displayName: firebaseUser.displayName || 'Anonymous User',
+                balance: userBalance,
+                minedBalance: 0.0000,
+                receivedBalance: receivedBalance,
+                reserveBalance: 0.0000,
+                lockedBalance: 0.0000,
+                kabiruPoints: 0.0000,
+                tasksCompleted: 0,
+                miningRate: 0.005,
+                walletAddress: userWalletAddress,
+                transactionHistory: transactionHistory,
+                referralCode: referralCode,
+                referredBy: referrerId,
+                totalReferrals: 0,
+                totalReferralEarnings: 0,
+                lockupPeriods: [],
+                createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+                lastActive: firebase.firestore.FieldValue.serverTimestamp()
+            };
+            
+            await db.collection('users').doc(firebaseUser.uid).set(newUserData);
             console.log('✅ New user created with referral tracking');
             
             // Set userData for new user
@@ -3279,11 +3318,6 @@ if (!userDoc.exists) {
             }
             return address;
         }
-        function generateReferralLink() {
-    // This ensures your referral link always points to your GitHub Pages site
-    const baseUrl = 'https://magero1985.github.io/Tau-Africa/Kabiru-Mining-Portal.html';
-    return `${baseUrl}?ref=${referralCode}`;
-        }
 
         function updateUserDisplay() {
             if (!currentUser) return;
@@ -3387,44 +3421,89 @@ if (!userDoc.exists) {
         }
 
         async function handleSignup() {
-    const name = document.getElementById('signupName').value.trim();
-    const email = document.getElementById('signupEmail').value.trim();
-    const password = document.getElementById('signupPassword').value;
-    const confirmPassword = document.getElementById('confirmPassword').value;
-
-    if (!name || !email || password.length < 6 || password !== confirmPassword) {
-        showError('Please check your inputs and passwords.');
-        return;
-    }
-
-    try {
-        hideMessages();
-        const btn = document.querySelector('#signupContainer .auth-button');
-        btn.textContent = 'Creating Account...';
-        btn.disabled = true;
-
-        const userCredential = await auth.createUserWithEmailAndPassword(email, password);
-        const user = userCredential.user;
-        await user.updateProfile({ displayName: name });
-
-        // FIX: Capture the referral code from the URL to include it in the verification link
-        const urlParams = new URLSearchParams(window.location.search);
-        const ref = urlParams.get('ref');
-        const currentUrl = window.location.origin + window.location.pathname;
-        const verificationUrl = ref ? `${currentUrl}?ref=${ref}` : currentUrl;
-
-        await user.sendEmailVerification({
-            url: verificationUrl,
-            handleCodeInApp: false
-        });
-
-        showSuccess('Account created! Please check your email for verification.');
-        showEmailVerification();
-    } catch (error) {
-        showError('Signup failed: ' + error.message);
-        document.querySelector('#signupContainer .auth-button').disabled = false;
-    }
-    }
+            const name = document.getElementById('signupName').value.trim();
+            const email = document.getElementById('signupEmail').value.trim();
+            const password = document.getElementById('signupPassword').value;
+            const confirmPassword = document.getElementById('confirmPassword').value;
+            
+            if (!name) {
+                showError('Please enter your full name');
+                return;
+            }
+            
+            if (!email) {
+                showError('Please enter your email address');
+                return;
+            }
+            
+            if (!isValidEmail(email)) {
+                showError('Please enter a valid email address');
+                return;
+            }
+            
+            if (!password) {
+                showError('Please create a password');
+                return;
+            }
+            
+            if (password.length < 6) {
+                showError('Password must be at least 6 characters long');
+                return;
+            }
+            
+            if (password !== confirmPassword) {
+                showError('Passwords do not match');
+                return;
+            }
+            
+            if (!auth) {
+                showError('Signup requires internet connection. Please try again later.');
+                return;
+            }
+            
+            try {
+                hideMessages();
+                document.querySelector('#signupContainer .auth-button').textContent = 'Creating Account...';
+                document.querySelector('#signupContainer .auth-button').disabled = true;
+                
+                const userCredential = await auth.createUserWithEmailAndPassword(email, password);
+                const user = userCredential.user;
+                
+                await user.updateProfile({
+                    displayName: name
+                });
+                
+                await user.sendEmailVerification({
+    url: 'https://magero1985.github.io/Tau-Africa/Kabiru-Mining-Portal.html', // Use your exact URL
+    handleCodeInApp: false
+});
+                
+                console.log('Account created, verification email sent');
+                showSuccess('Account created! Please check your email for verification instructions.');
+                showEmailVerification();
+                
+            } catch (error) {
+                console.error('Signup error:', error);
+                document.querySelector('#signupContainer .auth-button').textContent = 'Create Account';
+                document.querySelector('#signupContainer .auth-button').disabled = false;
+                
+                let errorMessage = 'Account creation failed. ';
+                switch (error.code) {
+                    case 'auth/email-already-in-use':
+                        errorMessage = 'This email is already registered. Please sign in instead.';
+                        break;
+                    case 'auth/invalid-email':
+                        errorMessage = 'Please enter a valid email address.';
+                        break;
+                    case 'auth/weak-password':
+                        errorMessage = 'Password should be at least 6 characters long.';
+                        break;
+                    default:
+                        errorMessage += error.message;
+                }
+                showError(errorMessage);
+            }
+        }
 
         function showLoginPage() {
             document.getElementById('loginPage').style.display = 'flex';
