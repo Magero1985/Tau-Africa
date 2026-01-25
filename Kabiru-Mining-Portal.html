@@ -3098,22 +3098,23 @@ function setupAuthStateListener() {
     
     // Give new user their welcome bonus
     welcomeBonus = 0.01;
-    receivedBalance = welcomeBonus;
-    userBalance = welcomeBonus;
-    
-    // Try to give referrer their signup bonus
-    const signupBonus = 0.005;
+receivedBalance = welcomeBonus;
+userBalance = welcomeBonus;
 
-    try {
-        await db.runTransaction(async (transaction) => {
-            const referrerRef = db.collection('users').doc(referrerId);
-            const referrerSnapshot = await transaction.get(referrerRef);
-            
-            // ✅ SAFETY CHECK: Only proceed if referrer still exists
-            if (!referrerSnapshot.exists) {
-                console.warn('⚠️ Referrer was deleted - new user still gets bonus');
-                return;  // ✅ NEW: Exit gracefully instead of throwing error
-                }
+const signupBonus = 0.005;
+
+try {
+    console.log('💰 Starting referrer bonus transaction...');
+    
+    await db.runTransaction(async (transaction) => {
+        const referrerRef = db.collection('users').doc(referrerId);
+        const referrerSnapshot = await transaction.get(referrerRef);
+        
+        // ✅ SAFETY CHECK: Only proceed if referrer still exists
+        if (!referrerSnapshot.exists) {
+            console.warn('⚠️ Referrer was deleted - new user still gets bonus');
+            return;  // ✅ Exit gracefully instead of throwing error
+        }
                                 
                                 const referrerCurrentData = referrerSnapshot.data();
                                 
