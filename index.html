@@ -2517,16 +2517,16 @@ function showMultiPaymentModal(amount, phoneNumber, formData, successCallback) {
                         1. Go to M-PESA menu<br>
                         2. Select "Lipa na M-PESA"<br>
                         3. Select "Pay Bill"<br>
-                        4. Enter Business Number: <strong>4087777</strong><br>
-                        5. Account Number: <strong>TAU${Date.now().toString().slice(-6)}</strong><br>
+                        4. Enter Business Number: <strong>247247</strong><br>
+                        5. Account Number: <strong>0650183785384${Date.now().toString().slice(-6)}</strong><br>
                         6. Amount: <strong>KSH ${amount}</strong><br>
-                        7. Enter your M-PESA PIN
+                        7. Enter your M-PESA PIN, then use your transaction code below, it will be verified for your validation 
                     </p>
                 </div>
                 
                 <input type="text" class="payment-input" placeholder="Enter M-PESA Transaction Code (e.g., QGX1234567)" id="mpesaCode" maxlength="10">
                 <small style="color: #666; display: block; margin: 5px 0 15px 0;">
-                    You'll receive an SMS with the code after payment
+                    You'll receive an Email/SMS with the code after payment
                 </small>
                 
                 <button class="btn" onclick="confirmPayment('mpesa', ${amount})" style="width: 100%; background: #27ae60;">
@@ -2542,8 +2542,8 @@ function showMultiPaymentModal(amount, phoneNumber, formData, successCallback) {
                         <strong>Bank Details:</strong><br>
                         Bank: Equity Bank<br>
                         Account: TAU AFRICA ECOSYSTEM<br>
-                        Account No: 1234567890<br>
-                        Swift Code: EQBLKENA<br>
+                        Account No: 0650183785384<br>
+                        Swift Code: REQUEST<br>
                         Amount: <strong>KSH ${amount}</strong>
                     </p>
                     <p style="margin: 10px 0 0 0; font-size: 12px; color: #e74c3c;">
