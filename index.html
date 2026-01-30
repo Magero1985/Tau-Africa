@@ -16960,6 +16960,19 @@ function showLevelComplete(level, reward) {
         </div>
     `;
 }
+    // Add this at the bottom of your script
+function initializeBridgeSync() {
+    if (db && isOnline) {
+        db.collection('members').onSnapshot(snapshot => {
+            snapshot.docChanges().forEach(change => {
+                if (change.type === 'added' || change.type === 'modified') {
+                    console.log("Bridge Sync: Member ID Updated", change.doc.id);
+                    // Update only necessary UI elements, don't reload the whole DB
+                }
+            });
+        });
+    }
+}
     </script>
 </body>
 </html>
