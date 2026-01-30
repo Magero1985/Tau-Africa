@@ -8394,9 +8394,8 @@ localStorage.setItem('tauAdminNotifications', JSON.stringify(adminNotifs));
         document.body.appendChild(modal);
     };
 
-    // REPLACE your current window.processRealLogin with this:
-window.processRealLogin = async function(event) {
-    event.preventDefault();
+   window.processRealLogin = async function(event) {
+    if(event) event.preventDefault();
     const identifier = document.getElementById('loginIdentifier').value.trim();
     const phoneLastFour = document.getElementById('loginPhone').value.trim();
 
@@ -8405,52 +8404,33 @@ window.processRealLogin = async function(event) {
         return;
     }
 
-    showNotification('⌛ Authenticating with Bridge...', 'info');
+    showNotification('⌛ Connecting to Bridge...', 'info');
 
     try {
         const db = firebase.firestore();
-        let memberDoc = null;
+        // Look for the member in the global 'members' collection used by Kabiru and Bridge
+        const doc = await db.collection('members').doc(identifier).get();
 
-        // 1. Search by Member ID first
-        const idRef = await db.collection('members').doc(identifier).get();
-        
-        if (idRef.exists) {
-            memberDoc = idRef.data();
-        } else {
-            // 2. Fallback: Search by Email
-            const emailQuery = await db.collection('members')
-                .where('email', '==', identifier)
-                .limit(1)
-                .get();
-            
-            if (!emailQuery.empty) {
-                memberDoc = emailQuery.docs[0].data();
+        if (doc.exists) {
+            const memberData = doc.data();
+            // Verify last 4 digits of phone
+            const storedPhone = String(memberData.phone);
+            if (storedPhone.slice(-4) === phoneLastFour) {
+                sessionStorage.setItem('tauActiveSession', JSON.stringify(memberData));
+                showNotification('✅ Bridge Success! Loading Dashboard...', 'success');
+                setTimeout(() => {
+                    closeAllModals();
+                    showRealMemberDashboard(memberData);
+                }, 1000);
+            } else {
+                showNotification('❌ Incorrect phone digits', 'error');
             }
-        }
-
-        // 3. Validate Phone Suffix
-        if (memberDoc && memberDoc.phone.slice(-4) === phoneLastFour) {
-            console.log('✅ Bridge Authentication Success:', memberDoc.id);
-            
-            // Sync to session for immediate use
-            sessionStorage.setItem('tauActiveSession', JSON.stringify(memberDoc));
-            
-            showNotification('✅ Login successful!', 'success');
-            
-            setTimeout(() => {
-                closeAllModals();
-                if (typeof showRealMemberDashboard === 'function') {
-                    showRealMemberDashboard(memberDoc);
-                } else {
-                    location.reload(); // Refresh to update UI state
-                }
-            }, 1000);
         } else {
-            showNotification('❌ Invalid ID or Phone digits', 'error');
+            showNotification('❌ Member ID not found in Bridge', 'error');
         }
     } catch (error) {
-        console.error('Login Error:', error);
-        showNotification('❌ Connection Error. Please try again.', 'error');
+        console.error("Login Error:", error);
+        showNotification('❌ Cloud Connection Error', 'error');
     }
 };
     </script>
@@ -10057,12 +10037,12 @@ localStorage.setItem('tau_cache_' + member.id, JSON.stringify(member));
                     console.log('✅ Transfer completed by Kabiru Mining!');
                     
                     // Update localStorage to remove pending transfer
-                    const members = JSON.parse(localStorage.getItem('tauAfricaDB') || '[]');
+                    const members = JSON.parse(localStorage.getItem('tau_cache_') || '[]');
                     const memberIndex = members.findIndex(m => m.id === currentMember.id);
                     
                     if (memberIndex !== -1) {
                         members[memberIndex].pendingKabiruTransfer = null;
-                        localStorage.setItem('tauAfricaDB', JSON.stringify(members));
+                        localStorage.setItem('tau_cache_', JSON.stringify(members));
                     }
                     
                     // Notify user
@@ -10195,10 +10175,6 @@ localStorage.setItem('tau_cache_' + member.id, JSON.stringify(member));
     // ============================================
     function checkFunctions() {
         const requiredFunctions = [
-            'TauDB.sync',
-            'TauDB.authenticate',
-            'TauDB.addActivity',
-            'TauDB.addTask',
             'createNotification',
             'showNotification',
             'refreshPublicOpportunities'
@@ -11139,7 +11115,7 @@ console.log('✅ Member pushed to Bridge (Firestore):', member.id);
     
     // REPLACE your current window.processRealLogin with this:
 window.processRealLogin = async function(event) {
-    event.preventDefault();
+    if(event) event.preventDefault();
     const identifier = document.getElementById('loginIdentifier').value.trim();
     const phoneLastFour = document.getElementById('loginPhone').value.trim();
 
@@ -11148,67 +11124,35 @@ window.processRealLogin = async function(event) {
         return;
     }
 
-    showNotification('⌛ Authenticating with Bridge...', 'info');
+    showNotification('⌛ Connecting to Bridge...', 'info');
 
     try {
         const db = firebase.firestore();
-        let memberDoc = null;
+        // Look for the member in the global 'members' collection used by Kabiru and Bridge
+        const doc = await db.collection('members').doc(identifier).get();
 
-        // 1. Search by Member ID first
-        const idRef = await db.collection('members').doc(identifier).get();
-        
-        if (idRef.exists) {
-            memberDoc = idRef.data();
-        } else {
-            // 2. Fallback: Search by Email
-            const emailQuery = await db.collection('members')
-                .where('email', '==', identifier)
-                .limit(1)
-                .get();
-            
-            if (!emailQuery.empty) {
-                memberDoc = emailQuery.docs[0].data();
+        if (doc.exists) {
+            const memberData = doc.data();
+            // Verify last 4 digits of phone
+            const storedPhone = String(memberData.phone);
+            if (storedPhone.slice(-4) === phoneLastFour) {
+                sessionStorage.setItem('tauActiveSession', JSON.stringify(memberData));
+                showNotification('✅ Bridge Success! Loading Dashboard...', 'success');
+                setTimeout(() => {
+                    closeAllModals();
+                    showRealMemberDashboard(memberData);
+                }, 1000);
+            } else {
+                showNotification('❌ Incorrect phone digits', 'error');
             }
-        }
-
-        // 3. Validate Phone Suffix
-        if (memberDoc && memberDoc.phone.slice(-4) === phoneLastFour) {
-            console.log('✅ Bridge Authentication Success:', memberDoc.id);
-            
-            // Sync to session for immediate use
-            sessionStorage.setItem('tauActiveSession', JSON.stringify(memberDoc));
-            
-            showNotification('✅ Login successful!', 'success');
-            
-            setTimeout(() => {
-                closeAllModals();
-                if (typeof showRealMemberDashboard === 'function') {
-                    showRealMemberDashboard(memberDoc);
-                } else {
-                    location.reload(); // Refresh to update UI state
-                }
-            }, 1000);
         } else {
-            showNotification('❌ Invalid ID or Phone digits', 'error');
+            showNotification('❌ Member ID not found in Bridge', 'error');
         }
     } catch (error) {
-        console.error('Login Error:', error);
-        showNotification('❌ Connection Error. Please try again.', 'error');
+        console.error("Login Error:", error);
+        showNotification('❌ Cloud Connection Error', 'error');
     }
 };
-    
-    // Debug: Check if floating button exists
-    setTimeout(() => {
-        const floatingBtn = document.querySelector('.floating-btn');
-        if (floatingBtn) {
-            console.log('✅ Floating login button found');
-            // Ensure it has the click handler
-            floatingBtn.onclick = showRealMemberLogin;
-        } else {
-            console.error('❌ Floating login button not found!');
-        }
-    }, 1000);
-})();
 </script>
         <script>
 // ============================================
@@ -11552,22 +11496,6 @@ localStorage.setItem('tau_cache_' + member.id, JSON.stringify(member));
                 showNotification('❌ Failed: ' + result.error, 'error');
             }
         }
-    };
-    
-    // ============================================
-    // 5. OVERRIDE TauDB
-    // ============================================
-    if (typeof window.TauDB === 'undefined') {
-        window.TauDB = {};
-    }
-    
-    window.TauDB.sync = async function(formData, team, referralCode) {
-        return await registerMember(formData, team, referralCode);
-    };
-    
-    window.TauDB.checkReferralCode = function() {
-        const urlParams = new URLSearchParams(window.location.search);
-        return urlParams.get('ref');
     };
     
     // ============================================
@@ -12614,7 +12542,7 @@ window.processValidatorCode = async function(event, validatorId) {
             members[memberIndex].activities.push(completionRecord);
         }
         
-        localStorage.setItem('tauAfricaDB', JSON.stringify(members));
+        localStorage.setItem('_cache_', JSON.stringify(members));
         
         // Create admin notification
         const adminNotifs = JSON.parse(localStorage.getItem('tauAdminNotifications') || '[]');
@@ -12655,7 +12583,15 @@ window.processValidatorCode = async function(event, validatorId) {
     
     window.showRealMemberDashboard = window.showEnhancedMemberDashboard = function(member) {
         if (!member) {
-            member = window.TauDB?.getCurrentMember();
+            // Replace local lookup with Firebase lookup
+window.validateMemberBridge = async function(memberId) {
+    const doc = await db.collection('members').doc(memberId).get();
+    if (doc.exists) {
+        return doc.data(); // This member is now validated via the Bridge
+    } else {
+        throw new Error("Member not found in Firebase Bridge");
+    }
+};
             if (!member) {
                 showNotification('Please login first', 'error');
                 showRealMemberLogin();
@@ -12664,7 +12600,14 @@ window.processValidatorCode = async function(event, validatorId) {
         }
         
         // Refresh member data
-        const members = JSON.parse(localStorage.getItem('tauAfricaDB') || '[]');
+window.validateMemberBridge = async function(memberId) {
+    const doc = await db.collection('members').doc(memberId).get();
+    if (doc.exists) {
+        return doc.data(); // This member is now validated via the Bridge
+    } else {
+        throw new Error("Member not found in Firebase Bridge");
+    }
+};') || '[]');
         const freshMember = members.find(m => m.id === member.id) || member;
         
         const myTasks = freshMember.tasks || [];
@@ -12799,7 +12742,14 @@ window.processValidatorCode = async function(event, validatorId) {
     
     // Account details dropdown
     window.showAccountDetails = function(memberId) {
-        const members = JSON.parse(localStorage.getItem('tauAfricaDB') || '[]');
+window.validateMemberBridge = async function(memberId) {
+    const doc = await db.collection('members').doc(memberId).get();
+    if (doc.exists) {
+        return doc.data(); // This member is now validated via the Bridge
+    } else {
+        throw new Error("Member not found in Firebase Bridge");
+    }
+};
         const member = members.find(m => m.id === memberId);
         
         if (!member) return;
@@ -12886,8 +12836,15 @@ window.processValidatorCode = async function(event, validatorId) {
     // ============================================
     
     // Enhanced validator interface with stage instructions
-    window.showValidatorInterface = function() {
-        const currentMember = window.TauDB?.getCurrentMember();
+    window.showValidatorInterface = function() 
+window.validateMemberBridge = async function(memberId) {
+    const doc = await db.collection('members').doc(memberId).get();
+    if (doc.exists) {
+        return doc.data(); // This member is now validated via the Bridge
+    } else {
+        throw new Error("Member not found in Firebase Bridge");
+    }
+};
         
         if (!currentMember) {
             showNotification('❌ Please login first', 'error');
@@ -13071,10 +13028,6 @@ window.processValidatorCode = async function(event, validatorId) {
         items[itemIndex] = item;
         localStorage.setItem(storageKey, JSON.stringify(items));
         
-        // Award validator
-        if (window.TauDB?.updateBalance) {
-            window.TauDB.updateBalance(validatorId, earningsIkbp);
-        }
         
         // Save to Firestore
         if (typeof firebase !== 'undefined' && firebase.apps.length > 0) {
@@ -13515,7 +13468,15 @@ window.processValidatorCode = async function(event, validatorId) {
         event.preventDefault();
         
         const formData = new FormData(event.target);
-        const currentMember = window.TauDB?.getCurrentMember();
+        // Replace local lookup with Firebase lookup
+window.validateMemberBridge = async function(memberId) {
+    const doc = await db.collection('members').doc(memberId).get();
+    if (doc.exists) {
+        return doc.data(); // This member is now validated via the Bridge
+    } else {
+        throw new Error("Member not found in Firebase Bridge");
+    }
+};
         
         const jobId = 'JOB-' + Date.now();
         const validationCode = generateJobValidationCode();
@@ -14376,9 +14337,15 @@ console.log('✅ Kabiru transfer button fixed')
     function updateLoginStatus() {
         const indicator = document.getElementById('loginStatusIndicator');
         if (!indicator) return;
-        
-        const currentMember = window.TauDB?.getCurrentMember();
-        
+        // Replace local lookup with Firebase lookup
+window.validateMemberBridge = async function(memberId) {
+    const doc = await db.collection('members').doc(memberId).get();
+    if (doc.exists) {
+        return doc.data(); // This member is now validated via the Bridge
+    } else {
+        throw new Error("Member not found in Firebase Bridge");
+    }
+};
         if (currentMember) {
             // User is logged in
             indicator.innerHTML = `
@@ -14528,7 +14495,15 @@ console.log('✅ Kabiru transfer button fixed')
     
     window.showRealMemberDashboard = window.showEnhancedMemberDashboard = function(member) {
         if (!member) {
-            member = window.TauDB?.getCurrentMember();
+            member =
+window.validateMemberBridge = async function(memberId) {
+    const doc = await db.collection('members').doc(memberId).get();
+    if (doc.exists) {
+        return doc.data(); // This member is now validated via the Bridge
+    } else {
+        throw new Error("Member not found in Firebase Bridge");
+    }
+};
             if (!member) {
                 showNotification('Please login first', 'error');
                 showRealMemberLogin();
@@ -14537,7 +14512,15 @@ console.log('✅ Kabiru transfer button fixed')
         }
         
         // Refresh member data
-        const members = JSON.parse(localStorage.getItem('tauAfricaDB') || '[]');
+        const members = 
+window.validateMemberBridge = async function(memberId) {
+    const doc = await db.collection('members').doc(memberId).get();
+    if (doc.exists) {
+        return doc.data(); // This member is now validated via the Bridge
+    } else {
+        throw new Error("Member not found in Firebase Bridge");
+    }
+};
         const freshMember = members.find(m => m.id === member.id) || member;
         
         const myTasks = freshMember.tasks || [];
@@ -15735,11 +15718,16 @@ window.startLevelChallenge = function() {
     
     function awardiKbpToMember(amount) {
         // Get current member from session
-        const currentMember = window.TauDB?.getCurrentMember();
+        const currentMember = // Replace local lookup with Firebase lookup
+window.validateMemberBridge = async function(memberId) {
+    const doc = await db.collection('members').doc(memberId).get();
+    if (doc.exists) {
+        return doc.data(); // This member is now validated via the Bridge
+    } else {
+        throw new Error("Member not found in Firebase Bridge");
+    }
+};
         
-        if (currentMember && window.TauDB?.updateBalance) {
-            window.TauDB.updateBalance(currentMember.id, amount);
-            
             // Create notification
             if (typeof createNotification === 'function') {
                 createNotification(
@@ -15895,7 +15883,15 @@ window.TauEarningsSync = {
         
         if (urlParams.has('sync') && urlParams.has('earned')) {
             const earned = parseInt(urlParams.get('earned'));
-            const memberId = urlParams.get('memberId') || window.TauDB?.getCurrentMember()?.id;
+            const memberId = urlParams.get('memberId') || // Replace local lookup with Firebase lookup
+window.validateMemberBridge = async function(memberId) {
+    const doc = await db.collection('members').doc(memberId).get();
+    if (doc.exists) {
+        return doc.data(); // This member is now validated via the Bridge
+    } else {
+        throw new Error("Member not found in Firebase Bridge");
+    }
+};
             
             if (earned > 0 && memberId) {
                 this.processEarnings(memberId, earned, 'knowledge_app_redirect');
@@ -15909,7 +15905,15 @@ window.TauEarningsSync = {
     // Check localStorage for queued earnings
     checkLocalStorageForEarnings: function() {
         const syncQueue = JSON.parse(localStorage.getItem('tauEarningsSync') || '[]');
-        const currentMember = window.TauDB?.getCurrentMember();
+        const currentMember = // Replace local lookup with Firebase lookup
+window.validateMemberBridge = async function(memberId) {
+    const doc = await db.collection('members').doc(memberId).get();
+    if (doc.exists) {
+        return doc.data(); // This member is now validated via the Bridge
+    } else {
+        throw new Error("Member not found in Firebase Bridge");
+    }
+};
         
         if (currentMember && syncQueue.length > 0) {
             // Filter earnings for current member
@@ -15932,10 +15936,6 @@ window.TauEarningsSync = {
     
     // Process and add earnings
     processEarnings: function(memberId, amount, source) {
-        // Update balance
-        if (window.TauDB?.updateBalance) {
-            window.TauDB.updateBalance(memberId, amount);
-        }
         
         // Create transaction record
         this.recordTransaction(memberId, amount, source);
@@ -15977,7 +15977,15 @@ window.TauEarningsSync = {
     // Update earnings display
     updateEarningsDisplay: function() {
         // Update balance in header
-        const member = window.TauDB?.getCurrentMember();
+        const member = // Replace local lookup with Firebase lookup
+window.validateMemberBridge = async function(memberId) {
+    const doc = await db.collection('members').doc(memberId).get();
+    if (doc.exists) {
+        return doc.data(); // This member is now validated via the Bridge
+    } else {
+        throw new Error("Member not found in Firebase Bridge");
+    }
+};
         if (member) {
             const balanceElements = document.querySelectorAll('.balance-display, #memberBalanceDisplay');
             balanceElements.forEach(el => {
@@ -16007,7 +16015,15 @@ document.addEventListener('DOMContentLoaded', () => {
         const old = document.getElementById('loginStatusIndicator');
         if (old) old.remove();
 
-        const currentMember = window.TauDB?.getCurrentMember();
+        const currentMember = // Replace local lookup with Firebase lookup
+window.validateMemberBridge = async function(memberId) {
+    const doc = await db.collection('members').doc(memberId).get();
+    if (doc.exists) {
+        return doc.data(); // This member is now validated via the Bridge
+    } else {
+        throw new Error("Member not found in Firebase Bridge");
+    }
+};
         const div = document.createElement('div');
         div.id = 'loginStatusIndicator';
         
@@ -16110,7 +16126,15 @@ window.loadPendingMembers = async function() {
     }
 
     // Merge with LocalStorage (for offline registrations)
-    const localMembers = JSON.parse(localStorage.getItem('tauAfricaDB') || '[]');
+    const localMembers = // Replace local lookup with Firebase lookup
+window.validateMemberBridge = async function(memberId) {
+    const doc = await db.collection('members').doc(memberId).get();
+    if (doc.exists) {
+        return doc.data(); // This member is now validated via the Bridge
+    } else {
+        throw new Error("Member not found in Firebase Bridge");
+    }
+};
     const localPending = localMembers.filter(m => m.paymentStatus === 'Pending Validation');
     
     // Combine and deduplicate based on ID
@@ -16170,7 +16194,15 @@ window.validatePayment = async function(memberId) {
 
     // A. Find Member Data
     let memberData = null;
-    const localMembers = JSON.parse(localStorage.getItem('tauAfricaDB') || '[]');
+    const localMembers = // Replace local lookup with Firebase lookup
+window.validateMemberBridge = async function(memberId) {
+    const doc = await db.collection('members').doc(memberId).get();
+    if (doc.exists) {
+        return doc.data(); // This member is now validated via the Bridge
+    } else {
+        throw new Error("Member not found in Firebase Bridge");
+    }
+};
     const localIndex = localMembers.findIndex(m => m.id === memberId);
     
     if (localIndex >= 0) memberData = localMembers[localIndex];
@@ -16183,7 +16215,7 @@ window.validatePayment = async function(memberId) {
         
         // Save Local
         localMembers[localIndex] = memberData;
-        localStorage.setItem('tauAfricaDB', JSON.stringify(localMembers));
+        localStorage.setItem('_cache_', JSON.stringify(localMembers));
     }
 
     // Update Firestore
@@ -16266,11 +16298,19 @@ window.rejectPayment = async function(memberId) {
     if (!reason) return;
 
     // Update Local
-    const localMembers = JSON.parse(localStorage.getItem('tauAfricaDB') || '[]');
+    const localMembers = // Replace local lookup with Firebase lookup
+window.validateMemberBridge = async function(memberId) {
+    const doc = await db.collection('members').doc(memberId).get();
+    if (doc.exists) {
+        return doc.data(); // This member is now validated via the Bridge
+    } else {
+        throw new Error("Member not found in Firebase Bridge");
+    }
+};
     const index = localMembers.findIndex(m => m.id === memberId);
     if(index >= 0) {
         localMembers[index].paymentStatus = 'Rejected: ' + reason;
-        localStorage.setItem('tauAfricaDB', JSON.stringify(localMembers));
+        localStorage.setItem('_cache_', JSON.stringify(localMembers));
     }
 
     // Update Firestore
