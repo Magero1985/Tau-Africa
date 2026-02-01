@@ -17228,6 +17228,41 @@ function showLevelComplete(level, reward) {
         </div>
     `;
 }
+        Add Firestore Listeners in Main TAU App**
+
+The Main TAU app needs to listen for new tasks/activities/values from Firestore. Add this to your Main App:
+
+```javascript
+// Listen for new tasks from Firestore
+db.collection('tasks').onSnapshot(snapshot => {
+    const tasks = [];
+    snapshot.forEach(doc => {
+        tasks.push({ ...doc.data(), firestoreId: doc.id });
+    });
+    localStorage.setItem('tauTasks', JSON.stringify(tasks));
+    // Trigger UI update
+    if (typeof loadTasks === 'function') loadTasks();
+});
+
+// Listen for new activities
+db.collection('activities').onSnapshot(snapshot => {
+    const activities = [];
+    snapshot.forEach(doc => {
+        activities.push({ ...doc.data(), firestoreId: doc.id });
+    });
+    localStorage.setItem('tauActivities', JSON.stringify(activities));
+    if (typeof loadActivities === 'function') loadActivities();
+});
+
+// Listen for new values
+db.collection('values').onSnapshot(snapshot => {
+    const values = [];
+    snapshot.forEach(doc => {
+        values.push({ ...doc.data(), firestoreId: doc.id });
+    });
+    localStorage.setItem('tauValues', JSON.stringify(values));
+    if (typeof loadValues === 'function') loadValues();
+});
     </script>
 </body>
 </html>
