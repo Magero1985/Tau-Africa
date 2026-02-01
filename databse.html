@@ -384,14 +384,13 @@
         db.enablePersistence({ synchronizeTabs: true })
             .catch(err => console.warn('Persistence:', err));
         isOnline = true;
-        updateSyncIndicator(true);
         console.log('✅ Firebase connected');
         
-        // Setup realtime sync
-        setupRealtimeSync();
+        // Setup realtime sync - will be called after DOM loads
+        // setupRealtimeSync() is called in DOMContentLoaded
     } catch (error) {
         console.error('❌ Firebase error:', error);
-        updateSyncIndicator(false);
+        isOnline = false;
     }
     
     function updateSyncIndicator(online) {
@@ -421,7 +420,7 @@
         // Then sync with Firestore
         if (db && isOnline) {
             try {
-                const snapshot = await db.collection('members').doc(member.id).set(member);
+                const snapshot = await db.collection('members').get();
                 if (!snapshot.empty) {
                     membersDB = [];
                     snapshot.forEach(doc => {
@@ -788,6 +787,14 @@ async function saveMember(member) {
     // ============================================
     document.addEventListener('DOMContentLoaded', async () => {
         console.log('📋 Setting up event listeners...');
+        
+        // Update sync indicator now that DOM is ready
+        updateSyncIndicator(isOnline);
+        
+        // Setup realtime sync now that DOM is ready
+        if (isOnline) {
+            setupRealtimeSync();
+        }
         
         // Mode toggle buttons
         document.querySelectorAll('.mode-btn').forEach(btn => {
@@ -1208,4 +1215,4 @@ window.factoryResetDatabase = async function() {
 };
 </script>
 </body>
-</html>
+    </html>
