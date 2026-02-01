@@ -356,6 +356,17 @@
     'use strict';
     
     console.log('💾 Database App Initializing...');
+    console.log('Checking Firebase availability...');
+    
+    if (typeof firebase === 'undefined') {
+        console.error('❌ CRITICAL: Firebase library not loaded!');
+        console.error('Check your internet connection or Firebase CDN');
+        alert('ERROR: Firebase failed to load. Check console for details.');
+        return;
+    } else {
+        console.log('✅ Firebase library loaded');
+        console.log('Firebase version:', firebase.SDK_VERSION || 'unknown');
+    }
     
     // ============================================
     // GLOBAL VARIABLES
@@ -376,20 +387,39 @@
     // ============================================
     // FIREBASE INITIALIZATION
     // ============================================
+    console.log('🔥 Initializing Firebase...');
+    console.log('Firebase config:', FIREBASE_CONFIG.projectId);
+    
     try {
+        console.log('Checking existing apps...');
         if (!firebase.apps.length) {
+            console.log('No existing app - initializing new one...');
             firebase.initializeApp(FIREBASE_CONFIG);
+            console.log('✅ Firebase app initialized');
+        } else {
+            console.log('Using existing Firebase app');
         }
+        
+        console.log('Getting Firestore instance...');
         db = firebase.firestore();
+        console.log('✅ Firestore instance created');
+        
+        console.log('Enabling persistence...');
         db.enablePersistence({ synchronizeTabs: true })
-            .catch(err => console.warn('Persistence:', err));
+            .then(() => console.log('✅ Persistence enabled'))
+            .catch(err => console.warn('⚠️ Persistence warning:', err.code, err.message));
+        
         isOnline = true;
-        console.log('✅ Firebase connected');
+        console.log('✅ Firebase connected successfully');
         
         // Setup realtime sync - will be called after DOM loads
         // setupRealtimeSync() is called in DOMContentLoaded
     } catch (error) {
-        console.error('❌ Firebase error:', error);
+        console.error('❌ Firebase initialization failed!');
+        console.error('Error type:', error.name);
+        console.error('Error message:', error.message);
+        console.error('Error code:', error.code);
+        console.error('Full error:', error);
         isOnline = false;
     }
     
@@ -407,20 +437,27 @@
     // ============================================
     async function loadDatabase() {
         console.log('📥 Loading database...');
+        console.log('Firebase online?', isOnline);
+        console.log('DB exists?', !!db);
         
         // Load from localStorage first
         const local = localStorage.getItem('tauAfricaDB');
         if (local) {
             membersDB = JSON.parse(local);
+            console.log(`💾 Loaded ${membersDB.length} members from localStorage`);
             updateStats();
             renderMembers();
-            console.log(`💾 Loaded ${membersDB.length} from localStorage`);
+        } else {
+            console.log('💾 No local data found');
         }
         
         // Then sync with Firestore
         if (db && isOnline) {
             try {
+                console.log('☁️ Fetching from Firestore...');
                 const snapshot = await db.collection('members').get();
+                console.log(`☁️ Firestore returned ${snapshot.size} documents`);
+                
                 if (!snapshot.empty) {
                     membersDB = [];
                     snapshot.forEach(doc => {
@@ -429,11 +466,20 @@
                     localStorage.setItem('tauAfricaDB', JSON.stringify(membersDB));
                     updateStats();
                     renderMembers();
-                    console.log(`☁️ Synced ${membersDB.length} from Firestore`);
+                    console.log(`✅ Synced ${membersDB.length} members from Firestore`);
+                } else {
+                    console.log('ℹ️ No members in Firestore');
                 }
             } catch (error) {
-                console.error('Firestore load error:', error);
+                console.error('❌ Firestore load error:', error);
+                console.error('Error details:', {
+                    code: error.code,
+                    message: error.message,
+                    name: error.name
+                });
             }
+        } else {
+            console.log('⚠️ Skipping Firestore sync - not available');
         }
     }
     
@@ -556,13 +602,24 @@ async function saveMember(member) {
     }
     
     function updateStats() {
-        document.getElementById('totalMembers').textContent = membersDB.length;
-        document.getElementById('taskMembers').textContent = membersDB.filter(m => m.team === 'TASK').length;
-        document.getElementById('talkMembers').textContent = membersDB.filter(m => m.team === 'TALK').length;
+        const totalEl = document.getElementById('totalMembers');
+        const taskEl = document.getElementById('taskMembers');
+        const talkEl = document.getElementById('talkMembers');
+        const revenueEl = document.getElementById('revenueTotal');
+        
+        // Only update if elements exist (dashboard is visible)
+        if (!totalEl || !taskEl || !talkEl || !revenueEl) {
+            console.log('Stats elements not ready yet');
+            return;
+        }
+        
+        totalEl.textContent = membersDB.length;
+        taskEl.textContent = membersDB.filter(m => m.team === 'TASK').length;
+        talkEl.textContent = membersDB.filter(m => m.team === 'TALK').length;
         const revenue = membersDB.reduce((sum, m) => 
             m.paymentStatus === 'Paid' ? sum + (m.fee || 0) : sum, 0
         );
-        document.getElementById('revenueTotal').textContent = `KSH ${revenue.toLocaleString()}`;
+        revenueEl.textContent = `KSH ${revenue.toLocaleString()}`;
     }
     
     function renderMembers(filtered = null) {
@@ -786,15 +843,27 @@ async function saveMember(member) {
     // EVENT LISTENERS
     // ============================================
     document.addEventListener('DOMContentLoaded', async () => {
-        console.log('📋 Setting up event listeners...');
+        console.log('📋 DOM Ready - Setting up...');
+        console.log('Firebase status:', isOnline ? '✅ Connected' : '❌ Offline');
+        console.log('DB object:', db ? '✅ Exists' : '❌ Missing');
         
         // Update sync indicator now that DOM is ready
+        console.log('Updating sync indicator...');
+        const syncEl = document.getElementById('syncIndicator');
+        const syncTextEl = document.getElementById('syncText');
+        console.log('Sync elements:', syncEl ? '✅ Found' : '❌ Missing', syncTextEl ? '✅ Found' : '❌ Missing');
+        
         updateSyncIndicator(isOnline);
         
         // Setup realtime sync now that DOM is ready
-        if (isOnline) {
+        if (isOnline && db) {
+            console.log('Starting realtime sync...');
             setupRealtimeSync();
+        } else {
+            console.warn('⚠️ Cannot setup realtime sync - Firebase not connected');
         }
+        
+        console.log('Setting up event listeners...');
         
         // Mode toggle buttons
         document.querySelectorAll('.mode-btn').forEach(btn => {
@@ -823,13 +892,24 @@ async function saveMember(member) {
         // Admin login
         document.getElementById('loginForm').addEventListener('submit', async (e) => {
             e.preventDefault();
+            console.log('🔐 Login attempt...');
             const code = document.getElementById('accessCode').value;
-            if (code === (localStorage.getItem('tauAccessCode') || ACCESS_CODE)) {
+            const expectedCode = localStorage.getItem('tauAccessCode') || ACCESS_CODE;
+            
+            console.log('Entered code:', code);
+            console.log('Expected code:', expectedCode);
+            console.log('Match:', code === expectedCode);
+            
+            if (code === expectedCode) {
+                console.log('✅ Code valid - logging in...');
                 document.getElementById('loginScreen').style.display = 'none';
                 document.getElementById('dashboard').style.display = 'block';
+                console.log('Loading database...');
                 await loadDatabase();
+                console.log('Database loaded');
                 showNotification('✅ Admin logged in', 'success');
             } else {
+                console.error('❌ Invalid code');
                 showNotification('❌ Invalid code', 'error');
             }
         });
@@ -1215,4 +1295,4 @@ window.factoryResetDatabase = async function() {
 };
 </script>
 </body>
-    </html>
+                                                                                       </html>
