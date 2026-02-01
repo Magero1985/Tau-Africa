@@ -327,8 +327,8 @@
                 <div style="margin-top: 20px; padding: 15px; background: #e3f2fd; border-radius: 10px;">
                     <h4>🔥 Firebase Status</h4>
                     <p style="margin: 10px 0; font-size: 14px;">
-                        <strong>Project:</strong> tau-main-app<br>
-                        <strong>Collection:</strong> members<br>
+                        <strong>Project:</strong> Kabiru-mining-app<br>
+                        <strong>Collection:</strong> membersDB<br>
                         <strong>Status:</strong> <span id="firebaseStatus">Checking...</span>
                     </p>
                 </div>
@@ -485,7 +485,44 @@
             }
         }
     }
+    Add better error logging to saveMember function (Lines 470-487):**
+
+```javascript
+async function saveMember(member) {
+    console.log('ðŸ’¾ Saving member:', member.id);
     
+    // Save locally first
+    const idx = membersDB.findIndex(m => m.id === member.id);
+    if (idx >= 0) {
+        membersDB[idx] = member;
+        console.log('ðŸ“ Updated existing member locally');
+    } else {
+        membersDB.push(member);
+        console.log('âž• Added new member locally');
+    }
+    localStorage.setItem('tauAfricaDB', JSON.stringify(membersDB));
+    console.log('âœ… Saved to localStorage');
+    
+    // Then sync to Firestore
+    if (db && isOnline) {
+        try {
+            console.log('â˜ï¸ Attempting Firestore save...');
+            await db.collection('members').doc(member.id).set(member);
+            console.log(`âœ… Saved to Firestore: ${member.id}`);
+        } catch (error) {
+            console.error('âŒ Firestore save error:', error);
+            console.error('Error details:', {
+                code: error.code,
+                message: error.message,
+                memberId: member.id
+            });
+            showNotification('âš ï¸ Saved locally but cloud sync failed', 'warning');
+        }
+    } else {
+        console.warn('âš ï¸ Firestore not available - saved locally only');
+        showNotification('âš ï¸ Offline - saved locally only', 'warning');
+    }
+    }
     window.deleteMember = async function(email) {
     if (!confirm('🚨 Are you sure? This will PERMANENTLY delete this member from the Cloud and Local storage.')) return;
     
@@ -546,7 +583,7 @@
                 <td>
                     <div class="actions">
                         <button class="btn-icon btn-view" onclick="window.viewMember('${m.id}')">View</button>
-                        <button class="btn-icon btn-delete" onclick="window.deleteMember('${m.id}')">Delete</button>
+                        <button class="btn-icon btn-delete" onclick="window.deleteMember('${m.email}')">Delete</button>
                     </div>
                 </td>
             </tr>
