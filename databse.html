@@ -325,7 +325,7 @@
                     <h4>🔥 Firebase Status</h4>
                     <p style="margin: 10px 0; font-size: 14px;">
                         <strong>Project:</strong> Kabiru-mining-app<br>
-                        <strong>Collection:</strong> membersDB<br>
+                        <strong>Collection:</strong> members<br>
                         <strong>Status:</strong> <span id="firebaseStatus">Checking...</span>
                     </p>
                 </div>
@@ -517,7 +517,6 @@ async function saveMember(member) {
     } else {
         console.warn('âš ï¸ Firestore not available - saved locally only');
         showNotification('âš ï¸ Offline - saved locally only', 'warning');
-    }
     }
     window.deleteMember = async function(email) {
     if (!confirm('🚨 Are you sure? This will PERMANENTLY delete this member from the Cloud and Local storage.')) return;
@@ -946,36 +945,11 @@ async function saveMember(member) {
     
     // Expose functions globally
     window.viewMember = viewMember;
-    window.deleteMember = deleteMember;
+    // window.deleteMember already defined above (line 522)
     window.filterMembers = filterMembers;
     
 })();
 </script>
-    <script>
-window.deleteMember = async function(email) {
-    if (!confirm('🚨 Are you sure? This will PERMANENTLY delete this member from the Cloud and Local storage.')) return;
-    
-    try {
-        showNotification('🗑️ Deleting from Cloud...', 'info');
-        
-        // 1. Find the document in Firebase and delete it
-        const snapshot = await db.collection('members').where('email', '==', email).get();
-        const batch = db.batch();
-        snapshot.forEach(doc => batch.delete(doc.ref));
-        await batch.commit();
-
-        // 2. Update the local list
-        membersDB = membersDB.filter(m => m.email !== email);
-        localStorage.setItem('tauAfricaDB', JSON.stringify(membersDB));
-        
-        renderMembers();
-        updateStats();
-        showNotification('✅ Member permanently deleted', 'success');
-    } catch (e) {
-        showNotification('❌ Delete failed: ' + e.message, 'error');
-    }
-};
-    </script>
     <script>
 // ============================================
 // ADMIN VALIDATION DASHBOARD
