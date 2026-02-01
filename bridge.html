@@ -746,39 +746,48 @@
         // TASKS - FIXED
         // ==========================================
         function createTask(event) {
-            event.preventDefault();
+    event.preventDefault();
 
-            const code = document.getElementById('task-admin-code').value;
-            if (code !== MASTER_CODE) {
-                notify('Invalid admin code', 'error');
-                return;
-            }
+    const code = document.getElementById('task-admin-code').value;
+    if (code !== MASTER_CODE) {
+        notify('Invalid admin code', 'error');
+        return;
+    }
 
-            const task = {
-                id: 'TSK-' + Date.now(),
-                title: document.getElementById('task-title').value,
-                description: document.getElementById('task-desc').value,
-                category: document.getElementById('task-category').value,
-                reward: parseInt(document.getElementById('task-reward').value),
-                validationCode: generateCode('TASK'),
-                status: 'Active',
-                created: new Date().toISOString(),
-                validated: true
-            };
+    const task = {
+        id: 'TSK-' + Date.now(),
+        title: document.getElementById('task-title').value,
+        description: document.getElementById('task-desc').value,
+        category: document.getElementById('task-category').value,
+        reward: parseInt(document.getElementById('task-reward').value),
+        validationCode: generateCode('TASK'),
+        status: 'Active',
+        created: new Date().toISOString(),
+        validated: true
+    };
 
-            const tasks = JSON.parse(localStorage.getItem(DB.tasks) || '[]');
-            tasks.push(task);
-            localStorage.setItem(DB.tasks, JSON.stringify(tasks));
+    // Save to localStorage
+    const tasks = JSON.parse(localStorage.getItem(DB.tasks) || '[]');
+    tasks.push(task);
+    localStorage.setItem(DB.tasks, JSON.stringify(tasks));
 
-            if (typeof notifyAllMembers === 'function') {
-                notifyAllMembers('🎯 New Task Available!', `Complete "${task.title}" to earn ${task.reward} iKbp`);
-            }
+    // âœ¨ ADD THIS - Sync to Firestore
+    if (db && isOnline) {
+        db.collection('tasks').doc(task.id).set(task)
+            .then(() => {
+                console.log('â˜ï¸ Task synced to Firestore');
+                notify('Task created and synced to cloud!', 'success');
+            })
+            .catch(error => {
+                console.error('Firestore sync error:', error);
+                notify('Task created locally but cloud sync failed', 'warning');
+            });
+    }
 
-            notify('Task created! Visible to all members.', 'success');
-            event.target.reset();
-            loadTasks();
-            updateDashboard();
-        }
+    event.target.reset();
+    loadTasks();
+    updateDashboard();
+}
 
         function loadTasks() {
             const tasks = JSON.parse(localStorage.getItem(DB.tasks) || '[]');
@@ -809,39 +818,48 @@
         // ACTIVITIES - FIXED
         // ==========================================
         function createActivity(event) {
-            event.preventDefault();
+    event.preventDefault();
 
-            const code = document.getElementById('activity-admin-code').value;
-            if (code !== MASTER_CODE) {
-                notify('Invalid admin code', 'error');
-                return;
-            }
+    const code = document.getElementById('task-admin-code').value;
+    if (code !== MASTER_CODE) {
+        notify('Invalid admin code', 'error');
+        return;
+    }
 
-            const activity = {
-                id: 'ACT-' + Date.now(),
-                title: document.getElementById('activity-title').value,
-                description: document.getElementById('activity-desc').value,
-                category: document.getElementById('activity-category').value,
-                reward: parseInt(document.getElementById('activity-reward').value),
-                validationCode: generateCode('ACTIVITY'),
-                status: 'Active',
-                created: new Date().toISOString(),
-                validated: true
-            };
+    const task = {
+        id: 'ACT-' + Date.now(),
+        title: document.getElementById('activity-title').value,
+        description: document.getElementById('activity-desc').value,
+        category: document.getElementById('activity-category').value,
+        reward: parseInt(document.getElementById('activity-reward').value),
+        validationCode: generateCode('ACT'),
+        status: 'Active',
+        created: new Date().toISOString(),
+        validated: true
+    };
 
-            const activities = JSON.parse(localStorage.getItem(DB.activities) || '[]');
-            activities.push(activity);
-            localStorage.setItem(DB.activities, JSON.stringify(activities));
+    // Save to localStorage
+    const tasks = JSON.parse(localStorage.getItem(DB.activities) || '[]');
+    tasks.push(activities);
+    localStorage.setItem(DB.activities, JSON.stringify(activities));
 
-            if (typeof notifyAllMembers === 'function') {
-                notifyAllMembers('🎯 New Activity Available!', `Complete "${activity.title}" to earn ${activity.reward} iKbp`);
-            }
+    // âœ¨ ADD THIS - Sync to Firestore
+    if (db && isOnline) {
+        db.collection('activities').doc(activity.id).set(activity)
+            .then(() => {
+                console.log('â˜ï¸ Activity synced to Firestore');
+                notify('Activity created and synced to cloud!', 'success');
+            })
+            .catch(error => {
+                console.error('Firestore sync error:', error);
+                notify('Activity created locally but cloud sync failed', 'warning');
+            });
+    }
 
-            notify('Activity created! Visible to all members.', 'success');
-            event.target.reset();
-            loadActivities();
-            updateDashboard();
-        }
+    event.target.reset();
+    loadActivities();
+    updateDashboard();
+}
 
         function loadActivities() {
             const activities = JSON.parse(localStorage.getItem(DB.activities) || '[]');
@@ -872,41 +890,48 @@
         // VALUES - FIXED
         // ==========================================
         function createValue(event) {
-            event.preventDefault();
+    event.preventDefault();
 
-            const code = document.getElementById('value-admin-code').value;
-            if (code !== MASTER_CODE) {
-                notify('Invalid admin code', 'error');
-                return;
-            }
+    const code = document.getElementById('value-admin-code').value;
+    if (code !== MASTER_CODE) {
+        notify('Invalid admin code', 'error');
+        return;
+    }
 
-            const worthKsh = parseInt(document.getElementById('value-worth').value) || 0;
-            const worthIkb = Math.floor(worthKsh / 10);
+    const task = {
+        id: 'VAL-' + Date.now(),
+        title: document.getElementById('value-title').value,
+        description: document.getElementById('value-desc').value,
+        category: document.getElementById('value-category').value,
+        reward: parseInt(document.getElementById(' value-reward').value),
+        validationCode: generateCode('VAL'),
+        status: 'Active',
+        created: new Date().toISOString(),
+        validated: true
+    };
 
-            const value = {
-                id: 'VAL-' + Date.now(),
-                type: document.getElementById('value-type').value,
-                title: document.getElementById('value-title').value,
-                description: document.getElementById('value-desc').value,
-                worthKsh: worthKsh,
-                worthIkb: worthIkb,
-                submittedBy: document.getElementById('value-member').value,
-                validationCode: generateCode('VALUE'),
-                status: 'Pending',
-                created: new Date().toISOString(),
-                validated: false
-            };
+    // Save to localStorage
+    const tasks = JSON.parse(localStorage.getItem(DB.values) || '[]');
+    tasks.push(value);
+    localStorage.setItem(DB.values, JSON.stringify(values));
 
-            const values = JSON.parse(localStorage.getItem(DB.values) || '[]');
-            values.push(value);
-            localStorage.setItem(DB.values, JSON.stringify(values));
+    // âœ¨ ADD THIS - Sync to Firestore
+    if (db && isOnline) {
+        db.collection('values').doc(value.id).set(value)
+            .then(() => {
+                console.log('â˜ï¸ Value synced to Firestore');
+                notify('Value created and synced to cloud!', 'success');
+            })
+            .catch(error => {
+                console.error('Firestore sync error:', error);
+                notify('Value created locally but cloud sync failed', 'warning');
+            });
+    }
 
-            notify('Value submitted for approval!', 'success');
-            event.target.reset();
-            loadValues();
-            updateDashboard();
-        }
-
+    event.target.reset();
+    loadValues();
+    updateDashboard();
+}
         function loadValues() {
             const values = JSON.parse(localStorage.getItem(DB.values) || '[]');
             const list = document.getElementById('values-list');
@@ -1471,5 +1496,92 @@ async function loadPendingForValidation() {
     }
 };
 </script>
+    <script>
+        function createTask(event) {
+    event.preventDefault();
+
+    const code = document.getElementById('task-admin-code').value;
+    if (code !== MASTER_CODE) {
+        notify('Invalid admin code', 'error');
+        return;
+    }
+
+    const task = {
+        id: 'TSK-' + Date.now(),
+        title: document.getElementById('task-title').value,
+        description: document.getElementById('task-desc').value,
+        category: document.getElementById('task-category').value,
+        reward: parseInt(document.getElementById('task-reward').value),
+        validationCode: generateCode('TASK'),
+        status: 'Active',
+        created: new Date().toISOString(),
+        validated: true
+    };
+
+    // Save to localStorage
+    const tasks = JSON.parse(localStorage.getItem(DB.tasks) || '[]');
+    tasks.push(task);
+    localStorage.setItem(DB.tasks, JSON.stringify(tasks));
+
+    // âœ¨ ADD THIS - Sync to Firestore
+    if (db && isOnline) {
+        db.collection('tasks').doc(task.id).set(task)
+            .then(() => {
+                console.log('â˜ï¸ Task synced to Firestore');
+                notify('Task created and synced to cloud!', 'success');
+            })
+            .catch(error => {
+                console.error('Firestore sync error:', error);
+                notify('Task created locally but cloud sync failed', 'warning');
+            });
+    }
+
+    event.target.reset();
+    loadTasks();
+    updateDashboard();
+}
+```
+
+**Do the same for:**
+- `createActivity()` - Line 811
+- `createValue()` - Find this function
+- All validation operations
+
+**B. Add Firestore Listeners in Main TAU App**
+
+The Main TAU app needs to listen for new tasks/activities/values from Firestore. Add this to your Main App:
+
+```javascript
+// Listen for new tasks from Firestore
+db.collection('tasks').onSnapshot(snapshot => {
+    const tasks = [];
+    snapshot.forEach(doc => {
+        tasks.push({ ...doc.data(), firestoreId: doc.id });
+    });
+    localStorage.setItem('tauTasks', JSON.stringify(tasks));
+    // Trigger UI update
+    if (typeof loadTasks === 'function') loadTasks();
+});
+
+// Listen for new activities
+db.collection('activities').onSnapshot(snapshot => {
+    const activities = [];
+    snapshot.forEach(doc => {
+        activities.push({ ...doc.data(), firestoreId: doc.id });
+    });
+    localStorage.setItem('tauActivities', JSON.stringify(activities));
+    if (typeof loadActivities === 'function') loadActivities();
+});
+
+// Listen for new values
+db.collection('values').onSnapshot(snapshot => {
+    const values = [];
+    snapshot.forEach(doc => {
+        values.push({ ...doc.data(), firestoreId: doc.id });
+    });
+    localStorage.setItem('tauValues', JSON.stringify(values));
+    if (typeof loadValues === 'function') loadValues();
+});
+    </script>
 </body>
 </html>
