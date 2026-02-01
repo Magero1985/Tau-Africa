@@ -9,116 +9,74 @@
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
 
     <style>
-        /* [Your existing styles remain exactly the same] */
         * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: linear-gradient(135deg, #1e3c72, #2a5298); min-height: 100vh; color: #333; }
+        body { font-family: 'Segoe UI', sans-serif; background: linear-gradient(135deg, #1e3c72, #2a5298); min-height: 100vh; color: #333; }
         .container { max-width: 1400px; margin: 0 auto; padding: 20px; }
-        .header { background: linear-gradient(45deg, #000080, #4169e1); color: white; padding: 30px; border-radius: 15px; text-align: center; margin-bottom: 30px; box-shadow: 0 10px 30px rgba(0,0,0,0.3); }
-        .api-badge { display: inline-block; background: rgba(255,255,255,0.2); padding: 5px 15px; border-radius: 20px; font-size: 12px; margin-top: 10px; }
+        .header { background: linear-gradient(45deg, #000080, #4169e1); color: white; padding: 30px; border-radius: 15px; text-align: center; margin-bottom: 30px; }
         .login-screen, .member-portal { max-width: 450px; margin: 100px auto; background: white; padding: 40px; border-radius: 20px; box-shadow: 0 15px 40px rgba(0,0,0,0.3); }
-        .portal-card { background: linear-gradient(45deg, #4169e1, #87ceeb); color: white; padding: 30px; border-radius: 15px; margin-bottom: 30px; text-align: center; }
         .form-group { margin-bottom: 20px; }
         .form-group label { display: block; margin-bottom: 8px; font-weight: 600; color: #2a5298; }
-        .form-group input, .form-group select { width: 100%; padding: 12px; border: 2px solid #ddd; border-radius: 10px; font-size: 16px; }
-        .btn { background: linear-gradient(45deg, #4169e1, #87ceeb); color: white; border: none; padding: 14px 28px; border-radius: 25px; cursor: pointer; font-weight: bold; width: 100%; transition: 0.3s; }
-        .btn:hover { transform: translateY(-2px); box-shadow: 0 5px 15px rgba(0,0,0,0.3); }
-        .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px; margin-bottom: 30px; }
-        .stat-card { background: white; padding: 25px; border-radius: 15px; text-align: center; }
-        .main-content { background: white; border-radius: 15px; padding: 30px; }
-        .tabs { display: flex; gap: 10px; margin-bottom: 25px; border-bottom: 2px solid #eee; }
-        .tab { padding: 12px 25px; cursor: pointer; border: none; background: transparent; font-weight: 600; border-bottom: 3px solid transparent; }
-        .tab.active { color: #4169e1; border-bottom-color: #4169e1; }
+        .form-group input, .form-group select { width: 100%; padding: 12px; border: 2px solid #ddd; border-radius: 10px; }
+        .btn { background: linear-gradient(45deg, #4169e1, #87ceeb); color: white; border: none; padding: 14px 28px; border-radius: 25px; cursor: pointer; font-weight: bold; width: 100%; }
+        .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; margin-bottom: 30px; }
+        .stat-card { background: white; padding: 20px; border-radius: 15px; text-align: center; }
         .tab-content { display: none; }
         .tab-content.active { display: block; }
         .notification { position: fixed; top: 20px; right: 20px; padding: 20px; border-radius: 10px; color: white; display: none; z-index: 3000; }
-        .sync-indicator { position: fixed; bottom: 20px; right: 20px; background: white; padding: 8px 16px; border-radius: 20px; box-shadow: 0 4px 12px rgba(0,0,0,0.15); font-size: 12px; }
-        .online { border-left: 4px solid #2ecc71; }
-        .offline { border-left: 4px solid #e74c3c; }
-        .modal { display: none; position: fixed; z-index: 2001; left: 0; top: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); }
-        .modal-content { background: white; margin: 5% auto; padding: 30px; border-radius: 20px; max-width: 600px; }
+        .mode-btn { padding: 10px 20px; margin: 5px; cursor: pointer; border-radius: 8px; border: 1px solid #4169e1; background: white; }
+        .mode-btn.active { background: #4169e1; color: white; }
     </style>
 </head>
 <body>
-    <div id="syncIndicator" class="sync-indicator offline">
-        <span id="syncText">🔴 Initializing...</span>
-    </div>
 
-    <div style="position: fixed; top: 10px; left: 10px; z-index: 1001; background: white; padding: 10px; border-radius: 10px; box-shadow: 0 4px 12px rgba(0,0,0,0.15);">
-        <button class="mode-btn active" data-mode="admin">👨‍💼 Admin</button>
-        <button class="mode-btn" data-mode="member">👤 Member</button>
-        <div style="margin-top: 8px; font-size: 11px; color: #666; text-align: center;">
-            <strong>Mode:</strong> <span id="currentMode" style="color: #4169e1; font-weight: bold;">Admin</span>
-        </div>
+    <div id="notification" class="notification"></div>
+
+    <div style="position: fixed; top: 10px; left: 10px; z-index: 1001; background: white; padding: 10px; border-radius: 10px;">
+        <button class="mode-btn active" onclick="switchMode('admin')">👨‍💼 Admin</button>
+        <button class="mode-btn" onclick="switchMode('member')">👤 Member</button>
     </div>
 
     <div id="loginScreen" class="login-screen">
-        <div class="header" style="margin: 0 0 30px 0;">
-            <h1>🌍 TAU AFRICA</h1>
-            <p>Database Management System</p>
+        <h2 style="text-align: center; color: #2a5298;">Admin Login</h2>
+        <div class="form-group">
+            <label>Access Code</label>
+            <input type="password" id="accessCode" placeholder="TAU2025ADMIN">
         </div>
-        <form id="loginForm">
-            <div class="form-group">
-                <label>Access Code</label>
-                <input type="password" id="accessCode" placeholder="Enter admin access code" required>
-            </div>
-            <button type="submit" class="btn">Access Database</button>
-        </form>
+        <button class="btn" onclick="handleAdminLogin()">Access Database</button>
     </div>
 
-    <div id="memberPortal" class="member-portal" style="display: none;">
-        <div class="header" style="margin: 0 0 30px 0;"><h1>🌍 TAU AFRICA</h1><p>Member Portal</p></div>
-        <form id="memberLoginForm">
-            <div class="form-group"><label>Member ID or Email</label><input type="text" id="memberIdentifier" required></div>
-            <div class="form-group"><label>Phone (Last 4 digits)</label><input type="text" id="memberPhone" maxlength="4" required></div>
-            <button type="submit" class="btn">Access Profile</button>
-        </form>
+    <div id="memberPortal" class="login-screen" style="display: none;">
+        <h2 style="text-align: center; color: #2a5298;">Member Login</h2>
+        <div class="form-group">
+            <label>Email</label>
+            <input type="text" id="memberEmail">
+        </div>
+        <button class="btn" onclick="handleMemberLogin()">Login</button>
     </div>
 
     <div id="dashboard" class="container" style="display: none;">
         <div class="header">
-            <h1>🌍 TAU AFRICA FOUNDATION</h1>
-            <div class="api-badge">✓ Firebase Sync Active</div>
-            <button id="logoutBtn" class="btn" style="width: auto; padding: 5px 15px;">Logout</button>
+            <h1>🌍 TAU AFRICA DATABASE</h1>
+            <button onclick="location.reload()" class="btn" style="width: auto; padding: 5px 15px;">Logout</button>
         </div>
 
         <div class="stats-grid">
-            <div class="stat-card"><h3 id="totalMembers">0</h3><p>Total Members</p></div>
-            <div class="stat-card"><h3 id="revenueTotal">KSH 0</h3><p>Total Revenue</p></div>
+            <div class="stat-card"><h3 id="totalMembers">0</h3><p>Members</p></div>
+            <div class="stat-card"><button class="btn" onclick="factoryReset()">⚠️ Factory Reset</button></div>
         </div>
 
-        <div class="main-content">
-            <div class="tabs">
-                <button class="tab active" data-tab="members">📋 Members</button>
-                <button class="tab" data-tab="add">➕ Add Member</button>
-            </div>
-
-            <div id="membersTab" class="tab-content active">
-                <div class="table-container">
-                    <table style="width: 100%; border-collapse: collapse;">
-                        <thead><tr><th>ID</th><th>Name</th><th>Email</th><th>Team</th><th>Actions</th></tr></thead>
-                        <tbody id="membersTableBody"></tbody>
-                    </table>
-                </div>
-            </div>
-
-            <div id="addTab" class="tab-content">
-                <form id="addMemberForm">
-                    <div class="form-group"><label>Team</label><select name="team" required><option value="TASK">TASK</option><option value="TALK">TALK</option></select></div>
-                    <div class="form-group"><label>Full Name</label><input type="text" name="fullName" required></div>
-                    <div class="form-group"><label>Email</label><input type="email" name="email" required></div>
-                    <div class="form-group"><label>Phone</label><input type="tel" name="phone" required></div>
-                    <button type="submit" class="btn">Add Member</button>
-                </form>
-            </div>
+        <div class="main-content" style="background: white; padding: 20px; border-radius: 15px;">
+            <table style="width: 100%; text-align: left;">
+                <thead>
+                    <tr><th>Name</th><th>Email</th><th>Team</th><th>Action</th></tr>
+                </thead>
+                <tbody id="memberTableBody"></tbody>
+            </table>
         </div>
     </div>
 
-    <div id="notification" class="notification" style="background: #333;"></div>
-
     <script>
-    (function() {
-        'use strict';
-        const ACCESS_CODE = 'TAU2025ADMIN';
+        // 2. CONFIGURATION
         const FIREBASE_CONFIG = {
             apiKey: "AIzaSyCZhPjrl18PuyBh01Ou2KQMs-Ph3x2GP7o",
             authDomain: "kabiru-mining-app.firebaseapp.com",
@@ -128,102 +86,91 @@
             appId: "1:217095254990:web:9eb44eff825666995fb19f"
         };
 
-        let db, membersDB = [], isOnline = false;
+        let db;
+        let members = [];
 
-        // Init Firebase
+        // 3. INITIALIZATION
         try {
-            if (!firebase.apps.length) firebase.initializeApp(FIREBASE_CONFIG);
+            if (!firebase.apps.length) {
+                firebase.initializeApp(FIREBASE_CONFIG);
+            }
             db = firebase.firestore();
-            isOnline = true;
-        } catch (e) { console.error("Firebase Error", e); }
+            console.log("✅ Firebase Initialized");
+        } catch (e) {
+            console.error("❌ Firebase Error:", e);
+        }
 
-        function showNotification(msg, type) {
+        // 4. UI FUNCTIONS
+        function switchMode(mode) {
+            document.getElementById('loginScreen').style.display = mode === 'admin' ? 'block' : 'none';
+            document.getElementById('memberPortal').style.display = mode === 'member' ? 'block' : 'none';
+            document.getElementById('dashboard').style.display = 'none';
+            
+            document.querySelectorAll('.mode-btn').forEach(b => b.classList.remove('active'));
+            event.target.classList.add('active');
+        }
+
+        function showNote(msg, success = true) {
             const n = document.getElementById('notification');
             n.textContent = msg;
+            n.style.background = success ? '#2ecc71' : '#e74c3c';
             n.style.display = 'block';
-            n.style.background = type === 'success' ? '#2ecc71' : '#e74c3c';
             setTimeout(() => n.style.display = 'none', 3000);
         }
 
-        async function loadDatabase() {
-            const snapshot = await db.collection('members').get();
-            membersDB = [];
-            snapshot.forEach(doc => membersDB.push(doc.data()));
-            renderMembers();
-            updateStats();
+        // 5. DATABASE LOGIC
+        async function loadData() {
+            try {
+                const snap = await db.collection('members').get();
+                members = [];
+                snap.forEach(doc => members.push({ id: doc.id, ...doc.data() }));
+                render();
+            } catch (e) {
+                showNote("Data Load Failed", false);
+            }
         }
 
-        function renderMembers() {
-            const tbody = document.getElementById('membersTableBody');
-            tbody.innerHTML = membersDB.map(m => `
-                <tr><td>${m.id}</td><td>${m.fullName}</td><td>${m.email}</td><td>${m.team}</td>
-                <td><button onclick="window.deleteMember('${m.id}')">Del</button></td></tr>
+        function render() {
+            document.getElementById('totalMembers').textContent = members.length;
+            const tbody = document.getElementById('memberTableBody');
+            tbody.innerHTML = members.map(m => `
+                <tr>
+                    <td>${m.fullName || 'N/A'}</td>
+                    <td>${m.email || 'N/A'}</td>
+                    <td>${m.team || 'N/A'}</td>
+                    <td><button onclick="deleteMember('${m.id}')">Delete</button></td>
+                </tr>
             `).join('');
         }
 
-        function updateStats() {
-            document.getElementById('totalMembers').textContent = membersDB.length;
-        }
-
-        // Logic for Mode Switching
-        document.querySelectorAll('.mode-btn').forEach(btn => {
-            btn.addEventListener('click', function() {
-                document.querySelectorAll('.mode-btn').forEach(b => b.classList.remove('active'));
-                this.classList.add('active');
-                const mode = this.dataset.mode;
-                document.getElementById('loginScreen').style.display = mode === 'admin' ? 'block' : 'none';
-                document.getElementById('memberPortal').style.display = mode === 'member' ? 'block' : 'none';
-                document.getElementById('dashboard').style.display = 'none';
-                document.getElementById('currentMode').textContent = mode.charAt(0).toUpperCase() + mode.slice(1);
-            });
-        });
-
-        // Login Logic
-        document.getElementById('loginForm').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            if (document.getElementById('accessCode').value === ACCESS_CODE) {
+        async function handleAdminLogin() {
+            const code = document.getElementById('accessCode').value;
+            if (code === 'TAU2025ADMIN') {
                 document.getElementById('loginScreen').style.display = 'none';
                 document.getElementById('dashboard').style.display = 'block';
-                await loadDatabase();
+                await loadData();
+                showNote("Welcome Admin");
             } else {
-                showNotification('Invalid Code', 'error');
+                showNote("Invalid Code", false);
             }
-        });
+        }
 
-        // Add Member Logic
-        document.getElementById('addMemberForm').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const fd = new FormData(e.target);
-            const member = {
-                id: 'ID-' + Math.random().toString(36).substr(2, 5).toUpperCase(),
-                fullName: fd.get('fullName'),
-                email: fd.get('email'),
-                team: fd.get('team'),
-                phone: fd.get('phone')
-            };
-            await db.collection('members').doc(member.id).set(member);
-            showNotification('Member Added!', 'success');
-            e.target.reset();
-            await loadDatabase();
-        });
+        async function deleteMember(id) {
+            if (!confirm("Delete member?")) return;
+            await db.collection('members').doc(id).delete();
+            await loadData();
+            showNote("Deleted");
+        }
 
-        window.deleteMember = async function(id) {
-            if (confirm('Delete?')) {
-                await db.collection('members').doc(id).delete();
-                await loadDatabase();
-            }
-        };
-
-        // Tab Switching
-        document.querySelectorAll('.tab').forEach(tab => {
-            tab.addEventListener('click', function() {
-                document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-                document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
-                this.classList.add('active');
-                document.getElementById(this.dataset.tab + 'Tab').classList.add('active');
-            });
-        });
-    })();
+        async function factoryReset() {
+            if (prompt("Type 'DELETE ALL' to reset everything:") !== 'DELETE ALL') return;
+            const snap = await db.collection('members').get();
+            const batch = db.batch();
+            snap.forEach(doc => batch.delete(doc.ref));
+            await batch.commit();
+            await loadData();
+            showNote("Database Wiped");
+        }
     </script>
 </body>
     </html>
