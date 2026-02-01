@@ -4,7 +4,11 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>TAU Africa - Database System</title>
-        <style>
+
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+        
+    <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
@@ -1146,35 +1150,28 @@ async function saveMember(member) {
     
     console.log('✅ System Balance Tracking loaded');
 })();
-</script>
     
-    <script>
-// ADD this function for a TRUE Factory Reset
+// Ensure this is inside a valid <script> tag and not nested incorrectly
 window.factoryResetDatabase = async function() {
-    const confirmation = confirm("🚨 DANGER: This is a FACTORY RESET. It will delete ALL members from the cloud and local storage. Proceed?");
+    const confirmation = confirm("🚨 DANGER: This is a FACTORY RESET. Proceed?");
     if (!confirmation) return;
 
     const finalCheck = prompt("Type 'DELETE ALL' to confirm:");
     if (finalCheck !== 'DELETE ALL') return;
 
     try {
-        showNotification('🧹 Wiping all data...', 'info');
-        
-        // 1. Clear Firestore
+        // Ensure 'db' is correctly initialized before calling this
         const snapshot = await db.collection('members').get();
         const batch = db.batch();
         snapshot.forEach(doc => batch.delete(doc.ref));
         await batch.commit();
 
-        // 2. Clear Local Storage
         localStorage.removeItem('tauAfricaDB');
-        membersDB = [];
-        
-        renderMembers();
-        updateStats();
-        showNotification('✅ Factory Reset Complete!', 'success');
+        // Reset local variables
+        if (typeof renderMembers === 'function') renderMembers();
+        alert('✅ Factory Reset Complete!');
     } catch (e) {
-        showNotification('❌ Reset Failed: ' + e.message, 'error');
+        alert('❌ Reset Failed: ' + e.message);
     }
 };
 </script>
