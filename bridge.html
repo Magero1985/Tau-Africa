@@ -937,7 +937,7 @@
             const list = document.getElementById('values-list');
 
             if (values.length === 0) {
-                list.innerHTML = '<p style="text-align: center; color: #999; padding: 20px;">No values yet</p>';
+                list.innerHTML = 'hp style="text-align: center; color: #999; padding: 20px;">No values yet</p>';
                 return;
             }
 
@@ -1424,8 +1424,7 @@ console.log('💡 Run TauDiagnostics.testRegistration() to test signup');
         }
     });
 })();
-        </script>
-        <script>
+        
 function openValidationSection() {
     // 1. Switch tab to the content box for validation
     document.querySelectorAll('.content-box').forEach(box => box.style.display = 'none');
@@ -1495,93 +1494,7 @@ async function loadPendingForValidation() {
         notify('❌ Validation Section not found in HTML', 'error');
     }
 };
-</script>
-    <script>
-        function createTask(event) {
-    event.preventDefault();
-
-    const code = document.getElementById('task-admin-code').value;
-    if (code !== MASTER_CODE) {
-        notify('Invalid admin code', 'error');
-        return;
-    }
-
-    const task = {
-        id: 'TSK-' + Date.now(),
-        title: document.getElementById('task-title').value,
-        description: document.getElementById('task-desc').value,
-        category: document.getElementById('task-category').value,
-        reward: parseInt(document.getElementById('task-reward').value),
-        validationCode: generateCode('TASK'),
-        status: 'Active',
-        created: new Date().toISOString(),
-        validated: true
-    };
-
-    // Save to localStorage
-    const tasks = JSON.parse(localStorage.getItem(DB.tasks) || '[]');
-    tasks.push(task);
-    localStorage.setItem(DB.tasks, JSON.stringify(tasks));
-
-    // âœ¨ ADD THIS - Sync to Firestore
-    if (db && isOnline) {
-        db.collection('tasks').doc(task.id).set(task)
-            .then(() => {
-                console.log('â˜ï¸ Task synced to Firestore');
-                notify('Task created and synced to cloud!', 'success');
-            })
-            .catch(error => {
-                console.error('Firestore sync error:', error);
-                notify('Task created locally but cloud sync failed', 'warning');
-            });
-    }
-
-    event.target.reset();
-    loadTasks();
-    updateDashboard();
-}
-```
-
-**Do the same for:**
-- `createActivity()` - Line 811
-- `createValue()` - Find this function
-- All validation operations
-
-**B. Add Firestore Listeners in Main TAU App**
-
-The Main TAU app needs to listen for new tasks/activities/values from Firestore. Add this to your Main App:
-
-```javascript
-// Listen for new tasks from Firestore
-db.collection('tasks').onSnapshot(snapshot => {
-    const tasks = [];
-    snapshot.forEach(doc => {
-        tasks.push({ ...doc.data(), firestoreId: doc.id });
-    });
-    localStorage.setItem('tauTasks', JSON.stringify(tasks));
-    // Trigger UI update
-    if (typeof loadTasks === 'function') loadTasks();
-});
-
-// Listen for new activities
-db.collection('activities').onSnapshot(snapshot => {
-    const activities = [];
-    snapshot.forEach(doc => {
-        activities.push({ ...doc.data(), firestoreId: doc.id });
-    });
-    localStorage.setItem('tauActivities', JSON.stringify(activities));
-    if (typeof loadActivities === 'function') loadActivities();
-});
-
-// Listen for new values
-db.collection('values').onSnapshot(snapshot => {
-    const values = [];
-    snapshot.forEach(doc => {
-        values.push({ ...doc.data(), firestoreId: doc.id });
-    });
-    localStorage.setItem('tauValues', JSON.stringify(values));
-    if (typeof loadValues === 'function') loadValues();
-});
+    
     </script>
 </body>
 </html>
