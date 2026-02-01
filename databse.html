@@ -421,7 +421,7 @@
         // Then sync with Firestore
         if (db && isOnline) {
             try {
-                const snapshot = await db.collection('members').get();
+                const snapshot = await db.collection('members').doc(member.id).set(member);
                 if (!snapshot.empty) {
                     membersDB = [];
                     snapshot.forEach(doc => {
@@ -487,7 +487,6 @@
     }
     Add better error logging to saveMember function (Lines 470-487):**
 
-```javascript
 async function saveMember(member) {
     console.log('ðŸ’¾ Saving member:', member.id);
     
