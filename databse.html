@@ -356,7 +356,6 @@
     'use strict';
     
     console.log('💾 Database App Initializing...');
-    console.log('Checking Firebase availability...');
     
     if (typeof firebase === 'undefined') {
         console.error('❌ CRITICAL: Firebase library not loaded!');
@@ -391,7 +390,6 @@
     console.log('Firebase config:', FIREBASE_CONFIG.projectId);
     
     try {
-        console.log('Checking existing apps...');
         if (!firebase.apps.length) {
             console.log('No existing app - initializing new one...');
             firebase.initializeApp(FIREBASE_CONFIG);
@@ -436,15 +434,11 @@
     // DATABASE OPERATIONS
     // ============================================
     async function loadDatabase() {
-        console.log('📥 Loading database...');
-        console.log('Firebase online?', isOnline);
-        console.log('DB exists?', !!db);
         
         // Load from localStorage first
         const local = localStorage.getItem('tauAfricaDB');
         if (local) {
             membersDB = JSON.parse(local);
-            console.log(`💾 Loaded ${membersDB.length} members from localStorage`);
             updateStats();
             renderMembers();
         } else {
@@ -843,7 +837,6 @@ async function saveMember(member) {
     // EVENT LISTENERS
     // ============================================
     document.addEventListener('DOMContentLoaded', async () => {
-        console.log('📋 DOM Ready - Setting up...');
         console.log('Firebase status:', isOnline ? '✅ Connected' : '❌ Offline');
         console.log('DB object:', db ? '✅ Exists' : '❌ Missing');
         
@@ -851,19 +844,16 @@ async function saveMember(member) {
         console.log('Updating sync indicator...');
         const syncEl = document.getElementById('syncIndicator');
         const syncTextEl = document.getElementById('syncText');
-        console.log('Sync elements:', syncEl ? '✅ Found' : '❌ Missing', syncTextEl ? '✅ Found' : '❌ Missing');
         
         updateSyncIndicator(isOnline);
         
         // Setup realtime sync now that DOM is ready
         if (isOnline && db) {
-            console.log('Starting realtime sync...');
             setupRealtimeSync();
         } else {
             console.warn('⚠️ Cannot setup realtime sync - Firebase not connected');
         }
         
-        console.log('Setting up event listeners...');
         
         // Mode toggle buttons
         document.querySelectorAll('.mode-btn').forEach(btn => {
@@ -896,15 +886,11 @@ async function saveMember(member) {
             const code = document.getElementById('accessCode').value;
             const expectedCode = localStorage.getItem('tauAccessCode') || ACCESS_CODE;
             
-            console.log('Entered code:', code);
-            console.log('Expected code:', expectedCode);
-            console.log('Match:', code === expectedCode);
             
             if (code === expectedCode) {
                 console.log('✅ Code valid - logging in...');
                 document.getElementById('loginScreen').style.display = 'none';
                 document.getElementById('dashboard').style.display = 'block';
-                console.log('Loading database...');
                 await loadDatabase();
                 console.log('Database loaded');
                 showNotification('✅ Admin logged in', 'success');
@@ -1295,4 +1281,4 @@ window.factoryResetDatabase = async function() {
 };
 </script>
 </body>
-                                                                                       </html>
+                                       </html>
