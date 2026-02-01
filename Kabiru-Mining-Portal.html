@@ -4723,7 +4723,37 @@ window.testReferralSystem = async function() {
 };
 
 console.log('💡 Run testReferralSystem() in console to debug referrals');
-
+//  Add Member Lookup Function
+        async function linkMemberAccount(memberId) {
+    try {
+        // Look up member in Firestore
+        const memberDoc = await db.collection('members').doc(memberId).get();
+        
+        if (!memberDoc.exists) {
+            console.error('Member not found:', memberId);
+            return null;
+        }
+        
+        const memberData = memberDoc.data();
+        console.log('âœ… Found member:', memberData);
+        
+        // Link to Kabiru account
+        const kabiruAccount = {
+            memberId: memberId,
+            email: memberData.email,
+            fullName: memberData.fullName,
+            miningBalance: 0,
+            linkedAt: new Date().toISOString()
+        };
+        
+        await db.collection('kabiruAccounts').doc(memberId).set(kabiruAccount);
+        return kabiruAccount;
+        
+    } catch (error) {
+        console.error('Linking error:', error);
+        return null;
+    }
+    }
     </script>
 </body>
     </html>
