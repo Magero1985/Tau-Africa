@@ -4,12 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>TAU Africa - Database System</title>
-    
-    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
-
-    <style>
-        /* ALL YOUR ORIGINAL STYLES PRESERVED */
+        <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
@@ -29,9 +24,8 @@
             padding: 5px 15px; border-radius: 20px; font-size: 12px; margin-top: 10px;
         }
         .login-screen, .member-portal {
-            max-width: 450px; margin: 100px auto;
-            background: white; padding: 40px; border-radius: 20px;
-            box-shadow: 0 15px 40px rgba(0,0,0,0.3);
+            max-width: 450px; margin: 100px auto; background: white;
+            padding: 40px; border-radius: 20px; box-shadow: 0 15px 40px rgba(0,0,0,0.3);
         }
         .portal-card {
             background: linear-gradient(45deg, #4169e1, #87ceeb);
@@ -40,134 +34,242 @@
         }
         .form-group { margin-bottom: 20px; }
         .form-group label { display: block; margin-bottom: 8px; font-weight: 600; color: #2a5298; }
-        .form-group input, .form-group select {
+        .form-group input, .form-group select, .form-group textarea {
             width: 100%; padding: 12px; border: 2px solid #ddd;
-            border-radius: 10px; font-size: 16px; transition: 0.3s;
+            border-radius: 10px; font-size: 16px; transition: border-color 0.3s;
         }
+        .form-group input:focus, .form-group select:focus { border-color: #4169e1; outline: none; }
         .btn {
             background: linear-gradient(45deg, #4169e1, #87ceeb);
             color: white; border: none; padding: 14px 28px;
             border-radius: 25px; cursor: pointer; font-weight: bold;
-            width: 100%; transition: 0.3s;
+            font-size: 16px; transition: all 0.3s; width: 100%;
         }
-        .btn:hover { transform: translateY(-2px); box-shadow: 0 5px 15px rgba(0,0,0,0.3); }
-        .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px; margin-bottom: 30px; }
+        .btn:hover {
+            background: linear-gradient(45deg, #2a5298, #4169e1);
+            transform: translateY(-2px); box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+        }
+        .btn-small { padding: 8px 16px; font-size: 14px; width: auto; display: inline-block; margin: 5px; }
+        .btn-success { background: linear-gradient(45deg, #2ecc71, #27ae60); }
+        .btn-danger { background: linear-gradient(45deg, #e74c3c, #c0392b); }
+        .stats-grid {
+            display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px; margin-bottom: 30px;
+        }
         .stat-card {
             background: white; padding: 25px; border-radius: 15px;
-            text-align: center; box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            text-align: center; transition: transform 0.3s;
         }
-        .main-content { background: white; border-radius: 15px; padding: 30px; box-shadow: 0 10px 30px rgba(0,0,0,0.2); }
-        .tabs { display: flex; gap: 10px; margin-bottom: 25px; border-bottom: 2px solid #eee; }
+        .stat-card:hover { transform: translateY(-5px); }
+        .stat-card h3 { color: #2a5298; font-size: 2rem; margin-bottom: 10px; }
+        .main-content {
+            background: white; border-radius: 15px; padding: 30px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+        .tabs {
+            display: flex; gap: 10px; margin-bottom: 25px;
+            border-bottom: 2px solid #eee; flex-wrap: wrap;
+        }
         .tab {
             padding: 12px 25px; cursor: pointer; border: none;
-            background: transparent; font-weight: 600; color: #666;
-            border-bottom: 3px solid transparent; transition: 0.3s;
+            background: transparent; color: #666; font-weight: 600;
+            border-bottom: 3px solid transparent; transition: all 0.3s;
         }
         .tab.active { color: #4169e1; border-bottom-color: #4169e1; }
-        .table-container { overflow-x: auto; }
-        table { width: 100%; border-collapse: collapse; margin-top: 10px; }
-        th, td { padding: 15px; text-align: left; border-bottom: 1px solid #eee; }
-        th { background-color: #f8f9fa; color: #2a5298; }
-        .notification {
-            position: fixed; top: 20px; right: 20px;
-            padding: 20px; border-radius: 10px; color: white;
-            display: none; z-index: 3000; animation: slideIn 0.3s ease-out;
+        .tab-content { display: none; }
+        .tab-content.active { display: block; }
+        .table-container { overflow-x: auto; margin-top: 20px; }
+        table { width: 100%; border-collapse: collapse; min-width: 800px; }
+        th, td { padding: 12px; text-align: left; border-bottom: 1px solid #eee; }
+        th { background: linear-gradient(45deg, #4169e1, #87ceeb); color: white; font-weight: 600; }
+        tr:hover { background: #f8f9fa; }
+        .search-box { margin-bottom: 20px; display: flex; gap: 10px; flex-wrap: wrap; }
+        .search-box input, .search-box select {
+            padding: 10px; border: 2px solid #ddd; border-radius: 8px;
+            font-size: 14px; flex: 1; min-width: 200px;
         }
+        .badge { padding: 4px 12px; border-radius: 12px; font-size: 12px; font-weight: 600; }
+        .badge-task { background: #e3f2fd; color: #1976d2; }
+        .badge-talk { background: #f3e5f5; color: #7b1fa2; }
+        .badge-paid { background: #c8e6c9; color: #2e7d32; }
+        .badge-pending { background: #fff3e0; color: #e65100; }
+        .actions { display: flex; gap: 8px; }
+        .btn-icon {
+            padding: 6px 12px; font-size: 12px; border-radius: 6px;
+            cursor: pointer; border: none; transition: all 0.3s;
+        }
+        .btn-view { background: #2ecc71; color: white; }
+        .btn-delete { background: #e74c3c; color: white; }
+        .notification {
+            position: fixed; top: 20px; right: 20px; padding: 20px;
+            border-radius: 10px; color: white; font-weight: bold;
+            z-index: 2000; display: none; max-width: 350px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+        }
+        .notification.success { background: #2ecc71; }
+        .notification.error { background: #e74c3c; }
+        .notification.info { background: #3498db; }
+        .mode-btn {
+            padding: 10px 20px; margin: 5px; border: 2px solid #4169e1;
+            background: white; color: #4169e1; border-radius: 8px;
+            cursor: pointer; font-weight: 600; transition: all 0.3s;
+        }
+        .mode-btn:hover { background: #e3f2fd; }
+        .mode-btn.active { background: #4169e1; color: white; transform: scale(1.05); }
+        .member-detail { display: grid; gap: 15px; }
+        .detail-row {
+            display: grid; grid-template-columns: 150px 1fr;
+            padding: 10px; border-bottom: 1px solid #eee;
+        }
+        .detail-label { font-weight: 600; color: #2a5298; }
+        .detail-value { color: #666; }
         .sync-indicator {
             position: fixed; bottom: 20px; right: 20px;
             background: white; padding: 8px 16px; border-radius: 20px;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.15); font-size: 12px;
-            display: flex; align-items: center; gap: 8px; z-index: 2000;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15); font-size: 12px; z-index: 1000;
         }
-        .online { border-left: 4px solid #2ecc71; }
-        .offline { border-left: 4px solid #e74c3c; }
-        .mode-btn { padding: 8px 16px; border-radius: 20px; border: 1px solid #4169e1; cursor: pointer; background: white; transition: 0.3s; }
-        .mode-btn.active { background: #4169e1; color: white; }
+        .sync-indicator.online { border-left: 4px solid #2ecc71; }
+        .sync-indicator.offline { border-left: 4px solid #e74c3c; }
+        .cleanup-btn {
+            position: fixed; bottom: 80px; right: 20px; z-index: 1000;
+        }
+        .modal {
+            display: none; position: fixed; z-index: 2001; left: 0; top: 0;
+            width: 100%; height: 100%; background: rgba(0,0,0,0.5);
+        }
+        .modal-content {
+            background: white; margin: 5% auto; padding: 30px;
+            border-radius: 20px; max-width: 600px; max-height: 80vh; overflow-y: auto;
+        }
+        .close {
+            float: right; font-size: 28px; font-weight: bold;
+            cursor: pointer; color: #999;
+        }
+        .close:hover { color: #333; }
+        #cleanupStatus {
+            background: #f8f9fa; padding: 15px; border-radius: 10px;
+            margin: 20px 0; max-height: 300px; overflow-y: auto;
+            font-family: monospace; font-size: 12px; display: none;
+        }
     </style>
 </head>
 <body>
+    <!-- Sync Indicator -->
+    <div id="syncIndicator" class="sync-indicator offline">
+        <span id="syncText">🔴 Initializing...</span>
+    </div>
 
+    >
+    </div>
+
+    <!-- Mode Switcher -->
     <div style="position: fixed; top: 10px; left: 10px; z-index: 1001; background: white; padding: 10px; border-radius: 10px; box-shadow: 0 4px 12px rgba(0,0,0,0.15);">
-        <button class="mode-btn active" id="adminModeBtn">👨‍💼 Admin</button>
-        <button class="mode-btn" id="memberModeBtn">👤 Member</button>
+        <button class="mode-btn active" data-mode="admin">👨‍💼 Admin</button>
+        <button class="mode-btn" data-mode="member">👤 Member</button>
         <div style="margin-top: 8px; font-size: 11px; color: #666; text-align: center;">
-            <strong>Mode:</strong> <span id="currentModeDisplay" style="color: #4169e1; font-weight: bold;">Admin</span>
+            <strong>Mode:</strong> <span id="currentMode" style="color: #4169e1; font-weight: bold;">Admin</span>
         </div>
     </div>
 
+    <!-- Admin Login -->
     <div id="loginScreen" class="login-screen">
-        <div class="header" style="margin: 0 0 30px 0; padding: 20px;">
+        <div class="header" style="margin: 0 0 30px 0;">
             <h1>🌍 TAU AFRICA</h1>
-            <p>Admin Access</p>
+            <p>Database Management System</p>
+            <div class="api-badge">v3.0 - Firebase Sync</div>
         </div>
+        <h2 style="color: #2a5298; margin-bottom: 30px; text-align: center;">Admin Access</h2>
         <form id="loginForm">
             <div class="form-group">
-                <label>Admin Access Code</label>
-                <input type="password" id="accessCode" placeholder="Enter code..." required>
+                <label>Access Code</label>
+                <input type="password" id="accessCode" placeholder="Enter admin access code" required>
             </div>
-            <button type="submit" class="btn">Login as Admin</button>
+            <button type="submit" class="btn">Access Database</button>
         </form>
+        <div style="margin-top: 20px; padding: 15px; background: #f8f9fa; border-radius: 10px;">
+            <small><strong>Default:</strong> TAU2025ADMIN</small>
+        </div>
     </div>
 
+    <!-- Member Portal -->
     <div id="memberPortal" class="member-portal" style="display: none;">
-        <div class="header" style="margin: 0 0 30px 0; padding: 20px;">
-            <h1>👤 TAU PORTAL</h1>
-            <p>Member Access</p>
+        <div class="header" style="margin: 0 0 30px 0;">
+            <h1>🌍 TAU AFRICA</h1>
+            <p>Member Portal</p>
         </div>
+        <h2 style="color: #2a5298; margin-bottom: 30px; text-align: center;">Member Login</h2>
         <form id="memberLoginForm">
             <div class="form-group">
                 <label>Member ID or Email</label>
-                <input type="text" id="memberIdentifier" placeholder="TAU-XXXXX" required>
+                <input type="text" id="memberIdentifier" required>
             </div>
             <div class="form-group">
-                <label>Security Pin (Last 4 digits of Phone)</label>
-                <input type="password" id="memberPhone" maxlength="4" placeholder="XXXX" required>
+                <label>Phone (Last 4 digits)</label>
+                <input type="text" id="memberPhone" maxlength="4" required>
             </div>
-            <button type="submit" class="btn">Link & Access Kabiru</button>
+            <button type="submit" class="btn">Access Profile</button>
         </form>
     </div>
 
+    <!-- Member Dashboard -->
+    <div id="memberDashboard" class="container" style="display: none;">
+        <div class="header">
+            <h1>🌍 Welcome, <span id="memberName">Member</span>!</h1>
+            <p>TAU Africa Member Portal</p>
+            <button id="memberLogoutBtn" class="btn btn-small">Logout</button>
+        </div>
+        <div class="main-content">
+            <div class="portal-card">
+                <h2>Your Member ID</h2>
+                <h1 id="displayMemberId" style="font-size: 2.5rem;">---</h1>
+            </div>
+            <div class="member-detail" id="memberProfileDetail"></div>
+        </div>
+    </div>
+
+    <!-- Admin Dashboard -->
     <div id="dashboard" class="container" style="display: none;">
         <div class="header">
             <h1>🌍 TAU AFRICA FOUNDATION</h1>
-            <div class="api-badge">✓ Firestore Engine: Kabiru-Mining-v2</div>
-            <div style="margin-top: 15px;">
-                <button onclick="location.reload()" class="btn" style="width: auto; padding: 8px 20px; background: rgba(255,255,255,0.2);">Logout</button>
-            </div>
+            <p>Database Management System</p>
+            <div class="api-badge">✓ Firebase Sync Active</div>
+            <button id="logoutBtn" class="btn btn-small">Logout</button>
         </div>
 
         <div class="stats-grid">
-            <div class="stat-card">
-                <h3 id="totalMembers">0</h3>
-                <p>Registered Members</p>
-            </div>
-            <div class="stat-card">
-                <h3 id="revenueTotal">KSH 0</h3>
-                <p>System Revenue</p>
-            </div>
-            <div class="stat-card">
-                <button onclick="window.showSystemBalance()" class="btn" style="padding: 10px;">View Kabiru Link Status</button>
-            </div>
+            <div class="stat-card"><h3 id="totalMembers">0</h3><p>Total Members</p></div>
+            <div class="stat-card"><h3 id="taskMembers">0</h3><p>TASK Team</p></div>
+            <div class="stat-card"><h3 id="talkMembers">0</h3><p>TALK Team</p></div>
+            <div class="stat-card"><h3 id="revenueTotal">KSH 0</h3><p>Total Revenue</p></div>
         </div>
 
         <div class="main-content">
             <div class="tabs">
-                <button class="tab active" data-tab="members">📋 Members List</button>
-                <button class="tab" data-tab="add">➕ Register New</button>
-                <button class="tab" data-tab="settings">⚙️ System Settings</button>
+                <button class="tab active" data-tab="members">📋 Members</button>
+                <button class="tab" data-tab="add">➕ Add Member</button>
+                <button class="tab" data-tab="settings">⚙️ Settings</button>
             </div>
 
+<button class="btn" onclick="showValidationDashboard()">🔐 Validation Dashboard</button>
+<button class="btn" onclick="showSystemStats()">💰 System Balance</button>
+        </div>
             <div id="membersTab" class="tab-content active">
+                <div class="search-box">
+                    <input type="text" id="searchInput" placeholder="Search...">
+                    <select id="teamFilter">
+                        <option value="">All Teams</option>
+                        <option value="TASK">TASK</option>
+                        <option value="TALK">TALK</option>
+                    </select>
+                    <button class="btn btn-small" id="searchBtn">🔍 Search</button>
+                </div>
                 <div class="table-container">
                     <table>
                         <thead>
                             <tr>
-                                <th>ID</th>
-                                <th>Full Name</th>
-                                <th>Email</th>
-                                <th>Team</th>
-                                <th>Kabiru Link</th>
-                                <th>Actions</th>
+                                <th>ID</th><th>Name</th><th>Email</th>
+                                <th>Phone</th><th>Team</th><th>Status</th><th>Actions</th>
                             </tr>
                         </thead>
                         <tbody id="membersTableBody"></tbody>
@@ -175,215 +277,928 @@
                 </div>
             </div>
 
-            <div id="addTab" class="tab-content" style="display:none;">
-                <form id="addMemberForm" style="max-width: 600px; margin: 0 auto;">
+            <div id="addTab" class="tab-content">
+                <h2>Add New Member</h2>
+                <form id="addMemberForm">
                     <div class="form-group">
-                        <label>Assigned Team</label>
+                        <label>Team *</label>
                         <select name="team" required>
-                            <option value="TASK">TASK TEAM</option>
-                            <option value="TALK">TALK TEAM</option>
+                            <option value="">Select</option>
+                            <option value="TASK">TASK (KSH 500)</option>
+                            <option value="TALK">TALK (KSH 2,000)</option>
                         </select>
                     </div>
                     <div class="form-group">
-                        <label>Full Name</label>
-                        <input type="text" name="fullName" placeholder="John Doe" required>
+                        <label>Full Name *</label>
+                        <input type="text" name="fullName" required>
                     </div>
                     <div class="form-group">
-                        <label>Email Address</label>
-                        <input type="email" name="email" placeholder="john@example.com" required>
+                        <label>Email *</label>
+                        <input type="email" name="email" required>
                     </div>
                     <div class="form-group">
-                        <label>Phone Number</label>
-                        <input type="tel" name="phone" placeholder="0712345678" required>
+                        <label>Phone *</label>
+                        <input type="tel" name="phone" required>
                     </div>
-                    <button type="submit" class="btn">Register & Generate TAU-ID</button>
+                    <div class="form-group">
+                        <label>Location *</label>
+                        <input type="text" name="location" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Payment Status</label>
+                        <select name="paymentStatus">
+                            <option value="Paid">Paid</option>
+                            <option value="Pending">Pending</option>
+                        </select>
+                    </div>
+                    <button type="submit" class="btn">Add Member</button>
                 </form>
             </div>
 
-            <div id="settingsTab" class="tab-content" style="display:none;">
-                <div style="padding: 20px; border: 1px solid #ffebee; border-radius: 10px; background: #fff5f5;">
-                    <h3 style="color: #c62828;">⚠️ Danger Zone</h3>
-                    <p style="margin: 10px 0;">This will permanently wipe all cloud and local data.</p>
-                    <button onclick="window.factoryResetDatabase()" class="btn" style="background: #c62828; width: auto;">Perform Factory Reset</button>
+            <div id="settingsTab" class="tab-content">
+                <h2>⚙️ Settings</h2>
+                <form id="settingsForm">
+                    <div class="form-group">
+                        <label>Change Access Code</label>
+                        <input type="password" name="newAccessCode">
+                    </div>
+                    <button type="submit" class="btn">Save</button>
+                </form>
+                <div style="margin-top: 20px; padding: 15px; background: #e3f2fd; border-radius: 10px;">
+                    <h4>🔥 Firebase Status</h4>
+                    <p style="margin: 10px 0; font-size: 14px;">
+                        <strong>Project:</strong> tau-main-app<br>
+                        <strong>Collection:</strong> members<br>
+                        <strong>Status:</strong> <span id="firebaseStatus">Checking...</span>
+                    </p>
                 </div>
             </div>
         </div>
     </div>
+<button class="btn" onclick="showValidationDashboard()">🔐 Validation Dashboard</button>
+</div>
+</div>
+<button class="btn" onclick="showSystemStats()">💰 System Balance</button>
+
 
     <div id="notification" class="notification"></div>
 
-    <script>
-    (function() {
-        const FIREBASE_CONFIG = {
-            apiKey: "AIzaSyCZhPjrl18PuyBh01Ou2KQMs-Ph3x2GP7o",
-            authDomain: "kabiru-mining-app.firebaseapp.com",
-            projectId: "kabiru-mining-app",
-            storageBucket: "kabiru-mining-app.appspot.com",
-            messagingSenderId: "217095254990",
-            appId: "1:217095254990:web:9eb44eff825666995fb19f"
-        };
 
-        const ADMIN_CODE = 'TAU2025ADMIN';
-        let db;
-        let membersDB = [];
+    <!-- Firebase SDK -->
+<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
 
-        // INITIALIZE FIREBASE
-        try {
-            if (!firebase.apps.length) firebase.initializeApp(FIREBASE_CONFIG);
-            db = firebase.firestore();
-            console.log("✅ Kabiru Cloud Core Connected");
-        } catch (e) {
-            console.error("Firebase Error:", e);
+<script>
+// ============================================
+// TAU AFRICA DATABASE - COMPLETE FIXED VERSION
+// ============================================
+(function() {
+    'use strict';
+    
+    console.log('💾 Database App Initializing...');
+    
+    // ============================================
+    // GLOBAL VARIABLES
+    // ============================================
+    const ACCESS_CODE = 'TAU2025ADMIN';
+    const FIREBASE_CONFIG = {
+        apiKey: "AIzaSyBcTzvl5lwpojRQM5lwyWe3hwp4upogUWw",
+        authDomain: "tau-main-app.firebaseapp.com",
+        projectId: "tau-main-app",
+        storageBucket: "tau-main-app.firebasestorage.app",
+        messagingSenderId: "69734421488",
+        appId: "1:69734421488:web:d13ae38f1c7d79cc854335"
+    };
+    
+    let db, membersDB = [], isOnline = false, currentMemberSession = null;
+    
+    // ============================================
+    // FIREBASE INITIALIZATION
+    // ============================================
+    try {
+        if (!firebase.apps.length) {
+            firebase.initializeApp(FIREBASE_CONFIG);
         }
-
-        function showNotification(msg, type) {
-            const n = document.getElementById('notification');
-            n.textContent = msg;
-            n.style.display = 'block';
-            n.style.background = type === 'success' ? '#2ecc71' : (type === 'error' ? '#e74c3c' : '#3498db');
-            setTimeout(() => n.style.display = 'none', 3000);
+        db = firebase.firestore();
+        db.enablePersistence({ synchronizeTabs: true })
+            .catch(err => console.warn('Persistence:', err));
+        isOnline = true;
+        updateSyncIndicator(true);
+        console.log('✅ Firebase connected');
+        
+        // Setup realtime sync
+        setupRealtimeSync();
+    } catch (error) {
+        console.error('❌ Firebase error:', error);
+        updateSyncIndicator(false);
+    }
+    
+    function updateSyncIndicator(online) {
+        const indicator = document.getElementById('syncIndicator');
+        const text = document.getElementById('syncText');
+        if (indicator && text) {
+            indicator.className = online ? 'sync-indicator online' : 'sync-indicator offline';
+            text.textContent = online ? '🟢 Firebase Connected' : '🔴 Offline Mode';
         }
-
-        // LOAD DATABASE
-        async function loadDatabase() {
+    }
+    
+    // ============================================
+    // DATABASE OPERATIONS
+    // ============================================
+    async function loadDatabase() {
+        console.log('📥 Loading database...');
+        
+        // Load from localStorage first
+        const local = localStorage.getItem('tauAfricaDB');
+        if (local) {
+            membersDB = JSON.parse(local);
+            updateStats();
+            renderMembers();
+            console.log(`💾 Loaded ${membersDB.length} from localStorage`);
+        }
+        
+        // Then sync with Firestore
+        if (db && isOnline) {
             try {
                 const snapshot = await db.collection('members').get();
-                membersDB = [];
-                snapshot.forEach(doc => {
-                    membersDB.push({ firestoreId: doc.id, ...doc.data() });
-                });
-                renderMembers();
-                updateStats();
-            } catch (e) {
-                showNotification("Sync Failed", "error");
+                if (!snapshot.empty) {
+                    membersDB = [];
+                    snapshot.forEach(doc => {
+                        membersDB.push({ ...doc.data(), firestoreId: doc.id });
+                    });
+                    localStorage.setItem('tauAfricaDB', JSON.stringify(membersDB));
+                    updateStats();
+                    renderMembers();
+                    console.log(`☁️ Synced ${membersDB.length} from Firestore`);
+                }
+            } catch (error) {
+                console.error('Firestore load error:', error);
             }
         }
-
-        function renderMembers() {
-            const tbody = document.getElementById('membersTableBody');
-            tbody.innerHTML = membersDB.map(m => `
-                <tr>
-                    <td><strong>${m.id}</strong></td>
-                    <td>${m.fullName}</td>
-                    <td>${m.email}</td>
-                    <td><span class="api-badge" style="background: #4169e1">${m.team}</span></td>
-                    <td><span style="color: green">Linked ✓</span></td>
-                    <td>
-                        <button onclick="window.deleteMember('${m.firestoreId}')" style="background: #ff4444; color: white; border: none; padding: 5px 10px; border-radius: 5px; cursor: pointer;">Delete</button>
-                    </td>
-                </tr>
-            `).join('');
+    }
+    
+    function setupRealtimeSync() {
+        if (!db) return;
+        
+        db.collection('members').onSnapshot(snapshot => {
+            snapshot.docChanges().forEach(change => {
+                const data = { ...change.doc.data(), firestoreId: change.doc.id };
+                
+                if (change.type === 'added' || change.type === 'modified') {
+                    const idx = membersDB.findIndex(m => m.id === data.id);
+                    if (idx >= 0) {
+                        membersDB[idx] = data;
+                    } else {
+                        membersDB.push(data);
+                    }
+                } else if (change.type === 'removed') {
+                    membersDB = membersDB.filter(m => m.id !== data.id);
+                }
+                
+                localStorage.setItem('tauAfricaDB', JSON.stringify(membersDB));
+                updateStats();
+                renderMembers();
+            });
+        }, error => {
+            console.error('Real-time sync error:', error);
+        });
+        
+        console.log('👂 Real-time sync active');
+    }
+    
+    async function saveMember(member) {
+        const idx = membersDB.findIndex(m => m.id === member.id);
+        if (idx >= 0) {
+            membersDB[idx] = member;
+        } else {
+            membersDB.push(member);
         }
-
-        function updateStats() {
-            document.getElementById('totalMembers').textContent = membersDB.length;
-            document.getElementById('revenueTotal').textContent = 'KSH ' + (membersDB.length * 500).toLocaleString();
+        localStorage.setItem('tauAfricaDB', JSON.stringify(membersDB));
+        
+        if (db && isOnline) {
+            try {
+                await db.collection('members').doc(member.id).set(member);
+                console.log(`☁️ Saved to Firestore: ${member.id}`);
+            } catch (error) {
+                console.error('Firestore save error:', error);
+            }
         }
-
-        // MODE SWITCHING
-        document.getElementById('adminModeBtn').onclick = () => {
-            document.getElementById('loginScreen').style.display = 'block';
-            document.getElementById('memberPortal').style.display = 'none';
-            document.getElementById('dashboard').style.display = 'none';
-            setActiveModeBtn('adminModeBtn');
-        };
-
-        document.getElementById('memberModeBtn').onclick = () => {
-            document.getElementById('loginScreen').style.display = 'none';
-            document.getElementById('memberPortal').style.display = 'block';
-            document.getElementById('dashboard').style.display = 'none';
-            setActiveModeBtn('memberModeBtn');
-        };
-
-        function setActiveModeBtn(id) {
-            document.querySelectorAll('.mode-btn').forEach(b => b.classList.remove('active'));
-            document.getElementById(id).classList.add('active');
-            document.getElementById('currentModeDisplay').textContent = id === 'adminModeBtn' ? 'Admin' : 'Member';
+    }
+    
+    async function deleteMember(id) {
+        if (!confirm('Delete this member? This cannot be undone.')) return;
+        
+        try {
+            const member = membersDB.find(m => m.id === id);
+            
+            if (member?.firestoreId && db) {
+                await db.collection('members').doc(member.firestoreId).delete();
+            }
+            
+            membersDB = membersDB.filter(m => m.id !== id);
+            localStorage.setItem('tauAfricaDB', JSON.stringify(membersDB));
+            
+            updateStats();
+            renderMembers();
+            showNotification('✅ Member deleted', 'success');
+        } catch (error) {
+            console.error('Delete error:', error);
+            showNotification('❌ Delete failed', 'error');
         }
-
-        // LOGIN ACTIONS
-        document.getElementById('loginForm').onsubmit = async (e) => {
+    }
+    
+    // ============================================
+    // UI FUNCTIONS
+    // ============================================
+    function generateMemberID(team) {
+        const prefix = team === 'TASK' ? 'TSK' : 'TLK';
+        const timestamp = Date.now().toString().slice(-6);
+        const random = Math.floor(Math.random() * 1000).toString().padStart(3, '0');
+        return `${prefix}-${timestamp}-${random}`;
+    }
+    
+    function updateStats() {
+        document.getElementById('totalMembers').textContent = membersDB.length;
+        document.getElementById('taskMembers').textContent = membersDB.filter(m => m.team === 'TASK').length;
+        document.getElementById('talkMembers').textContent = membersDB.filter(m => m.team === 'TALK').length;
+        const revenue = membersDB.reduce((sum, m) => 
+            m.paymentStatus === 'Paid' ? sum + (m.fee || 0) : sum, 0
+        );
+        document.getElementById('revenueTotal').textContent = `KSH ${revenue.toLocaleString()}`;
+    }
+    
+    function renderMembers(filtered = null) {
+        const data = filtered || membersDB;
+        const tbody = document.getElementById('membersTableBody');
+        if (!tbody) return;
+        
+        tbody.innerHTML = data.map(m => `
+            <tr>
+                <td><strong>${m.id}</strong></td>
+                <td>${m.fullName}</td>
+                <td>${m.email}</td>
+                <td>${m.phone}</td>
+                <td><span class="badge badge-${(m.team || '').toLowerCase()}">${m.team}</span></td>
+                <td><span class="badge badge-${(m.paymentStatus || 'pending').toLowerCase()}">${m.paymentStatus || 'Pending'}</span></td>
+                <td>
+                    <div class="actions">
+                        <button class="btn-icon btn-view" onclick="window.viewMember('${m.id}')">View</button>
+                        <button class="btn-icon btn-delete" onclick="window.deleteMember('${m.id}')">Delete</button>
+                    </div>
+                </td>
+            </tr>
+        `).join('');
+    }
+    
+    function filterMembers() {
+        const search = document.getElementById('searchInput').value.toLowerCase();
+        const team = document.getElementById('teamFilter').value;
+        
+        const filtered = membersDB.filter(m => {
+            const matchSearch = !search || 
+                m.fullName.toLowerCase().includes(search) ||
+                m.email.toLowerCase().includes(search) ||
+                m.phone.includes(search) ||
+                m.id.toLowerCase().includes(search);
+            
+            const matchTeam = !team || m.team === team;
+            
+            return matchSearch && matchTeam;
+        });
+        
+        renderMembers(filtered);
+    }
+    
+    function viewMember(id) {
+        const member = membersDB.find(m => m.id === id);
+        if (!member) return;
+        
+        let details = '';
+        Object.keys(member).forEach(key => {
+            if (key !== 'firestoreId') {
+                details += `${key}: ${member[key]}\n`;
+            }
+        });
+        
+        alert(details);
+    }
+    
+    function showNotification(message, type) {
+        const notif = document.getElementById('notification');
+        if (!notif) return;
+        
+        notif.textContent = message;
+        notif.className = `notification ${type}`;
+        notif.style.display = 'block';
+        
+        setTimeout(() => {
+            notif.style.display = 'none';
+        }, 4000);
+    }
+    
+    // ============================================
+    // CLEANUP FUNCTIONS
+    // ============================================
+    window.showCleanupModal = function() {
+        document.getElementById('cleanupModal').style.display = 'block';
+    };
+    
+    window.closeCleanupModal = function() {
+        document.getElementById('cleanupModal').style.display = 'none';
+    };
+    
+    window.runCleanup = async function() {
+        const statusDiv = document.getElementById('cleanupStatus');
+        statusDiv.style.display = 'block';
+        statusDiv.innerHTML = '';
+        
+        function log(msg) {
+            statusDiv.innerHTML += msg + '<br>';
+            statusDiv.scrollTop = statusDiv.scrollHeight;
+        }
+        
+        log('🧹 Starting cleanup...');
+        
+        if (!db || !isOnline) {
+            log('⚠️ Firestore not available, cleaning localStorage only');
+            cleanupLocalStorage();
+            return;
+        }
+        
+        try {
+            log('📥 Loading members from Firestore...');
+            const snapshot = await db.collection('members').get();
+            log(`📊 Found ${snapshot.size} total documents`);
+            
+            const valid = [];
+            const duplicates = new Map();
+            const testData = [];
+            const invalid = [];
+            
+            snapshot.forEach(doc => {
+                const data = doc.data();
+                
+                if (!data.id || !data.email || !data.team) {
+                    invalid.push({ docId: doc.id, reason: 'Missing fields' });
+                    return;
+                }
+                
+                if (
+                    data.email?.includes('test') || 
+                    data.email?.includes('example.com') ||
+                    data.fullName?.toLowerCase().includes('test')
+                ) {
+                    testData.push({ docId: doc.id, email: data.email });
+                    return;
+                }
+                
+                if (duplicates.has(data.email)) {
+                    duplicates.get(data.email).push({ docId: doc.id, id: data.id });
+                } else {
+                    duplicates.set(data.email, [{ docId: doc.id, id: data.id }]);
+                    valid.push({ docId: doc.id, ...data });
+                }
+            });
+            
+            const dupsToDelete = [];
+            duplicates.forEach((entries, email) => {
+                if (entries.length > 1) {
+                    dupsToDelete.push(...entries.slice(1));
+                    log(`🔄 Found ${entries.length} duplicates for: ${email}`);
+                }
+            });
+            
+            log(`<br>✅ Valid members: ${valid.length}`);
+            log(`🔄 Duplicates: ${dupsToDelete.length}`);
+            log(`🧪 Test data: ${testData.length}`);
+            log(`❌ Invalid: ${invalid.length}`);
+            
+            const totalToDelete = dupsToDelete.length + testData.length + invalid.length;
+            
+            if (totalToDelete === 0) {
+                log('<br>✨ Database is already clean!');
+                return;
+            }
+            
+            if (!confirm(`Delete ${totalToDelete} entries?\n\nThis will keep ${valid.length} valid members.`)) {
+                log('❌ Cleanup cancelled');
+                return;
+            }
+            
+            const toDelete = [
+                ...dupsToDelete.map(d => d.docId),
+                ...testData.map(t => t.docId),
+                ...invalid.map(i => i.docId)
+            ];
+            
+            const batchSize = 500;
+            let deleted = 0;
+            
+            for (let i = 0; i < toDelete.length; i += batchSize) {
+                const batch = db.batch();
+                const chunk = toDelete.slice(i, i + batchSize);
+                
+                chunk.forEach(docId => {
+                    batch.delete(db.collection('members').doc(docId));
+                });
+                
+                await batch.commit();
+                deleted += chunk.length;
+                log(`🗑️ Deleted ${deleted}/${toDelete.length}...`);
+            }
+            
+            log(`<br>✅ Cleanup complete!`);
+            log(`📊 Remaining: ${valid.length} valid members`);
+            
+            membersDB = valid;
+            localStorage.setItem('tauAfricaDB', JSON.stringify(valid));
+            
+            updateStats();
+            renderMembers();
+            showNotification(`✅ Cleaned! Deleted: ${totalToDelete}, Remaining: ${valid.length}`, 'success');
+            
+        } catch (error) {
+            log(`<br>❌ Error: ${error.message}`);
+            console.error('Cleanup error:', error);
+        }
+    };
+    
+    function cleanupLocalStorage() {
+        const members = JSON.parse(localStorage.getItem('tauAfricaDB') || '[]');
+        const valid = [];
+        const seen = new Set();
+        
+        members.forEach(m => {
+            if (!m.id || !m.email || !m.team) return;
+            if (m.email?.includes('test') || m.email?.includes('example.com')) return;
+            if (seen.has(m.email)) return;
+            
+            seen.add(m.email);
+            valid.push(m);
+        });
+        
+        localStorage.setItem('tauAfricaDB', JSON.stringify(valid));
+        membersDB = valid;
+        updateStats();
+        renderMembers();
+        showNotification(`✅ Local cleanup done! ${valid.length} members remaining`, 'success');
+    }
+    
+    // ============================================
+    // EVENT LISTENERS
+    // ============================================
+    document.addEventListener('DOMContentLoaded', async () => {
+        console.log('📋 Setting up event listeners...');
+        
+        // Mode toggle buttons
+        document.querySelectorAll('.mode-btn').forEach(btn => {
+            btn.addEventListener('click', function() {
+                document.querySelectorAll('.mode-btn').forEach(b => b.classList.remove('active'));
+                this.classList.add('active');
+                const mode = this.dataset.mode;
+                
+                document.getElementById('loginScreen').style.display = 'none';
+                document.getElementById('memberPortal').style.display = 'none';
+                document.getElementById('memberDashboard').style.display = 'none';
+                document.getElementById('dashboard').style.display = 'none';
+                
+                if (mode === 'admin') {
+                    document.getElementById('loginScreen').style.display = 'block';
+                    document.getElementById('currentMode').textContent = 'Admin';
+                    showNotification('👨‍💼 Admin Mode', 'info');
+                } else {
+                    document.getElementById('memberPortal').style.display = 'block';
+                    document.getElementById('currentMode').textContent = 'Member';
+                    showNotification('👤 Member Mode', 'info');
+                }
+            });
+        });
+        
+        // Admin login
+        document.getElementById('loginForm').addEventListener('submit', async (e) => {
             e.preventDefault();
-            if (document.getElementById('accessCode').value === ADMIN_CODE) {
+            const code = document.getElementById('accessCode').value;
+            if (code === (localStorage.getItem('tauAccessCode') || ACCESS_CODE)) {
                 document.getElementById('loginScreen').style.display = 'none';
                 document.getElementById('dashboard').style.display = 'block';
-                showNotification("Admin Authenticated", "success");
                 await loadDatabase();
+                showNotification('✅ Admin logged in', 'success');
             } else {
-                showNotification("Invalid Access Code", "error");
+                showNotification('❌ Invalid code', 'error');
             }
-        };
-
-        document.getElementById('memberLoginForm').onsubmit = async (e) => {
-            e.preventDefault();
-            const idInput = document.getElementById('memberIdentifier').value;
-            const pinInput = document.getElementById('memberPhone').value;
-            
-            showNotification("Connecting to Kabiru...", "info");
-            
-            // Simulating Kabiru Auth check
-            setTimeout(() => {
-                showNotification("Success! Redirecting to TAU Dashboard...", "success");
-            }, 1500);
-        };
-
-        // TAB NAVIGATION
-        document.querySelectorAll('.tab').forEach(tab => {
-            tab.onclick = function() {
-                document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-                document.querySelectorAll('.tab-content').forEach(c => c.style.display = 'none');
-                this.classList.add('active');
-                document.getElementById(this.dataset.tab + 'Tab').style.display = 'block';
-            };
         });
-
-        // ADD MEMBER
-        document.getElementById('addMemberForm').onsubmit = async (e) => {
+        
+        document.getElementById('logoutBtn').addEventListener('click', () => {
+            document.getElementById('loginScreen').style.display = 'block';
+            document.getElementById('dashboard').style.display = 'none';
+            document.getElementById('accessCode').value = '';
+        });
+        
+        // Member login
+        document.getElementById('memberLoginForm').addEventListener('submit', (e) => {
             e.preventDefault();
-            const fd = new FormData(e.target);
-            const memberData = {
-                id: 'TAU-' + Math.floor(10000 + Math.random() * 90000),
-                fullName: fd.get('fullName'),
-                email: fd.get('email'),
-                phone: fd.get('phone'),
-                team: fd.get('team'),
-                timestamp: new Date().toISOString()
+            const id = document.getElementById('memberIdentifier').value;
+            const phone = document.getElementById('memberPhone').value;
+            const member = membersDB.find(m => 
+                (m.id === id || m.email === id) && m.phone.slice(-4) === phone
+            );
+            
+            if (member) {
+                currentMemberSession = member;
+                document.getElementById('memberPortal').style.display = 'none';
+                document.getElementById('memberDashboard').style.display = 'block';
+                document.getElementById('memberName').textContent = member.fullName;
+                document.getElementById('displayMemberId').textContent = member.id;
+                
+                let html = '';
+                for (let key in member) {
+                    if (key !== 'firestoreId') {
+                        html += `<div class="detail-row">
+                            <div class="detail-label">${key.toUpperCase()}:</div>
+                            <div class="detail-value">${member[key] || 'N/A'}</div>
+                        </div>`;
+                    }
+                }
+                document.getElementById('memberProfileDetail').innerHTML = html;
+                showNotification('✅ Login success', 'success');
+            } else {
+                showNotification('❌ Invalid credentials', 'error');
+            }
+        });
+        
+        document.getElementById('memberLogoutBtn').addEventListener('click', () => {
+            document.getElementById('memberDashboard').style.display = 'none';
+            document.getElementById('memberPortal').style.display = 'block';
+            document.getElementById('memberIdentifier').value = '';
+            document.getElementById('memberPhone').value = '';
+        });
+        
+        // Tab switching
+        document.querySelectorAll('.tab').forEach(tab => {
+            tab.addEventListener('click', function() {
+                document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+                document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+                this.classList.add('active');
+                const content = document.getElementById(this.dataset.tab + 'Tab');
+                if (content) content.classList.add('active');
+            });
+        });
+        
+        // Search
+        document.getElementById('searchBtn').addEventListener('click', filterMembers);
+        document.getElementById('searchInput').addEventListener('keyup', filterMembers);
+        document.getElementById('teamFilter').addEventListener('change', filterMembers);
+        
+        // Add member form
+        document.getElementById('addMemberForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const formData = new FormData(e.target);
+            const member = {
+                id: generateMemberID(formData.get('team')),
+                team: formData.get('team'),
+                fullName: formData.get('fullName'),
+                email: formData.get('email'),
+                phone: formData.get('phone'),
+                location: formData.get('location'),
+                paymentStatus: formData.get('paymentStatus') || 'Paid',
+                dateJoined: new Date().toISOString().split('T')[0],
+                status: 'Active',
+                fee: formData.get('team') === 'TASK' ? 500 : 2000
             };
-
+            
             try {
-                await db.collection('members').add(memberData);
-                showNotification("Member Registered Successfully!", "success");
+                await saveMember(member);
+                showNotification(`✅ Member added! ID: ${member.id}`, 'success');
                 e.target.reset();
-                await loadDatabase();
-            } catch (e) {
-                showNotification("Error: " + e.message, "error");
+                updateStats();
+                renderMembers();
+                
+                document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+                document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+                document.querySelector('[data-tab="members"]').classList.add('active');
+                document.getElementById('membersTab').classList.add('active');
+            } catch (error) {
+                console.error('Add error:', error);
+                showNotification('❌ Failed to add member', 'error');
             }
-        };
-
-        // GLOBAL ACTIONS
-        window.deleteMember = async function(firestoreId) {
-            if (confirm("Delete this member permanently?")) {
-                await db.collection('members').doc(firestoreId).delete();
-                await loadDatabase();
+        });
+        
+        // Settings form
+        document.getElementById('settingsForm').addEventListener('submit', (e) => {
+            e.preventDefault();
+            const formData = new FormData(e.target);
+            const code = formData.get('newAccessCode');
+            if (code) {
+                localStorage.setItem('tauAccessCode', code);
+                showNotification('✅ Access code updated', 'success');
+                e.target.reset();
+            } else {
+                showNotification('⚠️ Enter new code', 'info');
             }
-        };
-
-        window.showSystemBalance = function() {
-            alert("Kabiru-Mining Node Status: Online\nSystem Fee: 0.001%\nDatabase: Firestore Cloud");
-        };
-
-        window.factoryResetDatabase = async function() {
-            if (prompt("Type 'DELETE ALL' to confirm reset:") === 'DELETE ALL') {
-                const snap = await db.collection('members').get();
-                const batch = db.batch();
-                snap.forEach(doc => batch.delete(doc.ref));
-                await batch.commit();
-                await loadDatabase();
-                showNotification("Database Reset Complete", "success");
+        });
+        
+        console.log('✅ Database App Ready');
+    });
+    
+    // Modal click-outside handler
+    window.onclick = function(event) {
+        const modal = document.getElementById('cleanupModal');
+        if (event.target === modal) {
+            closeCleanupModal();
+        }
+    };
+    
+    // Expose functions globally
+    window.viewMember = viewMember;
+    window.deleteMember = deleteMember;
+    window.filterMembers = filterMembers;
+    
+})();
+</script>
+    <script>
+// ============================================
+// ENHANCED MEMBER DELETION
+// ============================================
+window.deleteMember = async function(memberId) {
+    if (!confirm(`⚠️ Delete member ${memberId}? This cannot be undone!`)) {
+        return;
+    }
+    
+    if (!confirm('Are you absolutely sure? This will delete all member data!')) {
+        return;
+    }
+    
+    try {
+        // Delete from localStorage
+        const members = JSON.parse(localStorage.getItem('tauAfricaDB') || '[]');
+        const filtered = members.filter(m => m.id !== memberId);
+        localStorage.setItem('tauAfricaDB', JSON.stringify(filtered));
+        
+        // Delete from Firestore
+        if (typeof firebase !== 'undefined' && firebase.apps.length > 0) {
+            const db = firebase.firestore();
+            
+            await db.collection('members').doc(memberId).delete();
+            await db.collection('memberVerification').doc(memberId).delete();
+            
+            // Delete related data
+            const notifDoc = await db.collection('notifications').doc(memberId).get();
+            if (notifDoc.exists) {
+                await notifDoc.ref.delete();
             }
-        };
-
-    })();
+        }
+        
+        // Delete from credentials
+        const creds = JSON.parse(localStorage.getItem('tauCredentials') || '{}');
+        delete creds[memberId];
+        localStorage.setItem('tauCredentials', JSON.stringify(creds));
+        
+        // Delete from notifications
+        const notifs = JSON.parse(localStorage.getItem('tauNotifications') || '{}');
+        delete notifs[memberId];
+        localStorage.setItem('tauNotifications', JSON.stringify(notifs));
+        
+        showNotification(`✅ Member ${memberId} deleted successfully!`, 'success');
+        
+        // Refresh display
+        if (typeof renderMembers === 'function') renderMembers();
+        if (typeof updateStats === 'function') updateStats();
+        
+        console.log('✅ Member deleted:', memberId);
+        
+    } catch (error) {
+        console.error('Delete error:', error);
+        showNotification('❌ Deletion failed: ' + error.message, 'error');
+    }
+};
     </script>
+    <script>
+// ============================================
+// ADMIN VALIDATION DASHBOARD
+// Add this to your database page (databse.html)
+// ============================================
+(function() {
+    'use strict';
+    
+    window.showValidationDashboard = function() {
+        const values = JSON.parse(localStorage.getItem('tauValues') || '[]');
+        const jobs = JSON.parse(localStorage.getItem('tauJobsPortal') || '[]');
+        const codes = JSON.parse(localStorage.getItem('tauValidatorCodes') || '[]');
+        
+        // Filter pending validations
+        const pendingValues = values.filter(v => !v.validated || !v.validationStages?.stage3?.validated);
+        const pendingJobs = jobs.filter(j => !j.validated || !j.validationStages?.stage3?.validated);
+        
+        const modal = document.createElement('div');
+        modal.className = 'modal';
+        modal.style.display = 'block';
+        modal.innerHTML = `
+            <div class="modal-content" style="max-width: 1200px;">
+                <span class="close" onclick="this.parentElement.parentElement.remove()">&times;</span>
+                
+                <h2>🔐 Validation Dashboard</h2>
+                
+                <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 15px; margin-bottom: 30px;">
+                    <div style="background: #3498db; color: white; padding: 20px; border-radius: 10px; text-align: center;">
+                        <h3>${pendingValues.length}</h3>
+                        <p>Pending Values</p>
+                    </div>
+                    <div style="background: #f39c12; color: white; padding: 20px; border-radius: 10px; text-align: center;">
+                        <h3>${pendingJobs.length}</h3>
+                        <p>Pending Jobs</p>
+                    </div>
+                    <div style="background: #2ecc71; color: white; padding: 20px; border-radius: 10px; text-align: center;">
+                        <h3>${codes.filter(c => c.status === 'used').length}</h3>
+                        <p>Codes Used</p>
+                    </div>
+                    <div style="background: #95a5a6; color: white; padding: 20px; border-radius: 10px; text-align: center;">
+                        <h3>${codes.filter(c => c.status === 'pending').length}</h3>
+                        <p>Codes Pending</p>
+                    </div>
+                </div>
+                
+                <h3>Pending Values (3-Stage Validation)</h3>
+                <div style="max-height: 300px; overflow-y: auto; margin-bottom: 30px;">
+                    ${pendingValues.length > 0 ? pendingValues.map(v => `
+                        <div style="background: white; border: 2px solid #ddd; border-radius: 10px; padding: 20px; margin-bottom: 15px;">
+                            <h4>${v.title}</h4>
+                            <p>${v.description}</p>
+                            <p><strong>Worth:</strong> ${v.worthKsh} KSH (${v.worthIkb} iKb)</p>
+                            <p><strong>Submitted by:</strong> ${v.submittedByName} (${v.submittedBy})</p>
+                            
+                            <div style="display: flex; gap: 10px; margin-top: 15px;">
+                                ${v.validationStages?.stage1?.validated ? 
+                                    `<span style="background: #2ecc71; color: white; padding: 5px 10px; border-radius: 5px;">✓ Stage 1</span>` :
+                                    `<button class="btn btn-small" onclick="generateValidationCodes('value', '${v.id}')">Generate Codes</button>`
+                                }
+                                ${v.validationStages?.stage2?.validated ? 
+                                    `<span style="background: #2ecc71; color: white; padding: 5px 10px; border-radius: 5px;">✓ Stage 2</span>` : ''
+                                }
+                                ${v.validationStages?.stage3?.validated ? 
+                                    `<span style="background: #2ecc71; color: white; padding: 5px 10px; border-radius: 5px;">✓ Stage 3</span>` : ''
+                                }
+                            </div>
+                            
+                            ${v.validationStages ? `
+                                <div style="background: #f8f9fa; padding: 10px; border-radius: 5px; margin-top: 10px; font-size: 12px;">
+                                    <strong>Current Stage:</strong> ${v.status}
+                                </div>
+                            ` : ''}
+                        </div>
+                    `).join('') : '<p style="text-align: center; padding: 40px;">No pending values</p>'}
+                </div>
+                
+                <h3>Recent Validation Codes</h3>
+                <div style="max-height: 200px; overflow-y: auto;">
+                    ${codes.slice(0, 10).map(c => `
+                        <div style="background: ${c.status === 'used' ? '#d4edda' : '#fff3cd'}; padding: 15px; border-radius: 8px; margin-bottom: 10px;">
+                            <div style="display: flex; justify-content: space-between; align-items: center;">
+                                <div>
+                                    <strong style="font-size: 16px; letter-spacing: 2px;">${c.code}</strong>
+                                    <p style="margin: 5px 0 0 0; font-size: 12px; color: #666;">
+                                        Stage ${c.stage} | ${c.itemType} | ${c.status}
+                                    </p>
+                                </div>
+                                <span style="background: ${c.status === 'used' ? '#2ecc71' : '#f39c12'}; color: white; padding: 5px 10px; border-radius: 5px; font-size: 12px;">
+                                    ${c.status === 'used' ? '✓ USED' : '⏳ PENDING'}
+                                </span>
+                            </div>
+                        </div>
+                    `).join('')}
+                </div>
+            </div>
+        `;
+        
+        document.body.appendChild(modal);
+    };
+    
+    console.log('✅ Validation Dashboard loaded');
+})();
+</script>
+
+<script>
+// ============================================
+// SYSTEM BALANCE & FEE TRACKING
+// ============================================
+(function() {
+    'use strict';
+    
+    window.getSystemBalance = function() {
+        return parseFloat(localStorage.getItem('systemBalance') || '0');
+    };
+    
+    window.getSystemStats = function() {
+        const values = JSON.parse(localStorage.getItem('tauValues') || '[]');
+        const tasks = JSON.parse(localStorage.getItem('tauTasks') || '[]');
+        const activities = JSON.parse(localStorage.getItem('tauActivities') || '[]');
+        
+        const validatedValues = values.filter(v => v.validated);
+        const validatedTasks = tasks.filter(t => t.validated);
+        const validatedActivities = activities.filter(a => a.validated);
+        
+        // Calculate total fees earned
+        let totalValueFees = 0;
+        validatedValues.forEach(v => {
+            const worthKsh = parseFloat(v.worthKsh || 0);
+            totalValueFees += worthKsh * 0.15; // 15% system fee
+        });
+        
+        let totalTaskActivityFees = 0;
+        [...validatedTasks, ...validatedActivities].forEach(item => {
+            const reward = parseFloat(item.reward || 0);
+            totalTaskActivityFees += reward * 0.00001; // 0.001% transaction fee
+        });
+        
+        return {
+            balance: getSystemBalance(),
+            valueFees: totalValueFees * 10, // Convert to iKbp
+            taskActivityFees: totalTaskActivityFees,
+            totalFees: (totalValueFees * 10) + totalTaskActivityFees,
+            validatedValues: validatedValues.length,
+            validatedTasks: validatedTasks.length,
+            validatedActivities: validatedActivities.length
+        };
+    };
+    
+    window.showSystemStats = function() {
+        const stats = getSystemStats();
+        
+        const modal = document.createElement('div');
+        modal.className = 'modal';
+        modal.style.display = 'block';
+        modal.innerHTML = `
+            <div class="modal-content">
+                <span class="close" onclick="this.parentElement.parentElement.remove()">&times;</span>
+                
+                <h2>💰 System Balance & Stats</h2>
+                
+                <div style="background: linear-gradient(45deg, #667eea, #764ba2); color: white; padding: 30px; border-radius: 15px; margin: 20px 0; text-align: center;">
+                    <h3>Total System Balance</h3>
+                    <h1 style="font-size: 3rem; margin: 20px 0;">${stats.balance.toFixed(2)} iKbp</h1>
+                    <p style="font-size: 1.2rem;">KSH ${(stats.balance / 10).toFixed(2)}</p>
+                </div>
+                
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 20px;">
+                    <div style="background: #3498db; color: white; padding: 20px; border-radius: 10px; text-align: center;">
+                        <h4>Value Validation Fees</h4>
+                        <h2>${stats.valueFees.toFixed(2)} iKbp</h2>
+                        <p>${stats.validatedValues} values</p>
+                    </div>
+                    <div style="background: #f39c12; color: white; padding: 20px; border-radius: 10px; text-align: center;">
+                        <h4>Task/Activity Fees</h4>
+                        <h2>${stats.taskActivityFees.toFixed(4)} iKbp</h2>
+                        <p>${stats.validatedTasks + stats.validatedActivities} items</p>
+                    </div>
+                </div>
+                
+                <div style="background: #f8f9fa; padding: 20px; border-radius: 10px;">
+                    <h4>Fee Structure:</h4>
+                    <ul style="margin: 10px 0 0 20px;">
+                        <li>Values/Jobs: 30% total (15% system, 5% each validator)</li>
+                        <li>Tasks/Activities: 0.001% transaction fee</li>
+                    </ul>
+                </div>
+                
+                <button onclick="this.parentElement.parentElement.remove()" class="btn" style="width: 100%; margin-top: 20px;">Close</button>
+            </div>
+        `;
+        
+        document.body.appendChild(modal);
+    };
+    
+    console.log('✅ System Balance Tracking loaded');
+})();
+</script>
+    
+    <script>
+// ADD this function for a TRUE Factory Reset
+window.factoryResetDatabase = async function() {
+    const confirmation = confirm("🚨 DANGER: This is a FACTORY RESET. It will delete ALL members from the cloud and local storage. Proceed?");
+    if (!confirmation) return;
+
+    const finalCheck = prompt("Type 'DELETE ALL' to confirm:");
+    if (finalCheck !== 'DELETE ALL') return;
+
+    try {
+        showNotification('🧹 Wiping all data...', 'info');
+        
+        // 1. Clear Firestore
+        const snapshot = await db.collection('members').get();
+        const batch = db.batch();
+        snapshot.forEach(doc => batch.delete(doc.ref));
+        await batch.commit();
+
+        // 2. Clear Local Storage
+        localStorage.removeItem('tauAfricaDB');
+        membersDB = [];
+        
+        renderMembers();
+        updateStats();
+        showNotification('✅ Factory Reset Complete!', 'success');
+    } catch (e) {
+        showNotification('❌ Reset Failed: ' + e.message, 'error');
+    }
+};
+</script>
 </body>
-</html>
+                </html>
