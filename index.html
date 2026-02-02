@@ -15022,7 +15022,7 @@ console.log('✅ Admin bridge button fixed');
     <script>
 // ============================================
 // LOGIN STATUS INDICATOR & IMPROVED DASHBOARD
-// Add this before closing </body> tag
+// Add this before closing tag
 // ============================================
 
 (function() {
@@ -15480,25 +15480,36 @@ function filterValidationList() {
     renderValidationList(filtered);
 }
 
-window.approveMember = async function(docId) {
-    if (!confirm("Confirm payment validation and activate this member?")) return;
-
-    const memberRef = firebase.firestore().collection('members').doc(docId);
-    const doc = await memberRef.get();
-
-    if (doc.exists) {
-        const memberData = doc.data();
-        const memberId = memberData.phone; // Member ID is the phone number
-        const tempPass = memberData.phone.slice(-4); // Last 4 digits
-
-        try {
-            // 1. Update Firestore Status
-            await memberRef.update({ 
-                status: 'Approved',
-                validatedAt: new Date().toISOString()
+window.approveMember = async function(memberId) {
+    try {
+        const db = firebase.firestore();
+        const memberRef = db.collection('members').doc(memberId);
+        const doc = await memberRef.get();
+        
+        if (doc.exists) {
+            const memberData = doc.data();
+            
+            // 1. Update Status to Active
+            await memberRef.update({
+                paymentStatus: 'Verified',
+                accountStatus: 'Active',
+                activatedAt: new Date().toISOString()
             });
 
-            // ============================================
+            // 2. NOW trigger the Emails (Move this logic here)
+            await sendWelcomeEmail(memberData);
+            await sendAdminNotification(memberData);
+
+            showNotification("✅ Member Activated & Emails Sent!", "success");
+            loadPendingMembers(); // Refresh the list
+        }
+    } catch (error) {
+        console.error("Activation failed:", error);
+        showNotification("❌ Activation Error", "error");
+    }
+};
+
+    // ============================================
     // 4. SEND WELCOME EMAIL TO MEMBER
     // ============================================
     window.sendWelcomeEmail = async function(member) {
