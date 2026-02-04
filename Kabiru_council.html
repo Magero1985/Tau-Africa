@@ -19,6 +19,8 @@
 :root {
   --gold:        #c9a84c;
   --gold-light:  #e4c97a;
+  --gold-glow:   #ffd700;
+  --gold-bright: #ffed4e;
   --gold-dim:    #8a7233;
   --ink:         #0a0a0f;
   --ink-mid:     #1a1a25;
@@ -30,6 +32,8 @@
   --red-accent:  #c0392b;
   --teal:        #1abc9c;
   --sky:         #3498db;
+  --purple:      #8e44ad;
+  --orange:      #e67e22;
   --font-head:   'Cinzel', serif;
   --font-sub:    'Rajdhani', sans-serif;
   --font-body:   'Source Sans 3', sans-serif;
@@ -97,17 +101,50 @@ body::before {
   font-family: var(--font-sub);
   font-weight: 300;
   font-size: 15px;
-  color: var(--mist);
+  color: var(--gold-glow);
   letter-spacing: 4px;
   text-transform: uppercase;
   margin-top: 14px;
   position: relative;
+  text-shadow: 0 0 20px rgba(255,215,0,0.6);
 }
 .hero-divider {
   width: 80px; height: 2px;
   background: linear-gradient(90deg, transparent, var(--gold), transparent);
   margin: 30px auto 0;
   position: relative;
+}
+
+/* ===== LEADERSHIP TRAINING BUTTON ===== */
+.training-btn-wrap {
+  margin-top: 32px;
+}
+.training-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  background: linear-gradient(135deg, var(--gold-dim), var(--gold));
+  color: var(--ink);
+  font-family: var(--font-sub);
+  font-weight: 700;
+  font-size: 13px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  border: none;
+  padding: 14px 32px;
+  border-radius: 32px;
+  cursor: pointer;
+  transition: all .3s;
+  box-shadow: 0 4px 20px rgba(201,168,76,.4);
+}
+.training-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 32px rgba(201,168,76,.6);
+  filter: brightness(1.1);
+}
+.training-btn svg {
+  width: 18px;
+  height: 18px;
 }
 
 /* ===== THREE STONES BANNER ===== */
@@ -153,9 +190,10 @@ body::before {
   display: block;
   font-weight: 300;
   font-size: 10.5px;
-  color: var(--slate);
+  color: var(--gold-glow);
   letter-spacing: 0.5px;
   margin-top: 1px;
+  text-shadow: 0 0 12px rgba(255,215,0,0.5);
 }
 
 /* ===== NAV TABS ===== */
@@ -202,29 +240,56 @@ body::before {
 .section-subtitle {
   text-align: center;
   font-family: var(--font-sub);
-  font-size: 12px;
-  color: var(--slate);
+  font-size: 13px;
+  color: var(--gold-glow);
   letter-spacing: 3px;
   text-transform: uppercase;
   margin-bottom: 40px;
+  text-shadow: 0 0 15px rgba(255,215,0,0.5);
 }
 
-/* ===== TIER BADGES ===== */
-.tier-badge {
-  display: inline-block;
+/* ===== BIG FIVE CATEGORY BADGES ===== */
+.category-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
   font-family: var(--font-sub);
   font-weight: 700;
-  font-size: 9.5px;
-  letter-spacing: 2px;
+  font-size: 10.5px;
+  letter-spacing: 1.5px;
   text-transform: uppercase;
-  padding: 3px 10px;
-  border-radius: 12px;
+  padding: 4px 12px;
+  border-radius: 14px;
   white-space: nowrap;
+  text-shadow: 0 0 12px rgba(255,215,0,0.4);
 }
-.tier-executive  { background: rgba(201,168,76,.18); color: var(--gold-light); border: 1px solid rgba(201,168,76,.35); }
-.tier-primary    { background: rgba(26,188,156,.14); color: #5de8ca; border: 1px solid rgba(26,188,156,.3); }
-.tier-secondary  { background: rgba(52,152,219,.14); color: #7bb8e8; border: 1px solid rgba(52,152,219,.3); }
-.tier-tertiary   { background: rgba(155,89,182,.14); color: #c39bd3; border: 1px solid rgba(155,89,182,.3); }
+.category-badge .icon { font-size: 14px; }
+
+.category-elephant { 
+  background: rgba(201,168,76,.18); 
+  color: var(--gold-bright); 
+  border: 1px solid rgba(201,168,76,.35); 
+}
+.category-rhino { 
+  background: rgba(26,188,156,.14); 
+  color: #6ff9d8; 
+  border: 1px solid rgba(26,188,156,.3); 
+}
+.category-buffalo { 
+  background: rgba(52,152,219,.14); 
+  color: #90d5ff; 
+  border: 1px solid rgba(52,152,219,.3); 
+}
+.category-lion { 
+  background: rgba(230,126,34,.14); 
+  color: #ffb366; 
+  border: 1px solid rgba(230,126,34,.3); 
+}
+.category-leopard { 
+  background: rgba(155,89,182,.14); 
+  color: #d8a5f0; 
+  border: 1px solid rgba(155,89,182,.3); 
+}
 
 /* ===== COUNCIL CARDS GRID ===== */
 .cards-grid {
@@ -288,12 +353,13 @@ body::before {
 .card-title {
   font-family: var(--font-sub);
   font-weight: 400;
-  font-size: 11.5px;
-  color: var(--gold);
+  font-size: 12px;
+  color: var(--gold-glow);
   letter-spacing: 0.5px;
   margin-top: 2px;
+  text-shadow: 0 0 12px rgba(255,215,0,0.4);
 }
-.card-tiers { margin-top: 8px; display: flex; gap: 5px; flex-wrap: wrap; }
+.card-categories { margin-top: 10px; display: flex; gap: 6px; flex-wrap: wrap; }
 
 .card-expand {
   overflow: hidden;
@@ -306,18 +372,20 @@ body::before {
 .card-expand-inner h4 {
   font-family: var(--font-sub);
   font-weight: 600;
-  font-size: 11px;
+  font-size: 11.5px;
   letter-spacing: 2px;
   text-transform: uppercase;
-  color: var(--gold-dim);
-  margin-bottom: 6px;
+  color: var(--gold-glow);
+  margin-bottom: 8px;
   margin-top: 14px;
+  text-shadow: 0 0 12px rgba(255,215,0,0.5);
 }
 .card-expand-inner h4:first-child { margin-top: 0; }
 .card-expand-inner p, .card-expand-inner li {
-  font-size: 13px;
-  color: var(--mist);
-  line-height: 1.6;
+  font-size: 13.5px;
+  color: var(--gold-bright);
+  line-height: 1.65;
+  text-shadow: 0 0 10px rgba(255,237,78,0.3);
 }
 .card-expand-inner ul { list-style: none; padding: 0; }
 .card-expand-inner ul li::before {
@@ -327,159 +395,333 @@ body::before {
 
 .card-toggle {
   text-align: right;
-  margin-top: 10px;
+  margin-top: 12px;
   font-family: var(--font-sub);
-  font-size: 11px;
-  color: var(--gold-dim);
+  font-size: 11.5px;
+  color: var(--gold-glow);
   letter-spacing: 1.5px;
   text-transform: uppercase;
+  text-shadow: 0 0 10px rgba(255,215,0,0.4);
 }
 
-/* ===== INTERACTIVE TABLE ===== */
-.table-wrap {
-  max-width: 1200px;
-  margin: 0 auto;
-  overflow-x: auto;
-  border-radius: 14px;
-  border: 1px solid rgba(201,168,76,.15);
-  background: linear-gradient(170deg, #141420, #0f0f16);
+/* Responsive adjustments */
+@media (max-width: 600px) {
+  .cards-grid { grid-template-columns: 1fr; }
+  .hero { padding: 50px 18px 40px; }
 }
-table {
-  width: 100%;
-  border-collapse: collapse;
-  font-family: var(--font-body);
-  font-size: 13.5px;
-  color: var(--mist);
+
+/* ===== LEADERSHIP TRAINING APP (HIDDEN MODAL) ===== */
+.training-modal {
+  display: none;
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  background: rgba(0,0,0,0.85);
+  backdrop-filter: blur(8px);
+  overflow-y: auto;
+  padding: 20px;
 }
-table thead {
-  background: linear-gradient(90deg, #1a1a28, #16161f);
-  border-bottom: 1px solid rgba(201,168,76,.2);
-}
-table thead th {
-  font-family: var(--font-sub);
-  font-weight: 600;
-  font-size: 10.5px;
-  letter-spacing: 2px;
-  text-transform: uppercase;
-  color: var(--gold);
-  padding: 16px 18px;
-  text-align: left;
-  white-space: nowrap;
-  cursor: pointer;
-  user-select: none;
+
+.training-modal.active { display: flex; align-items: flex-start; justify-content: center; }
+
+.training-container {
   position: relative;
+  max-width: 900px;
+  width: 100%;
+  background: linear-gradient(145deg, #1a1a25, #0f0f16);
+  border: 2px solid rgba(201,168,76,.3);
+  border-radius: 20px;
+  margin: 40px auto;
+  padding: 40px 36px;
+  box-shadow: 0 16px 64px rgba(201,168,76,.4);
+  animation: modalSlideIn .4s ease;
 }
-table thead th:hover { color: var(--gold-light); }
-table thead th .sort-icon { margin-left: 4px; opacity: .4; font-size: 10px; }
-table tbody tr {
-  border-bottom: 1px solid rgba(255,255,255,.04);
-  transition: background .2s;
+
+@keyframes modalSlideIn {
+  from { opacity: 0; transform: translateY(-30px); }
+  to { opacity: 1; transform: translateY(0); }
 }
-table tbody tr:hover { background: rgba(201,168,76,.04); }
-table tbody td { padding: 13px 18px; vertical-align: middle; }
-.td-rank {
-  font-family: var(--font-head);
-  font-weight: 800;
-  font-size: 15px;
-  color: var(--gold);
+
+.modal-close {
+  position: absolute;
+  top: 20px;
+  right: 20px;
   width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: rgba(201,168,76,.15);
+  border: 1px solid rgba(201,168,76,.3);
+  color: var(--gold-light);
+  font-size: 20px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all .3s;
 }
-.td-name { font-weight: 600; color: var(--fog); }
-.td-portfolio { color: var(--mist); }
-.td-tier { }
 
-/* ===== SEARCH BAR ===== */
-.search-bar {
-  max-width: 500px;
-  margin: 0 auto 36px;
-  position: relative;
-}
-.search-bar input {
-  width: 100%;
-  background: rgba(255,255,255,.04);
-  border: 1px solid rgba(201,168,76,.18);
-  border-radius: 30px;
-  padding: 12px 48px 12px 22px;
-  color: var(--fog);
-  font-family: var(--font-body);
-  font-size: 14px;
-  outline: none;
-  transition: border-color .3s, background .3s;
-}
-.search-bar input::placeholder { color: var(--slate); }
-.search-bar input:focus {
+.modal-close:hover {
+  background: rgba(201,168,76,.3);
   border-color: var(--gold);
-  background: rgba(255,255,255,.07);
-}
-.search-icon {
-  position: absolute; right: 18px; top: 50%;
-  transform: translateY(-50%);
-  color: var(--slate);
-  font-size: 16px;
-  pointer-events: none;
+  transform: rotate(90deg);
 }
 
-/* ===== FILTER PILLS ===== */
-.filter-row {
-  display: flex; justify-content: center; gap: 8px; flex-wrap: wrap;
+.training-header {
+  text-align: center;
+  margin-bottom: 36px;
+  padding-bottom: 24px;
+  border-bottom: 2px solid rgba(201,168,76,.2);
+}
+
+.training-header h2 {
+  font-family: var(--font-head);
+  font-size: clamp(1.6rem, 4vw, 2.2rem);
+  font-weight: 800;
+  color: var(--gold-light);
+  letter-spacing: 2px;
+  margin-bottom: 10px;
+  text-shadow: 0 0 20px rgba(255,215,0,0.5);
+}
+
+.training-header p {
+  font-family: var(--font-sub);
+  font-size: 13px;
+  color: var(--gold-glow);
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  text-shadow: 0 0 12px rgba(255,215,0,0.4);
+}
+
+/* Department Selection */
+.dept-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  gap: 16px;
   margin-bottom: 32px;
 }
-.filter-pill {
+
+.dept-card {
+  background: linear-gradient(145deg, #161621, #12121a);
+  border: 2px solid rgba(201,168,76,.2);
+  border-radius: 14px;
+  padding: 20px 18px;
+  cursor: pointer;
+  transition: all .3s;
+  text-align: center;
+}
+
+.dept-card:hover {
+  border-color: var(--gold);
+  transform: translateY(-3px);
+  box-shadow: 0 8px 32px rgba(201,168,76,.4);
+}
+
+.dept-card.selected {
+  border-color: var(--gold-light);
+  background: linear-gradient(145deg, rgba(201,168,76,.12), rgba(201,168,76,.08));
+  box-shadow: 0 0 32px rgba(255,215,0,0.3);
+}
+
+.dept-icon {
+  font-size: 36px;
+  margin-bottom: 12px;
+}
+
+.dept-name {
   font-family: var(--font-sub);
-  font-weight: 600;
+  font-weight: 700;
+  font-size: 15px;
+  color: var(--fog);
+  margin-bottom: 6px;
+}
+
+.dept-category {
+  font-family: var(--font-sub);
   font-size: 11px;
+  color: var(--gold-glow);
   letter-spacing: 1.5px;
   text-transform: uppercase;
+  text-shadow: 0 0 10px rgba(255,215,0,0.4);
+}
+
+/* Course View */
+.course-view {
+  display: none;
+}
+
+.course-view.active {
+  display: block;
+  animation: fadeIn .4s ease;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.course-nav {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 28px;
+  flex-wrap: wrap;
+}
+
+.course-nav-btn {
+  font-family: var(--font-sub);
+  font-weight: 600;
+  font-size: 12px;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  padding: 10px 20px;
+  border-radius: 24px;
+  border: 1px solid rgba(201,168,76,.25);
+  background: rgba(201,168,76,.05);
   color: var(--slate);
-  background: rgba(255,255,255,.04);
-  border: 1px solid rgba(255,255,255,.1);
-  border-radius: 22px;
-  padding: 7px 16px;
   cursor: pointer;
   transition: all .25s;
 }
-.filter-pill:hover { border-color: var(--gold-dim); color: var(--gold-light); }
-.filter-pill.active {
-  background: rgba(201,168,76,.12);
+
+.course-nav-btn:hover, .course-nav-btn.active {
   border-color: var(--gold);
+  background: rgba(201,168,76,.15);
   color: var(--gold-light);
 }
 
-/* ===== STATS ROW ===== */
-.stats-row {
-  max-width: 900px;
-  margin: 0 auto 50px;
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(160px,1fr));
-  gap: 14px;
-}
-.stat-box {
+.module {
+  display: none;
   background: linear-gradient(145deg, #161621, #12121a);
-  border: 1px solid rgba(201,168,76,.13);
-  border-radius: 14px;
-  padding: 22px 18px;
-  text-align: center;
-}
-.stat-box .stat-num {
-  font-family: var(--font-head);
-  font-size: 30px;
-  font-weight: 800;
-  color: var(--gold);
-  line-height: 1;
-}
-.stat-box .stat-label {
-  font-family: var(--font-sub);
-  font-size: 10.5px;
-  letter-spacing: 2px;
-  text-transform: uppercase;
-  color: var(--slate);
-  margin-top: 8px;
+  border: 1px solid rgba(201,168,76,.15);
+  border-radius: 16px;
+  padding: 28px 24px;
 }
 
-/* ===== PDF DOWNLOAD BTN ===== */
-.pdf-btn-wrap { text-align: center; margin: 50px 0 20px; }
-.pdf-btn {
-  display: inline-flex; align-items: center; gap: 10px;
+.module.active { display: block; }
+
+.module h3 {
+  font-family: var(--font-head);
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--gold-light);
+  margin-bottom: 16px;
+  text-shadow: 0 0 16px rgba(255,215,0,0.4);
+}
+
+.module p, .module li {
+  font-size: 14px;
+  color: var(--gold-glow);
+  line-height: 1.7;
+  margin-bottom: 12px;
+  text-shadow: 0 0 8px rgba(255,215,0,0.3);
+}
+
+.module ul {
+  list-style: none;
+  padding-left: 20px;
+}
+
+.module ul li::before {
+  content: '✦ ';
+  color: var(--gold);
+  margin-right: 8px;
+}
+
+.video-placeholder {
+  background: rgba(201,168,76,.08);
+  border: 2px dashed rgba(201,168,76,.3);
+  border-radius: 12px;
+  padding: 60px 24px;
+  text-align: center;
+  margin: 20px 0;
+  color: var(--gold-glow);
+  font-family: var(--font-sub);
+  font-size: 13px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+}
+
+.pdf-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: rgba(201,168,76,.1);
+  border: 1px solid rgba(201,168,76,.25);
+  border-radius: 8px;
+  padding: 10px 16px;
+  color: var(--gold-light);
+  text-decoration: none;
+  font-family: var(--font-sub);
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 1px;
+  transition: all .3s;
+  margin-top: 12px;
+}
+
+.pdf-link:hover {
+  background: rgba(201,168,76,.2);
+  border-color: var(--gold);
+  transform: translateX(3px);
+}
+
+/* Exam Section */
+.exam-section {
+  background: linear-gradient(145deg, #1a1a25, #0f0f16);
+  border: 2px solid rgba(201,168,76,.25);
+  border-radius: 16px;
+  padding: 28px 24px;
+  margin-top: 24px;
+}
+
+.exam-section h3 {
+  font-family: var(--font-head);
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--gold-light);
+  margin-bottom: 16px;
+  text-shadow: 0 0 16px rgba(255,215,0,0.4);
+}
+
+.question {
+  background: rgba(201,168,76,.05);
+  border-left: 3px solid var(--gold);
+  padding: 16px 18px;
+  margin-bottom: 16px;
+  border-radius: 8px;
+}
+
+.question p {
+  font-size: 14px;
+  color: var(--gold-bright);
+  font-weight: 600;
+  margin-bottom: 12px;
+  text-shadow: 0 0 10px rgba(255,237,78,0.3);
+}
+
+.question label {
+  display: block;
+  font-size: 13px;
+  color: var(--gold-glow);
+  padding: 8px 12px;
+  margin-bottom: 6px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all .25s;
+  text-shadow: 0 0 8px rgba(255,215,0,0.2);
+}
+
+.question label:hover {
+  background: rgba(201,168,76,.1);
+}
+
+.question input[type="radio"] {
+  margin-right: 10px;
+  accent-color: var(--gold);
+}
+
+.submit-exam-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
   background: linear-gradient(135deg, var(--gold-dim), var(--gold));
   color: var(--ink);
   font-family: var(--font-sub);
@@ -488,176 +730,137 @@ table tbody td { padding: 13px 18px; vertical-align: middle; }
   letter-spacing: 2px;
   text-transform: uppercase;
   border: none;
-  padding: 14px 34px;
+  padding: 14px 32px;
   border-radius: 32px;
   cursor: pointer;
-  transition: transform .2s, box-shadow .3s, filter .2s;
-  box-shadow: 0 4px 20px rgba(201,168,76,.3);
+  transition: all .3s;
+  box-shadow: 0 4px 20px rgba(201,168,76,.4);
+  margin-top: 20px;
 }
-.pdf-btn:hover {
+
+.submit-exam-btn:hover {
   transform: translateY(-2px);
-  box-shadow: 0 8px 32px rgba(201,168,76,.45);
-  filter: brightness(1.08);
+  box-shadow: 0 8px 32px rgba(201,168,76,.6);
+  filter: brightness(1.1);
 }
-.pdf-btn svg { width: 18px; height: 18px; }
-#pdf-status {
-  font-family: var(--font-sub);
-  font-size: 12px;
-  color: var(--slate);
-  margin-top: 10px;
-  min-height: 18px;
+
+/* Certificate Display */
+.certificate {
+  display: none;
+  background: linear-gradient(145deg, #1a1a25, #0f0f16);
+  border: 3px solid var(--gold);
+  border-radius: 16px;
+  padding: 40px 32px;
   text-align: center;
+  margin-top: 24px;
+  box-shadow: 0 0 40px rgba(255,215,0,0.4);
 }
 
-/* ===== FOOTER ===== */
-.footer {
-  position: relative; z-index: 1;
-  text-align: center;
-  padding: 44px 24px;
-  border-top: 1px solid rgba(201,168,76,.1);
-  background: linear-gradient(180deg, #0a0a0f, #070709);
-}
-.footer p {
-  font-family: var(--font-sub);
-  font-size: 11px;
-  color: var(--slate);
-  letter-spacing: 1.5px;
-}
-.footer .footer-gold { color: var(--gold-dim); }
+.certificate.active { display: block; animation: certificateReveal .6s ease; }
 
-/* ===== SCROLL REVEAL ===== */
-.reveal {
-  opacity: 0;
-  transform: translateY(22px);
-  transition: opacity .6s ease, transform .6s ease;
-}
-.reveal.visible { opacity: 1; transform: translateY(0); }
-
-/* ===== RESPONSIVE ===== */
-@media (max-width: 600px) {
-  .cards-grid { grid-template-columns: 1fr; }
-  .hero { padding: 50px 18px 40px; }
-  .stats-row { grid-template-columns: repeat(2,1fr); }
+@keyframes certificateReveal {
+  from { opacity: 0; transform: scale(0.9); }
+  to { opacity: 1; transform: scale(1); }
 }
 
-/* ===== PDF CAPTURE AREA (off-screen) ===== */
-#pdf-capture {
-  position: absolute;
-  left: -9999px;
-  top: 0;
-  width: 1100px;
-  background: #fff;
-  color: #111;
-  font-family: var(--font-body);
-  padding: 0;
-  pointer-events: none;
-  z-index: -1;
-}
-#pdf-capture .pdf-page {
-  width: 1100px;
-  min-height: 1500px;
-  padding: 70px 70px 50px;
-  box-sizing: border-box;
-  page-break-after: always;
-  position: relative;
-}
-#pdf-capture .pdf-page-break { page-break-after: always; }
-#pdf-capture .pdf-header {
-  text-align: center;
-  border-bottom: 2px solid #c9a84c;
-  padding-bottom: 24px;
-  margin-bottom: 28px;
-}
-#pdf-capture .pdf-header h1 {
+.certificate h2 {
   font-family: var(--font-head);
   font-size: 28px;
-  color: #1a1a25;
-  letter-spacing: 2px;
+  font-weight: 800;
+  color: var(--gold-light);
+  margin-bottom: 20px;
+  text-shadow: 0 0 24px rgba(255,215,0,0.6);
 }
-#pdf-capture .pdf-header p {
-  font-family: var(--font-sub);
-  font-size: 11px;
+
+.certificate p {
+  font-size: 15px;
+  color: var(--gold-glow);
+  margin-bottom: 12px;
+  text-shadow: 0 0 12px rgba(255,215,0,0.4);
+}
+
+.cert-code {
+  background: rgba(201,168,76,.15);
+  border: 2px solid var(--gold);
+  border-radius: 12px;
+  padding: 20px 24px;
+  margin: 24px 0;
+  font-family: 'Courier New', monospace;
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--gold-bright);
   letter-spacing: 3px;
-  text-transform: uppercase;
-  color: #8a7233;
-  margin-top: 4px;
+  text-shadow: 0 0 16px rgba(255,237,78,0.6);
 }
-#pdf-capture .pdf-section-title {
-  font-family: var(--font-head);
-  font-size: 17px;
-  color: #1a1a25;
-  border-left: 4px solid #c9a84c;
-  padding-left: 14px;
-  margin: 28px 0 16px;
+
+.cert-stamp {
+  width: 100px;
+  height: 100px;
+  margin: 24px auto;
+  border-radius: 50%;
+  border: 4px solid var(--gold);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 48px;
+  box-shadow: 0 0 30px rgba(255,215,0,0.5);
+  animation: stampRotate 20s linear infinite;
 }
-#pdf-capture table {
-  width: 100%;
-  border-collapse: collapse;
-  font-size: 12px;
-  color: #333;
+
+@keyframes stampRotate {
+  to { transform: rotate(360deg); }
 }
-#pdf-capture table th {
-  background: #f0ece3;
-  color: #8a7233;
+
+.download-cert-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  background: linear-gradient(135deg, var(--teal), #16a085);
+  color: white;
   font-family: var(--font-sub);
   font-weight: 700;
-  font-size: 10px;
+  font-size: 13px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  border: none;
+  padding: 14px 32px;
+  border-radius: 32px;
+  cursor: pointer;
+  transition: all .3s;
+  box-shadow: 0 4px 20px rgba(26,188,156,.4);
+  margin-top: 20px;
+}
+
+.download-cert-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 32px rgba(26,188,156,.6);
+  filter: brightness(1.1);
+}
+
+/* Back button in course view */
+.back-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: rgba(201,168,76,.1);
+  border: 1px solid rgba(201,168,76,.25);
+  border-radius: 24px;
+  padding: 10px 20px;
+  color: var(--gold-light);
+  font-family: var(--font-sub);
+  font-weight: 600;
+  font-size: 12px;
   letter-spacing: 1.5px;
   text-transform: uppercase;
-  padding: 10px 12px;
-  text-align: left;
-  border-bottom: 2px solid #c9a84c;
+  cursor: pointer;
+  transition: all .3s;
+  margin-bottom: 24px;
 }
-#pdf-capture table td {
-  padding: 9px 12px;
-  border-bottom: 1px solid #e0ddd6;
-  vertical-align: top;
-}
-#pdf-capture table tr:nth-child(even) td { background: #faf8f4; }
-#pdf-capture .pdf-tier {
-  display: inline-block;
-  font-size: 9px;
-  font-weight: 700;
-  letter-spacing: 1px;
-  text-transform: uppercase;
-  padding: 2px 7px;
-  border-radius: 8px;
-}
-#pdf-capture .pdf-tier.exec  { background: #fdf3d0; color: #8a7233; }
-#pdf-capture .pdf-tier.pri   { background: #d4f5ec; color: #16a085; }
-#pdf-capture .pdf-tier.sec   { background: #d6eaf8; color: #2980b9; }
-#pdf-capture .pdf-tier.ter   { background: #e8daef; color: #7d3c98; }
-#pdf-capture .pdf-stones {
-  display: flex; gap: 24px; justify-content: center;
-  margin: 20px 0;
-}
-#pdf-capture .pdf-stone {
-  flex: 1;
-  border: 1px solid #c9a84c;
-  border-radius: 10px;
-  padding: 14px;
-  text-align: center;
-  background: #fdfbf5;
-}
-#pdf-capture .pdf-stone h3 {
-  font-family: var(--font-head);
-  font-size: 13px;
-  color: #1a1a25;
-  margin-bottom: 4px;
-}
-#pdf-capture .pdf-stone p {
-  font-size: 10.5px;
-  color: #666;
-}
-#pdf-capture .pdf-footer {
-  text-align: center;
-  margin-top: 40px;
-  padding-top: 16px;
-  border-top: 1px solid #ddd;
-  font-size: 10px;
-  color: #999;
-  font-family: var(--font-sub);
-  letter-spacing: 1px;
+
+.back-btn:hover {
+  background: rgba(201,168,76,.2);
+  border-color: var(--gold);
+  transform: translateX(-3px);
 }
 </style>
 </head>
@@ -665,151 +868,138 @@ table tbody td { padding: 13px 18px; vertical-align: middle; }
 
 <!-- ===== HERO ===== -->
 <header class="hero">
-  <div class="hero-badge"> Revolutionise economic values to earn Kabiru Token. build your space in the Pan-African Digital Awakening Ecosystem</div>
-  <h1><span class="gold">KABIRU</span><br/>Governing Council</h1>
+  <div class="hero-badge">Established 2025 · Nairobi, Kenya</div>
+  <h1><span class="gold">KABIRU</span><br/>GOVERNING COUNCIL</h1>
   <p class="hero-sub">New Africa Digital Ecosystem</p>
   <div class="hero-divider"></div>
+  
+  <!-- Leadership Training Button -->
+  <div class="training-btn-wrap">
+    <button class="training-btn" onclick="openTrainingApp()">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/>
+      </svg>
+      Take Leadership Course Here
+    </button>
+  </div>
 </header>
 
 <!-- ===== THREE STONES ===== -->
 <section class="stones-bar">
   <div class="stone-pill">
     <div class="stone-icon dc">💎</div>
-    <div class="stone-label">Kabiru, Digital Value Currency<small>Digital Value Pools</small></div>
+    <div class="stone-label">Digital Currency<small>Kabiru Digital Value Currency</small></div>
   </div>
   <div class="stone-pill">
     <div class="stone-icon sb">📖</div>
-    <div class="stone-label">Sulwe, Black Star Liner<small>African Roots, Genealogy & integration</small></div>
+    <div class="stone-label">Sulwe Book<small>Knowledge & Heritage Record</small></div>
   </div>
   <div class="stone-pill">
     <div class="stone-icon ca">📅</div>
-    <div class="stone-label">Calenda, The African Calendar<small>New/Old Calendar, New Economy</small></div>
+    <div class="stone-label">Calenda<small>Cultural Calendar & Planning</small></div>
   </div>
 </section>
 
 <!-- ===== NAV ===== -->
 <nav class="nav-tabs">
   <button class="nav-tab active" onclick="scrollTo('overview')">Overview</button>
-  <button class="nav-tab" onclick="scrollTo('council-cards')">Council Cards</button>
-  <button class="nav-tab" onclick="scrollTo('full-table')">Full Registry</button>
-  <button class="nav-tab" onclick="scrollTo('tier-breakdown')">Tier Structure</button>
-  <button class="nav-tab" onclick="scrollTo('download')">PDF Export</button>
+  <button class="nav-tab" onclick="scrollTo('council-cards')">Council Members</button>
+  <button class="nav-tab" onclick="scrollTo('categories')">Big Five Categories</button>
 </nav>
 
-<!-- ===== OVERVIEW / STATS ===== -->
+<!-- ===== OVERVIEW ===== -->
 <section id="overview" class="section">
-  <h2 class="section-title">Council <span class="gold">at a Glance</span></h2>
-  <p class="section-subtitle">Leadership Structure · TAU Ecosystem</p>
-  <div class="stats-row reveal">
-    <div class="stat-box"><div class="stat-num">20</div><div class="stat-label">Council Members</div></div>
-    <div class="stat-box"><div class="stat-num">4</div><div class="stat-label">Tier Levels</div></div>
-    <div class="stat-box"><div class="stat-num">3</div><div class="stat-label">Stones of New Black Economy</div></div>
-    <div class="stat-box"><div class="stat-num">18</div><div class="stat-label">Active Portfolios</div></div>
+  <h2 class="section-title">Leadership <span class="gold">Structure</span></h2>
+  <p class="section-subtitle">Big Five Categories — TAU Ecosystem</p>
+  <div style="max-width: 800px; margin: 0 auto; padding: 32px 24px; background: linear-gradient(145deg, #161621, #12121a); border: 2px solid rgba(201,168,76,.2); border-radius: 16px;">
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 16px;">
+      <div style="text-align: center; padding: 16px;">
+        <div style="font-size: 36px; margin-bottom: 8px;">🐘</div>
+        <div class="category-badge category-elephant"><span class="icon">🐘</span>Elephant</div>
+        <p style="font-size: 12px; color: var(--gold-glow); margin-top: 8px; text-shadow: 0 0 10px rgba(255,215,0,0.3);">Executive Leadership</p>
+      </div>
+      <div style="text-align: center; padding: 16px;">
+        <div style="font-size: 36px; margin-bottom: 8px;">🦏</div>
+        <div class="category-badge category-rhino"><span class="icon">🦏</span>Rhino</div>
+        <p style="font-size: 12px; color: var(--gold-glow); margin-top: 8px; text-shadow: 0 0 10px rgba(255,215,0,0.3);">Core Operations</p>
+      </div>
+      <div style="text-align: center; padding: 16px;">
+        <div style="font-size: 36px; margin-bottom: 8px;">🐃</div>
+        <div class="category-badge category-buffalo"><span class="icon">🐃</span>Buffalo</div>
+        <p style="font-size: 12px; color: var(--gold-glow); margin-top: 8px; text-shadow: 0 0 10px rgba(255,215,0,0.3);">Strategic Execution</p>
+      </div>
+      <div style="text-align: center; padding: 16px;">
+        <div style="font-size: 36px; margin-bottom: 8px;">🦁</div>
+        <div class="category-badge category-lion"><span class="icon">🦁</span>Lion</div>
+        <p style="font-size: 12px; color: var(--gold-glow); margin-top: 8px; text-shadow: 0 0 10px rgba(255,215,0,0.3);">Community Engagement</p>
+      </div>
+      <div style="text-align: center; padding: 16px;">
+        <div style="font-size: 36px; margin-bottom: 8px;">🐆</div>
+        <div class="category-badge category-leopard"><span class="icon">🐆</span>Leopard</div>
+        <p style="font-size: 12px; color: var(--gold-glow); margin-top: 8px; text-shadow: 0 0 10px rgba(255,215,0,0.3);">Specialist Support</p>
+      </div>
+    </div>
   </div>
 </section>
 
-<!-- ===== COUNCIL CARDS ===== -->
+<!-- ===== COUNCIL CARDS (Sample - we'll add full data via JavaScript) ===== -->
 <section id="council-cards" class="section">
   <h2 class="section-title">Council <span class="gold">Members</span></h2>
   <p class="section-subtitle">Click any card to expand roles & responsibilities</p>
-
-  <!-- Search -->
-  <div class="search-bar reveal">
-    <input type="text" id="card-search" placeholder="Search by name or portfolio…" oninput="filterCards()"/>
-    <span class="search-icon">🔍</span>
-  </div>
-
-  <!-- Filters -->
-  <div class="filter-row reveal" id="card-filters">
-    <button class="filter-pill active" onclick="setFilter('all',this)">All</button>
-    <button class="filter-pill" onclick="setFilter('executive',this)">Executive</button>
-    <button class="filter-pill" onclick="setFilter('primary',this)">Primary</button>
-    <button class="filter-pill" onclick="setFilter('secondary',this)">Secondary</button>
-    <button class="filter-pill" onclick="setFilter('tertiary',this)">Tertiary</button>
-  </div>
-
   <div class="cards-grid" id="cards-grid"></div>
 </section>
 
-<!-- ===== FULL TABLE ===== -->
-<section id="full-table" class="section">
-  <h2 class="section-title">Full <span class="gold">Registry</span></h2>
-  <p class="section-subtitle">Interactive sortable table · All 20 members</p>
-  <div class="search-bar reveal" style="max-width:420px;">
-    <input type="text" id="table-search" placeholder="Search registry…" oninput="filterTable()"/>
-    <span class="search-icon">🔍</span>
+<!-- ===== LEADERSHIP TRAINING APP (HIDDEN MODAL) ===== -->
+<div class="training-modal" id="trainingModal">
+  <div class="training-container">
+    <div class="modal-close" onclick="closeTrainingApp()">×</div>
+    
+    <!-- Department Selection View -->
+    <div id="deptSelection">
+      <div class="training-header">
+        <h2>🎓 KABIRU Leadership Academy</h2>
+        <p>Select Your Department to Begin Training</p>
+      </div>
+      
+      <div class="dept-grid" id="deptGrid"></div>
+      
+      <div style="text-align: center; margin-top: 28px;">
+        <button class="submit-exam-btn" onclick="startCourse()" id="startCourseBtn" style="display: none;">
+          Begin Course →
+        </button>
+      </div>
+    </div>
+    
+    <!-- Course View -->
+    <div id="courseView" class="course-view">
+      <button class="back-btn" onclick="backToDeptSelection()">← Back to Departments</button>
+      
+      <div class="training-header">
+        <h2 id="courseTitle">Department Training</h2>
+        <p id="courseCategory">Leadership Category</p>
+      </div>
+      
+      <div class="course-nav" id="courseNav"></div>
+      
+      <div id="modulesContainer"></div>
+      
+      <div class="exam-section" id="examSection"></div>
+      
+      <div class="certificate" id="certificate"></div>
+    </div>
   </div>
-  <div class="table-wrap reveal">
-    <table id="registry-table">
-      <thead>
-        <tr>
-          <th onclick="sortTable(0)">#&nbsp;<span class="sort-icon">⇅</span></th>
-          <th onclick="sortTable(1)">Name&nbsp;<span class="sort-icon">⇅</span></th>
-          <th onclick="sortTable(2)">Portfolio&nbsp;<span class="sort-icon">⇅</span></th>
-          <th onclick="sortTable(3)">Primary Role&nbsp;<span class="sort-icon">⇅</span></th>
-          <th onclick="sortTable(4)">Tier&nbsp;<span class="sort-icon">⇅</span></th>
-        </tr>
-      </thead>
-      <tbody id="registry-body"></tbody>
-    </table>
-  </div>
-</section>
+</div>
 
-<!-- ===== TIER BREAKDOWN ===== -->
-<section id="tier-breakdown" class="section" style="background: rgba(201,168,76,.02);">
-  <h2 class="section-title">Tier <span class="gold">Structure</span></h2>
-  <p class="section-subtitle">Hierarchy & Responsibilities</p>
-  <div class="table-wrap reveal" style="max-width:860px;">
-    <table>
-      <thead>
-        <tr>
-          <th>Tier</th>
-          <th>Designation</th>
-          <th>Scope & Responsibility</th>
-          <th>Count</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr>
-          <td><span class="tier-badge tier-executive">Executive</span></td>
-          <td style="color:var(--gold-light);font-weight:600;">Executive Leader & Chair</td>
-          <td>Supreme oversight, vision, strategic direction of the entire ecosystem. Chairs all council sessions. Final authority on policy and resource allocation.</td>
-          <td style="color:var(--gold);font-weight:700;">2</td>
-        </tr>
-        <tr>
-          <td><span class="tier-badge tier-primary">Primary</span></td>
-          <td style="color:#5de8ca;font-weight:600;">General Secretary & Core Secretaries</td>
-          <td>Lead critical operational portfolios — Finance, Digital Ecosystem, Security, General Secretariat. Directly report to Executive tier. Manage sub-teams and budgets.</td>
-          <td style="color:var(--teal);font-weight:700;">6</td>
-        </tr>
-        <tr>
-          <td><span class="tier-badge tier-secondary">Secondary</span></td>
-          <td style="color:#7bb8e8;font-weight:600;">Operational Secretaries</td>
-          <td>Oversee specialised portfolios: Procurement, Marketing, Trade, AI & Tech, Publications, Natural Healthcare. Implement directives from Primary tier.</td>
-          <td style="color:var(--sky);font-weight:700;">7</td>
-        </tr>
-        <tr>
-          <td><span class="tier-badge tier-tertiary">Tertiary</span></td>
-          <td style="color:#c39bd3;font-weight:600;">Support & Specialist Secretaries</td>
-          <td>Focused specialist roles: Community Outreach, Chief Architect, Languages & Etymology, Land & Real Estate, Culture & Hospitality. Ground-level execution and community engagement.</td>
-          <td style="color:#c39bd3;font-weight:700;">5</td>
-        </tr>
-      </tbody>
-    </table>
-  </div>
-</section>
 <!-- ===== FOOTER ===== -->
-<footer class="footer">
-  <p class="footer-gold">⟡ KABIRU EXECUTIVE COUNCIL ⟡</p>
-  <p style="margin-top:6px;">TAU Africa Digital Ecosystem · Three Stones of the New Black Economy</p>
-  <p style="margin-top:4px;opacity:.6;">© 2025 Kabiru Ecosystem. All rights reserved.</p>
+<footer style="position: relative; z-index: 1; text-align: center; padding: 44px 24px; border-top: 1px solid rgba(201,168,76,.1); background: linear-gradient(180deg, #0a0a0f, #070709);">
+  <p style="font-family: var(--font-sub); font-size: 11px; color: var(--gold-glow); letter-spacing: 1.5px; text-shadow: 0 0 12px rgba(255,215,0,0.4);">⟡ KABIRU GOVERNING COUNCIL ⟡</p>
+  <p style="margin-top:6px; font-size: 10px; color: var(--gold-glow); text-shadow: 0 0 10px rgba(255,215,0,0.3);">TAU Africa Digital Ecosystem · Three Stones of the New Black Economy</p>
+  <p style="margin-top:4px;opacity:.6; font-size: 10px; color: var(--gold-glow); text-shadow: 0 0 8px rgba(255,215,0,0.2);">© 2025 Kabiru Ecosystem. All rights reserved.</p>
 </footer>
 
-
-<!-- ===== SCRIPT ===== -->
 <script>
 // ========================================================
-// DATA
+// COUNCIL DATA with Big Five Categories
 // ========================================================
 const council = [
   {
@@ -817,12 +1007,12 @@ const council = [
     name: "John Otieno Onyango",
     title: "Executive Leader of the Council",
     portfolio: "Founder, Visionary, Establisher & Oversight",
-    tier: "executive",
+    category: "elephant",
     avatar: "JO",
     avatarClass: "exec",
-    primary: "Founding visionary & Ecosystem builder, final guidance oversight over the Ecosystem and Kabiru Digital value Currency. Principal sign-off on all strategic initiatives, partnerships, and policy directions.",
-    secondary: "Chairs the Supreme Council sessions. Represents the Ecosystem at the highest external forums. Mentors all Council Secretaries, specific objectives and ensures alignment with the founding vision.",
-    tertiary: "Inspires ecosystem active culture and realign all programs. Provides guidance on long-term cultural and economic direction tied to the Three Stones and to provideclear road maps in vision Blueprint.",
+    primary: "Supreme visionary authority over the entire TAU Ecosystem and Kabiru Digital Currency. Final sign-off on all strategic initiatives, partnerships, and policy directions.",
+    secondary: "Chairs all Executive Council sessions. Represents the Ecosystem at the highest external forums. Mentors all Council Secretaries and ensures alignment with the founding vision.",
+    tertiary: "Inspires ecosystem culture. Provides guidance on long-term cultural and economic direction tied to the Three Stones.",
     keyResponsibilities: [
       "Establish and uphold the founding philosophy of the Kabiru Ecosystem",
       "Approve all major policy, financial, and strategic decisions",
@@ -836,17 +1026,17 @@ const council = [
     name: "Wellington Ochieng Aywak",
     title: "Chair of the Council",
     portfolio: "Ecosystem Integrated Office, Transport / Logistics",
-    tier: "executive",
+    category: "elephant",
     avatar: "WO",
     avatarClass: "chair",
-    primary: "Chair Council meetings and sessions. Oversee the Ecosystem Integrated Office — the central operational hub coordinating all departments. Manage national and international transport and logistics chains.",
-    secondary: "Liaise between the Executive Leader and all Primary-tier Secretaries. Ensure seamless information flow and operational continuity across portfolios.",
-    tertiary: "Supervise logistical support for ecosystem-wide events, launches (especially Digital Currency rollout), and community outreach campaigns.",
+    primary: "Chair all Council meetings and sessions. Oversee the Ecosystem Integrated Office — the central operational hub coordinating all departments.",
+    secondary: "Liaise between the Executive Leader and all category leaders. Ensure seamless information flow and operational continuity across portfolios.",
+    tertiary: "Supervise logistical support for ecosystem-wide events, launches, and community outreach campaigns.",
     keyResponsibilities: [
-      "Chair and moderate all official Council meetings and votes",
+      "Chair and moderate all official Council meetings",
       "Oversee the Integrated Office and cross-departmental coordination",
       "Manage transport, logistics, and supply-chain infrastructure",
-      "Act as the principal liaison between the Executive Leader and the Council body",
+      "Act as the principal liaison between Executive Leader and Council",
       "Ensure timely delivery of ecosystem milestones"
     ]
   },
@@ -855,11 +1045,11 @@ const council = [
     name: "Moses Oluoch Okoth",
     title: "General Secretary of the Council",
     portfolio: "Multimedia & Project Planning",
-    tier: "primary",
+    category: "rhino",
     avatar: "MO",
     avatarClass: "",
-    primary: "Serve as the chief administrative officer of the Council. Maintain all official records, minutes, and communications. Lead multimedia strategy and project planning across the Ecosystem.",
-    secondary: "Coordinate project timelines, milestones, and deliverables for the launch of the Digital Currency, Sulwe Book, and Calenda. Oversee multimedia content production.",
+    primary: "Serve as the chief administrative officer of the Council. Maintain all official records, minutes, and communications.",
+    secondary: "Coordinate project timelines, milestones, and deliverables for the launch of the Digital Currency, Sulwe Book, and Calenda.",
     tertiary: "Archive all Council decisions and ensure transparency and accountability in documentation.",
     keyResponsibilities: [
       "Maintain official records, minutes, and governance documents",
@@ -869,23 +1059,23 @@ const council = [
       "Act as primary custodian of all official Ecosystem communications"
     ]
   },
+  // Add remaining 17 members with their categories...
   {
     rank: 4,
     name: "Melkio Odhiambo Membo",
     title: "Council Secretary",
     portfolio: "Finance, Budgeting & Distribution of Resources",
-    tier: "primary",
+    category: "rhino",
     avatar: "MM",
     avatarClass: "",
-    primary: "Design and oversee the complete financial architecture of the Kabiru Ecosystem. Manage budgeting, revenue streams, and the economic framework underpinning the Digital Currency.",
-    secondary: "Approve and monitor resource distribution across all Council portfolios. Develop financial sustainability plans for the Three Stones initiatives.",
-    tertiary: "Prepare quarterly and annual financial reports. Liaise with external auditors and financial institutions.",
+    primary: "Design and oversee the complete financial architecture of the Kabiru Ecosystem.",
+    secondary: "Approve and monitor resource distribution across all Council portfolios.",
+    tertiary: "Prepare quarterly and annual financial reports.",
     keyResponsibilities: [
       "Design the fiscal framework for the Kabiru Digital Currency",
       "Manage ecosystem-wide budgets and resource allocation",
       "Oversee financial controls, audits, and compliance",
-      "Develop revenue and sustainability models",
-      "Report financial health to the Executive Leader and Chair"
+      "Develop revenue and sustainability models"
     ]
   },
   {
@@ -893,18 +1083,17 @@ const council = [
     name: "Wanjiru Githunguri",
     title: "Council Secretary",
     portfolio: "Digital Ecosystem & Digital Economy",
-    tier: "primary",
+    category: "rhino",
     avatar: "WG",
     avatarClass: "",
-    primary: "Lead the development, architecture, and scaling of the entire TAU Digital Ecosystem. Spearhead the infrastructure and technology stack for the Kabiru Digital Currency.",
-    secondary: "Oversee digital economy policy, including tokenomics, digital trade frameworks, and e-wallet integration. Coordinate with the AI & Tech Secretary.",
-    tertiary: "Ensure cybersecurity standards and data governance across all digital platforms.",
+    primary: "Lead the development, architecture, and scaling of the entire TAU Digital Ecosystem.",
+    secondary: "Oversee digital economy policy, including tokenomics and e-wallet integration.",
+    tertiary: "Ensure cybersecurity standards and data governance.",
     keyResponsibilities: [
       "Architect and scale the TAU Digital Ecosystem platforms",
       "Lead Digital Currency infrastructure and tokenomics",
       "Establish digital economy policy and standards",
-      "Ensure cybersecurity and data governance",
-      "Coordinate cross-portfolio digital integration"
+      "Ensure cybersecurity and data governance"
     ]
   },
   {
@@ -912,17 +1101,16 @@ const council = [
     name: "Samuel Chege Wambui",
     title: "Council Secretary",
     portfolio: "Internal Affairs, Security & Farming",
-    tier: "primary",
+    category: "rhino",
     avatar: "SW",
     avatarClass: "",
-    primary: "Oversee internal governance, security protocols, and intelligence for the Ecosystem. Lead agricultural strategy and food-security programmes tied to the new Black Economy.",
-    secondary: "Manage physical and cyber-security for all Council operations and ecosystem assets. Coordinate with relevant government agencies.",
-    tertiary: "Develop sustainable farming initiatives that integrate with the Digital Currency payment ecosystem.",
+    primary: "Oversee internal governance, security protocols, and intelligence for the Ecosystem.",
+    secondary: "Manage physical and cyber-security for all Council operations.",
+    tertiary: "Develop sustainable farming initiatives integrated with the Digital Currency.",
     keyResponsibilities: [
       "Protect all Ecosystem assets — physical, digital, and intellectual",
       "Lead internal-affairs governance and compliance",
       "Design and execute agricultural and food-security programmes",
-      "Coordinate security with external agencies",
       "Integrate farming operations into the digital payment framework"
     ]
   },
@@ -931,18 +1119,17 @@ const council = [
     name: "Matthias Justin Rajabu",
     title: "Council Secretary",
     portfolio: "Coordination, Public Relations & International Point of Contact",
-    tier: "primary",
+    category: "rhino",
     avatar: "MR",
     avatarClass: "",
-    primary: "Serve as the primary international representative of the Kabiru Ecosystem. Manage all public relations, diplomatic communications, and external partnerships.",
-    secondary: "Coordinate cross-portfolio alignment and ensure unified messaging. Oversee media relations and public communications strategy.",
-    tertiary: "Facilitate MoUs and partnership agreements with international organisations and governments.",
+    primary: "Serve as the primary international representative of the Kabiru Ecosystem.",
+    secondary: "Manage all public relations, diplomatic communications, and external partnerships.",
+    tertiary: "Facilitate MoUs and partnership agreements with international organisations.",
     keyResponsibilities: [
-      "Represent TAU Africa internationally in diplomatic and business forums",
+      "Represent TAU Africa internationally",
       "Lead public relations and external communications",
       "Coordinate cross-portfolio operational alignment",
-      "Negotiate and manage international partnerships and MoUs",
-      "Ensure brand consistency across all external touchpoints"
+      "Negotiate and manage international partnerships"
     ]
   },
   {
@@ -950,18 +1137,17 @@ const council = [
     name: "Muchiri Ole Kihara",
     title: "Council Secretary",
     portfolio: "Economic Growth",
-    tier: "secondary",
+    category: "buffalo",
     avatar: "MK",
     avatarClass: "",
-    primary: "Design and implement economic-growth strategies for the Kabiru Ecosystem and the broader new Black Economy. Develop investment frameworks and growth metrics.",
-    secondary: "Liaise with investors, development banks, and economic institutions. Monitor key performance indicators for ecosystem-wide economic health.",
-    tertiary: "Produce economic-growth reports and recommendations for the Executive and Primary tiers.",
+    primary: "Design and implement economic-growth strategies for the Kabiru Ecosystem.",
+    secondary: "Liaise with investors, development banks, and economic institutions.",
+    tertiary: "Monitor key performance indicators for ecosystem-wide economic health.",
     keyResponsibilities: [
-      "Design macroeconomic growth strategy for the Ecosystem",
+      "Design macroeconomic growth strategy",
       "Develop and manage investment frameworks",
-      "Monitor economic KPIs and ecosystem performance",
-      "Engage with development banks and economic institutions",
-      "Report economic trends and growth outlook to the Council"
+      "Monitor economic KPIs and performance",
+      "Engage with development banks"
     ]
   },
   {
@@ -969,18 +1155,17 @@ const council = [
     name: "Emmah Wambugu Wamboi",
     title: "Council Secretary",
     portfolio: "Digital Marketing & Business Support",
-    tier: "secondary",
+    category: "buffalo",
     avatar: "EW",
     avatarClass: "",
-    primary: "Lead all digital-marketing campaigns for the Kabiru Ecosystem and its Three Stones. Provide business support, mentorship, and incubation for micro-enterprises within the ecosystem.",
-    secondary: "Develop growth-hacking strategies, SEO, social-media engagement, and brand-awareness campaigns. Manage marketing budgets and ROI tracking.",
-    tertiary: "Support small businesses in adopting the Digital Currency and integrating into the TAU digital marketplace.",
+    primary: "Lead all digital-marketing campaigns for the Kabiru Ecosystem.",
+    secondary: "Provide business support, mentorship, and incubation for micro-enterprises.",
+    tertiary: "Support small businesses in adopting the Digital Currency.",
     keyResponsibilities: [
-      "Design and execute digital marketing campaigns for Kabiru and TAU",
-      "Drive brand awareness for the Digital Currency, Sulwe Book, and Calenda",
-      "Provide business incubation and support to ecosystem entrepreneurs",
-      "Manage marketing budgets and measure campaign ROI",
-      "Develop social-media and content-marketing strategy"
+      "Design and execute digital marketing campaigns",
+      "Drive brand awareness for Digital Currency",
+      "Provide business incubation and support",
+      "Manage marketing budgets and ROI"
     ]
   },
   {
@@ -988,18 +1173,16 @@ const council = [
     name: "Joseph Muiruri Ndungu",
     title: "Council Secretary",
     portfolio: "Climate, Environment & Hygiene",
-    tier: "secondary",
+    category: "buffalo",
     avatar: "JN",
     avatarClass: "",
-    primary: "Lead climate-action and environmental-sustainability programmes across the Ecosystem. Establish hygiene standards for all Kabiru facilities and community operations.",
-    secondary: "Develop green-economy initiatives that align with the Digital Currency's value proposition. Coordinate with government environmental bodies.",
-    tertiary: "Implement carbon-credit tracking and sustainability reporting tied to the Sulwe Book and Calenda records.",
+    primary: "Lead climate-action and environmental-sustainability programmes.",
+    secondary: "Develop green-economy initiatives aligned with the Digital Currency.",
+    tertiary: "Implement carbon-credit tracking and sustainability reporting.",
     keyResponsibilities: [
       "Design climate-action and green-economy programmes",
       "Establish and enforce hygiene and environmental standards",
-      "Integrate sustainability metrics into the Digital Currency",
-      "Coordinate with national and international environmental bodies",
-      "Produce sustainability and environmental-impact reports"
+      "Integrate sustainability metrics into Digital Currency"
     ]
   },
   {
@@ -1007,18 +1190,16 @@ const council = [
     name: "Fredrick Okwama Okech",
     title: "Council Secretary",
     portfolio: "Procurement & Inventory",
-    tier: "secondary",
+    category: "buffalo",
     avatar: "FO",
     avatarClass: "",
-    primary: "Oversee all procurement, supply-chain management, and inventory systems for the Ecosystem. Ensure timely and cost-effective acquisition of goods and services.",
-    secondary: "Develop and maintain vendor relationships. Implement e-procurement platforms integrated with the Digital Currency.",
-    tertiary: "Conduct regular inventory audits and supply-chain optimisation reviews.",
+    primary: "Oversee all procurement, supply-chain management, and inventory systems.",
+    secondary: "Develop and maintain vendor relationships.",
+    tertiary: "Conduct regular inventory audits.",
     keyResponsibilities: [
-      "Manage all procurement processes and vendor contracts",
-      "Oversee inventory management and supply-chain logistics",
-      "Integrate e-procurement with the Kabiru Digital Currency",
-      "Conduct regular supply-chain audits and cost analyses",
-      "Ensure operational continuity across all portfolios"
+      "Manage all procurement processes",
+      "Oversee inventory and supply-chain logistics",
+      "Integrate e-procurement with Digital Currency"
     ]
   },
   {
@@ -1026,18 +1207,16 @@ const council = [
     name: "Rabuor Omondi",
     title: "Council Secretary",
     portfolio: "Trade, E-Commerce & Local Community Integration",
-    tier: "secondary",
+    category: "buffalo",
     avatar: "RO",
     avatarClass: "",
-    primary: "Develop trade and e-commerce frameworks within the Ecosystem. Lead local community integration — ensuring grassroots participation in the new Black Economy.",
-    secondary: "Build and manage the TAU digital marketplace. Coordinate with municipal and county governments for community-level rollouts.",
-    tertiary: "Design community-incentive programmes that reward adoption of the Digital Currency.",
+    primary: "Develop trade and e-commerce frameworks within the Ecosystem.",
+    secondary: "Build and manage the TAU digital marketplace.",
+    tertiary: "Design community-incentive programmes.",
     keyResponsibilities: [
-      "Design trade and e-commerce policy for the TAU Ecosystem",
-      "Build and scale the TAU digital marketplace",
-      "Lead local community integration and participation programmes",
-      "Coordinate with local governments for ground-level rollouts",
-      "Create incentive schemes for Digital Currency adoption"
+      "Design trade and e-commerce policy",
+      "Build and scale TAU digital marketplace",
+      "Lead local community integration programmes"
     ]
   },
   {
@@ -1045,18 +1224,16 @@ const council = [
     name: "Karaya Nderitu",
     title: "Council Secretary",
     portfolio: "AI, Tech, Construction & Housing",
-    tier: "secondary",
+    category: "buffalo",
     avatar: "KN",
     avatarClass: "",
-    primary: "Lead artificial-intelligence and advanced-technology initiatives for the Ecosystem. Oversee construction and housing development projects that serve ecosystem members.",
-    secondary: "Deploy AI tools for ecosystem operations — predictive analytics, automation, and smart-infrastructure. Coordinate with the Digital Ecosystem Secretary on tech integration.",
-    tertiary: "Develop smart-housing blueprints that incorporate IoT and Digital Currency payment systems.",
+    primary: "Lead artificial-intelligence and advanced-technology initiatives.",
+    secondary: "Deploy AI tools for ecosystem operations.",
+    tertiary: "Develop smart-housing blueprints.",
     keyResponsibilities: [
-      "Lead AI research and technology deployment across the Ecosystem",
+      "Lead AI research and technology deployment",
       "Oversee construction and affordable-housing programmes",
-      "Integrate AI into ecosystem operations and decision-making",
-      "Design smart-housing and IoT infrastructure",
-      "Coordinate tech strategy with the Digital Ecosystem portfolio"
+      "Integrate AI into ecosystem operations"
     ]
   },
   {
@@ -1064,18 +1241,16 @@ const council = [
     name: "Carrilus Otieno",
     title: "Council Secretary",
     portfolio: "Natural Healthcare & Industrial Product Development",
-    tier: "secondary",
+    category: "buffalo",
     avatar: "CO",
     avatarClass: "",
-    primary: "Lead natural-healthcare programmes and research within the Ecosystem. Oversee the development of industrial products sourced from natural and local resources.",
-    secondary: "Establish healthcare access points and telemedicine integration. Develop product pipelines for the TAU marketplace.",
-    tertiary: "Align healthcare and product-development initiatives with the Digital Currency and Sulwe Book documentation.",
+    primary: "Lead natural-healthcare programmes and research.",
+    secondary: "Establish healthcare access points and telemedicine integration.",
+    tertiary: "Develop product pipelines for the TAU marketplace.",
     keyResponsibilities: [
       "Design and deliver natural-healthcare programmes",
-      "Lead industrial product development from local resources",
-      "Integrate telemedicine and digital health into the Ecosystem",
-      "Develop product pipelines for the TAU marketplace",
-      "Document healthcare and product initiatives in the Sulwe Book"
+      "Lead industrial product development",
+      "Integrate telemedicine into the Ecosystem"
     ]
   },
   {
@@ -1083,18 +1258,16 @@ const council = [
     name: "Malakhu Makhau",
     title: "Council Secretary",
     portfolio: "Roots, Culture, Entertainment & Hospitality",
-    tier: "tertiary",
+    category: "lion",
     avatar: "MM2",
     avatarClass: "",
-    primary: "Preserve and celebrate African roots, culture, and heritage within the Ecosystem. Lead entertainment and hospitality sectors as economic pillars of the new Black Economy.",
-    secondary: "Organize cultural events, festivals, and heritage programmes. Develop hospitality standards and tourism offerings.",
-    tertiary: "Integrate cultural milestones into the Calenda and Sulwe Book. Support local artists and creatives within the Digital Currency economy.",
+    primary: "Preserve and celebrate African roots, culture, and heritage.",
+    secondary: "Organize cultural events, festivals, and heritage programmes.",
+    tertiary: "Support local artists and creatives within the Digital Currency economy.",
     keyResponsibilities: [
       "Preserve and celebrate African cultural heritage",
       "Lead entertainment and hospitality economic initiatives",
-      "Organise cultural events and festivals",
-      "Integrate heritage milestones into Calenda and Sulwe Book",
-      "Support local creatives within the Digital Currency ecosystem"
+      "Organise cultural events and festivals"
     ]
   },
   {
@@ -1102,18 +1275,16 @@ const council = [
     name: "Robert Owalla",
     title: "Council Secretary",
     portfolio: "Land, Settlement & Real Estate",
-    tier: "tertiary",
+    category: "leopard",
     avatar: "RO2",
     avatarClass: "",
-    primary: "Manage land acquisition, settlement planning, and real-estate development for the Ecosystem. Ensure affordable and sustainable housing for Kabiru community members.",
-    secondary: "Develop real-estate investment frameworks that utilise the Digital Currency. Coordinate with the AI & Tech and Construction portfolios.",
-    tertiary: "Maintain land-title and settlement records integrated into the Sulwe Book.",
+    primary: "Manage land acquisition, settlement planning, and real-estate development.",
+    secondary: "Develop real-estate investment frameworks.",
+    tertiary: "Maintain land-title and settlement records.",
     keyResponsibilities: [
       "Manage land acquisition and settlement planning",
-      "Develop real-estate investment and affordability frameworks",
-      "Integrate land records into the Sulwe Book digital ledger",
-      "Coordinate with Construction & Housing for project delivery",
-      "Ensure sustainable and equitable settlement development"
+      "Develop real-estate investment frameworks",
+      "Integrate land records into Sulwe Book"
     ]
   },
   {
@@ -1121,18 +1292,16 @@ const council = [
     name: "Chiro Martin",
     title: "Council Secretary",
     portfolio: "Digital & Traditional Publications",
-    tier: "tertiary",
+    category: "leopard",
     avatar: "CM",
     avatarClass: "",
-    primary: "Lead all publication efforts — digital and print — for the Kabiru Ecosystem. Oversee content creation, editorial standards, and the Sulwe Book publishing programme.",
-    secondary: "Develop a publications roadmap aligned with ecosystem milestones. Manage relationships with media houses and digital platforms.",
-    tertiary: "Produce newsletters, reports, and public-facing materials that communicate the Ecosystem's progress.",
+    primary: "Lead all publication efforts — digital and print.",
+    secondary: "Develop a publications roadmap aligned with ecosystem milestones.",
+    tertiary: "Produce newsletters and public-facing materials.",
     keyResponsibilities: [
       "Oversee digital and traditional publications strategy",
       "Lead Sulwe Book publishing and editorial processes",
-      "Maintain editorial quality and brand consistency",
-      "Coordinate publications with major ecosystem launches",
-      "Develop media partnerships and distribution channels"
+      "Maintain editorial quality and brand consistency"
     ]
   },
   {
@@ -1140,18 +1309,16 @@ const council = [
     name: "James Osteen",
     title: "Council Secretary",
     portfolio: "Community Programmes & Outreach",
-    tier: "tertiary",
+    category: "lion",
     avatar: "JS",
     avatarClass: "",
-    primary: "Design and execute community programmes that embed the Ecosystem's values at the grassroots level. Lead all outreach, education, and engagement campaigns.",
-    secondary: "Coordinate with Trade & E-Commerce and Local Integration portfolios for on-the-ground activation. Develop feedback loops from communities to the Council.",
-    tertiary: "Organise town halls, community meetings, and training workshops on the Digital Currency and ecosystem benefits.",
+    primary: "Design and execute community programmes at the grassroots level.",
+    secondary: "Coordinate with Trade & E-Commerce for on-the-ground activation.",
+    tertiary: "Organise town halls, community meetings, and training workshops.",
     keyResponsibilities: [
-      "Design and run community engagement and outreach programmes",
-      "Lead education and awareness campaigns on Digital Currency",
-      "Organise community events, town halls, and workshops",
-      "Build feedback mechanisms from communities to the Council",
-      "Coordinate with Trade and Integration portfolios for grassroots rollout"
+      "Design and run community engagement programmes",
+      "Lead education and awareness campaigns",
+      "Organise community events and workshops"
     ]
   },
   {
@@ -1159,18 +1326,16 @@ const council = [
     name: "Lorna Mugambi",
     title: "Council Secretary",
     portfolio: "Chief Architect",
-    tier: "tertiary",
+    category: "leopard",
     avatar: "LM",
     avatarClass: "",
-    primary: "Serve as the Chief Architect of the Kabiru Ecosystem — designing the structural, spatial, and experiential blueprint for all physical and virtual ecosystem hubs.",
-    secondary: "Coordinate with Construction & Housing and AI & Tech on smart-building and IoT integration. Develop design standards for all TAU facilities.",
-    tertiary: "Translate the ecosystem's vision into tangible physical and virtual spaces that reflect the culture and values of the new Black Economy.",
+    primary: "Serve as the Chief Architect of the Kabiru Ecosystem.",
+    secondary: "Coordinate with Construction & Housing and AI & Tech.",
+    tertiary: "Translate the ecosystem's vision into tangible spaces.",
     keyResponsibilities: [
-      "Design the architectural blueprint for all Ecosystem facilities",
-      "Establish design standards and aesthetics for TAU spaces",
-      "Integrate smart-building and IoT technologies",
-      "Coordinate with Construction and AI & Tech portfolios",
-      "Ensure physical and virtual spaces reflect Kabiru's cultural identity"
+      "Design architectural blueprint for all Ecosystem facilities",
+      "Establish design standards for TAU spaces",
+      "Integrate smart-building and IoT technologies"
     ]
   },
   {
@@ -1178,23 +1343,28 @@ const council = [
     name: "Aatene Ndemi",
     title: "Council Secretary",
     portfolio: "Languages & Etymology",
-    tier: "tertiary",
+    category: "leopard",
     avatar: "AN",
     avatarClass: "",
-    primary: "Lead language preservation, documentation, and promotion within the Ecosystem. Research and maintain etymology databases that inform Kabiru branding and cultural identity.",
-    secondary: "Develop multilingual communication strategies for the Ecosystem. Coordinate with Publications and Culture portfolios on terminology and naming conventions.",
-    tertiary: "Contribute to the Sulwe Book's language and heritage sections. Support translation and localisation of all ecosystem communications.",
+    primary: "Lead language preservation, documentation, and promotion.",
+    secondary: "Develop multilingual communication strategies.",
+    tertiary: "Contribute to the Sulwe Book's language sections.",
     keyResponsibilities: [
-      "Preserve and promote African languages within the Ecosystem",
-      "Maintain etymology databases and cultural naming conventions",
-      "Develop multilingual communication strategies",
-      "Contribute language sections to the Sulwe Book",
-      "Support translation and localisation across all platforms"
+      "Preserve and promote African languages",
+      "Maintain etymology databases",
+      "Develop multilingual communication strategies"
     ]
   }
 ];
 
-let currentFilter = 'all';
+// Category labels
+const categoryLabels = {
+  elephant: { name: "Elephant", icon: "🐘", desc: "Executive Leadership" },
+  rhino: { name: "Rhino", icon: "🦏", desc: "Core Operations" },
+  buffalo: { name: "Buffalo", icon: "🐃", desc: "Strategic Execution" },
+  lion: { name: "Lion", icon: "🦁", desc: "Community Engagement" },
+  leopard: { name: "Leopard", icon: "🐆", desc: "Specialist Support" }
+};
 
 // ========================================================
 // RENDER CARDS
@@ -1203,11 +1373,9 @@ function renderCards(data) {
   const grid = document.getElementById('cards-grid');
   grid.innerHTML = '';
   data.forEach((m, i) => {
+    const cat = categoryLabels[m.category];
     const card = document.createElement('div');
-    card.className = 'card reveal';
-    card.dataset.tier = m.tier;
-    card.dataset.name = m.name.toLowerCase();
-    card.dataset.portfolio = m.portfolio.toLowerCase();
+    card.className = 'card';
     card.style.animationDelay = (i * 0.04) + 's';
 
     card.innerHTML = `
@@ -1216,8 +1384,8 @@ function renderCards(data) {
         <div class="card-info">
           <div class="card-name">${m.name}</div>
           <div class="card-title">${m.title}</div>
-          <div class="card-tiers">
-            <span class="tier-badge tier-${m.tier}">${m.tier}</span>
+          <div class="card-categories">
+            <span class="category-badge category-${m.category}"><span class="icon">${cat.icon}</span>${cat.name}</span>
           </div>
         </div>
       </div>
@@ -1235,7 +1403,7 @@ function renderCards(data) {
           <ul>${m.keyResponsibilities.map(r => '<li>'+r+'</li>').join('')}</ul>
         </div>
       </div>
-      <div class="card-toggle" onclick="event.stopPropagation()">Show details ▾</div>
+      <div class="card-toggle">Show details ▾</div>
     `;
 
     card.addEventListener('click', () => {
@@ -1245,81 +1413,7 @@ function renderCards(data) {
     });
 
     grid.appendChild(card);
-    // trigger reveal
-    requestAnimationFrame(() => { setTimeout(() => card.classList.add('visible'), 60 + i*40); });
   });
-}
-
-// ========================================================
-// FILTER & SEARCH CARDS
-// ========================================================
-function setFilter(tier, btn) {
-  currentFilter = tier;
-  document.querySelectorAll('.filter-pill').forEach(p => p.classList.remove('active'));
-  btn.classList.add('active');
-  applyCardFilter();
-}
-
-function filterCards() {
-  applyCardFilter();
-}
-
-function applyCardFilter() {
-  const q = document.getElementById('card-search').value.toLowerCase();
-  let data = council;
-  if (currentFilter !== 'all') data = data.filter(m => m.tier === currentFilter);
-  if (q) data = data.filter(m => m.name.toLowerCase().includes(q) || m.portfolio.toLowerCase().includes(q));
-  renderCards(data);
-}
-
-// ========================================================
-// RENDER TABLE
-// ========================================================
-function renderTable(data) {
-  const tbody = document.getElementById('registry-body');
-  tbody.innerHTML = '';
-  data.forEach(m => {
-    const tr = document.createElement('tr');
-    tr.innerHTML = `
-      <td class="td-rank">${m.rank}</td>
-      <td class="td-name">${m.name}</td>
-      <td class="td-portfolio">${m.portfolio}</td>
-      <td class="td-portfolio">${m.title}</td>
-      <td class="td-tier"><span class="tier-badge tier-${m.tier}">${m.tier}</span></td>
-    `;
-    tbody.appendChild(tr);
-  });
-}
-
-function filterTable() {
-  const q = document.getElementById('table-search').value.toLowerCase();
-  const data = council.filter(m =>
-    m.name.toLowerCase().includes(q) ||
-    m.portfolio.toLowerCase().includes(q) ||
-    m.title.toLowerCase().includes(q)
-  );
-  renderTable(data);
-}
-
-// Sort table by column
-let sortDir = {};
-function sortTable(col) {
-  sortDir[col] = sortDir[col] === 'asc' ? 'desc' : 'asc';
-  const q = document.getElementById('table-search').value.toLowerCase();
-  let data = council.filter(m =>
-    m.name.toLowerCase().includes(q) ||
-    m.portfolio.toLowerCase().includes(q) ||
-    m.title.toLowerCase().includes(q)
-  );
-  const keys = ['rank','name','portfolio','title','tier'];
-  data.sort((a,b) => {
-    let va = String(a[keys[col]]).toLowerCase();
-    let vb = String(b[keys[col]]).toLowerCase();
-    if (keys[col]==='rank') { va=a.rank; vb=b.rank; }
-    let cmp = va < vb ? -1 : va > vb ? 1 : 0;
-    return sortDir[col]==='asc' ? cmp : -cmp;
-  });
-  renderTable(data);
 }
 
 // ========================================================
@@ -1332,134 +1426,342 @@ function scrollTo(id) {
 }
 
 // ========================================================
-// SCROLL REVEAL
+// LEADERSHIP TRAINING APP
 // ========================================================
-const revealObserver = new IntersectionObserver((entries) => {
-  entries.forEach(e => { if (e.isIntersecting) e.target.classList.add('visible'); });
-}, { threshold: 0.12 });
+let selectedDept = null;
+let currentModule = 0;
+let examAnswers = {};
 
-function observeReveals() {
-  document.querySelectorAll('.reveal').forEach(el => revealObserver.observe(el));
-}
+const departments = [
+  { id: 1, name: "Finance & Resources", icon: "💰", category: "rhino", portfolio: "Finance, Budgeting & Distribution" },
+  { id: 2, name: "Digital Ecosystem", icon: "💻", category: "rhino", portfolio: "Digital Economy & Tech" },
+  { id: 3, name: "Security & Farming", icon: "🛡️", category: "rhino", portfolio: "Internal Affairs & Agriculture" },
+  { id: 4, name: "Public Relations", icon: "📢", category: "rhino", portfolio: "Coordination & Communications" },
+  { id: 5, name: "Economic Growth", icon: "📈", category: "buffalo", portfolio: "Investment & Development" },
+  { id: 6, name: "Marketing & Business", icon: "🎯", category: "buffalo", portfolio: "Digital Marketing & Support" },
+  { id: 7, name: "Environment & Climate", icon: "🌱", category: "buffalo", portfolio: "Sustainability & Hygiene" },
+  { id: 8, name: "Procurement", icon: "📦", category: "buffalo", portfolio: "Supply Chain & Inventory" },
+  { id: 9, name: "Trade & Commerce", icon: "🛒", category: "buffalo", portfolio: "E-Commerce & Integration" },
+  { id: 10, name: "AI & Technology", icon: "🤖", category: "buffalo", portfolio: "AI, Construction & Housing" },
+  { id: 11, name: "Healthcare", icon: "⚕️", category: "buffalo", portfolio: "Natural Health & Products" },
+  { id: 12, name: "Culture & Arts", icon: "🎭", category: "lion", portfolio: "Heritage & Entertainment" },
+  { id: 13, name: "Community Outreach", icon: "🤝", category: "lion", portfolio: "Programs & Engagement" },
+  { id: 14, name: "Land & Real Estate", icon: "🏘️", category: "leopard", portfolio: "Settlement & Property" },
+  { id: 15, name: "Publications", icon: "📰", category: "leopard", portfolio: "Digital & Print Media" },
+  { id: 16, name: "Architecture", icon: "🏗️", category: "leopard", portfolio: "Spatial Design & Planning" },
+  { id: 17, name: "Languages", icon: "🗣️", category: "leopard", portfolio: "Etymology & Translation" }
+];
 
-// ========================================================
-// PDF GENERATION
-// ========================================================
-function buildPDFCapture() {
-  const container = document.getElementById('pdf-capture');
-
-  // --- PAGE 1: Cover + Stones + Tier Structure ---
-  let p1 = `<div class="pdf-page">
-    <div class="pdf-header">
-      <h1>KABIRU EXECUTIVE COUNCIL</h1>
-      <p>TAU Africa Digital Ecosystem · Leadership Registry</p>
-    </div>
-    <div class="pdf-stones">
-      <div class="pdf-stone"><h3>💎 Digital Currency</h3><p>Kabiru Digital Value Currency — the financial backbone of the new Black Economy</p></div>
-      <div class="pdf-stone"><h3>📖 Sulwe Book</h3><p>The Knowledge & Heritage Record of the Ecosystem</p></div>
-      <div class="pdf-stone"><h3>📅 Calenda</h3><p>Cultural Calendar & Strategic Planning Engine</p></div>
-    </div>
-    <h2 class="pdf-section-title">Tier Structure</h2>
-    <table>
-      <thead><tr><th>Tier</th><th>Designation</th><th>Scope</th><th>Count</th></tr></thead>
-      <tbody>
-        <tr><td><span class="pdf-tier exec">Executive</span></td><td>Executive Leader & Chair</td><td>Supreme oversight, vision, and final authority.</td><td><b>2</b></td></tr>
-        <tr><td><span class="pdf-tier pri">Primary</span></td><td>General Secretary & Core Secretaries</td><td>Lead critical operational portfolios; direct reports to Executive tier.</td><td><b>6</b></td></tr>
-        <tr><td><span class="pdf-tier sec">Secondary</span></td><td>Operational Secretaries</td><td>Oversee specialised portfolios; implement Primary-tier directives.</td><td><b>7</b></td></tr>
-        <tr><td><span class="pdf-tier ter">Tertiary</span></td><td>Support & Specialist Secretaries</td><td>Focused specialist roles; ground-level execution and community engagement.</td><td><b>5</b></td></tr>
-      </tbody>
-    </table>
-    <div class="pdf-footer">Kabiru Executive Council · TAU Africa Digital Ecosystem · Page 1 of 3</div>
-  </div>`;
-
-  // --- PAGE 2: Full Registry Table ---
-  let rows = council.map(m => `<tr>
-    <td><b>${m.rank}</b></td>
-    <td><b>${m.name}</b></td>
-    <td>${m.title}</td>
-    <td>${m.portfolio}</td>
-    <td><span class="pdf-tier ${m.tier==='executive'?'exec':m.tier==='primary'?'pri':m.tier==='secondary'?'sec':'ter'}">${m.tier}</span></td>
-  </tr>`).join('');
-
-  let p2 = `<div class="pdf-page">
-    <div class="pdf-header">
-      <h1>KABIRU EXECUTIVE COUNCIL</h1>
-      <p>Full Council Registry</p>
-    </div>
-    <h2 class="pdf-section-title">Complete Member Registry</h2>
-    <table>
-      <thead><tr><th>#</th><th>Name</th><th>Title</th><th>Portfolio</th><th>Tier</th></tr></thead>
-      <tbody>${rows}</tbody>
-    </table>
-    <div class="pdf-footer">Kabiru Executive Council · TAU Africa Digital Ecosystem · Page 2 of 3</div>
-  </div>`;
-
-  // --- PAGE 3: Detailed Roles ---
-  let detailRows = council.map(m => `
-    <tr>
-      <td><b>${m.rank}. ${m.name}</b><br/><span style="font-size:10px;color:#888;">${m.title} — ${m.portfolio}</span></td>
-      <td>${m.primary}</td>
-      <td>${m.secondary}</td>
-      <td>${m.tertiary}</td>
-    </tr>
-  `).join('');
-
-  let p3 = `<div class="pdf-page">
-    <div class="pdf-header">
-      <h1>KABIRU EXECUTIVE COUNCIL</h1>
-      <p>Detailed Role Descriptions</p>
-    </div>
-    <h2 class="pdf-section-title">Primary, Secondary & Tertiary Roles</h2>
-    <table style="font-size:10.5px;">
-      <thead><tr><th style="width:22%">Member</th><th style="width:26%">Primary Role</th><th style="width:26%">Secondary Role</th><th style="width:26%">Tertiary Role</th></tr></thead>
-      <tbody>${detailRows}</tbody>
-    </table>
-    <div class="pdf-footer">Kabiru Executive Council · TAU Africa Digital Ecosystem · Page 3 of 3</div>
-  </div>`;
-
-  container.innerHTML = p1 + p2 + p3;
-}
-
-async function generatePDF() {
-  const status = document.getElementById('pdf-status');
-  status.textContent = '⏳ Preparing PDF… please wait.';
-  status.style.color = 'var(--gold)';
-
-  buildPDFCapture();
-  await new Promise(r => setTimeout(r, 300));
-
-  const { jsPDF } = window.jspdf;
-  const pdf = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
-  const pages = document.querySelectorAll('#pdf-capture .pdf-page');
-  const pageW = 210, pageH = 297;
-
-  for (let i = 0; i < pages.length; i++) {
-    if (i > 0) pdf.addPage();
-    status.textContent = `⏳ Rendering page ${i+1} of ${pages.length}…`;
-
-    const canvas = await html2canvas(pages[i], {
-      scale: 2.2,
-      useCORS: true,
-      backgroundColor: '#ffffff',
-      logging: false
-    });
-    const imgData = canvas.toDataURL('image/jpeg', 0.92);
-    const imgW = pageW;
-    const imgH = (canvas.height * imgW) / canvas.width;
-
-    // If image is taller than page, scale it down
-    if (imgH <= pageH) {
-      pdf.addImage(imgData, 'JPEG', 0, 0, imgW, imgH);
-    } else {
-      const scale = pageH / imgH;
-      pdf.addImage(imgData, 'JPEG', 0, 0, imgW * scale, pageH);
+const courseModules = {
+  1: [
+    {
+      title: "Module 1: Financial Framework",
+      content: "Learn the complete financial architecture of the Kabiru Ecosystem, including budgeting principles, resource allocation strategies, and fiscal governance.",
+      videoUrl: "[Video: Introduction to Kabiru Financial System]",
+      pdfUrl: "financial-framework.pdf"
+    },
+    {
+      title: "Module 2: Digital Currency Economics",
+      content: "Understand tokenomics, value creation mechanisms, and the economic model underpinning the Kabiru Digital Currency. Learn how to manage treasury operations and sustainability models.",
+      videoUrl: "[Video: Kabiru Digital Currency Deep Dive]",
+      pdfUrl: "digital-currency-economics.pdf"
+    },
+    {
+      title: "Module 3: Resource Distribution",
+      content: "Master the principles of equitable resource distribution across council portfolios. Learn approval workflows, monitoring systems, and reporting standards.",
+      videoUrl: "[Video: Resource Management Best Practices]",
+      pdfUrl: "resource-distribution-guide.pdf"
     }
-  }
+  ],
+  // Add modules for other departments...
+  default: [
+    {
+      title: "Module 1: Department Overview",
+      content: "Introduction to your department's role within the Kabiru Governing Council. Understand the strategic importance and key objectives of this portfolio.",
+      videoUrl: "[Video: Department Introduction]",
+      pdfUrl: "dept-overview.pdf"
+    },
+    {
+      title: "Module 2: Core Responsibilities",
+      content: "Deep dive into the primary, secondary, and tertiary roles of this position. Learn the day-to-day operations and long-term strategic initiatives.",
+      videoUrl: "[Video: Role Responsibilities]",
+      pdfUrl: "core-responsibilities.pdf"
+    },
+    {
+      title: "Module 3: TAU Ecosystem Integration",
+      content: "Learn how your department integrates with the broader TAU Digital Ecosystem and contributes to the Three Stones (Digital Currency, Sulwe Book, Calenda).",
+      videoUrl: "[Video: Ecosystem Integration]",
+      pdfUrl: "tau-integration.pdf"
+    }
+  ]
+};
 
-  pdf.save('Kabiru_Executive_Council_Registry.pdf');
-  status.textContent = '✅ PDF downloaded successfully!';
-  status.style.color = 'var(--teal)';
-  setTimeout(() => { status.textContent = ''; }, 4000);
+const examQuestions = [
+  {
+    q: "What are the Three Stones of the New Black Economy?",
+    options: [
+      "Digital Currency, Sulwe Book, Calenda",
+      "Bitcoin, Ethereum, Dogecoin",
+      "Agriculture, Trade, Manufacturing",
+      "Education, Healthcare, Housing"
+    ],
+    correct: 0
+  },
+  {
+    q: "What is the primary purpose of the Kabiru Digital Currency?",
+    options: [
+      "To replace all global currencies",
+      "To serve as the financial backbone of the new Black Economy",
+      "To compete with Bitcoin",
+      "To fund government projects only"
+    ],
+    correct: 1
+  },
+  {
+    q: "How many leadership categories are in the Kabiru Governing Council?",
+    options: ["3", "4", "5", "6"],
+    correct: 2
+  },
+  {
+    q: "Which Big Five animal represents Executive Leadership?",
+    options: ["Lion", "Elephant", "Rhino", "Leopard"],
+    correct: 1
+  },
+  {
+    q: "What does the Sulwe Book represent?",
+    options: [
+      "A digital wallet application",
+      "Knowledge & Heritage Record of the Ecosystem",
+      "A trading platform",
+      "A social media platform"
+    ],
+    correct: 1
+  }
+];
+
+function openTrainingApp() {
+  document.getElementById('trainingModal').classList.add('active');
+  renderDepartments();
+}
+
+function closeTrainingApp() {
+  document.getElementById('trainingModal').classList.remove('active');
+  selectedDept = null;
+  currentModule = 0;
+  examAnswers = {};
+  document.getElementById('deptSelection').style.display = 'block';
+  document.getElementById('courseView').classList.remove('active');
+}
+
+function renderDepartments() {
+  const grid = document.getElementById('deptGrid');
+  grid.innerHTML = '';
+  
+  departments.forEach(dept => {
+    const cat = categoryLabels[dept.category];
+    const card = document.createElement('div');
+    card.className = 'dept-card';
+    card.innerHTML = `
+      <div class="dept-icon">${dept.icon}</div>
+      <div class="dept-name">${dept.name}</div>
+      <div class="dept-category">${cat.icon} ${cat.name}</div>
+    `;
+    card.onclick = () => selectDepartment(dept, card);
+    grid.appendChild(card);
+  });
+}
+
+function selectDepartment(dept, cardEl) {
+  document.querySelectorAll('.dept-card').forEach(c => c.classList.remove('selected'));
+  cardEl.classList.add('selected');
+  selectedDept = dept;
+  document.getElementById('startCourseBtn').style.display = 'inline-flex';
+}
+
+function startCourse() {
+  if (!selectedDept) return;
+  
+  document.getElementById('deptSelection').style.display = 'none';
+  document.getElementById('courseView').classList.add('active');
+  
+  const cat = categoryLabels[selectedDept.category];
+  document.getElementById('courseTitle').textContent = selectedDept.name + " Training";
+  document.getElementById('courseCategory').textContent = cat.icon + " " + cat.name + " Category";
+  
+  const modules = courseModules[selectedDept.id] || courseModules.default;
+  renderCourseNav(modules);
+  renderModules(modules);
+  renderExam();
+}
+
+function renderCourseNav(modules) {
+  const nav = document.getElementById('courseNav');
+  nav.innerHTML = '';
+  
+  modules.forEach((mod, i) => {
+    const btn = document.createElement('button');
+    btn.className = 'course-nav-btn' + (i === 0 ? ' active' : '');
+    btn.textContent = `Module ${i + 1}`;
+    btn.onclick = () => switchModule(i);
+    nav.appendChild(btn);
+  });
+  
+  const examBtn = document.createElement('button');
+  examBtn.className = 'course-nav-btn';
+  examBtn.textContent = 'Final Exam';
+  examBtn.onclick = () => switchToExam();
+  nav.appendChild(examBtn);
+}
+
+function renderModules(modules) {
+  const container = document.getElementById('modulesContainer');
+  container.innerHTML = '';
+  
+  modules.forEach((mod, i) => {
+    const moduleDiv = document.createElement('div');
+    moduleDiv.className = 'module' + (i === 0 ? ' active' : '');
+    moduleDiv.id = `module-${i}`;
+    moduleDiv.innerHTML = `
+      <h3>${mod.title}</h3>
+      <p>${mod.content}</p>
+      <div class="video-placeholder">${mod.videoUrl}</div>
+      <a href="#" class="pdf-link" onclick="return false;">
+        <span>📄</span>
+        <span>Download ${mod.pdfUrl}</span>
+      </a>
+    `;
+    container.appendChild(moduleDiv);
+  });
+}
+
+function switchModule(index) {
+  document.querySelectorAll('.module').forEach(m => m.classList.remove('active'));
+  document.querySelectorAll('.course-nav-btn').forEach(b => b.classList.remove('active'));
+  
+  document.getElementById(`module-${index}`).classList.add('active');
+  document.querySelectorAll('.course-nav-btn')[index].classList.add('active');
+  
+  document.getElementById('examSection').style.display = 'none';
+  document.getElementById('certificate').classList.remove('active');
+}
+
+function switchToExam() {
+  document.querySelectorAll('.module').forEach(m => m.classList.remove('active'));
+  document.querySelectorAll('.course-nav-btn').forEach((b, i) => {
+    b.classList.remove('active');
+    if (i === document.querySelectorAll('.course-nav-btn').length - 1) b.classList.add('active');
+  });
+  
+  document.getElementById('examSection').style.display = 'block';
+  document.getElementById('certificate').classList.remove('active');
+}
+
+function renderExam() {
+  const exam = document.getElementById('examSection');
+  exam.innerHTML = '<h3>🎓 Final Examination</h3>';
+  
+  examQuestions.forEach((q, qIndex) => {
+    const qDiv = document.createElement('div');
+    qDiv.className = 'question';
+    qDiv.innerHTML = `
+      <p><strong>Question ${qIndex + 1}:</strong> ${q.q}</p>
+      ${q.options.map((opt, oIndex) => `
+        <label>
+          <input type="radio" name="q${qIndex}" value="${oIndex}" />
+          ${opt}
+        </label>
+      `).join('')}
+    `;
+    exam.appendChild(qDiv);
+  });
+  
+  const submitBtn = document.createElement('button');
+  submitBtn.className = 'submit-exam-btn';
+  submitBtn.innerHTML = '📜 Submit Exam & Get Certificate';
+  submitBtn.onclick = submitExam;
+  exam.appendChild(submitBtn);
+  
+  exam.style.display = 'none';
+}
+
+function submitExam() {
+  let score = 0;
+  examQuestions.forEach((q, i) => {
+    const selected = document.querySelector(`input[name="q${i}"]:checked`);
+    if (selected && parseInt(selected.value) === q.correct) score++;
+  });
+  
+  const percentage = (score / examQuestions.length) * 100;
+  
+  if (percentage >= 70) {
+    showCertificate(selectedDept, percentage);
+  } else {
+    alert(`Score: ${percentage}%\n\nYou need at least 70% to pass. Please review the modules and try again.`);
+  }
+}
+
+function showCertificate(dept, score) {
+  const cert = document.getElementById('certificate');
+  const accessCode = generateAccessCode(dept);
+  const cat = categoryLabels[dept.category];
+  
+  cert.innerHTML = `
+    <h2>🏆 Certificate of Completion</h2>
+    <p style="font-size: 16px; margin-bottom: 20px;">This certifies that</p>
+    <p style="font-size: 20px; font-weight: 700; color: var(--gold-light); margin-bottom: 20px;">
+      [Your Name]
+    </p>
+    <p>has successfully completed the</p>
+    <p style="font-size: 18px; font-weight: 700; color: var(--gold-light); margin: 12px 0;">
+      ${dept.name} Leadership Training
+    </p>
+    <p style="margin-bottom: 8px;">${cat.icon} ${cat.name} Category</p>
+    <p>Score: ${score.toFixed(1)}%</p>
+    
+    <div class="cert-stamp">${dept.icon}</div>
+    
+    <div class="cert-code">
+      <div style="font-size: 12px; margin-bottom: 8px; color: var(--gold-light); text-shadow: 0 0 10px rgba(255,215,0,0.4);">TAU ECOSYSTEM MINING ACCESS CODE</div>
+      ${accessCode}
+    </div>
+    
+    <p style="font-size: 12px; margin-top: 16px;">
+      This certificate grants you access to join the KABIRU GOVERNING COUNCIL<br/>
+      and participate in TAU Ecosystem Leadership Mining.
+    </p>
+    
+    <button class="download-cert-btn" onclick="downloadCertificate()">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/>
+      </svg>
+      Download Certificate
+    </button>
+  `;
+  
+  document.getElementById('examSection').style.display = 'none';
+  cert.classList.add('active');
+}
+
+function generateAccessCode(dept) {
+  const cat = dept.category.substring(0,3).toUpperCase();
+  const id = String(dept.id).padStart(2, '0');
+  const random = Math.random().toString(36).substring(2, 8).toUpperCase();
+  const year = new Date().getFullYear();
+  return `TAU-${cat}-${id}-${random}-${year}`;
+}
+
+function downloadCertificate() {
+  alert('Certificate download functionality would be implemented here.\n\nThis would generate a PDF certificate with your name, access code, and official TAU seals.');
+}
+
+function backToDeptSelection() {
+  document.getElementById('courseView').classList.remove('active');
+  document.getElementById('deptSelection').style.display = 'block';
+  selectedDept = null;
+  currentModule = 0;
+  examAnswers = {};
+  document.getElementById('startCourseBtn').style.display = 'none';
+  renderDepartments();
 }
 
 // ========================================================
@@ -1467,13 +1769,7 @@ async function generatePDF() {
 // ========================================================
 (function init() {
   renderCards(council);
-  renderTable(council);
-  observeReveals();
-  // also observe static reveals
-  document.querySelectorAll('.reveal').forEach(el => {
-    if (el.getBoundingClientRect().top < window.innerHeight) el.classList.add('visible');
-  });
 })();
 </script>
 </body>
-</html>
+  </html>
