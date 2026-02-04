@@ -1,0 +1,1819 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>KABIRU Leadership Academy — Complete Training System</title>
+
+<!-- Fonts -->
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;800&family=Rajdhani:wght@300;400;500;600;700&family=Source+Sans+3:ital,wght@0,300;0,400;0,600;1,300&display=swap" rel="stylesheet"/>
+
+<!-- PDF Generation -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --gold: #c9a84c;
+  --gold-light: #e4c97a;
+  --gold-glow: #ffd700;
+  --gold-bright: #ffed4e;
+  --ink: #0a0a0f;
+  --ink-mid: #1a1a25;
+  --slate: #3d3d52;
+  --fog: #e8e8f0;
+  --teal: #1abc9c;
+  --font-head: 'Cinzel', serif;
+  --font-sub: 'Rajdhani', sans-serif;
+  --font-body: 'Source Sans 3', sans-serif;
+}
+
+body {
+  font-family: var(--font-body);
+  background: linear-gradient(160deg, #0d0d14 0%, #131320 40%, #0a0a0f 100%);
+  color: var(--fog);
+  min-height: 100vh;
+  overflow-x: auto;
+  line-height: 1.6;
+}
+
+/* ===== CONTAINER ===== */
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 40px 24px;
+}
+
+/* ===== HEADER ===== */
+.header {
+  text-align: center;
+  padding: 60px 24px 40px;
+  background: linear-gradient(145deg, #161621, #12121a);
+  border-bottom: 2px solid rgba(201,168,76,.3);
+  margin-bottom: 40px;
+}
+
+.header h1 {
+  font-family: var(--font-head);
+  font-size: clamp(2rem, 5vw, 3.2rem);
+  font-weight: 800;
+  color: var(--gold-light);
+  letter-spacing: 3px;
+  margin-bottom: 12px;
+  text-shadow: 0 0 20px rgba(255,215,0,0.5);
+}
+
+.header p {
+  font-family: var(--font-sub);
+  font-size: 14px;
+  color: var(--gold-glow);
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  text-shadow: 0 0 12px rgba(255,215,0,0.4);
+}
+
+/* ===== NAV TABS ===== */
+.nav-tabs {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 32px;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.nav-tab {
+  font-family: var(--font-sub);
+  font-weight: 600;
+  font-size: 12px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  padding: 12px 24px;
+  border-radius: 24px;
+  border: 2px solid rgba(201,168,76,.25);
+  background: rgba(201,168,76,.05);
+  color: var(--slate);
+  cursor: pointer;
+  transition: all .3s;
+}
+
+.nav-tab:hover, .nav-tab.active {
+  border-color: var(--gold);
+  background: rgba(201,168,76,.15);
+  color: var(--gold-light);
+  box-shadow: 0 4px 16px rgba(201,168,76,.3);
+}
+
+/* ===== VIEWS ===== */
+.view {
+  display: none;
+  animation: fadeIn .4s ease;
+}
+
+.view.active { display: block; }
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* ===== REGISTRATION FORM ===== */
+.reg-form {
+  background: linear-gradient(145deg, #161621, #12121a);
+  border: 2px solid rgba(201,168,76,.25);
+  border-radius: 20px;
+  padding: 40px 36px;
+  max-width: 600px;
+  margin: 0 auto;
+}
+
+.reg-form h2 {
+  font-family: var(--font-head);
+  font-size: 24px;
+  color: var(--gold-light);
+  margin-bottom: 24px;
+  text-align: center;
+  text-shadow: 0 0 16px rgba(255,215,0,0.4);
+}
+
+.form-group {
+  margin-bottom: 20px;
+}
+
+.form-group label {
+  display: block;
+  font-family: var(--font-sub);
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--gold-glow);
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  margin-bottom: 8px;
+  text-shadow: 0 0 10px rgba(255,215,0,0.3);
+}
+
+.form-group input, .form-group select {
+  width: 100%;
+  padding: 14px 18px;
+  background: rgba(201,168,76,.08);
+  border: 1px solid rgba(201,168,76,.25);
+  border-radius: 12px;
+  color: var(--fog);
+  font-family: var(--font-body);
+  font-size: 14px;
+  transition: all .3s;
+}
+
+.form-group input:focus, .form-group select:focus {
+  outline: none;
+  border-color: var(--gold);
+  background: rgba(201,168,76,.12);
+  box-shadow: 0 0 16px rgba(255,215,0,0.2);
+}
+
+.submit-btn {
+  width: 100%;
+  padding: 16px 32px;
+  background: linear-gradient(135deg, var(--gold), var(--gold-light));
+  border: none;
+  border-radius: 32px;
+  color: var(--ink);
+  font-family: var(--font-sub);
+  font-weight: 700;
+  font-size: 14px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: all .3s;
+  box-shadow: 0 4px 20px rgba(201,168,76,.4);
+  margin-top: 24px;
+}
+
+.submit-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 32px rgba(201,168,76,.6);
+}
+
+/* ===== DEPARTMENT GRID ===== */
+.dept-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 20px;
+  margin-top: 32px;
+}
+
+.dept-card {
+  background: linear-gradient(145deg, #161621, #12121a);
+  border: 2px solid rgba(201,168,76,.2);
+  border-radius: 16px;
+  padding: 24px 20px;
+  text-align: center;
+  cursor: pointer;
+  transition: all .3s;
+}
+
+.dept-card:hover {
+  border-color: var(--gold);
+  transform: translateY(-4px);
+  box-shadow: 0 8px 32px rgba(201,168,76,.4);
+}
+
+.dept-card.selected {
+  border-color: var(--gold-light);
+  background: linear-gradient(145deg, rgba(201,168,76,.12), rgba(201,168,76,.08));
+  box-shadow: 0 0 32px rgba(255,215,0,0.3);
+}
+
+.dept-icon {
+  font-size: 48px;
+  margin-bottom: 16px;
+}
+
+.dept-name {
+  font-family: var(--font-sub);
+  font-weight: 700;
+  font-size: 16px;
+  color: var(--fog);
+  margin-bottom: 8px;
+}
+
+.dept-category {
+  font-family: var(--font-sub);
+  font-size: 11px;
+  color: var(--gold-glow);
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  text-shadow: 0 0 10px rgba(255,215,0,0.4);
+}
+
+/* ===== COURSE MODULES ===== */
+.module {
+  background: linear-gradient(145deg, #161621, #12121a);
+  border: 2px solid rgba(201,168,76,.2);
+  border-radius: 16px;
+  padding: 32px 28px;
+  margin-bottom: 24px;
+}
+
+.module h3 {
+  font-family: var(--font-head);
+  font-size: 20px;
+  color: var(--gold-light);
+  margin-bottom: 16px;
+  text-shadow: 0 0 16px rgba(255,215,0,0.4);
+}
+
+.module-content {
+  font-size: 14.5px;
+  color: var(--gold-glow);
+  line-height: 1.8;
+  margin-bottom: 20px;
+  text-shadow: 0 0 8px rgba(255,215,0,0.2);
+}
+
+.module ul {
+  list-style: none;
+  padding-left: 20px;
+  margin: 16px 0;
+}
+
+.module ul li {
+  font-size: 14px;
+  color: var(--gold-glow);
+  margin-bottom: 10px;
+  text-shadow: 0 0 8px rgba(255,215,0,0.2);
+}
+
+.module ul li::before {
+  content: '✦ ';
+  color: var(--gold);
+  margin-right: 8px;
+}
+
+.video-container {
+  background: rgba(201,168,76,.08);
+  border: 2px dashed rgba(201,168,76,.3);
+  border-radius: 12px;
+  padding: 80px 24px;
+  text-align: center;
+  margin: 20px 0;
+  color: var(--gold-glow);
+  font-family: var(--font-sub);
+  font-size: 13px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+}
+
+.resource-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: rgba(201,168,76,.1);
+  border: 1px solid rgba(201,168,76,.25);
+  border-radius: 10px;
+  padding: 12px 18px;
+  color: var(--gold-light);
+  text-decoration: none;
+  font-family: var(--font-sub);
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 1px;
+  transition: all .3s;
+  margin-top: 12px;
+}
+
+.resource-link:hover {
+  background: rgba(201,168,76,.2);
+  border-color: var(--gold);
+  transform: translateX(3px);
+}
+
+/* ===== EXAM ===== */
+.exam-section {
+  background: linear-gradient(145deg, #161621, #12121a);
+  border: 2px solid rgba(201,168,76,.25);
+  border-radius: 16px;
+  padding: 32px 28px;
+}
+
+.exam-section h2 {
+  font-family: var(--font-head);
+  font-size: 22px;
+  color: var(--gold-light);
+  margin-bottom: 24px;
+  text-shadow: 0 0 16px rgba(255,215,0,0.4);
+}
+
+.question {
+  background: rgba(201,168,76,.05);
+  border-left: 4px solid var(--gold);
+  padding: 20px 22px;
+  margin-bottom: 20px;
+  border-radius: 10px;
+}
+
+.question p {
+  font-size: 15px;
+  color: var(--gold-bright);
+  font-weight: 600;
+  margin-bottom: 14px;
+  text-shadow: 0 0 10px rgba(255,237,78,0.3);
+}
+
+.question label {
+  display: block;
+  font-size: 13.5px;
+  color: var(--gold-glow);
+  padding: 10px 14px;
+  margin-bottom: 8px;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all .25s;
+  text-shadow: 0 0 8px rgba(255,215,0,0.2);
+}
+
+.question label:hover {
+  background: rgba(201,168,76,.1);
+}
+
+.question input[type="radio"] {
+  margin-right: 12px;
+  accent-color: var(--gold);
+}
+
+/* ===== CERTIFICATE ===== */
+.certificate {
+  background: linear-gradient(145deg, #1a1a25, #0f0f16);
+  border: 4px solid var(--gold);
+  border-radius: 20px;
+  padding: 50px 40px;
+  text-align: center;
+  box-shadow: 0 0 50px rgba(255,215,0,0.5);
+  margin-top: 32px;
+}
+
+.certificate h2 {
+  font-family: var(--font-head);
+  font-size: 32px;
+  font-weight: 800;
+  color: var(--gold-light);
+  margin-bottom: 24px;
+  text-shadow: 0 0 24px rgba(255,215,0,0.6);
+}
+
+.certificate p {
+  font-size: 15px;
+  color: var(--gold-glow);
+  margin-bottom: 14px;
+  text-shadow: 0 0 12px rgba(255,215,0,0.4);
+}
+
+.cert-name {
+  font-size: 28px;
+  font-weight: 700;
+  color: var(--gold-light);
+  margin: 20px 0;
+  text-shadow: 0 0 20px rgba(255,215,0,0.6);
+}
+
+.cert-code {
+  background: rgba(201,168,76,.15);
+  border: 2px solid var(--gold);
+  border-radius: 14px;
+  padding: 24px 28px;
+  margin: 28px 0;
+  font-family: 'Courier New', monospace;
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--gold-bright);
+  letter-spacing: 3px;
+  text-shadow: 0 0 16px rgba(255,237,78,0.6);
+}
+
+.cert-stamp {
+  width: 120px;
+  height: 120px;
+  margin: 28px auto;
+  border-radius: 50%;
+  border: 5px solid var(--gold);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 56px;
+  box-shadow: 0 0 40px rgba(255,215,0,0.6);
+  animation: stampRotate 20s linear infinite;
+}
+
+@keyframes stampRotate {
+  to { transform: rotate(360deg); }
+}
+
+/* ===== PROGRESS BAR ===== */
+.progress-container {
+  background: rgba(201,168,76,.1);
+  border-radius: 20px;
+  padding: 8px;
+  margin: 24px 0;
+}
+
+.progress-bar {
+  background: linear-gradient(90deg, var(--gold), var(--gold-light));
+  height: 12px;
+  border-radius: 12px;
+  transition: width .5s ease;
+  box-shadow: 0 0 16px rgba(255,215,0,0.5);
+}
+
+.progress-text {
+  font-family: var(--font-sub);
+  font-size: 12px;
+  color: var(--gold-glow);
+  text-align: center;
+  margin-top: 8px;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+}
+
+/* ===== ADMIN DASHBOARD ===== */
+.admin-table {
+  background: linear-gradient(145deg, #161621, #12121a);
+  border: 2px solid rgba(201,168,76,.2);
+  border-radius: 16px;
+  padding: 24px;
+  overflow-x: auto;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+
+table thead th {
+  font-family: var(--font-sub);
+  font-weight: 700;
+  font-size: 11px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--gold);
+  padding: 14px 16px;
+  text-align: left;
+  border-bottom: 2px solid rgba(201,168,76,.3);
+}
+
+table tbody td {
+  padding: 12px 16px;
+  color: var(--gold-glow);
+  border-bottom: 1px solid rgba(201,168,76,.1);
+  text-shadow: 0 0 8px rgba(255,215,0,0.2);
+}
+
+table tbody tr:hover {
+  background: rgba(201,168,76,.05);
+}
+
+.badge {
+  display: inline-block;
+  padding: 4px 10px;
+  border-radius: 12px;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+}
+
+.badge-rhino { background: rgba(26,188,156,.2); color: #6ff9d8; }
+.badge-buffalo { background: rgba(52,152,219,.2); color: #90d5ff; }
+.badge-lion { background: rgba(230,126,34,.2); color: #ffb366; }
+.badge-leopard { background: rgba(155,89,182,.2); color: #d8a5f0; }
+.badge-elephant { background: rgba(201,168,76,.2); color: var(--gold-bright); }
+
+/* ===== BUTTONS ===== */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  padding: 14px 28px;
+  border-radius: 32px;
+  font-family: var(--font-sub);
+  font-weight: 700;
+  font-size: 13px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: all .3s;
+  border: none;
+}
+
+.btn-primary {
+  background: linear-gradient(135deg, var(--gold), var(--gold-light));
+  color: var(--ink);
+  box-shadow: 0 4px 20px rgba(201,168,76,.4);
+}
+
+.btn-primary:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 32px rgba(201,168,76,.6);
+}
+
+.btn-secondary {
+  background: rgba(201,168,76,.1);
+  border: 2px solid rgba(201,168,76,.3);
+  color: var(--gold-light);
+}
+
+.btn-secondary:hover {
+  background: rgba(201,168,76,.2);
+  border-color: var(--gold);
+}
+
+.btn-download {
+  background: linear-gradient(135deg, var(--teal), #16a085);
+  color: white;
+  box-shadow: 0 4px 20px rgba(26,188,156,.4);
+}
+
+.btn-download:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 32px rgba(26,188,156,.6);
+}
+
+.back-btn {
+  margin-bottom: 24px;
+}
+
+/* ===== RESPONSIVE ===== */
+@media (max-width: 768px) {
+  .dept-grid { grid-template-columns: 1fr; }
+  .nav-tabs { flex-direction: column; }
+  .reg-form { padding: 28px 24px; }
+  .certificate { padding: 32px 24px; }
+}
+</style>
+</head>
+<body>
+
+<!-- ===== HEADER ===== -->
+<div class="header">
+  <h1>🎓 KABIRU LEADERSHIP ACADEMY</h1>
+  <p>TAU Africa Digital Ecosystem • Complete Training Program</p>
+</div>
+
+<!-- ===== NAVIGATION ===== -->
+<div class="container">
+  <div class="nav-tabs">
+    <button class="nav-tab active" onclick="switchView('registration')">📝 Registration</button>
+    <button class="nav-tab" onclick="switchView('course')" id="courseTab" disabled>📚 Course</button>
+    <button class="nav-tab" onclick="switchView('exam')" id="examTab" disabled>📋 Exam</button>
+    <button class="nav-tab" onclick="switchView('certificate')" id="certTab" disabled>🏆 Certificate</button>
+    <button class="nav-tab" onclick="switchView('admin')">👥 Admin Dashboard</button>
+  </div>
+
+  <!-- ===== REGISTRATION VIEW ===== -->
+  <div id="registrationView" class="view active">
+    <div class="reg-form">
+      <h2>🌟 Register for Leadership Training</h2>
+      <form id="registrationForm" onsubmit="submitRegistration(event)">
+        <div class="form-group">
+          <label>Full Name *</label>
+          <input type="text" id="fullName" required placeholder="Enter your full name" />
+        </div>
+        <div class="form-group">
+          <label>Email Address *</label>
+          <input type="email" id="email" required placeholder="your.email@example.com" />
+        </div>
+        <div class="form-group">
+          <label>Phone Number *</label>
+          <input type="tel" id="phone" required placeholder="+254 XXX XXX XXX" />
+        </div>
+        <div class="form-group">
+          <label>National ID / Passport *</label>
+          <input type="text" id="idNumber" required placeholder="ID or Passport Number" />
+        </div>
+        <div class="form-group">
+          <label>Select Department *</label>
+          <select id="department" required>
+            <option value="">-- Choose Your Department --</option>
+            <option value="1">💰 Finance & Resources (Rhino)</option>
+            <option value="2">💻 Digital Ecosystem (Rhino)</option>
+            <option value="3">🛡️ Security & Farming (Rhino)</option>
+            <option value="4">📢 Public Relations (Rhino)</option>
+            <option value="5">📈 Economic Growth (Buffalo)</option>
+            <option value="6">🎯 Marketing & Business (Buffalo)</option>
+            <option value="7">🌱 Environment & Climate (Buffalo)</option>
+            <option value="8">📦 Procurement (Buffalo)</option>
+            <option value="9">🛒 Trade & Commerce (Buffalo)</option>
+            <option value="10">🤖 AI & Technology (Buffalo)</option>
+            <option value="11">⚕️ Healthcare (Buffalo)</option>
+            <option value="12">🎭 Culture & Arts (Lion)</option>
+            <option value="13">🤝 Community Outreach (Lion)</option>
+            <option value="14">🏘️ Land & Real Estate (Leopard)</option>
+            <option value="15">📰 Publications (Leopard)</option>
+            <option value="16">🏗️ Architecture (Leopard)</option>
+            <option value="17">🗣️ Languages (Leopard)</option>
+          </select>
+        </div>
+        <button type="submit" class="submit-btn">Begin Training →</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- ===== COURSE VIEW ===== -->
+  <div id="courseView" class="view">
+    <button class="btn btn-secondary back-btn" onclick="backToRegistration()">← Back to Registration</button>
+    
+    <h2 style="font-family: var(--font-head); font-size: 26px; color: var(--gold-light); margin-bottom: 8px; text-shadow: 0 0 16px rgba(255,215,0,0.4);" id="courseTitle">Department Training</h2>
+    <p style="font-size: 13px; color: var(--gold-glow); letter-spacing: 2px; text-transform: uppercase; margin-bottom: 24px;" id="courseCategory">Category</p>
+    
+    <div class="progress-container">
+      <div class="progress-bar" id="progressBar" style="width: 0%"></div>
+      <div class="progress-text" id="progressText">Module 0 of 3</div>
+    </div>
+    
+    <div id="modulesContainer"></div>
+    
+    <div style="text-align: center; margin-top: 32px;">
+      <button class="btn btn-primary" onclick="completeModule()" id="nextModuleBtn">Complete Module →</button>
+    </div>
+  </div>
+
+  <!-- ===== EXAM VIEW ===== -->
+  <div id="examView" class="view">
+    <button class="btn btn-secondary back-btn" onclick="switchView('course')">← Back to Course</button>
+    
+    <div class="exam-section">
+      <h2>🎓 Final Examination</h2>
+      <p style="font-size: 14px; color: var(--gold-glow); margin-bottom: 24px; text-shadow: 0 0 10px rgba(255,215,0,0.3);">
+        Answer all questions correctly to receive your certificate and TAU Mining Access Code.
+        Passing score: 70% (7 out of 10 questions)
+      </p>
+      <div id="examQuestions"></div>
+      <button class="btn btn-primary" onclick="submitExam()" style="margin-top: 24px;">📜 Submit Exam</button>
+    </div>
+  </div>
+
+  <!-- ===== CERTIFICATE VIEW ===== -->
+  <div id="certificateView" class="view">
+    <div class="certificate" id="certificateContent">
+      <!-- Certificate will be generated here -->
+    </div>
+    <div style="text-align: center; margin-top: 32px;">
+      <button class="btn btn-download" onclick="downloadCertificatePDF()">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/>
+        </svg>
+        Download Certificate PDF
+      </button>
+      <button class="btn btn-secondary" onclick="switchView('admin')" style="margin-left: 16px;">View All Graduates →</button>
+    </div>
+  </div>
+
+  <!-- ===== ADMIN DASHBOARD VIEW ===== -->
+  <div id="adminView" class="view">
+    <h2 style="font-family: var(--font-head); font-size: 26px; color: var(--gold-light); margin-bottom: 24px; text-shadow: 0 0 16px rgba(255,215,0,0.4);">👥 Graduate Dashboard</h2>
+    <div class="admin-table">
+      <table id="graduatesTable">
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>Name</th>
+            <th>Department</th>
+            <th>Category</th>
+            <th>Score</th>
+            <th>Access Code</th>
+            <th>Date</th>
+          </tr>
+        </thead>
+        <tbody id="graduatesBody">
+          <tr>
+            <td colspan="7" style="text-align: center; padding: 40px;">No graduates yet. Complete the training to see results here.</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <div style="text-align: center; margin-top: 24px;">
+      <button class="btn btn-secondary" onclick="exportGraduatesCSV()">📊 Export to CSV</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ========================================================
+// COMPLETE COURSE DATA FOR ALL 17 DEPARTMENTS
+// ========================================================
+const COURSE_MODULES = {
+  1: [ // Finance & Resources
+    {
+      title: "Module 1: Financial Framework of Kabiru Ecosystem",
+      content: `Welcome to the Finance & Resources department. This module introduces you to the complete financial architecture of the Kabiru Ecosystem.
+      
+      In this module, you will learn:`,
+      points: [
+        "The fiscal philosophy behind the Kabiru Digital Currency",
+        "Budgeting principles for a new Black Economy",
+        "Resource allocation strategies across council portfolios",
+        "Financial governance and accountability mechanisms",
+        "Treasury management and sustainability models"
+      ],
+      videoUrl: "https://www.youtube.com/watch?v=PLACEHOLDER1",
+      pdfUrl: "kabiru-financial-framework.pdf"
+    },
+    {
+      title: "Module 2: Digital Currency Economics & Tokenomics",
+      content: `Deep dive into the economic model underpinning the Kabiru Digital Currency (iKb). Understand how value is created, distributed, and sustained.`,
+      points: [
+        "Tokenomics: Supply, demand, and value mechanisms",
+        "GCV (Governance Currency Value) vs traditional fiat",
+        "Mining access codes and leadership rewards",
+        "Integration with the Three Stones (Currency, Sulwe Book, Calenda)",
+        "Economic sustainability and growth projections"
+      ],
+      videoUrl: "https://www.youtube.com/watch?v=PLACEHOLDER2",
+      pdfUrl: "digital-currency-economics.pdf"
+    },
+    {
+      title: "Module 3: Resource Distribution & Reporting",
+      content: `Master the operational aspects of financial management within the Council. Learn approval workflows, monitoring, and transparent reporting.`,
+      points: [
+        "Quarterly and annual budgeting cycles",
+        "Approval workflows for major expenditures",
+        "Financial monitoring dashboards and KPIs",
+        "Audit procedures and compliance standards",
+        "Reporting to Executive Leadership and stakeholders"
+      ],
+      videoUrl: "https://www.youtube.com/watch?v=PLACEHOLDER3",
+      pdfUrl: "resource-distribution-guide.pdf"
+    }
+  ],
+  2: [ // Digital Ecosystem
+    {
+      title: "Module 1: TAU Digital Ecosystem Architecture",
+      content: `Introduction to the technical infrastructure powering the entire TAU Africa Digital Ecosystem.`,
+      points: [
+        "Platform architecture and technology stack",
+        "Digital wallet systems and e-currency integration",
+        "Blockchain vs traditional database approaches",
+        "API ecosystem for third-party integrations",
+        "Scalability planning for continental reach"
+      ],
+      videoUrl: "https://www.youtube.com/watch?v=PLACEHOLDER4",
+      pdfUrl: "tau-digital-architecture.pdf"
+    },
+    {
+      title: "Module 2: Digital Economy Policy & Governance",
+      content: `Learn how to create and enforce policies that govern the digital economy within the TAU ecosystem.`,
+      points: [
+        "Digital trade regulations and standards",
+        "Data privacy and GDPR compliance for Africa",
+        "Smart contracts and automated governance",
+        "Dispute resolution in digital transactions",
+        "Cross-border digital commerce frameworks"
+      ],
+      videoUrl: "https://www.youtube.com/watch?v=PLACEHOLDER5",
+      pdfUrl: "digital-economy-policy.pdf"
+    },
+    {
+      title: "Module 3: Cybersecurity & Data Governance",
+      content: `Protect the ecosystem with world-class security protocols and data management practices.`,
+      points: [
+        "Cybersecurity threat landscape in Africa",
+        "Multi-layer security architecture",
+        "Data encryption and secure storage",
+        "Incident response and disaster recovery",
+        "User authentication and access control"
+      ],
+      videoUrl: "https://www.youtube.com/watch?v=PLACEHOLDER6",
+      pdfUrl: "cybersecurity-governance.pdf"
+    }
+  ],
+  3: [ // Security & Farming
+    {
+      title: "Module 1: Internal Governance & Security Protocols",
+      content: `Establish robust security frameworks for protecting all Kabiru Ecosystem assets.`,
+      points: [
+        "Physical security for council facilities",
+        "Cyber-security and digital asset protection",
+        "Intelligence gathering and threat assessment",
+        "Emergency response protocols",
+        "Coordination with government security agencies"
+      ],
+      videoUrl: "https://www.youtube.com/watch?v=PLACEHOLDER7",
+      pdfUrl: "internal-security-protocols.pdf"
+    },
+    {
+      title: "Module 2: Agricultural Strategy & Food Security",
+      content: `Integrate sustainable farming into the new Black Economy powered by digital currency.`,
+      points: [
+        "Kabiru farming cooperatives and their structure",
+        "Digital payment systems for agricultural goods",
+        "Sustainable farming techniques for African climates",
+        "Farm-to-market supply chains",
+        "Food security metrics and monitoring"
+      ],
+      videoUrl: "https://www.youtube.com/watch?v=PLACEHOLDER8",
+      pdfUrl: "agricultural-strategy.pdf"
+    },
+    {
+      title: "Module 3: Compliance & Internal Affairs",
+      content: `Ensure all council operations comply with governance standards and legal requirements.`,
+      points: [
+        "Council code of conduct and ethics",
+        "Conflict resolution mechanisms",
+        "Transparency and accountability measures",
+        "Legal compliance and regulatory liaisons",
+        "Performance reviews and disciplinary procedures"
+      ],
+      videoUrl: "https://www.youtube.com/watch?v=PLACEHOLDER9",
+      pdfUrl: "compliance-internal-affairs.pdf"
+    }
+  ],
+  4: [ // Public Relations
+    {
+      title: "Module 1: International Representation & Diplomacy",
+      content: `Position the Kabiru Ecosystem on the global stage through effective diplomacy and partnerships.`,
+      points: [
+        "Kabiru's global vision and messaging",
+        "Building relationships with international organisations",
+        "Representing TAU Africa at global forums",
+        "Negotiating MoUs and partnership agreements",
+        "Cultural diplomacy and soft power"
+      ],
+      videoUrl: "https://www.youtube.com/watch?v=PLACEHOLDER10",
+      pdfUrl: "international-diplomacy.pdf"
+    },
+    {
+      title: "Module 2: Media Relations & Communications Strategy",
+      content: `Master the art of public communications and media management for the Council.`,
+      points: [
+        "Press release writing and distribution",
+        "Crisis communication protocols",
+        "Social media management for leadership",
+        "Brand consistency across all touchpoints",
+        "Spokesperson training and media appearances"
+      ],
+      videoUrl: "https://www.youtube.com/watch?v=PLACEHOLDER11",
+      pdfUrl: "media-relations-strategy.pdf"
+    },
+    {
+      title: "Module 3: Cross-Portfolio Coordination",
+      content: `Facilitate seamless collaboration between all council departments.`,
+      points: [
+        "Communication channels and protocols",
+        "Inter-departmental project management",
+        "Conflict mediation between portfolios",
+        "Unified messaging for ecosystem initiatives",
+        "Reporting structures and information flow"
+      ],
+      videoUrl: "https://www.youtube.com/watch?v=PLACEHOLDER12",
+      pdfUrl: "cross-portfolio-coordination.pdf"
+    }
+  ],
+  5: [ // Economic Growth
+    {
+      title: "Module 1: Macroeconomic Strategy for TAU Ecosystem",
+      content: `Design comprehensive economic growth strategies for the new Black Economy.`,
+      points: [
+        "GDP and economic indicators for TAU",
+        "Investment attraction and capital formation",
+        "Economic diversification strategies",
+        "Trade balance and export promotion",
+        "Inflation control and monetary policy"
+      ],
+      videoUrl: "https://www.youtube.com/watch?v=PLACEHOLDER13",
+      pdfUrl: "macroeconomic-strategy.pdf"
+    },
+    {
+      title: "Module 2: Investment Frameworks & Capital Markets",
+      content: `Create mechanisms for attracting and managing investments within the ecosystem.`,
+      points: [
+        "Venture capital and angel investment structures",
+        "Public-private partnerships (PPPs)",
+        "Stock exchange integration for TAU companies",
+        "Impact investing and ESG criteria",
+        "ROI tracking and investor reporting"
+      ],
+      videoUrl: "https://www.youtube.com/watch?v=PLACEHOLDER14",
+      pdfUrl: "investment-frameworks.pdf"
+    },
+    {
+      title: "Module 3: Economic KPIs & Performance Monitoring",
+      content: `Establish robust systems for tracking economic health and growth.`,
+      points: [
+        "Key Performance Indicators (KPIs) for each sector",
+        "Real-time economic dashboards",
+        "Quarterly economic reports and forecasting",
+        "Benchmarking against continental economies",
+        "Corrective action planning for underperformance"
+      ],
+      videoUrl: "https://www.youtube.com/watch?v=PLACEHOLDER15",
+      pdfUrl: "economic-kpis-monitoring.pdf"
+    }
+  ],
+  6: [ // Marketing & Business
+    {
+      title: "Module 1: Digital Marketing Strategy",
+      content: `Build comprehensive marketing campaigns to promote the Kabiru Ecosystem and its Three Stones.`,
+      points: [
+        "Brand positioning and messaging for TAU",
+        "Digital marketing channels (SEO, SEM, Social Media)",
+        "Content marketing and storytelling",
+        "Influencer partnerships and community building",
+        "Campaign analytics and ROI measurement"
+      ],
+      videoUrl: "https://www.youtube.com/watch?v=PLACEHOLDER16",
+      pdfUrl: "digital-marketing-strategy.pdf"
+    },
+    {
+      title: "Module 2: Business Incubation & SME Support",
+      content: `Provide mentorship, resources, and support to micro-enterprises within the ecosystem.`,
+      points: [
+        "Business plan development and review",
+        "Access to capital and funding sources",
+        "Mentorship programs and coaching",
+        "Digital Currency adoption for small businesses",
+        "Market access and customer acquisition"
+      ],
+      videoUrl: "https://www.youtube.com/watch?v=PLACEHOLDER17",
+      pdfUrl: "business-incubation-support.pdf"
+    },
+    {
+      title: "Module 3: Growth Hacking & Customer Acquisition",
+      content: `Deploy advanced tactics to rapidly grow the TAU ecosystem user base.`,
+      points: [
+        "Viral marketing and referral programs",
+        "A/B testing and conversion optimization",
+        "Customer lifecycle and retention strategies",
+        "Community engagement tactics",
+        "Metrics: CAC, LTV, churn rate, NPS"
+      ],
+      videoUrl: "https://www.youtube.com/watch?v=PLACEHOLDER18",
+      pdfUrl: "growth-hacking-tactics.pdf"
+    }
+  ],
+  7: [ // Environment & Climate
+    {
+      title: "Module 1: Climate Action & Green Economy",
+      content: `Lead environmental sustainability initiatives integrated with the digital economy.`,
+      points: [
+        "Climate change impacts in Africa",
+        "Green economy principles and circular economy",
+        "Carbon credit systems within TAU ecosystem",
+        "Renewable energy integration",
+        "Environmental impact assessments"
+      ],
+      videoUrl: "https://www.youtube.com/watch?v=PLACEHOLDER19",
+      pdfUrl: "climate-action-green-economy.pdf"
+    },
+    {
+      title: "Module 2: Hygiene & Public Health Standards",
+      content: `Establish and enforce hygiene standards for all Kabiru facilities and operations.`,
+      points: [
+        "WASH (Water, Sanitation, Hygiene) protocols",
+        "Food safety and handling standards",
+        "Waste management and recycling programs",
+        "Public health monitoring systems",
+        "Community health education campaigns"
+      ],
+      videoUrl: "https://www.youtube.com/watch?v=PLACEHOLDER20",
+      pdfUrl: "hygiene-public-health.pdf"
+    },
+    {
+      title: "Module 3: Sustainability Reporting & Metrics",
+      content: `Track and report environmental performance linked to the Sulwe Book records.`,
+      points: [
+        "Sustainability KPIs and ESG reporting",
+        "Carbon footprint measurement",
+        "Integration with Sulwe Book ledger",
+        "Certification programs (ISO 14001, etc.)",
+        "Stakeholder reporting and transparency"
+      ],
+      videoUrl: "https://www.youtube.com/watch?v=PLACEHOLDER21",
+      pdfUrl: "sustainability-reporting.pdf"
+    }
+  ],
+  8: [ // Procurement
+    {
+      title: "Module 1: Strategic Procurement & Vendor Management",
+      content: `Master procurement processes that ensure cost-effectiveness and quality.`,
+      points: [
+        "Procurement policy and approval workflows",
+        "Vendor selection and evaluation criteria",
+        "Contract negotiation best practices",
+        "Quality assurance and compliance",
+        "Supplier relationship management"
+      ],
+      videoUrl: "https://www.youtube.com/watch?v=PLACEHOLDER22",
+      pdfUrl: "strategic-procurement.pdf"
+    },
+    {
+      title: "Module 2: Supply Chain Optimization",
+      content: `Build resilient and efficient supply chains for the TAU ecosystem.`,
+      points: [
+        "Supply chain mapping and risk assessment",
+        "Inventory management systems (JIT, EOQ)",
+        "Logistics and distribution networks",
+        "Technology integration (ERP, WMS)",
+        "Cost reduction and efficiency gains"
+      ],
+      videoUrl: "https://www.youtube.com/watch?v=PLACEHOLDER23",
+      pdfUrl: "supply-chain-optimization.pdf"
+    },
+    {
+      title: "Module 3: E-Procurement & Digital Integration",
+      content: `Leverage digital tools to streamline procurement within the Kabiru ecosystem.`,
+      points: [
+        "E-procurement platforms and automation",
+        "Digital Currency payment integration",
+        "Blockchain for supply chain transparency",
+        "Data analytics for procurement insights",
+        "Vendor portals and self-service systems"
+      ],
+      videoUrl: "https://www.youtube.com/watch?v=PLACEHOLDER24",
+      pdfUrl: "e-procurement-digital.pdf"
+    }
+  ],
+  9: [ // Trade & Commerce
+    {
+      title: "Module 1: Trade Policy & E-Commerce Frameworks",
+      content: `Develop comprehensive trade policies for the TAU digital marketplace.`,
+      points: [
+        "Intra-ecosystem trade regulations",
+        "Cross-border trade facilitation",
+        "E-commerce platform governance",
+        "Consumer protection policies",
+        "Dispute resolution mechanisms"
+      ],
+      videoUrl: "https://www.youtube.com/watch?v=PLACEHOLDER25",
+      pdfUrl: "trade-policy-ecommerce.pdf"
+    },
+    {
+      title: "Module 2: TAU Digital Marketplace Management",
+      content: `Build and operate the ecosystem's primary e-commerce platform.`,
+      points: [
+        "Marketplace platform architecture",
+        "Merchant onboarding and verification",
+        "Product catalog management",
+        "Payment gateway integration with iKb",
+        "Customer support and fulfillment"
+      ],
+      videoUrl: "https://www.youtube.com/watch?v=PLACEHOLDER26",
+      pdfUrl: "tau-marketplace-management.pdf"
+    },
+    {
+      title: "Module 3: Community Integration & Local Activation",
+      content: `Ensure grassroots participation in the new Black Economy.`,
+      points: [
+        "Community needs assessment",
+        "Local business onboarding strategies",
+        "Digital literacy training programs",
+        "Incentive schemes for early adopters",
+        "Ground-level feedback mechanisms"
+      ],
+      videoUrl: "https://www.youtube.com/watch?v=PLACEHOLDER27",
+      pdfUrl: "community-integration.pdf"
+    }
+  ],
+  10: [ // AI & Technology
+    {
+      title: "Module 1: AI & Advanced Technology Strategy",
+      content: `Lead cutting-edge technology initiatives that power the TAU ecosystem.`,
+      points: [
+        "AI applications in finance, governance, and operations",
+        "Machine learning for predictive analytics",
+        "Chatbots and virtual assistants for user support",
+        "Computer vision for security and verification",
+        "Ethical AI and bias mitigation"
+      ],
+      videoUrl: "https://www.youtube.com/watch?v=PLACEHOLDER28",
+      pdfUrl: "ai-technology-strategy.pdf"
+    },
+    {
+      title: "Module 2: Smart Infrastructure & IoT",
+      content: `Deploy Internet of Things (IoT) and smart building technologies.`,
+      points: [
+        "Smart building automation systems",
+        "IoT sensors for environmental monitoring",
+        "Energy management and optimization",
+        "Predictive maintenance using AI",
+        "Integration with Digital Currency payments"
+      ],
+      videoUrl: "https://www.youtube.com/watch?v=PLACEHOLDER29",
+      pdfUrl: "smart-infrastructure-iot.pdf"
+    },
+    {
+      title: "Module 3: Construction & Affordable Housing",
+      content: `Oversee construction projects and housing development for the ecosystem.`,
+      points: [
+        "Affordable housing design principles",
+        "Construction project management",
+        "Sustainable building materials",
+        "Smart home integration",
+        "Community housing cooperatives"
+      ],
+      videoUrl: "https://www.youtube.com/watch?v=PLACEHOLDER30",
+      pdfUrl: "construction-housing.pdf"
+    }
+  ],
+  11: [ // Healthcare
+    {
+      title: "Module 1: Natural Healthcare Philosophy & Programs",
+      content: `Integrate traditional African healing with modern healthcare practices.`,
+      points: [
+        "Traditional medicine and herbal remedies",
+        "Holistic health and wellness approaches",
+        "Integration with conventional medicine",
+        "Natural product research and development",
+        "Healthcare access and affordability"
+      ],
+      videoUrl: "https://www.youtube.com/watch?v=PLACEHOLDER31",
+      pdfUrl: "natural-healthcare-philosophy.pdf"
+    },
+    {
+      title: "Module 2: Telemedicine & Digital Health",
+      content: `Leverage technology to expand healthcare access across the ecosystem.`,
+      points: [
+        "Telemedicine platform setup and operation",
+        "Electronic health records (EHR) systems",
+        "Remote diagnostics and consultations",
+        "Digital Currency payments for healthcare",
+        "Health data privacy and security"
+      ],
+      videoUrl: "https://www.youtube.com/watch?v=PLACEHOLDER32",
+      pdfUrl: "telemedicine-digital-health.pdf"
+    },
+    {
+      title: "Module 3: Industrial Product Development",
+      content: `Develop healthcare and wellness products for the TAU marketplace.`,
+      points: [
+        "Product ideation and R&D processes",
+        "Manufacturing partnerships and quality control",
+        "Regulatory approvals and certifications",
+        "Product packaging and branding",
+        "Distribution through TAU marketplace"
+      ],
+      videoUrl: "https://www.youtube.com/watch?v=PLACEHOLDER33",
+      pdfUrl: "industrial-product-development.pdf"
+    }
+  ],
+  12: [ // Culture & Arts
+    {
+      title: "Module 1: African Heritage Preservation",
+      content: `Celebrate and preserve African cultural heritage within the ecosystem.`,
+      points: [
+        "Cultural heritage documentation methods",
+        "Oral history and storytelling traditions",
+        "Art and artifact preservation",
+        "Integration with Sulwe Book records",
+        "Community heritage projects"
+      ],
+      videoUrl: "https://www.youtube.com/watch?v=PLACEHOLDER34",
+      pdfUrl: "heritage-preservation.pdf"
+    },
+    {
+      title: "Module 2: Entertainment Industry & Creative Economy",
+      content: `Build vibrant entertainment and creative sectors powered by Digital Currency.`,
+      points: [
+        "Music, film, and arts industry development",
+        "Artist support and monetization platforms",
+        "Cultural festivals and events",
+        "Digital Currency royalties and payments",
+        "Creative incubators and studios"
+      ],
+      videoUrl: "https://www.youtube.com/watch?v=PLACEHOLDER35",
+      pdfUrl: "entertainment-creative-economy.pdf"
+    },
+    {
+      title: "Module 3: Hospitality & Tourism",
+      content: `Develop hospitality standards and tourism offerings for the ecosystem.`,
+      points: [
+        "Hospitality service excellence standards",
+        "Tourism product development",
+        "Cultural tourism and heritage sites",
+        "Eco-tourism and sustainable practices",
+        "Digital Currency integration for tourism"
+      ],
+      videoUrl: "https://www.youtube.com/watch?v=PLACEHOLDER36",
+      pdfUrl: "hospitality-tourism.pdf"
+    }
+  ],
+  13: [ // Community Outreach
+    {
+      title: "Module 1: Grassroots Engagement Strategies",
+      content: `Design and execute community programs that embed ecosystem values at the grassroots.`,
+      points: [
+        "Community needs assessment methodologies",
+        "Participatory planning and co-creation",
+        "Town hall meetings and community forums",
+        "Feedback mechanisms and grievance redressal",
+        "Measuring community impact"
+      ],
+      videoUrl: "https://www.youtube.com/watch?v=PLACEHOLDER37",
+      pdfUrl: "grassroots-engagement.pdf"
+    },
+    {
+      title: "Module 2: Education & Awareness Campaigns",
+      content: `Lead education initiatives on Digital Currency adoption and ecosystem benefits.`,
+      points: [
+        "Digital literacy training programs",
+        "Financial inclusion education",
+        "Kabiru Digital Currency tutorials",
+        "Youth engagement and schools programs",
+        "Multimedia educational content"
+      ],
+      videoUrl: "https://www.youtube.com/watch?v=PLACEHOLDER38",
+      pdfUrl: "education-awareness.pdf"
+    },
+    {
+      title: "Module 3: Community Events & Workshops",
+      content: `Organize impactful community events, workshops, and training sessions.`,
+      points: [
+        "Event planning and logistics",
+        "Workshop facilitation techniques",
+        "Community capacity building",
+        "Partnerships with local organizations",
+        "Event impact assessment and reporting"
+      ],
+      videoUrl: "https://www.youtube.com/watch?v=PLACEHOLDER39",
+      pdfUrl: "community-events-workshops.pdf"
+    }
+  ],
+  14: [ // Land & Real Estate
+    {
+      title: "Module 1: Land Acquisition & Settlement Planning",
+      content: `Manage land resources and settlement development for the Kabiru community.`,
+      points: [
+        "Land acquisition strategies and regulations",
+        "Settlement planning and zoning",
+        "Title registration and land rights",
+        "Dispute resolution in land matters",
+        "Community land trusts and cooperatives"
+      ],
+      videoUrl: "https://www.youtube.com/watch?v=PLACEHOLDER40",
+      pdfUrl: "land-acquisition-planning.pdf"
+    },
+    {
+      title: "Module 2: Real Estate Investment & Development",
+      content: `Create real estate investment opportunities powered by Digital Currency.`,
+      points: [
+        "Real estate investment frameworks",
+        "Property valuation and appraisal",
+        "Development financing models",
+        "Digital Currency real estate transactions",
+        "Property management systems"
+      ],
+      videoUrl: "https://www.youtube.com/watch?v=PLACEHOLDER41",
+      pdfUrl: "real-estate-investment.pdf"
+    },
+    {
+      title: "Module 3: Land Records & Sulwe Book Integration",
+      content: `Maintain transparent land records integrated with the Sulwe Book ledger.`,
+      points: [
+        "Digital land registry systems",
+        "Blockchain for land title security",
+        "Integration with Sulwe Book",
+        "Land use monitoring and compliance",
+        "Transparent reporting and audits"
+      ],
+      videoUrl: "https://www.youtube.com/watch?v=PLACEHOLDER42",
+      pdfUrl: "land-records-sulwe.pdf"
+    }
+  ],
+  15: [ // Publications
+    {
+      title: "Module 1: Digital & Print Publications Strategy",
+      content: `Lead all publication efforts for the Kabiru Ecosystem.`,
+      points: [
+        "Editorial vision and content strategy",
+        "Digital publishing platforms and tools",
+        "Print media production and distribution",
+        "Quality standards and brand guidelines",
+        "Monetization and revenue models"
+      ],
+      videoUrl: "https://www.youtube.com/watch?v=PLACEHOLDER43",
+      pdfUrl: "publications-strategy.pdf"
+    },
+    {
+      title: "Module 2: Sulwe Book Publishing & Editorial",
+      content: `Oversee the Sulwe Book as the Knowledge & Heritage Record of the Ecosystem.`,
+      points: [
+        "Sulwe Book content curation and editing",
+        "Documentation standards and protocols",
+        "Digital archiving and preservation",
+        "Access control and public availability",
+        "Historical accuracy and verification"
+      ],
+      videoUrl: "https://www.youtube.com/watch?v=PLACEHOLDER44",
+      pdfUrl: "sulwe-book-publishing.pdf"
+    },
+    {
+      title: "Module 3: Media Partnerships & Distribution",
+      content: `Build partnerships and distribution channels for ecosystem publications.`,
+      points: [
+        "Media partnership development",
+        "Content syndication and licensing",
+        "Distribution networks (digital and physical)",
+        "Audience growth and engagement",
+        "Analytics and performance tracking"
+      ],
+      videoUrl: "https://www.youtube.com/watch?v=PLACEHOLDER45",
+      pdfUrl: "media-partnerships.pdf"
+    }
+  ],
+  16: [ // Architecture
+    {
+      title: "Module 1: Ecosystem Spatial Design Philosophy",
+      content: `Serve as Chief Architect designing the physical and virtual spaces of Kabiru.`,
+      points: [
+        "Architectural vision for TAU facilities",
+        "African design aesthetics and principles",
+        "Sustainable and eco-friendly architecture",
+        "Accessibility and universal design",
+        "Cultural symbolism in spatial design"
+      ],
+      videoUrl: "https://www.youtube.com/watch?v=PLACEHOLDER46",
+      pdfUrl: "spatial-design-philosophy.pdf"
+    },
+    {
+      title: "Module 2: Design Standards & Smart Buildings",
+      content: `Establish design standards and integrate smart building technologies.`,
+      points: [
+        "TAU architectural design standards",
+        "Building Information Modeling (BIM)",
+        "Smart building automation systems",
+        "IoT integration for intelligent spaces",
+        "Energy efficiency and green certifications"
+      ],
+      videoUrl: "https://www.youtube.com/watch?v=PLACEHOLDER47",
+      pdfUrl: "design-standards-smart-buildings.pdf"
+    },
+    {
+      title: "Module 3: Physical & Virtual Space Integration",
+      content: `Translate the ecosystem's vision into tangible and digital environments.`,
+      points: [
+        "Hybrid physical-digital spaces (phygital)",
+        "Virtual reality (VR) and metaverse integration",
+        "Community gathering spaces design",
+        "Work-live-play integrated developments",
+        "Cultural identity in architectural expression"
+      ],
+      videoUrl: "https://www.youtube.com/watch?v=PLACEHOLDER48",
+      pdfUrl: "physical-virtual-integration.pdf"
+    }
+  ],
+  17: [ // Languages
+    {
+      title: "Module 1: African Languages Preservation",
+      content: `Lead language preservation, documentation, and promotion across the ecosystem.`,
+      points: [
+        "African linguistic diversity and heritage",
+        "Language documentation methodologies",
+        "Digital archiving of languages",
+        "Endangered language revitalization",
+        "Integration with Sulwe Book records"
+      ],
+      videoUrl: "https://www.youtube.com/watch?v=PLACEHOLDER49",
+      pdfUrl: "language-preservation.pdf"
+    },
+    {
+      title: "Module 2: Etymology & Cultural Naming",
+      content: `Research and maintain etymology databases for Kabiru branding and identity.`,
+      points: [
+        "Etymology research methods",
+        "African naming traditions and meanings",
+        "Brand naming and cultural significance",
+        "Terminology standardization",
+        "Cultural sensitivity in language use"
+      ],
+      videoUrl: "https://www.youtube.com/watch?v=PLACEHOLDER50",
+      pdfUrl: "etymology-cultural-naming.pdf"
+    },
+    {
+      title: "Module 3: Multilingual Communications & Translation",
+      content: `Develop multilingual strategies for ecosystem-wide communications.`,
+      points: [
+        "Translation and localization services",
+        "Multilingual content management",
+        "Language access and inclusivity",
+        "Interpretation services for events",
+        "Quality assurance for translations"
+      ],
+      videoUrl: "https://www.youtube.com/watch?v=PLACEHOLDER51",
+      pdfUrl: "multilingual-communications.pdf"
+    }
+  ]
+};
+
+// Department-specific exam questions (10 questions each)
+const EXAM_QUESTIONS = {
+  1: [ // Finance
+    { q: "What are the Three Stones of the New Black Economy?", options: ["Digital Currency, Sulwe Book, Calenda", "Bitcoin, Ethereum, Dogecoin", "Agriculture, Trade, Manufacturing", "Education, Healthcare, Housing"], correct: 0 },
+    { q: "What does GCV stand for in the Kabiru Digital Currency?", options: ["Global Currency Value", "Governance Currency Value", "Gold Certificate Value", "General Commodity Value"], correct: 1 },
+    { q: "Which Big Five animal represents the Finance department?", options: ["Elephant", "Rhino", "Buffalo", "Lion"], correct: 1 },
+    { q: "What is the primary responsibility of the Finance Secretary?", options: ["Manage social media", "Design the fiscal framework for Kabiru", "Build software", "Organize events"], correct: 1 },
+    { q: "How many leadership categories are in the Kabiru Governing Council?", options: ["3", "4", "5", "6"], correct: 2 },
+    { q: "What is tokenomics?", options: ["A type of cryptocurrency", "The economic model of a digital currency", "A blockchain platform", "A payment gateway"], correct: 1 },
+    { q: "The Rhino category represents which level of leadership?", options: ["Executive Leadership", "Core Operations", "Community Engagement", "Specialist Support"], correct: 1 },
+    { q: "What percentage of the exam must you pass to receive your certificate?", options: ["50%", "60%", "70%", "80%"], correct: 2 },
+    { q: "What is the role of the Sulwe Book?", options: ["Digital wallet", "Knowledge & Heritage Record", "Trading platform", "Social network"], correct: 1 },
+    { q: "Treasury operations fall under which department?", options: ["Marketing", "Finance & Resources", "Publications", "Healthcare"], correct: 1 }
+  ],
+  2: [ // Digital Ecosystem
+    { q: "What are the Three Stones of the New Black Economy?", options: ["Digital Currency, Sulwe Book, Calenda", "Bitcoin, Ethereum, Litecoin", "Trade, Agriculture, Mining", "Banking, Insurance, Real Estate"], correct: 0 },
+    { q: "Which technology underpins the TAU Digital Ecosystem?", options: ["Only blockchain", "Hybrid blockchain and traditional databases", "Only cloud computing", "Only AI"], correct: 1 },
+    { q: "What does API stand for?", options: ["Advanced Programming Interface", "Application Programming Interface", "Automated Process Integration", "African Platform Initiative"], correct: 1 },
+    { q: "Which Big Five category does Digital Ecosystem belong to?", options: ["Elephant", "Rhino", "Buffalo", "Leopard"], correct: 1 },
+    { q: "What is the primary role of the Digital Ecosystem Secretary?", options: ["Manage finances", "Lead TAU Digital Ecosystem architecture and scaling", "Organize events", "Write articles"], correct: 1 },
+    { q: "GDPR compliance is related to:", options: ["Financial reporting", "Data privacy", "Agricultural standards", "Building codes"], correct: 1 },
+    { q: "Smart contracts are:", options: ["Legal documents", "Self-executing contracts on blockchain", "Employment agreements", "Loan documents"], correct: 1 },
+    { q: "Which department manages cybersecurity?", options: ["Finance", "Digital Ecosystem", "Publications", "Culture"], correct: 1 },
+    { q: "The iKb digital wallet is part of:", options: ["Sulwe Book", "TAU Digital Ecosystem", "Calenda", "None of these"], correct: 1 },
+    { q: "How many modules are in each department course?", options: ["2", "3", "4", "5"], correct: 1 }
+  ],
+  // For brevity, I'll create a generic set for remaining departments
+  default: [
+    { q: "What are the Three Stones of the New Black Economy?", options: ["Digital Currency, Sulwe Book, Calenda", "Agriculture, Trade, Industry", "Education, Health, Housing", "Banking, Insurance, Real Estate"], correct: 0 },
+    { q: "What does iKb stand for?", options: ["Internet Kabiru Business", "Integrated Kabiru Banking", "The Kabiru Digital Currency symbol", "International Kenya Business"], correct: 2 },
+    { q: "How many Big Five leadership categories exist?", options: ["3", "4", "5", "6"], correct: 2 },
+    { q: "Which animal represents Executive Leadership?", options: ["Lion", "Elephant", "Rhino", "Leopard"], correct: 1 },
+    { q: "The Sulwe Book is:", options: ["A social media platform", "The Knowledge & Heritage Record", "A mobile app", "A payment system"], correct: 1 },
+    { q: "What is the passing score for the exam?", options: ["50%", "60%", "70%", "80%"], correct: 2 },
+    { q: "Calenda represents:", options: ["A calendar app", "Cultural Calendar & Strategic Planning Engine", "A news platform", "A marketplace"], correct: 1 },
+    { q: "TAU stands for:", options: ["Trade and Unity", "TAU Africa (ecosystem name)", "Technology Application Unit", "Total African Union"], correct: 1 },
+    { q: "How many council members are there total?", options: ["15", "17", "20", "25"], correct: 2 },
+    { q: "The TAU Mining Access Code is:", options: ["A mining permit", "Access to cryptocurrency mining", "Leadership Mining access credential", "A security code"], correct: 2 }
+  ]
+};
+
+// ========================================================
+// APPLICATION STATE
+// ========================================================
+let currentUser = {};
+let currentModuleIndex = 0;
+let graduates = [];
+
+// Load graduates from localStorage on page load
+function loadGraduates() {
+  const stored = localStorage.getItem('kabiruGraduates');
+  if (stored) {
+    graduates = JSON.parse(stored);
+    renderGraduatesTable();
+  }
+}
+
+function saveGraduates() {
+  localStorage.setItem('kabiruGraduates', JSON.stringify(graduates));
+}
+
+// ========================================================
+// VIEW SWITCHING
+// ========================================================
+function switchView(viewName) {
+  document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+  document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
+  
+  document.getElementById(viewName + 'View').classList.add('active');
+  event.target.classList.add('active');
+}
+
+// ========================================================
+// REGISTRATION
+// ========================================================
+function submitRegistration(e) {
+  e.preventDefault();
+  
+  currentUser = {
+    name: document.getElementById('fullName').value,
+    email: document.getElementById('email').value,
+    phone: document.getElementById('phone').value,
+    idNumber: document.getElementById('idNumber').value,
+    departmentId: parseInt(document.getElementById('department').value),
+    registrationDate: new Date().toISOString()
+  };
+  
+  // Get department details
+  const deptOption = document.getElementById('department').selectedOptions[0].text;
+  currentUser.departmentName = deptOption.split(' (')[0].substring(2); // Remove emoji
+  currentUser.category = deptOption.includes('Rhino') ? 'rhino' : 
+                         deptOption.includes('Buffalo') ? 'buffalo' :
+                         deptOption.includes('Lion') ? 'lion' :
+                         deptOption.includes('Leopard') ? 'leopard' : 'elephant';
+  
+  // Enable course tab and switch to it
+  document.getElementById('courseTab').disabled = false;
+  loadCourse();
+  switchView('course');
+  document.querySelectorAll('.nav-tab')[1].classList.add('active');
+}
+
+function backToRegistration() {
+  if (confirm('Are you sure you want to go back? Your progress will be lost.')) {
+    document.getElementById('registrationForm').reset();
+    currentUser = {};
+    currentModuleIndex = 0;
+    document.getElementById('courseTab').disabled = true;
+    document.getElementById('examTab').disabled = true;
+    switchView('registration');
+    document.querySelectorAll('.nav-tab')[0].classList.add('active');
+  }
+}
+
+// ========================================================
+// COURSE LOADING
+// ========================================================
+function loadCourse() {
+  const deptId = currentUser.departmentId;
+  const modules = COURSE_MODULES[deptId] || COURSE_MODULES.default;
+  
+  document.getElementById('courseTitle').textContent = currentUser.departmentName + " Training";
+  
+  const categoryLabels = {
+    rhino: "🦏 Rhino - Core Operations",
+    buffalo: "🐃 Buffalo - Strategic Execution",
+    lion: "🦁 Lion - Community Engagement",
+    leopard: "🐆 Leopard - Specialist Support",
+    elephant: "🐘 Elephant - Executive Leadership"
+  };
+  document.getElementById('courseCategory').textContent = categoryLabels[currentUser.category];
+  
+  renderCurrentModule(modules);
+  updateProgress();
+}
+
+function renderCurrentModule(modules) {
+  const module = modules[currentModuleIndex];
+  const container = document.getElementById('modulesContainer');
+  
+  container.innerHTML = `
+    <div class="module">
+      <h3>${module.title}</h3>
+      <div class="module-content">${module.content}</div>
+      ${module.points ? '<ul>' + module.points.map(p => '<li>' + p + '</li>').join('') + '</ul>' : ''}
+      <div class="video-container">
+        📹 Video: ${module.videoUrl}<br/>
+        <small style="opacity: 0.7;">(Video content would be embedded here)</small>
+      </div>
+      <a href="#" class="resource-link" onclick="return false;">
+        <span>📄</span>
+        <span>Download ${module.pdfUrl}</span>
+      </a>
+    </div>
+  `;
+}
+
+function completeModule() {
+  const deptId = currentUser.departmentId;
+  const modules = COURSE_MODULES[deptId] || COURSE_MODULES.default;
+  
+  if (currentModuleIndex < modules.length - 1) {
+    currentModuleIndex++;
+    renderCurrentModule(modules);
+    updateProgress();
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  } else {
+    // All modules completed, enable exam
+    document.getElementById('examTab').disabled = false;
+    loadExam();
+    switchView('exam');
+    document.querySelectorAll('.nav-tab')[2].classList.add('active');
+  }
+}
+
+function updateProgress() {
+  const deptId = currentUser.departmentId;
+  const modules = COURSE_MODULES[deptId] || COURSE_MODULES.default;
+  const progress = ((currentModuleIndex + 1) / modules.length) * 100;
+  
+  document.getElementById('progressBar').style.width = progress + '%';
+  document.getElementById('progressText').textContent = `Module ${currentModuleIndex + 1} of ${modules.length}`;
+}
+
+// ========================================================
+// EXAM
+// ========================================================
+function loadExam() {
+  const deptId = currentUser.departmentId;
+  const questions = EXAM_QUESTIONS[deptId] || EXAM_QUESTIONS.default;
+  
+  const container = document.getElementById('examQuestions');
+  container.innerHTML = '';
+  
+  questions.forEach((q, qIndex) => {
+    const qDiv = document.createElement('div');
+    qDiv.className = 'question';
+    qDiv.innerHTML = `
+      <p><strong>Question ${qIndex + 1}:</strong> ${q.q}</p>
+      ${q.options.map((opt, oIndex) => `
+        <label>
+          <input type="radio" name="q${qIndex}" value="${oIndex}" />
+          ${opt}
+        </label>
+      `).join('')}
+    `;
+    container.appendChild(qDiv);
+  });
+}
+
+function submitExam() {
+  const deptId = currentUser.departmentId;
+  const questions = EXAM_QUESTIONS[deptId] || EXAM_QUESTIONS.default;
+  
+  let score = 0;
+  questions.forEach((q, i) => {
+    const selected = document.querySelector(`input[name="q${i}"]:checked`);
+    if (selected && parseInt(selected.value) === q.correct) score++;
+  });
+  
+  const percentage = (score / questions.length) * 100;
+  currentUser.examScore = percentage;
+  
+  if (percentage >= 70) {
+    generateCertificate();
+    document.getElementById('certTab').disabled = false;
+    switchView('certificate');
+    document.querySelectorAll('.nav-tab')[3].classList.add('active');
+  } else {
+    alert(`Score: ${percentage.toFixed(1)}%\n\nYou need at least 70% to pass.\n\nPlease review the course modules and try again.`);
+  }
+}
+
+// ========================================================
+// CERTIFICATE
+// ========================================================
+function generateCertificate() {
+  const accessCode = generateAccessCode(currentUser);
+  currentUser.accessCode = accessCode;
+  currentUser.certificateDate = new Date().toISOString();
+  
+  const categoryLabels = {
+    rhino: { name: "Rhino", icon: "🦏", desc: "Core Operations" },
+    buffalo: { name: "Buffalo", icon: "🐃", desc: "Strategic Execution" },
+    lion: { name: "Lion", icon: "🦁", desc: "Community Engagement" },
+    leopard: { name: "Leopard", icon: "🐆", desc: "Specialist Support" },
+    elephant: { name: "Elephant", icon: "🐘", desc: "Executive Leadership" }
+  };
+  
+  const cat = categoryLabels[currentUser.category];
+  
+  const deptIcons = {
+    1: "💰", 2: "💻", 3: "🛡️", 4: "📢", 5: "📈", 6: "🎯", 7: "🌱", 8: "📦",
+    9: "🛒", 10: "🤖", 11: "⚕️", 12: "🎭", 13: "🤝", 14: "🏘️", 15: "📰", 16: "🏗️", 17: "🗣️"
+  };
+  
+  const certHTML = `
+    <h2>🏆 Pioneer Leadership Certificate</h2>
+    <p style="font-size: 17px; margin-bottom: 24px;">This certifies that</p>
+    <div class="cert-name">${currentUser.name}</div>
+    <p>has successfully completed the</p>
+    <p style="font-size: 20px; font-weight: 700; color: var(--gold-light); margin: 16px 0;">
+      ${currentUser.departmentName} Leadership Training
+    </p>
+    <p style="margin-bottom: 10px;">${cat.icon} ${cat.name} Category — ${cat.desc}</p>
+    <p>Examination Score: ${currentUser.examScore.toFixed(1)}%</p>
+    
+    <div class="cert-stamp">${deptIcons[currentUser.departmentId]}</div>
+    
+    <div class="cert-code">
+      <div style="font-size: 13px; margin-bottom: 10px; color: var(--gold-light); text-shadow: 0 0 10px rgba(255,215,0,0.4);">
+        TAU ECOSYSTEM LEADERSHIP MINING ACCESS CODE
+      </div>
+      ${accessCode}
+    </div>
+    
+    <p style="font-size: 13px; margin-top: 20px;">
+      This certificate grants you official access to join the<br/>
+      <strong style="color: var(--gold-light);">KABIRU GOVERNING COUNCIL</strong><br/>
+      and participate in TAU Ecosystem Leadership Mining.
+    </p>
+    <p style="font-size: 12px; margin-top: 16px; opacity: 0.7;">
+      Issued: ${new Date().toLocaleDateString()} • Nairobi, Kenya
+    </p>
+  `;
+  
+  document.getElementById('certificateContent').innerHTML = certHTML;
+  
+  // Save graduate to database
+  graduates.push({...currentUser});
+  saveGraduates();
+  renderGraduatesTable();
+}
+
+function generateAccessCode(user) {
+  const cat = user.category.substring(0,3).toUpperCase();
+  const id = String(user.departmentId).padStart(2, '0');
+  const random = Math.random().toString(36).substring(2, 8).toUpperCase();
+  const year = new Date().getFullYear();
+  return `TAU-${cat}-${id}-${random}-${year}`;
+}
+
+function downloadCertificatePDF() {
+  const { jsPDF } = window.jspdf;
+  const pdf = new jsPDF('p', 'mm', 'a4');
+  
+  const certElement = document.getElementById('certificateContent');
+  
+  html2canvas(certElement, { scale: 2 }).then(canvas => {
+    const imgData = canvas.toDataURL('image/png');
+    const imgWidth = 190;
+    const imgHeight = (canvas.height * imgWidth) / canvas.width;
+    
+    pdf.addImage(imgData, 'PNG', 10, 10, imgWidth, imgHeight);
+    pdf.save(`Kabiru_Certificate_${currentUser.name.replace(/\s+/g, '_')}.pdf`);
+  });
+}
+
+// ========================================================
+// ADMIN DASHBOARD
+// ========================================================
+function renderGraduatesTable() {
+  const tbody = document.getElementById('graduatesBody');
+  
+  if (graduates.length === 0) {
+    tbody.innerHTML = '<tr><td colspan="7" style="text-align: center; padding: 40px;">No graduates yet. Complete the training to see results here.</td></tr>';
+    return;
+  }
+  
+  tbody.innerHTML = '';
+  graduates.forEach((grad, i) => {
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td>${i + 1}</td>
+      <td>${grad.name}</td>
+      <td>${grad.departmentName}</td>
+      <td><span class="badge badge-${grad.category}">${grad.category}</span></td>
+      <td>${grad.examScore.toFixed(1)}%</td>
+      <td style="font-family: monospace; font-size: 11px;">${grad.accessCode}</td>
+      <td style="font-size: 11px;">${new Date(grad.certificateDate).toLocaleDateString()}</td>
+    `;
+    tbody.appendChild(tr);
+  });
+}
+
+function exportGraduatesCSV() {
+  if (graduates.length === 0) {
+    alert('No graduates to export.');
+    return;
+  }
+  
+  let csv = 'Name,Email,Phone,ID Number,Department,Category,Score,Access Code,Date\n';
+  graduates.forEach(g => {
+    csv += `"${g.name}","${g.email}","${g.phone}","${g.idNumber}","${g.departmentName}","${g.category}",${g.examScore},"${g.accessCode}","${new Date(g.certificateDate).toLocaleString()}"\n`;
+  });
+  
+  const blob = new Blob([csv], { type: 'text/csv' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = 'Kabiru_Graduates_' + new Date().toISOString().split('T')[0] + '.csv';
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
+// ========================================================
+// INIT
+// ========================================================
+loadGraduates();
+</script>
+
+</body>
+</html>
