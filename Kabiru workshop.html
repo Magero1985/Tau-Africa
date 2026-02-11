@@ -1,0 +1,405 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Black History Month 2026 - Kabiru Workshop</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Arial', sans-serif;
+            background: linear-gradient(135deg, #1a1a1a 0%, #2d1810 100%);
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+        
+        .poster {
+            max-width: 800px;
+            background: linear-gradient(180deg, #0a5c0a 0%, #000000 100%);
+            border: 8px solid #d4af37;
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 20px 60px rgba(212, 175, 55, 0.3);
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        
+        .title {
+            font-size: 3.5em;
+            font-weight: bold;
+            color: #d4af37;
+            text-transform: uppercase;
+            letter-spacing: 4px;
+            text-shadow: 3px 3px 6px rgba(0, 0, 0, 0.8);
+            margin-bottom: 10px;
+        }
+        
+        .subtitle {
+            font-size: 1.8em;
+            color: #ffffff;
+            font-weight: 300;
+            margin-bottom: 20px;
+        }
+        
+        .tagline {
+            font-size: 1.2em;
+            color: #ffd700;
+            font-style: italic;
+            margin-top: 15px;
+        }
+        
+        .section {
+            background: rgba(255, 255, 255, 0.05);
+            border-left: 4px solid #d4af37;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 8px;
+        }
+        
+        .section-title {
+            color: #d4af37;
+            font-size: 1.4em;
+            font-weight: bold;
+            margin-bottom: 15px;
+            text-transform: uppercase;
+        }
+        
+        .organizations {
+            display: grid;
+            gap: 15px;
+            margin: 20px 0;
+        }
+        
+        .org {
+            background: rgba(212, 175, 55, 0.1);
+            padding: 15px;
+            border-radius: 8px;
+            border-left: 3px solid #ffd700;
+        }
+        
+        .org-name {
+            color: #ffd700;
+            font-weight: bold;
+            font-size: 1.1em;
+            margin-bottom: 5px;
+        }
+        
+        .org-focus {
+            color: #ffffff;
+            font-size: 0.95em;
+            line-height: 1.5;
+        }
+        
+        .details {
+            color: #ffffff;
+            line-height: 1.8;
+            font-size: 1.05em;
+        }
+        
+        .details strong {
+            color: #d4af37;
+        }
+        
+        .bring-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 10px;
+            margin-top: 10px;
+        }
+        
+        .bring-item {
+            background: rgba(212, 175, 55, 0.1);
+            padding: 10px;
+            border-radius: 5px;
+            color: #ffffff;
+            text-align: center;
+            border: 1px solid rgba(212, 175, 55, 0.3);
+        }
+        
+        .objectives {
+            background: rgba(10, 92, 10, 0.3);
+            padding: 20px;
+            border-radius: 8px;
+            margin: 15px 0;
+        }
+        
+        .objective-list {
+            color: #ffffff;
+            line-height: 2;
+            margin-left: 20px;
+        }
+        
+        .cta {
+            text-align: center;
+            margin-top: 30px;
+            padding: 25px;
+            background: linear-gradient(135deg, #d4af37 0%, #ffd700 100%);
+            border-radius: 10px;
+            color: #000000;
+        }
+        
+        .cta-text {
+            font-size: 1.5em;
+            font-weight: bold;
+            text-transform: uppercase;
+        }
+        
+        /* Download Buttons Section */
+        .download-section {
+            background: rgba(212, 175, 55, 0.15);
+            border: 3px solid #d4af37;
+            padding: 30px;
+            margin: 30px 0;
+            border-radius: 15px;
+            text-align: center;
+        }
+        
+        .download-title {
+            color: #ffd700;
+            font-size: 1.6em;
+            font-weight: bold;
+            margin-bottom: 20px;
+            text-transform: uppercase;
+        }
+        
+        .button-container {
+            display: flex;
+            gap: 20px;
+            justify-content: center;
+            flex-wrap: wrap;
+            margin-top: 20px;
+        }
+        
+        .download-btn {
+            display: inline-block;
+            padding: 18px 35px;
+            background: linear-gradient(135deg, #0a5c0a 0%, #0d7f0d 100%);
+            color: #ffffff;
+            text-decoration: none;
+            border-radius: 10px;
+            font-size: 1.1em;
+            font-weight: bold;
+            border: 2px solid #d4af37;
+            box-shadow: 0 5px 15px rgba(212, 175, 55, 0.4);
+            transition: all 0.3s ease;
+            cursor: pointer;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        
+        .download-btn:hover {
+            background: linear-gradient(135deg, #0d7f0d 0%, #0a5c0a 100%);
+            transform: translateY(-3px);
+            box-shadow: 0 8px 20px rgba(212, 175, 55, 0.6);
+        }
+        
+        .download-btn:active {
+            transform: translateY(0);
+        }
+        
+        .btn-icon {
+            margin-right: 8px;
+            font-size: 1.2em;
+        }
+        
+        .download-note {
+            color: #ffd700;
+            font-size: 0.95em;
+            margin-top: 15px;
+            font-style: italic;
+        }
+        
+        .footer {
+            text-align: center;
+            margin-top: 30px;
+            color: #d4af37;
+            font-size: 0.9em;
+        }
+        
+        @media print {
+            body {
+                background: linear-gradient(135deg, #1a1a1a 0%, #2d1810 100%) !important;
+                -webkit-print-color-adjust: exact !important;
+                print-color-adjust: exact !important;
+                color-adjust: exact !important;
+            }
+            .poster {
+                max-width: 100%;
+                box-shadow: 0 20px 60px rgba(212, 175, 55, 0.3) !important;
+                background: linear-gradient(180deg, #0a5c0a 0%, #000000 100%) !important;
+                -webkit-print-color-adjust: exact !important;
+                print-color-adjust: exact !important;
+            }
+            * {
+                -webkit-print-color-adjust: exact !important;
+                print-color-adjust: exact !important;
+                color-adjust: exact !important;
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .title {
+                font-size: 2.5em;
+            }
+            
+            .subtitle {
+                font-size: 1.4em;
+            }
+            
+            .button-container {
+                flex-direction: column;
+            }
+            
+            .download-btn {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="poster">
+        <div class="header">
+            <div class="title">Africa Grassroots Leadership Seminar</div>
+            <div class="subtitle">BLACK HISTORY MONTH</div>
+            <div class="tagline">"Return of our Spirituality and Economy"</div>
+        </div>
+        
+        <!-- NEW: Download Buttons Section -->
+        <div class="download-section">
+            <div class="download-title">📥 Get Complete Program Details</div>
+            <div class="button-container">
+                <a href="#" class="download-btn" onclick="alert('Please contact the organizing committee to receive the complete 5-day workshop program document.'); return false;">
+                    <span class="btn-icon">📋</span>
+                    Download Full Program
+                </a>
+                <a href="#" class="download-btn" onclick="alert('Please contact the organizing committee to receive your personalized invitation letter.'); return false;">
+                    <span class="btn-icon">✉️</span>
+                    Get Invitation Letter
+                </a>
+            </div>
+            <div class="download-note">
+                Click above to access detailed schedules, session descriptions, and your official invitation
+            </div>
+        </div>
+        
+        <div class="section">
+            <div class="section-title">📅 DATE : 21st, 22nd, 23rd February 2026. FEE : ksh 2,200 Boarding and ksh 1,200 days scholars</div>
+            <div class="section">
+                <div class="section-title">💰 Fee subsidies available</div>
+                <div class="details">
+                    <strong>1. Facility:</strong> Learning spaces, Sleeping spaces & basic beddings, washrooms, Meals, Teas etc<br>
+                    <strong>2. Training:</strong> Full Immersion on Ecosystem technical training and beginning of ecosystem motion: presentations.
+                </div>
+            </div>
+        </div>
+        
+        <div class="section">
+            <div class="section-title">HOSTS</div>
+            <div class="organizations">
+                <div class="org">
+                    <div class="org-name">RSK - Rastafari Society of Kenya</div>
+                    <div class="org-focus">Africa Roots & Culture Entertainment</div>
+                </div>
+                <div class="org">
+                    <div class="org-name">PAR SIRAI</div>
+                    <div class="org-focus">Odede-ykc • Sulwe Maler (Black Star liner Book) • Calenda</div>
+                </div>
+                <div class="org">
+                    <div class="org-name">TAU AFRICA</div>
+                    <div class="org-focus">Kabiru Digital Value Currency • New Value-Based Economic Ecosystem</div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="section">
+            <div class="section-title">📍 Venue</div>
+            <div class="venue-location">
+                <div class="details">
+                    <strong>Location 1:</strong> RSK's Matumaini Children's Centre, Rongai<br>
+                    <strong>Location 2:</strong> Par Sirai Chapel, Njiru, Nairobi
+                </div>
+            </div>
+        </div>
+        
+        <div class="section">
+            <div class="section-title">📅 Duration Options</div>
+            <div class="details">
+                Choose your commitment level:<br>
+                <strong>• 3-Day Intensive</strong> | <strong>• 5-Day Deep Dive</strong> (Full Immersion specific to Job creation)
+            </div>
+        </div>
+        
+        <div class="section">
+            <div class="section-title">🎯 Camp Objectives</div>
+            <div class="objectives">
+                <ul class="objective-list">
+                    <li>Introduce Sulwe to Africans and prepare specific subcouncil to begin deliberations on Sulwe and Calenda for Black Africa</li>
+                    <li>Introduce Kabiru Token as the new token of values, form New Africa Digital Economy and Train Kabiru Digital value Currency</li>
+                    <li>Activate the Digital community economic systems in utility infrastructure</li>
+                    <li>Decolonize mind, economy & spirituality</li>
+                    <li>Build frameworks for self-Reliance and sustainability</li>
+                </ul>
+            </div>
+        </div>
+        
+        <div class="section">
+            <div class="section-title">🎒 What to Bring</div>
+            <div class="bring-list">
+                <div class="bring-item">📋 Original ID Documents</div>
+                <div class="bring-item">🍫 Snacks</div>
+                <div class="bring-item">🧼 Soap & Toiletries</div>
+                <div class="bring-item">👕 Changing Clothes</div>
+                <div class="bring-item">💰 Pocket Money</div>
+                <div class="bring-item">✏️ Writing Materials</div>
+            </div>
+        </div>
+        
+        <div class="section">
+            <div class="section-title">👥 Who Should Attend</div>
+            <div class="details">
+                • Youths & Cultural Practitioners<br>
+                • Activists & Spiritual Leaders<br>
+                • Economists & Cooperative Practitioners<br>
+                • Artists & Educators<br>
+                • Anyone committed to African liberation
+            </div>
+        </div>
+        
+        <div class="section">
+            <div class="section-title">🌟 Experience Includes</div>
+            <div class="details">
+                Participatory Discussions • Storytelling Sessions • Farming Activities<br>
+                Cultural Performances • Nature Walks • Meditation & Reflection<br>
+                Guest Speakers • Group Workshops • Creative Documentation<br>
+                Art & Crafts • Music & Entertainment • Community Building
+            </div>
+        </div>
+        
+        <div class="cta">
+            <div class="cta-text">Join the Movement</div>
+            <div style="margin-top: 10px; font-size: 1.1em;">
+                A Community-Led Journey Toward Economic & Spiritual Liberation
+            </div>
+        </div>
+        
+        <div class="footer">
+            <p><strong>Kabiru Workshop 2026</strong></p>
+            <p>Creating Participatory Spaces for Dialogue, Learning & Co-Creation</p>
+            <p style="margin-top: 10px; font-style: italic;">
+                "Creating the Leadership that will pioneer the new Africa Digital economy in formation and help Kabiru Infrastructure integrate with community".
+            </p>
+        </div>
+    </div>
+</body>
+</html>
