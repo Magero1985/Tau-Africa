@@ -13,7 +13,7 @@
         
         body {
             font-family: 'Arial', sans-serif;
-            background: linear-gradient(135deg, #1a1a1a 0%, #2d1810 100%);
+            background: linear-gradient(135deg, #e0f7fa 0%, #80deea 50%, #4dd0e1 100%);
             padding: 20px;
             display: flex;
             justify-content: center;
@@ -22,239 +22,273 @@
         }
         
         .poster {
-            max-width: 800px;
-            background: linear-gradient(180deg, #0a5c0a 0%, #000000 100%);
-            border: 8px solid #d4af37;
+            max-width: 850px;
+            background: linear-gradient(180deg, #ffffff 0%, #e0f2f1 100%);
+            border: 6px solid #00897b;
             border-radius: 20px;
             padding: 40px;
-            box-shadow: 0 20px 60px rgba(212, 175, 55, 0.3);
+            box-shadow: 0 20px 60px rgba(0, 137, 123, 0.3);
         }
         
         .header {
             text-align: center;
             margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 4px solid #4db6ac;
         }
         
         .title {
-            font-size: 3.5em;
+            font-size: 3.2em;
             font-weight: bold;
-            color: #d4af37;
+            color: #00695c;
             text-transform: uppercase;
-            letter-spacing: 4px;
-            text-shadow: 3px 3px 6px rgba(0, 0, 0, 0.8);
-            margin-bottom: 10px;
+            letter-spacing: 3px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);
+            margin-bottom: 15px;
+            line-height: 1.2;
         }
         
         .subtitle {
-            font-size: 1.8em;
-            color: #ffffff;
-            font-weight: 300;
-            margin-bottom: 20px;
-        }
-        
-        .tagline {
-            font-size: 1.2em;
-            color: #ffd700;
-            font-style: italic;
-            margin-top: 15px;
-        }
-        
-        .section {
-            background: rgba(255, 255, 255, 0.05);
-            border-left: 4px solid #d4af37;
-            padding: 20px;
-            margin: 20px 0;
-            border-radius: 8px;
-        }
-        
-        .section-title {
-            color: #d4af37;
-            font-size: 1.4em;
+            font-size: 2em;
+            color: #00897b;
             font-weight: bold;
             margin-bottom: 15px;
             text-transform: uppercase;
+            letter-spacing: 2px;
         }
         
-        .organizations {
-            display: grid;
-            gap: 15px;
-            margin: 20px 0;
-        }
-        
-        .org {
-            background: rgba(212, 175, 55, 0.1);
-            padding: 15px;
-            border-radius: 8px;
-            border-left: 3px solid #ffd700;
-        }
-        
-        .org-name {
-            color: #ffd700;
-            font-weight: bold;
-            font-size: 1.1em;
-            margin-bottom: 5px;
-        }
-        
-        .org-focus {
-            color: #ffffff;
-            font-size: 0.95em;
-            line-height: 1.5;
-        }
-        
-        .details {
-            color: #ffffff;
-            line-height: 1.8;
-            font-size: 1.05em;
-        }
-        
-        .details strong {
-            color: #d4af37;
-        }
-        
-        .bring-list {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 10px;
+        .tagline {
+            font-size: 1.3em;
+            color: #26a69a;
+            font-style: italic;
             margin-top: 10px;
+            font-weight: 500;
         }
         
-        .bring-item {
-            background: rgba(212, 175, 55, 0.1);
-            padding: 10px;
-            border-radius: 5px;
-            color: #ffffff;
-            text-align: center;
-            border: 1px solid rgba(212, 175, 55, 0.3);
-        }
-        
-        .objectives {
-            background: rgba(10, 92, 10, 0.3);
-            padding: 20px;
-            border-radius: 8px;
-            margin: 15px 0;
-        }
-        
-        .objective-list {
-            color: #ffffff;
-            line-height: 2;
-            margin-left: 20px;
-        }
-        
-        .cta {
-            text-align: center;
-            margin-top: 30px;
+        .section {
+            background: linear-gradient(135deg, #b2dfdb 0%, #e0f2f1 100%);
+            border-left: 5px solid #00897b;
             padding: 25px;
-            background: linear-gradient(135deg, #d4af37 0%, #ffd700 100%);
-            border-radius: 10px;
-            color: #000000;
+            margin: 25px 0;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0, 137, 123, 0.1);
         }
         
-        .cta-text {
+        .section-title {
+            color: #00695c;
             font-size: 1.5em;
             font-weight: bold;
-            text-transform: uppercase;
-        }
-        
-        /* Download Buttons Section */
-        .download-section {
-            background: rgba(212, 175, 55, 0.15);
-            border: 3px solid #d4af37;
-            padding: 30px;
-            margin: 30px 0;
-            border-radius: 15px;
-            text-align: center;
-        }
-        
-        .download-title {
-            color: #ffd700;
-            font-size: 1.6em;
-            font-weight: bold;
-            margin-bottom: 20px;
-            text-transform: uppercase;
-        }
-        
-        .button-container {
-            display: flex;
-            gap: 20px;
-            justify-content: center;
-            flex-wrap: wrap;
-            margin-top: 20px;
-        }
-        
-        .download-btn {
-            display: inline-block;
-            padding: 18px 35px;
-            background: linear-gradient(135deg, #0a5c0a 0%, #0d7f0d 100%);
-            color: #ffffff;
-            text-decoration: none;
-            border-radius: 10px;
-            font-size: 1.1em;
-            font-weight: bold;
-            border: 2px solid #d4af37;
-            box-shadow: 0 5px 15px rgba(212, 175, 55, 0.4);
-            transition: all 0.3s ease;
-            cursor: pointer;
+            margin-bottom: 18px;
             text-transform: uppercase;
             letter-spacing: 1px;
         }
         
-        .download-btn:hover {
-            background: linear-gradient(135deg, #0d7f0d 0%, #0a5c0a 100%);
+        .organizations {
+            display: grid;
+            gap: 18px;
+            margin: 20px 0;
+        }
+        
+        .org {
+            background: linear-gradient(135deg, #ffffff 0%, #f1f8f6 100%);
+            padding: 20px;
+            border-radius: 10px;
+            border-left: 4px solid #26a69a;
+            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.08);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        
+        .org:hover {
+            transform: translateX(5px);
+            box-shadow: 0 5px 20px rgba(0, 137, 123, 0.2);
+        }
+        
+        .org-name {
+            color: #00695c;
+            font-weight: bold;
+            font-size: 1.2em;
+            margin-bottom: 8px;
+        }
+        
+        .org-focus {
+            color: #37474f;
+            font-size: 1em;
+            line-height: 1.6;
+        }
+        
+        .details {
+            color: #263238;
+            line-height: 1.9;
+            font-size: 1.05em;
+        }
+        
+        .details strong {
+            color: #00695c;
+            font-size: 1.05em;
+        }
+        
+        .bring-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 12px;
+            margin-top: 15px;
+        }
+        
+        .bring-item {
+            background: linear-gradient(135deg, #ffffff 0%, #e0f2f1 100%);
+            padding: 15px;
+            border-radius: 8px;
+            color: #00695c;
+            text-align: center;
+            border: 2px solid #80cbc4;
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
+        
+        .bring-item:hover {
+            background: linear-gradient(135deg, #e0f2f1 0%, #b2dfdb 100%);
+            border-color: #00897b;
             transform: translateY(-3px);
-            box-shadow: 0 8px 20px rgba(212, 175, 55, 0.6);
+        }
+        
+        .objectives {
+            background: linear-gradient(135deg, #a7ffeb 0%, #e0f2f1 100%);
+            padding: 25px;
+            border-radius: 10px;
+            margin: 20px 0;
+            border: 2px solid #4db6ac;
+        }
+        
+        .objective-list {
+            color: #263238;
+            line-height: 2.2;
+            margin-left: 25px;
+            font-size: 1.02em;
+        }
+        
+        .objective-list li {
+            margin-bottom: 10px;
+        }
+        
+        .cta {
+            text-align: center;
+            margin-top: 35px;
+            padding: 30px;
+            background: linear-gradient(135deg, #00897b 0%, #26a69a 100%);
+            border-radius: 15px;
+            color: #ffffff;
+            box-shadow: 0 8px 25px rgba(0, 137, 123, 0.4);
+        }
+        
+        .cta-text {
+            font-size: 1.8em;
+            font-weight: bold;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.2);
+        }
+        
+        /* Download Buttons Section */
+        .download-section {
+            background: linear-gradient(135deg, #4dd0e1 0%, #80deea 100%);
+            border: 4px solid #00acc1;
+            padding: 35px;
+            margin: 35px 0;
+            border-radius: 18px;
+            text-align: center;
+            box-shadow: 0 10px 30px rgba(0, 172, 193, 0.3);
+        }
+        
+        .download-title {
+            color: #006064;
+            font-size: 1.8em;
+            font-weight: bold;
+            margin-bottom: 25px;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            text-shadow: 1px 1px 2px rgba(255, 255, 255, 0.5);
+        }
+        
+        .button-container {
+            display: flex;
+            gap: 25px;
+            justify-content: center;
+            flex-wrap: wrap;
+            margin-top: 25px;
+        }
+        
+        .download-btn {
+            display: inline-block;
+            padding: 20px 40px;
+            background: linear-gradient(135deg, #00897b 0%, #00695c 100%);
+            color: #ffffff;
+            text-decoration: none;
+            border-radius: 12px;
+            font-size: 1.15em;
+            font-weight: bold;
+            border: 3px solid #004d40;
+            box-shadow: 0 6px 20px rgba(0, 105, 92, 0.4);
+            transition: all 0.3s ease;
+            cursor: pointer;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            min-width: 280px;
+        }
+        
+        .download-btn:hover {
+            background: linear-gradient(135deg, #00695c 0%, #004d40 100%);
+            transform: translateY(-5px);
+            box-shadow: 0 10px 30px rgba(0, 105, 92, 0.6);
         }
         
         .download-btn:active {
-            transform: translateY(0);
+            transform: translateY(-2px);
         }
         
         .btn-icon {
-            margin-right: 8px;
-            font-size: 1.2em;
+            margin-right: 10px;
+            font-size: 1.3em;
         }
         
         .download-note {
-            color: #ffd700;
-            font-size: 0.95em;
-            margin-top: 15px;
+            color: #006064;
+            font-size: 1em;
+            margin-top: 20px;
             font-style: italic;
+            font-weight: 500;
         }
         
         .footer {
             text-align: center;
-            margin-top: 30px;
-            color: #d4af37;
-            font-size: 0.9em;
+            margin-top: 40px;
+            padding-top: 30px;
+            border-top: 3px solid #4db6ac;
+            color: #00695c;
+            font-size: 0.95em;
+        }
+        
+        .footer strong {
+            color: #004d40;
+            font-size: 1.1em;
         }
         
         @media print {
             body {
-                background: linear-gradient(135deg, #1a1a1a 0%, #2d1810 100%) !important;
-                -webkit-print-color-adjust: exact !important;
-                print-color-adjust: exact !important;
-                color-adjust: exact !important;
+                background: white;
             }
             .poster {
-                max-width: 100%;
-                box-shadow: 0 20px 60px rgba(212, 175, 55, 0.3) !important;
-                background: linear-gradient(180deg, #0a5c0a 0%, #000000 100%) !important;
-                -webkit-print-color-adjust: exact !important;
-                print-color-adjust: exact !important;
-            }
-            * {
-                -webkit-print-color-adjust: exact !important;
-                print-color-adjust: exact !important;
-                color-adjust: exact !important;
+                box-shadow: none;
+                border: 2px solid #00897b;
             }
         }
         
         @media (max-width: 768px) {
             .title {
-                font-size: 2.5em;
+                font-size: 2.2em;
             }
             
             .subtitle {
-                font-size: 1.4em;
+                font-size: 1.5em;
             }
             
             .button-container {
@@ -263,6 +297,11 @@
             
             .download-btn {
                 width: 100%;
+                min-width: auto;
+            }
+            
+            .bring-list {
+                grid-template-columns: 1fr;
             }
         }
     </style>
@@ -271,93 +310,102 @@
     <div class="poster">
         <div class="header">
             <div class="title">Africa Grassroots Leadership Seminar</div>
-            <div class="subtitle">BLACK HISTORY MONTH</div>
+            <div class="subtitle">BLACK HISTORY MONTH 2026</div>
             <div class="tagline">"Return of our Spirituality and Economy"</div>
         </div>
         
-        <!-- NEW: Download Buttons Section -->
+        <!-- Download Buttons Section -->
         <div class="download-section">
             <div class="download-title">📥 Get Complete Program Details</div>
             <div class="button-container">
-                <a href="#" class="download-btn" onclick="alert('Please contact the organizing committee to receive the complete 5-day workshop program document.'); return false;">
+                <a href="Kabiru_Workshop_Program_2026.pdf" class="download-btn" download>
                     <span class="btn-icon">📋</span>
                     Download Full Program
                 </a>
-                <a href="#" class="download-btn" onclick="alert('Please contact the organizing committee to receive your personalized invitation letter.'); return false;">
+                <a href="Invitation_Response_Form.html" class="download-btn" target="_blank">
                     <span class="btn-icon">✉️</span>
-                    Get Invitation Letter
+                    Register & Sign Letter
                 </a>
             </div>
             <div class="download-note">
-                Click above to access detailed schedules, session descriptions, and your official invitation
+                ⬆️ Click above to access the detailed 5-day schedule or register and submit your signed response
             </div>
         </div>
         
         <div class="section">
-            <div class="section-title">📅 DATE : 21st, 22nd, 23rd February 2026. FEE : ksh 2,200 Boarding and ksh 1,200 days scholars</div>
-            <div class="section">
-                <div class="section-title">💰 Fee subsidies available</div>
-                <div class="details">
-                    <strong>1. Facility:</strong> Learning spaces, Sleeping spaces & basic beddings, washrooms, Meals, Teas etc<br>
-                    <strong>2. Training:</strong> Full Immersion on Ecosystem technical training and beginning of ecosystem motion: presentations.
-                </div>
+            <div class="section-title">📅 DATES & FEES</div>
+            <div class="details">
+                <strong>📆 Dates:</strong> February 21st, 22nd, 23rd, 2026 (Core Workshop)<br>
+                <strong>➕ Extension:</strong> February 24th-25th, 2026 (Optional Job Creation Days)<br>
+                <strong>💵 Boarding:</strong> Ksh 2,200<br>
+                <strong>💵 Day Scholars:</strong> Ksh 1,200<br>
+                <strong>🎁 Fee Subsidies:</strong> Available for qualifying participants
             </div>
         </div>
         
         <div class="section">
-            <div class="section-title">HOSTS</div>
+            <div class="section-title">🏢 WHAT'S INCLUDED</div>
+            <div class="details">
+                <strong>1. Facilities:</strong> Learning spaces, Sleeping accommodations & basic beddings, Washrooms, Full meals & teas<br>
+                <strong>2. Training:</strong> Full immersion on Ecosystem technical training and beginning of ecosystem motion with comprehensive presentations
+            </div>
+        </div>
+        
+        <div class="section">
+            <div class="section-title">🤝 WORKSHOP HOSTS</div>
             <div class="organizations">
                 <div class="org">
-                    <div class="org-name">RSK - Rastafari Society of Kenya</div>
+                    <div class="org-name">🌿 RSK - Rastafari Society of Kenya</div>
                     <div class="org-focus">Africa Roots & Culture Entertainment</div>
                 </div>
                 <div class="org">
-                    <div class="org-name">PAR SIRAI</div>
-                    <div class="org-focus">Odede-ykc • Sulwe Maler (Black Star liner Book) • Calenda</div>
+                    <div class="org-name">📚 PAR SIRAI</div>
+                    <div class="org-focus">Odede-ykc • Sulwe Maler (Black Star Liner Book) • Calenda</div>
                 </div>
                 <div class="org">
-                    <div class="org-name">TAU AFRICA</div>
+                    <div class="org-name">💎 TAU AFRICA</div>
                     <div class="org-focus">Kabiru Digital Value Currency • New Value-Based Economic Ecosystem</div>
                 </div>
             </div>
         </div>
         
         <div class="section">
-            <div class="section-title">📍 Venue</div>
-            <div class="venue-location">
-                <div class="details">
-                    <strong>Location 1:</strong> RSK's Matumaini Children's Centre, Rongai<br>
-                    <strong>Location 2:</strong> Par Sirai Chapel, Njiru, Nairobi
-                </div>
-            </div>
-        </div>
-        
-        <div class="section">
-            <div class="section-title">📅 Duration Options</div>
+            <div class="section-title">📍 VENUES</div>
             <div class="details">
-                Choose your commitment level:<br>
-                <strong>• 3-Day Intensive</strong> | <strong>• 5-Day Deep Dive</strong> (Full Immersion specific to Job creation)
+                <strong>Location 1:</strong> RSK's Matumaini Children's Centre, Rongai<br>
+                <strong>Location 2:</strong> Par Sirai Chapel, Njiru, Nairobi
             </div>
         </div>
         
         <div class="section">
-            <div class="section-title">🎯 Camp Objectives</div>
+            <div class="section-title">📅 PARTICIPATION OPTIONS</div>
+            <div class="details">
+                Choose your commitment level:<br><br>
+                <strong>✨ 3-Day Core Intensive</strong> - Foundation training in Sulwe, Calenda & Kabiru ecosystem<br>
+                <strong>🚀 5-Day Full Immersion</strong> - Core workshop PLUS specialized job creation training in Health, Farming, Merchandise & Media sectors
+            </div>
+        </div>
+        
+        <div class="section">
+            <div class="section-title">🎯 WORKSHOP OBJECTIVES</div>
             <div class="objectives">
                 <ul class="objective-list">
                     <li>Introduce Sulwe to Africans and prepare specific subcouncil to begin deliberations on Sulwe and Calenda for Black Africa</li>
-                    <li>Introduce Kabiru Token as the new token of values, form New Africa Digital Economy and Train Kabiru Digital value Currency</li>
+                    <li>See the returned civilization of Oloo take root in Kikongo in the home of Oloo</li>
+                    <li>Introduce Kabiru Token as the new token of values and form the New Africa Digital Economy</li>
+                    <li>Train participants on Kabiru Digital Value Currency and start preliminary test phases by council</li>
                     <li>Activate the Digital community economic systems in utility infrastructure</li>
                     <li>Decolonize mind, economy & spirituality</li>
-                    <li>Build frameworks for self-Reliance and sustainability</li>
+                    <li>Build frameworks for self-reliance and sustainability</li>
                 </ul>
             </div>
         </div>
         
         <div class="section">
-            <div class="section-title">🎒 What to Bring</div>
+            <div class="section-title">🎒 WHAT TO BRING</div>
             <div class="bring-list">
                 <div class="bring-item">📋 Original ID Documents</div>
-                <div class="bring-item">🍫 Snacks</div>
+                <div class="bring-item">🍫 Snacks (Optional)</div>
                 <div class="bring-item">🧼 Soap & Toiletries</div>
                 <div class="bring-item">👕 Changing Clothes</div>
                 <div class="bring-item">💰 Pocket Money</div>
@@ -366,40 +414,44 @@
         </div>
         
         <div class="section">
-            <div class="section-title">👥 Who Should Attend</div>
+            <div class="section-title">👥 WHO SHOULD ATTEND</div>
             <div class="details">
-                • Youths & Cultural Practitioners<br>
-                • Activists & Spiritual Leaders<br>
-                • Economists & Cooperative Practitioners<br>
-                • Artists & Educators<br>
-                • Anyone committed to African liberation
+                ✓ Youths & Cultural Practitioners<br>
+                ✓ Activists & Spiritual Leaders<br>
+                ✓ Economists & Cooperative Practitioners<br>
+                ✓ Artists & Educators<br>
+                ✓ Anyone committed to African liberation & self-determination
             </div>
         </div>
         
         <div class="section">
-            <div class="section-title">🌟 Experience Includes</div>
+            <div class="section-title">🌟 EXPERIENCE HIGHLIGHTS</div>
             <div class="details">
                 Participatory Discussions • Storytelling Sessions • Farming Activities<br>
                 Cultural Performances • Nature Walks • Meditation & Reflection<br>
                 Guest Speakers • Group Workshops • Creative Documentation<br>
-                Art & Crafts • Music & Entertainment • Community Building
+                Art & Crafts • Music & Entertainment • Community Building<br>
+                Technical Training • Business Plan Development • Council Formation
             </div>
         </div>
         
         <div class="cta">
-            <div class="cta-text">Join the Movement</div>
-            <div style="margin-top: 10px; font-size: 1.1em;">
+            <div class="cta-text">🌍 Join the Movement</div>
+            <div style="margin-top: 15px; font-size: 1.2em; font-weight: 500;">
                 A Community-Led Journey Toward Economic & Spiritual Liberation
             </div>
         </div>
         
         <div class="footer">
-            <p><strong>Kabiru Workshop 2026</strong></p>
-            <p>Creating Participatory Spaces for Dialogue, Learning & Co-Creation</p>
-            <p style="margin-top: 10px; font-style: italic;">
-                "Creating the Leadership that will pioneer the new Africa Digital economy in formation and help Kabiru Infrastructure integrate with community".
+            <p><strong>KABIRU WORKSHOP 2026</strong></p>
+            <p style="margin: 15px 0; font-size: 1.05em;">Creating Participatory Spaces for Dialogue, Learning & Co-Creation</p>
+            <p style="margin-top: 15px; font-style: italic; color: #26a69a;">
+                "Creating the Leadership that will pioneer the new Africa Digital economy in formation and help Kabiru Infrastructure integrate with community"
+            </p>
+            <p style="margin-top: 20px; font-weight: bold; color: #00695c;">
+                📧 Contact: grouptauafrica@gmail.com
             </p>
         </div>
     </div>
 </body>
-</html>
+    </html>
