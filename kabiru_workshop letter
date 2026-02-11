@@ -1,0 +1,569 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Invitation Letter - Kabiru Workshop 2026</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Georgia', 'Times New Roman', serif;
+            background: linear-gradient(135deg, #e0f7fa 0%, #b2ebf2 50%, #80deea 100%);
+            padding: 20px;
+            line-height: 1.6;
+        }
+        
+        .container {
+            max-width: 850px;
+            margin: 0 auto;
+            background: #ffffff;
+            padding: 50px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+            border-radius: 10px;
+        }
+        
+        .letterhead {
+            text-align: center;
+            border-bottom: 3px solid #00897b;
+            padding-bottom: 20px;
+            margin-bottom: 30px;
+        }
+        
+        .letterhead h1 {
+            color: #00695c;
+            font-size: 2em;
+            margin-bottom: 10px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        
+        .letterhead .subtitle {
+            color: #00897b;
+            font-size: 1.2em;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+        
+        .letterhead .tagline {
+            color: #4db6ac;
+            font-style: italic;
+            font-size: 1em;
+        }
+        
+        .date {
+            color: #555;
+            margin: 30px 0 20px 0;
+        }
+        
+        .salutation {
+            font-weight: bold;
+            color: #00695c;
+            margin-bottom: 20px;
+            font-size: 1.1em;
+        }
+        
+        .content p {
+            margin-bottom: 18px;
+            color: #333;
+            text-align: justify;
+            text-indent: 40px;
+        }
+        
+        .content h2 {
+            color: #00695c;
+            margin: 30px 0 15px 0;
+            font-size: 1.4em;
+            border-bottom: 2px solid #4db6ac;
+            padding-bottom: 8px;
+        }
+        
+        .content ul {
+            margin: 15px 0 15px 40px;
+        }
+        
+        .content li {
+            margin-bottom: 12px;
+            color: #333;
+        }
+        
+        .highlight {
+            background: #e0f2f1;
+            padding: 20px;
+            border-left: 4px solid #00897b;
+            margin: 20px 0;
+            border-radius: 5px;
+        }
+        
+        .event-details {
+            background: #b2dfdb;
+            padding: 20px;
+            border-radius: 8px;
+            margin: 25px 0;
+        }
+        
+        .event-details p {
+            text-indent: 0;
+            margin-bottom: 10px;
+        }
+        
+        .event-details strong {
+            color: #00695c;
+            display: inline-block;
+            min-width: 120px;
+        }
+        
+        .signature-section {
+            margin-top: 50px;
+            padding-top: 30px;
+            border-top: 2px solid #e0e0e0;
+        }
+        
+        .form-section {
+            background: #f1f8f6;
+            padding: 30px;
+            border-radius: 10px;
+            margin-top: 40px;
+            border: 2px solid #4db6ac;
+        }
+        
+        .form-section h2 {
+            color: #00695c;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            color: #00695c;
+            font-weight: bold;
+        }
+        
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #b2dfdb;
+            border-radius: 5px;
+            font-size: 1em;
+            font-family: Arial, sans-serif;
+        }
+        
+        .form-group input:focus,
+        .form-group select:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: #00897b;
+        }
+        
+        .signature-pad-container {
+            border: 2px solid #00897b;
+            border-radius: 5px;
+            background: white;
+            margin-top: 10px;
+        }
+        
+        #signature-pad {
+            width: 100%;
+            height: 200px;
+            cursor: crosshair;
+        }
+        
+        .signature-buttons {
+            display: flex;
+            gap: 10px;
+            margin-top: 10px;
+        }
+        
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 1em;
+            font-weight: bold;
+            transition: all 0.3s ease;
+        }
+        
+        .btn-clear {
+            background: #ff6b6b;
+            color: white;
+        }
+        
+        .btn-clear:hover {
+            background: #ff5252;
+        }
+        
+        .btn-submit {
+            background: #00897b;
+            color: white;
+            flex: 1;
+            font-size: 1.2em;
+            padding: 15px;
+        }
+        
+        .btn-submit:hover {
+            background: #00695c;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 137, 123, 0.3);
+        }
+        
+        .btn-submit:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+        
+        .footer {
+            margin-top: 50px;
+            text-align: center;
+            color: #666;
+            font-size: 0.9em;
+            font-style: italic;
+            padding-top: 20px;
+            border-top: 1px solid #e0e0e0;
+        }
+        
+        .org-signature {
+            margin-top: 30px;
+            color: #00695c;
+            font-weight: bold;
+        }
+        
+        .required {
+            color: #ff5252;
+        }
+        
+        .success-message {
+            display: none;
+            background: #4caf50;
+            color: white;
+            padding: 20px;
+            border-radius: 5px;
+            text-align: center;
+            margin-top: 20px;
+            font-size: 1.1em;
+        }
+        
+        .error-message {
+            display: none;
+            background: #ff5252;
+            color: white;
+            padding: 15px;
+            border-radius: 5px;
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="letterhead">
+            <h1>Africa Grassroots Leadership Seminar</h1>
+            <div class="subtitle">BLACK HISTORY MONTH 2026</div>
+            <div class="tagline">"Return of our Spirituality and Economy"</div>
+        </div>
+        
+        <div class="date" id="current-date"></div>
+        
+        <div class="salutation">
+            Dear Change-Maker, Cultural Leader, and African Liberation Advocate,
+        </div>
+        
+        <div class="content">
+            <p>With profound excitement and revolutionary purpose, we extend to you this special invitation to participate in a transformative gathering that will reshape the future of Africa's economic and spiritual landscape.</p>
+            
+            <p>The Africa Grassroots Leadership Seminar is not just another workshop—it is a historic convergence of visionaries, practitioners, and community leaders committed to reclaiming Africa's sovereignty, spirituality, and economic independence. This 5-day immersive experience will take place from February 20-25, 2026, during Black History Month, marking a pivotal moment in our collective journey toward liberation.</p>
+            
+            <h2>WHY YOUR PRESENCE MATTERS</h2>
+            
+            <ul>
+                <li><strong>Be Part of History:</strong> Join the founding cohort that will introduce Sulwe and Calenda to Black Africa, marking the return of our ancestral civilization of Oloo to its home in Kikongo.</li>
+                
+                <li><strong>Pioneer the New Economy:</strong> Learn, test, and become an early adopter of Kabiru Digital Value Currency—the foundation of Africa's new value-based economic ecosystem.</li>
+                
+                <li><strong>Decolonize Your Mind & Spirit:</strong> Engage in deep work that liberates you from mental, economic, and spiritual colonization.</li>
+                
+                <li><strong>Build Real Solutions:</strong> Move beyond theory into action with practical training on ecosystem infrastructure and job creation.</li>
+                
+                <li><strong>Form Powerful Networks:</strong> Connect with activists, spiritual leaders, economists, artists, educators, and fellow change-makers.</li>
+            </ul>
+            
+            <div class="highlight">
+                <strong>What Awaits You:</strong> Comprehensive training • Cultural performances • Nature walks & meditation • Job creation workshops (Health, Farming, Merchandise, Media) • Council formation • Technical training • Guest speakers • Community building
+            </div>
+            
+            <h2>EVENT DETAILS</h2>
+            
+            <div class="event-details">
+                <p><strong>Dates:</strong> February 20-25, 2026 (Thursday to Tuesday)</p>
+                <p><strong>Format:</strong> 3-Day Core Workshop + 2-Day Optional Job Creation Extension</p>
+                <p><strong>Venues:</strong> RSK's Matumaini Children's Centre, Rongai | Par Sirai Chapel, Njiru, Nairobi</p>
+                <p><strong>Investment:</strong> Boarding: Ksh 2,200 | Day Scholars: Ksh 1,200</p>
+                <p><strong>Includes:</strong> Training, Meals, Materials, Documentation, Accommodation (boarding)</p>
+            </div>
+            
+            <p>History is calling you to this moment. The systems of oppression that have bound our people for centuries are crumbling, and we are building something new, something authentic, something ours. But this work requires committed individuals who are ready to step into leadership, to learn, to build, and to transform not just themselves but their communities and the continent.</p>
+            
+            <p style="font-weight: bold;">Do not let this opportunity pass. The council that will be formed during this seminar will guide Africa's new digital economy. Your participation is not just welcomed—it is needed.</p>
+            
+            <div class="signature-section">
+                <p style="text-indent: 0;">In solidarity and revolutionary hope,</p>
+                
+                <div class="org-signature">
+                    <p>The Organizing Committee</p>
+                    <p>RSK - Rastafari Society of Kenya</p>
+                    <p>PAR SIRAI - Odede-ykc</p>
+                    <p>TAU AFRICA - Kabiru Digital Value Currency</p>
+                </div>
+            </div>
+        </div>
+        
+        <!-- RESPONSE FORM -->
+        <div class="form-section">
+            <h2>📝 CONFIRM YOUR ATTENDANCE</h2>
+            <p style="text-align: center; margin-bottom: 25px; color: #555;">Please fill out this form to register for the workshop</p>
+            
+            <form id="invitation-form">
+                <div class="form-group">
+                    <label>Full Name <span class="required">*</span></label>
+                    <input type="text" id="fullName" name="fullName" required>
+                </div>
+                
+                <div class="form-group">
+                    <label>Email Address <span class="required">*</span></label>
+                    <input type="email" id="email" name="email" required>
+                </div>
+                
+                <div class="form-group">
+                    <label>Phone Number <span class="required">*</span></label>
+                    <input type="tel" id="phone" name="phone" required>
+                </div>
+                
+                <div class="form-group">
+                    <label>Organization/Affiliation (if any)</label>
+                    <input type="text" id="organization" name="organization">
+                </div>
+                
+                <div class="form-group">
+                    <label>Attendance Type <span class="required">*</span></label>
+                    <select id="attendanceType" name="attendanceType" required>
+                        <option value="">-- Select Option --</option>
+                        <option value="3-day-boarding">3-Day Core Workshop (Boarding - Ksh 2,200)</option>
+                        <option value="3-day-scholar">3-Day Core Workshop (Day Scholar - Ksh 1,200)</option>
+                        <option value="5-day-boarding">5-Day Full Program (Boarding - Estimated Ksh 3,500)</option>
+                        <option value="5-day-scholar">5-Day Full Program (Day Scholar - Estimated Ksh 2,000)</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label>Why do you want to attend this workshop?</label>
+                    <textarea id="motivation" name="motivation" rows="4" placeholder="Share your motivation and what you hope to contribute..."></textarea>
+                </div>
+                
+                <div class="form-group">
+                    <label>Areas of Interest (Select all that apply)</label>
+                    <div style="margin-top: 10px;">
+                        <label style="display: block; margin-bottom: 8px; font-weight: normal;">
+                            <input type="checkbox" name="interests" value="Sulwe & Calenda"> Sulwe & Calenda Cultural Framework
+                        </label>
+                        <label style="display: block; margin-bottom: 8px; font-weight: normal;">
+                            <input type="checkbox" name="interests" value="Kabiru Currency"> Kabiru Digital Value Currency
+                        </label>
+                        <label style="display: block; margin-bottom: 8px; font-weight: normal;">
+                            <input type="checkbox" name="interests" value="Job Creation"> Job Creation Workshops
+                        </label>
+                        <label style="display: block; margin-bottom: 8px; font-weight: normal;">
+                            <input type="checkbox" name="interests" value="Cultural Activities"> Cultural Activities & Spiritual Practices
+                        </label>
+                        <label style="display: block; margin-bottom: 8px; font-weight: normal;">
+                            <input type="checkbox" name="interests" value="Council Formation"> Council Formation & Leadership
+                        </label>
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label>Digital Signature <span class="required">*</span></label>
+                    <p style="font-size: 0.9em; color: #666; margin-bottom: 10px;">Please sign in the box below using your mouse or touchscreen</p>
+                    <div class="signature-pad-container">
+                        <canvas id="signature-pad"></canvas>
+                    </div>
+                    <div class="signature-buttons">
+                        <button type="button" class="btn btn-clear" onclick="clearSignature()">Clear Signature</button>
+                    </div>
+                    <input type="hidden" id="signatureData" name="signature" required>
+                </div>
+                
+                <div class="error-message" id="error-message"></div>
+                
+                <button type="submit" class="btn btn-submit" id="submit-btn">
+                    ✍️ SIGN & SUBMIT REGISTRATION
+                </button>
+                
+                <div class="success-message" id="success-message">
+                    ✅ Thank you for your registration! You will receive payment details at <strong>grouptauafrica@gmail.com</strong> shortly.
+                </div>
+            </form>
+        </div>
+        
+        <div class="footer">
+            <p><strong>Kabiru Workshop 2026</strong></p>
+            <p>"Creating the Leadership that will pioneer the new Africa Digital economy in formation and help Kabiru Infrastructure integrate with community"</p>
+            <p style="margin-top: 10px;">Creating Participatory Spaces for Dialogue, Learning & Co-Creation</p>
+        </div>
+    </div>
+    
+    <script>
+        // Set current date
+        const dateOptions = { year: 'numeric', month: 'long', day: 'numeric' };
+        document.getElementById('current-date').textContent = 'Date: ' + new Date().toLocaleDateString('en-US', dateOptions);
+        
+        // Signature pad setup
+        const canvas = document.getElementById('signature-pad');
+        const ctx = canvas.getContext('2d');
+        let isDrawing = false;
+        let hasSignature = false;
+        
+        // Set canvas size
+        function resizeCanvas() {
+            const rect = canvas.getBoundingClientRect();
+            canvas.width = rect.width;
+            canvas.height = rect.height;
+        }
+        resizeCanvas();
+        window.addEventListener('resize', resizeCanvas);
+        
+        // Drawing functions
+        canvas.addEventListener('mousedown', startDrawing);
+        canvas.addEventListener('mousemove', draw);
+        canvas.addEventListener('mouseup', stopDrawing);
+        canvas.addEventListener('mouseout', stopDrawing);
+        
+        // Touch events for mobile
+        canvas.addEventListener('touchstart', (e) => {
+            e.preventDefault();
+            const touch = e.touches[0];
+            const mouseEvent = new MouseEvent('mousedown', {
+                clientX: touch.clientX,
+                clientY: touch.clientY
+            });
+            canvas.dispatchEvent(mouseEvent);
+        });
+        
+        canvas.addEventListener('touchmove', (e) => {
+            e.preventDefault();
+            const touch = e.touches[0];
+            const mouseEvent = new MouseEvent('mousemove', {
+                clientX: touch.clientX,
+                clientY: touch.clientY
+            });
+            canvas.dispatchEvent(mouseEvent);
+        });
+        
+        canvas.addEventListener('touchend', (e) => {
+            e.preventDefault();
+            const mouseEvent = new MouseEvent('mouseup', {});
+            canvas.dispatchEvent(mouseEvent);
+        });
+        
+        function startDrawing(e) {
+            isDrawing = true;
+            hasSignature = true;
+            const rect = canvas.getBoundingClientRect();
+            ctx.beginPath();
+            ctx.moveTo(e.clientX - rect.left, e.clientY - rect.top);
+        }
+        
+        function draw(e) {
+            if (!isDrawing) return;
+            const rect = canvas.getBoundingClientRect();
+            ctx.lineTo(e.clientX - rect.left, e.clientY - rect.top);
+            ctx.strokeStyle = '#00695c';
+            ctx.lineWidth = 2;
+            ctx.lineCap = 'round';
+            ctx.stroke();
+        }
+        
+        function stopDrawing() {
+            isDrawing = false;
+        }
+        
+        function clearSignature() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            hasSignature = false;
+            document.getElementById('signatureData').value = '';
+        }
+        
+        // Form submission
+        document.getElementById('invitation-form').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const errorMsg = document.getElementById('error-message');
+            errorMsg.style.display = 'none';
+            
+            // Validate signature
+            if (!hasSignature) {
+                errorMsg.textContent = 'Please provide your signature before submitting.';
+                errorMsg.style.display = 'block';
+                return;
+            }
+            
+            // Get signature as base64
+            const signatureData = canvas.toDataURL();
+            document.getElementById('signatureData').value = signatureData;
+            
+            // Collect form data
+            const formData = new FormData(this);
+            const interests = Array.from(document.querySelectorAll('input[name="interests"]:checked'))
+                .map(cb => cb.value)
+                .join(', ');
+            
+            // Create email body
+            const emailBody = `
+NEW WORKSHOP REGISTRATION
+========================
+
+Full Name: ${formData.get('fullName')}
+Email: ${formData.get('email')}
+Phone: ${formData.get('phone')}
+Organization: ${formData.get('organization') || 'N/A'}
+Attendance Type: ${formData.get('attendanceType')}
+Areas of Interest: ${interests || 'None selected'}
+
+Motivation:
+${formData.get('motivation') || 'Not provided'}
+
+Signature: [Digital signature attached]
+
+---
+Submitted on: ${new Date().toLocaleString()}
+            `.trim();
+            
+            // Create mailto link
+            const subject = 'Workshop Registration - ' + formData.get('fullName');
+            const mailtoLink = `mailto:grouptauafrica@gmail.com?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(emailBody)}`;
+            
+            // Open email client
+            window.location.href = mailtoLink;
+            
+            // Show success message
+            document.getElementById('success-message').style.display = 'block';
+            document.getElementById('submit-btn').disabled = true;
+            document.getElementById('submit-btn').textContent = '✅ Registration Submitted';
+            
+            // Scroll to success message
+            setTimeout(() => {
+                document.getElementById('success-message').scrollIntoView({ behavior: 'smooth' });
+            }, 100);
+        });
+    </script>
+</body>
+</html>
