@@ -3,153 +3,226 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>HOTEP: The Governance of Ma'at & Ubuntu</title>
+    <title>THE KABIRU MASTER SCROLL: HOTEP & MA'AT PROTOCOLS</title>
     <style>
+        :root {
+            --jade-bright: #00ff7f;
+            --jade-deep: #004d33;
+            --gold: #ccff00;
+            --glass: rgba(0, 0, 0, 0.85);
+        }
         body {
-            background: linear-gradient(135deg, #00a86b, #004d33, #00a86b);
-            background-attachment: fixed;
+            background: linear-gradient(135deg, #00a86b, #004d33, #002b1c, #00a86b);
+            background-size: 400% 400%;
+            animation: gradientShift 15s ease infinite;
             color: #f0fff0;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            font-family: 'Garamond', serif, 'Segoe UI';
             line-height: 1.8;
             margin: 0;
             padding: 0;
         }
+        @keyframes gradientShift {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
         .container {
-            max-width: 1000px;
-            margin: 40px auto;
-            background: rgba(0, 0, 0, 0.8);
-            padding: 45px;
-            border-radius: 20px;
-            box-shadow: 0 0 40px rgba(0, 255, 127, 0.4);
-            border: 2px solid #00ff7f;
+            max-width: 1100px;
+            margin: 50px auto;
+            background: var(--glass);
+            padding: 70px;
+            border-radius: 40px;
+            box-shadow: 0 0 100px rgba(0, 255, 127, 0.4);
+            border: 4px solid var(--jade-bright);
+            position: relative;
+            overflow: hidden;
         }
-        h1, h2, h3 {
-            color: #00ff7f;
-            text-transform: uppercase;
-            letter-spacing: 2px;
-            border-bottom: 2px solid #00ff7f;
-            padding-bottom: 10px;
-            text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+        .container::before {
+            content: "";
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: url('https://www.transparenttextures.com/patterns/circuit-board.png');
+            opacity: 0.05;
+            pointer-events: none;
         }
-        .highlight {
-            color: #ccff00;
-            font-weight: bold;
-        }
+        h1 { color: var(--jade-bright); text-align: center; font-size: 3.5em; text-transform: uppercase; letter-spacing: 8px; margin-bottom: 5px; text-shadow: 0 0 20px var(--jade-bright); }
+        h2 { color: var(--gold); border-bottom: 2px solid var(--jade-bright); padding-bottom: 15px; text-transform: uppercase; margin-top: 50px; letter-spacing: 2px; }
+        h3 { color: var(--jade-bright); font-size: 1.8em; margin-top: 30px; }
         .philosophy-box {
             background: rgba(0, 255, 127, 0.1);
-            border-left: 6px solid #ccff00;
-            padding: 25px;
-            margin: 25px 0;
+            border-left: 8px solid var(--gold);
+            padding: 30px;
+            margin: 40px 0;
             font-style: italic;
-            border-radius: 0 10px 10px 0;
+            font-size: 1.2em;
+            border-radius: 0 20px 20px 0;
         }
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            margin: 30px 0;
-            background: rgba(255, 255, 255, 0.05);
-        }
-        th, td {
-            border: 1px solid #00ff7f;
-            padding: 15px;
-            text-align: left;
-        }
-        th {
-            background: #006b44;
-            color: #ccff00;
-        }
-        .principle-card {
+        .pillar-grid {
             display: grid;
-            grid-template-columns: 1fr 2fr;
-            gap: 20px;
-            margin-bottom: 20px;
-            padding: 15px;
-            border: 1px dashed #00ff7f;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 30px;
+            margin: 40px 0;
         }
-        footer {
-            text-align: center;
-            font-size: 0.9em;
-            margin-top: 40px;
-            color: #aaffaa;
-            border-top: 1px solid #00ff7f;
-            padding-top: 20px;
+        .pillar {
+            background: rgba(255, 255, 255, 0.03);
+            padding: 25px;
+            border-radius: 15px;
+            border: 1px solid var(--jade-deep);
+            transition: 0.3s;
         }
+        .pillar:hover { border-color: var(--jade-bright); background: rgba(0, 255, 127, 0.05); }
+        table { width: 100%; border-collapse: collapse; margin: 40px 0; font-size: 1.1em; }
+        th, td { border: 1px solid var(--jade-bright); padding: 20px; text-align: left; }
+        th { background: var(--jade-deep); color: var(--gold); }
+        .ritual-card {
+            border: 2px dashed var(--gold);
+            padding: 30px;
+            margin: 25px 0;
+            background: rgba(204, 255, 0, 0.03);
+            border-radius: 15px;
+        }
+        .symbol-focus {
+            display: flex;
+            gap: 30px;
+            align-items: center;
+            background: rgba(0,0,0,0.5);
+            padding: 30px;
+            border-radius: 20px;
+            border: 1px solid var(--jade-bright);
+        }
+        .highlight-gold { color: var(--gold); font-weight: bold; }
+        .tagline { text-align: center; font-size: 1.4em; color: var(--jade-bright); opacity: 0.9; margin-bottom: 50px; font-variant: small-caps; }
+        footer { text-align: center; margin-top: 80px; padding-top: 40px; border-top: 1px solid var(--jade-bright); opacity: 0.7; }
     </style>
 </head>
 <body>
 
 <div class="container">
-    <h1 style="text-align: center;">The HOTEP Ecosystem</h1>
-    <p style="text-align: center; font-variant: small-caps;">Ancient Kemetian Wisdom × Modern Tokenomics × Ubuntu Philosophy</p>
-
-    <hr style="border: 0; height: 1px; background: #00ff7f; margin: 30px 0;">
-
-    <h2>I. Ancient Roots: The Kemetian Foundation</h2>
-    <p>In the language of Ancient Kemet, <strong>Hotep</strong> (<em>ḥtp</em>) is a state of being where the spiritual and material worlds are in perfect alignment. Represented by the offering-mat hieroglyph, it signifies that everyone has enough, and because everyone has enough, there is <strong>Peace</strong>.</p>
     
-    <ul>
-        <li><strong>Literal Meaning:</strong> "To be at rest," "to be satisfied."</li>
-        <li><strong>Sacred Offerings:</strong> The <em>Hetep-di-nesu</em> ensured ancestors and the living were connected through shared resources.</li>
-        <li><strong>Relationship to Ma’at:</strong> You cannot "do" Hotep; you "achieve" Hotep by practicing Ma'at (Justice).</li>
-    </ul>
+    <header>
+        <h1>KABIRU</h1>
+        <p class="tagline">The Master Scroll of the Digital Value Currency Ecosystem</p>
+    </header>
 
-    <div class="philosophy-box">
-        "Hotep is the result of a system that works for everyone. In your ecosystem, the 'Rest' is found when the 'Mining' creates collective wealth rather than individual greed."
-    </div>
+    <section>
+        <h2>I. The Genesis of Hotep: Deep Kemetian Roots</h2>
+        <p>In the language of <strong>Ancient Kemet</strong>, the word <strong>Hotep</strong> (<em>ḥtp</em>) is much more than a greeting. It is a profound ontological state. To truly understand why the Kabiru Ecosystem uses this word, we must look at its hieroglyphic composition: a loaf of bread sitting upon a reed mat.</p>
+        
+        <ul>
+            <li><strong>The Bread (Physical Sustenance):</strong> Symbolizes the <em>Value</em> or the <em>Token</em>. It is the tangible result of mining and labor.</li>
+            <li><strong>The Mat (The Foundation):</strong> Symbolizes the <em>Community</em> and <em>Infrastructure</em>. Without the mat (the society), the bread (the token) sits in the dirt.</li>
+            <li><strong>Linguistic Meaning:</strong> At its deepest level, Hotep means "to be satisfied," "to be at rest," and "to be in equilibrium."</li>
+        </ul>
 
-    <h2>II. The Governance of Ma’at: Rules for a Brother's Keeper Society</h2>
-    <p>To build a society where <strong>Hotep</strong> is the standard, the community must operate under the <strong>7 Principles of Ma’at</strong>. These serve as the "Smart Contract" of human behavior in your mining community:</p>
+        <div class="philosophy-box">
+            "In Ancient Kemet, the Pyramids and Temples were built not by slaves, but by organized labor collectives who were 'at Hotep'—meaning they were fed, housed, and spiritually aligned with the project. The Kabiru Ecosystem revives this: we mine as a collective of free, satisfied builders."
+        </div>
 
-    <div class="principle-card">
-        <div><strong class="highlight">1. Truth (mȝˁt)</strong></div>
-        <div>Transparency in the mining process. No hidden algorithms; total honesty in community dealings.</div>
-    </div>
-    <div class="principle-card">
-        <div><strong class="highlight">2. Balance (iwsw)</strong></div>
-        <div>Ensuring that "Whales" do not overshadow "Minnows." Wealth must circulate to maintain the ecosystem's center of gravity.</div>
-    </div>
-    <div class="principle-card">
-        <div><strong class="highlight">3. Order (shetit)</strong></div>
-        <div>Sustainable growth. We do not mine to exhaust; we mine to build a structured, lasting society.</div>
-    </div>
-    <div class="principle-card">
-        <div><strong class="highlight">4. Reciprocity (drp)</strong></div>
-        <div>The core of the "Brother's Keeper" model. If the community helps you mine, you contribute back to the community's strength.</div>
-    </div>
+        <h3>The Ma’at Infrastructure</h3>
+        <p>Hotep is the result of <strong>Ma’at</strong> (Truth, Balance, Order). In our ecosystem, Ma’at is the <strong>Smart Contract</strong>. Just as the Nile’s flooding was measured to ensure fair distribution of water, our digital mining must be measured to ensure no single node consumes the vitality of the whole.</p>
+    </section>
 
-    <h2>III. The Ubuntu Bridge: Scaling Hotep</h2>
-    <p>While Hotep provides the <em>goal</em> (Peace/Satisfaction), <strong>Ubuntu</strong> provides the <em>methodology</em>. In your community-driven token mining, Ubuntu logic dictates that:</p>
-    
-    <table>
-        <tr>
-            <th>Traditional Mining</th>
-            <th>Hotep/Ubuntu Mining</th>
-        </tr>
-        <tr>
-            <td>Competitive: Winner takes all.</td>
-            <td><strong>Collaborative:</strong> Shared hashing power for shared rewards.</td>
-        </tr>
-        <tr>
-            <td>Extractive: Depletes resources for profit.</td>
-            <td><strong>Generative:</strong> Tokens are used to fund social infrastructure.</td>
-        </tr>
-        <tr>
-            <td>Isolated: Private wallets, private lives.</td>
-            <td><strong>Brother's Keeper:</strong> Proof-of-Stake includes "Proof-of-Support."</td>
-        </tr>
-    </table>
+    <div class="section-divider"></div>
 
-    <h2>IV. Strategic Integration</h2>
-    <p>By branding our movement with <strong>Hotep</strong>, we are calling for a <strong>Jade Revolution</strong>—one that is bright, valuable, and enduring. You are not just creating a coin; you are creating a "Sacred Space" where technology serves the spirit of humanity.</p>
+    <section>
+        <h2>II. Governance: The Brother’s Keeper Society</h2>
+        <p>We combine Kemetian Order with the Southern African philosophy of <strong>Ubuntu</strong> ("I am because we are"). This creates a "Brother's Keeper" governance model that moves beyond individualistic capitalism.</p>
 
-    <div class="philosophy-box" style="border-left-color: #00ff7f; background: rgba(204, 255, 0, 0.1);">
-        <strong>Final Axiom:</strong> "I am because we mine; we mine because we seek Hotep."
-    </div>
+        <div class="pillar-grid">
+            <div class="pillar">
+                <h3>1. Reciprocity (The Law of Drap)</h3>
+                <p>In Kemet, offerings were circular. In Kabiru, value must circulate. A percentage of community-mined tokens is always earmarked for social architecture—funding the "mats" upon which others will place their "bread."</p>
+            </div>
+            <div class="pillar">
+                <h3>2. Radical Transparency</h3>
+                <p>Ma'at demands the "weighing of the heart." All transactions and ecosystem allocations are public on the ledger. We hide nothing because we fear nothing.</p>
+            </div>
+            <div class="pillar">
+                <h3>3. Collective Stakeholding</h3>
+                <p>Ubuntu dictates that the wealth of the chief is measured by the wealth of the people. In Kabiru, the success of the <strong>iKb token</strong> is tied to the number of members it has empowered, not the height of its price alone.</p>
+            </div>
+        </div>
+
+        <table>
+            <tr>
+                <th>Standard System Logic</th>
+                <th>Kabiru "Hotep" Logic</th>
+            </tr>
+            <tr>
+                <td>Mining is a race to extract value first.</td>
+                <td><strong>Mining is a ritual to generate community value.</strong></td>
+            </tr>
+            <tr>
+                <td>Value is determined by scarcity and fear.</td>
+                <td><strong>Value is determined by utility and consensus (GCV).</strong></td>
+            </tr>
+            <tr>
+                <td>The individual is the primary unit.</td>
+                <td><strong>The "Brotherhood" (The Hive) is the primary unit.</strong></td>
+            </tr>
+        </table>
+    </section>
+
+    <div class="section-divider"></div>
+
+    <section>
+        <h2>III. The Kabiru Manifesto: The Pioneers' Covenant</h2>
+        <p>We are the <strong>Kabiru</strong>—the "Habiru" or "Hebrew"—the ones who cross over the river of limitation. We leave behind the "Egypt of Debt" (the old financial systems) to build the "Sanctuary of Value."</p>
+
+        <div class="ritual-card">
+            <h3>The Covenant of the iKb Miner:</h3>
+            <p>1. I recognize that my digital power is a gift from the collective ancestors of wisdom.<br>
+            2. I pledge to use my mined value to uplift, not to oppress.<br>
+            3. I will protect the integrity of the <strong>GATE</strong> (the entrance to our ecosystem).<br>
+            4. I am a keeper of my brother and sister; their financial security is my security.</p>
+        </div>
+    </section>
+
+    <div class="section-divider"></div>
+
+    <section>
+        <h2>IV. Visual Sovereignty: The iKb Coin</h2>
+        <div class="symbol-focus">
+            <div style="flex:1;">
+                <p><span class="highlight-gold">The Jade Glimmer:</span> The coin’s sparkling green surface is the <strong>"Great Green" (Wadj)</strong>. It represents the eternal life of the ecosystem. Like the jade stone, our currency is meant to be passed down through generations—it is an heirloom, not just an asset.</p>
+                <p><span class="highlight-gold">The GCV 100,000:</span> This is our <strong>Global Consensus Value</strong>. It is a declaration of independence from volatile external fiat. We set the value through our collective belief and trade usage.</p>
+                <p><span class="highlight-gold">The African Map:</span> Positioned as a golden stamp, it signifies the <strong>Geographic Heart</strong> of our philosophy. It is the root of the Ubuntu tree.</p>
+            </div>
+        </div>
+    </section>
+
+    <div class="section-divider"></div>
+
+    <section>
+        <h2>V. Community Rituals & The Code of Conduct</h2>
+        <p>A society is only as strong as its daily habits. We maintain our Hotep through these specific "Brother's Keeper" protocols.</p>
+
+        <div class="pillar-grid">
+            <div class="pillar">
+                <h3 class="highlight-gold">The Ritual of Acknowledgement</h3>
+                <p>When two miners meet digitally, the greeting is <strong>"Hotep, Kabiru."</strong> The response is <strong>"Ubuntu, iKb."</strong> This reinforces that we are crossing over into peace through our collective work.</p>
+            </div>
+            <div class="pillar">
+                <h3 class="highlight-gold">The Law of the Tenth Mat</h3>
+                <p>For every ten tokens successfully mined or gained, the "Brother's Keeper" protocol suggests allocating the energy of one toward community education or onboarding a new member who has no "bread."</p>
+            </div>
+        </div>
+
+        <h3>The Forbidden (The Anti-Ma'at)</h3>
+        <p>To ensure the ecosystem never falls into chaos, the following are strictly prohibited:</p>
+        <ul>
+            <li><strong>Vampiric Mining:</strong> Using community resources to mine while contributing zero knowledge or liquidity back to the group.</li>
+            <li><strong>The "Shadow Word":</strong> Spreading fear, uncertainty, or doubt (FUD) without bringing a solution to the Council.</li>
+            <li><strong>Usury:</strong> Charging predatory interest to a fellow Kabiru member. We lend in the spirit of growth, not extraction.</li>
+        </ul>
+    </section>
 
     <footer>
-        <p><strong>For the Global Hotep Community</strong></p>
-        <p>Year 2026 | Document Version 2.0 | Status: <span style="color: #00ff7f;">Harmonized</span></p>
+        <h3 style="color: var(--gold);">"I AM BECAUSE WE ARE. THE KABIRU HAVE CROSSED OVER INTO HOTEP."</h3>
+        <p>The Master Scroll | Version 4.0 | Cosmic Year 2026</p>
+        <p>Authorized by the High Council of the Kabiru Digital Value Currency Ecosystem</p>
     </footer>
+
 </div>
 
 </body>
